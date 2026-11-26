@@ -17,9 +17,15 @@ const BUILDING_COLORS := {
 	"common_agora": Color(0.80, 0.78, 0.72), "boulevard": Color(0.35, 0.60, 0.30), "avenue": Color(0.35, 0.60, 0.30),
 	"food_vendor_stall": Color(0.95, 0.80, 0.30), "oil_vendor_stall": Color(0.70, 0.75, 0.25),
 	"wine_vendor_stall": Color(0.60, 0.20, 0.45), "common_housing": Color(0.85, 0.72, 0.55),
+	"fleece_vendor_stall": Color(0.95, 0.95, 0.90), "carrot_farm": Color(0.90, 0.55, 0.20),
+	"onion_farm": Color(0.85, 0.80, 0.55), "carding_shed": Color(0.75, 0.65, 0.50), "granary": Color(0.80, 0.70, 0.40),
+	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0),
 }
-const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25}
+const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25,
+	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
 const WALKER_COLORS := {
+	"deliveryman": Color(0.55, 0.35, 0.15), "food_vendor": Color(0.95, 0.80, 0.30), "fleece_vendor": Color(0.9, 0.9, 0.9),
+	"shepherd": Color(0.3, 0.7, 0.3),
 	"water_bearer": Color(0.25, 0.55, 1.0), "superintendent": Color(1.0, 0.75, 0.2),
 	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0), "peddler": Color(0.95, 0.6, 0.1),
 }
@@ -45,14 +51,23 @@ static func demo_map() -> PackedStringArray:
 				c = "T"
 			elif y == 22 and x >= 20 and x < 26:
 				c = ","
+			elif y >= 20 and y < 28 and x >= 5 and x < 15:
+				c = ","  # meadow for farms and sheep
 			elif x >= 30 or y >= 30:
 				c = "~"
 			row += c
 		rows.append(row)
 	return rows
 
+# A small plateau in the north-west corner, one level up (L-099); no ramp, so it stays out of the road net.
+static func demo_heights() -> PackedStringArray:
+	var rows := PackedStringArray()
+	for y in 32:
+		rows.append("11" + "0".repeat(30) if y < 12 else "0".repeat(32))
+	return rows
+
 func _ready() -> void:
-	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map())
+	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), false, demo_heights())
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
@@ -65,8 +80,15 @@ func _ready() -> void:
 		sim.place_building("common_housing", x, 17)
 	for x in range(18, 28, 2):
 		sim.place_building("common_housing", x, 2)
+	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
+	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
+			["storehouse", 21, 25]]:
+		sim.place_building(b[0], b[1], b[2])
+	sim.set_sector_priority(2, 5)  # distribution first: the granary takes food only when fully staffed
 	sim.step(1)
-	for s in [["food_vendor_stall", 26, 6], ["oil_vendor_stall", 26, 8], ["wine_vendor_stall", 26, 10]]:
+	for i in 8:
+		sim.place_building("sheep", 7 + i % 4, 21 + i / 4)
+	for s in [["food_vendor_stall", 26, 6], ["fleece_vendor_stall", 26, 8], ["oil_vendor_stall", 26, 10]]:
 		sim.place_building(s[0], s[1], s[2])
 	_build_environment()
 	add_child(tiles)
@@ -144,7 +166,7 @@ func _rebuild_tiles() -> void:
 		for x in w:
 			var t: Dictionary = sim.get_tile(x, y)
 			var color: Color = TERRAIN_COLORS.get(t["terrain"], Color(0.6, 0.6, 0.6))
-			var height := -0.05
+			var height: float = -0.05 + 0.5 * float(t["elevation"])
 			if t["terrain"] == "water":
 				height = -0.2
 			if t["road"]:

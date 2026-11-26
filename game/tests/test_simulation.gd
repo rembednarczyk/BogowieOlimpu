@@ -93,6 +93,28 @@ func _init() -> void:
 	var fev: Array = w.drain_events()
 	check(fev.filter(func(e): return e["type"] == "monthly_finance").size() == 2, "monthly_finance on day 0 of months 1 and 2")
 
+	# Goods and terrain height through the binding.
+	var g := BoSimulation.new()
+	var grows := PackedStringArray()
+	var gheights := PackedStringArray()
+	for y in 10:
+		grows.append(",,,,,,,,,,,,,,,,,,,," if y < 4 else ("====================" if y == 4 else "...................."))
+		gheights.append("00000000000000000001")
+	check(g.start_with_map("res://data", 5, "", 9000, grows, true, gheights) == "", "start with heights")
+	check(g.get_tile(19, 0)["elevation"] == 1, "tile elevation")
+	g.place_building("carrot_farm", 0, 1)
+	g.place_building("granary", 8, 5)
+	g.step(1)
+	var gb: Array = g.get_buildings()
+	check(gb.size() == 2, "farm and granary placed")
+	if gb.size() < 2:
+		quit(1)
+		return
+	check(gb[0].has("output_loads") and gb[1].has("stock_loads"), "producer and storage fields")
+	g.set_storage_order(gb[1]["id"], "carrots", 3, 0)
+	g.step(1)
+	check(g.drain_events().filter(func(e): return e["type"] == "command_rejected").size() == 0, "storage order accepted")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")
