@@ -63,6 +63,9 @@ std::uint32_t workers_needed(const Building& b, const DataCatalog& catalog, cons
     if (type == catalog.buildings.end() || labour.disabled_types.count(b.type) != 0) {
         return 0;
     }
+    if (b.sanctuary && !b.sanctuary->complete) {
+        return 0;  // a building site: priests and staff come when it is finished [ZAŁOŻENIE, L-111]
+    }
     const auto stats = catalog.building_stats.find(type->second.stats_id);
     if (stats == catalog.building_stats.end() || !stats->second.workers || *stats->second.workers <= 0) {
         return 0;

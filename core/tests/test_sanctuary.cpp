@@ -1,4 +1,5 @@
 // Module D1 stage 1: sanctuary construction and sacrifices (docs/gameplay/10, 21; Z:116-118, Z:124; L-111).
+#include "bo/core/labour.h"
 #include "bo/core/sanctuary.h"
 #include "bo/core/serialize.h"
 #include "bo/core/simulation.h"
@@ -208,4 +209,18 @@ TEST_CASE("well organized building: Artemis in about 5 months, Zeus in about a y
     CHECK(artemis <= 7 * 16);
     CHECK(zeus >= 9 * 16);  // S-005: 12 months; within 9-15
     CHECK(zeus <= 15 * 16);
+}
+
+TEST_CASE("a sanctuary under construction employs nobody; finished, it needs its staff (L-111)") {
+    auto sim = town();
+    stock(sim, 30);
+    sim.issue(PlaceBuilding{"sanctuary_dionysus", 2, 14});
+    sim.step(1);
+    const Building& s = at(sim, {2, 14});
+    CHECK(workers_needed(s, bo::test::catalog(), sim.state().labour) == 0);
+    for (auto& [g, n] : at(sim, {2, 14}).sanctuary->needed) {
+        n = 0;
+    }
+    sim.run_days(1);
+    CHECK(workers_needed(at(sim, {2, 14}), bo::test::catalog(), sim.state().labour) == 45);
 }

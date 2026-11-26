@@ -3,7 +3,7 @@
 # 1 tile = 1 m (docs/ASSETY.md). Tile (x, y) maps to world (x + 0.5, 0, y + 0.5).
 extends Node3D
 
-const TICKS_PER_SECOND := 60.0  # presentation speed; the simulation itself is tick based
+var ticks_per_second := 60.0  # presentation speed; the simulation itself is tick based (harness: speed=)
 const TERRAIN_COLORS := {
 	"grassland": Color(0.55, 0.62, 0.35), "meadow": Color(0.62, 0.72, 0.30), "forest": Color(0.22, 0.40, 0.20),
 	"marsh": Color(0.40, 0.46, 0.36), "beach": Color(0.86, 0.80, 0.58), "rock": Color(0.50, 0.48, 0.45),
@@ -21,7 +21,8 @@ const BUILDING_COLORS := {
 	"onion_farm": Color(0.85, 0.80, 0.55), "carding_shed": Color(0.75, 0.65, 0.50), "granary": Color(0.80, 0.70, 0.40),
 	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0), "ruins": Color(0.35, 0.33, 0.30),
 	"infirmary": Color(0.95, 0.95, 0.98), "trading_post": Color(0.55, 0.40, 0.60),
-	"horse_ranch": Color(0.60, 0.42, 0.25),
+	"horse_ranch": Color(0.60, 0.42, 0.25), "palace": Color(0.93, 0.88, 0.70),
+	"sanctuary_dionysus": Color(0.75, 0.55, 0.85), "artisans_guild": Color(0.65, 0.50, 0.45),
 }
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
@@ -30,7 +31,9 @@ const WALKER_COLORS := {
 	"shepherd": Color(0.3, 0.7, 0.3), "trade_caravan": Color(0.6, 0.3, 0.6),
 	"water_bearer": Color(0.25, 0.55, 1.0), "superintendent": Color(1.0, 0.75, 0.2),
 	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0), "peddler": Color(0.95, 0.6, 0.1),
-	"wolf": Color(0.35, 0.35, 0.38),
+	"wolf": Color(0.35, 0.35, 0.38), "artisan": Color(0.85, 0.5, 0.2), "ox_cart": Color(0.5, 0.4, 0.3),
+	"priest": Color(0.95, 0.95, 0.6), "hoplite": Color(0.6, 0.1, 0.1), "rabble": Color(0.7, 0.3, 0.2),
+	"horseman": Color(0.4, 0.05, 0.05), "immigrant": Color(0.8, 0.8, 0.6),
 }
 
 var sim := BoSimulation.new()
@@ -40,28 +43,39 @@ var tiles := MultiMeshInstance3D.new()
 var building_nodes := {}  # id -> Node3D
 var walker_nodes := {}  # id -> MeshInstance3D
 var cam := Camera3D.new()
-var cam_target := Vector3(16, 0, 16)
+var cam_target := Vector3(32, 0, 24)
 
+const MAP_W := 64
+const MAP_H := 48
+
+# 64x48 demo: the first town in the west (roads, farms, sheep, granary, trade), the Palace, a sanctuary site,
+# an Artisans' Guild, a horse ranch and an invasion point in the east, the sea in the south.
 static func demo_map() -> PackedStringArray:
 	var rows := PackedStringArray()
-	for y in 32:
+	for y in MAP_H:
 		var row := ""
-		for x in 32:
+		for x in MAP_W:
 			var c := "."
-			if (y == 4 or y == 16 or y == 28 or x == 4 or x == 16 or x == 28) and x >= 2 and x < 30 and y >= 2 and y < 30:
+			if y >= MAP_H - 2:
+				c = "~"
+			elif (y == 4 or y == 16 or y == 28) and x >= 2 and x < 62:
+				c = "="
+			elif (x == 4 or x == 16 or x == 28) and y >= 2 and y < 30:
+				c = "="
+			elif (x == 40 or x == 52) and y >= 2 and y < 44:
 				c = "="
 			elif y == 8 and x >= 20 and x < 26:
 				c = "T"
 			elif y == 22 and x >= 20 and x < 26:
 				c = ","
+			elif y == 16 and x == 1:
+				c = "E"  # land entry: the road to the rest of Greece (caravans, immigrants)
 			elif y == 24 and x == 2:
 				c = "w"  # wolf den near the sheep meadow (Z:45)
-			elif y == 16 and x == 1:
-				c = "E"  # land entry: the road to the rest of Greece (caravans)
+			elif y == 40 and x == MAP_W - 2:
+				c = "i"  # invasion point (doc 23)
 			elif y >= 20 and y < 28 and x >= 5 and x < 15:
 				c = ","  # meadow for farms and sheep
-			elif x >= 30 or y >= 30:
-				c = "~"
 			row += c
 		rows.append(row)
 	return rows
@@ -69,38 +83,51 @@ static func demo_map() -> PackedStringArray:
 # A small plateau in the north-west corner, one level up (L-099); no ramp, so it stays out of the road net.
 static func demo_heights() -> PackedStringArray:
 	var rows := PackedStringArray()
-	for y in 32:
-		rows.append("11" + "0".repeat(30) if y < 12 else "0".repeat(32))
+	for y in MAP_H:
+		rows.append("11" + "0".repeat(MAP_W - 2) if y < 12 else "0".repeat(MAP_W))
 	return rows
+
+var sanctuary_placed := false
+var demo_status := ""
+var invasion_started := false
 
 func _ready() -> void:
 	var partner := {"id": "corinth", "relation": "ally", "by_sea": false,
-		"sells": {"olive_oil": [145, 8], "fleece": [60, 8]}, "buys": {}}
-	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), false, demo_heights(), [partner])
+		"sells": {"olive_oil": [145, 8], "fleece": [60, 8], "marble": [80, 60], "wood": [50, 24],
+			"sculpture": [200, 4]},
+		"buys": {}}
+	var err: String = sim.start_with_map("res://data", 20261126, "", 25000, demo_map(), false, demo_heights(), [partner])
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
 	sim.place_roadblock(22, 16)
 	for b in [["fountain", 6, 5, 0], ["maintenance_office", 17, 17, 0], ["watchpost", 10, 14, 0],
 			["gymnasium", 24, 13, 0], ["fountain", 5, 17, 0], ["fountain", 17, 5, 0], ["common_agora", 26, 6, 0],
-			["boulevard", 8, 4, 1], ["boulevard", 9, 4, 1], ["boulevard", 10, 4, 1], ["avenue", 4, 22, 3]]:
+			["boulevard", 8, 4, 1], ["boulevard", 9, 4, 1], ["boulevard", 10, 4, 1], ["avenue", 4, 22, 3],
+			["palace", 42, 5, 0]]:
 		sim.place_building(b[0], b[1], b[2], b[3])
 	for x in range(7, 17, 2):  # house plots; immigrants arrive daily and become the workforce
 		sim.place_building("common_housing", x, 17)
 	for x in range(18, 28, 2):
 		sim.place_building("common_housing", x, 2)
+	for x in range(30, 40, 2):
+		sim.place_building("common_housing", x, 17)
 	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
 	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
-			["storehouse", 21, 25], ["trading_post", 24, 24], ["horse_ranch", 17, 12]]:
+			["storehouse", 21, 25], ["trading_post", 24, 24], ["horse_ranch", 42, 29],
+			["storehouse", 53, 13], ["artisans_guild", 53, 17], ["maintenance_office", 54, 5]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.set_sector_priority(2, 5)  # distribution first: the granary takes food only when fully staffed
 	sim.set_sector_priority(3, 5)  # maintenance too: unattended buildings burn and collapse (C7)
+	sim.set_sector_priority(6, 5)  # mythology: the Artisans' Guild builds the sanctuary (D1)
 	for b in [["maintenance_office", 13, 5], ["maintenance_office", 6, 14], ["infirmary", 9, 9]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.step(1)
 	var post: int = sim.get_tile(24, 24)["building"]
 	sim.set_trade_partner(post, 0)
 	sim.set_trade_order(post, "olive_oil", true, 4, false, 0)
+	for good in ["marble", "wood", "sculpture"]:  # materials for the sanctuary (D1)
+		sim.set_trade_order(post, good, true, 12, false, 0)
 	for i in 8:
 		sim.place_building("sheep", 7 + i % 4, 21 + i / 4)
 	for s in [["food_vendor_stall", 26, 6], ["fleece_vendor_stall", 26, 8], ["oil_vendor_stall", 26, 10]]:
@@ -115,13 +142,37 @@ func _ready() -> void:
 	_rebuild_tiles()
 	_update_label()
 
+# Demo script: the sanctuary is founded once the imported marble is in storage; an army comes in month 6.
+func _demo_day() -> void:
+	if not sanctuary_placed and _city_stock("marble") >= 8:
+		sim.place_building("sanctuary_dionysus", 41, 17)
+	if not invasion_started and sim.get_month() == 5:
+		invasion_started = true
+		sim.start_invasion("greek", 6)
+	demo_status = "marmur %d" % _city_stock("marble")
+	for b in sim.get_buildings():
+		if b.has("sanctuary_complete"):
+			demo_status = "sanktuarium: %s, ładunki do wbudowania %d" % [
+				"gotowe" if b["sanctuary_complete"] else "budowa", b["sanctuary_loads_needed"]]
+	demo_status += "   kompanie %d" % sim.get_companies().size()
+
+func _city_stock(good: String) -> int:
+	var total := 0
+	for b in sim.get_buildings():
+		if b.has("stock_loads") and b["type"] == "storehouse":
+			total += int(b["stock_loads"].get(good, 0))
+	return total
+
 func _process(delta: float) -> void:
-	tick_accumulator += delta * TICKS_PER_SECOND
+	tick_accumulator += delta * ticks_per_second
 	var ticks := int(tick_accumulator)
 	if ticks > 0:
 		tick_accumulator -= ticks
+		var day_before: int = sim.get_day_in_month()
 		sim.step(ticks)
 		_handle_events(sim.drain_events())
+		if sim.get_day_in_month() != day_before:
+			_demo_day()
 		_update_label()
 	_sync_walkers()
 
@@ -137,10 +188,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_label() -> void:
 	# Player-facing text will come from translation catalogs (docs/PRAKTYKI.md ch. 12); this is a debug overlay.
-	label.text = "rok %d  miesiąc %d  dzień %d   skarbiec %d\nludność %d   pracownicy %d/%d   popularność %d\nspacerujący %d   hash %s" % [
+	label.text = "rok %d  miesiąc %d  dzień %d   skarbiec %d\nludność %d   pracownicy %d/%d   popularność %d\nspacerujący %d   hash %s\n%s" % [
 		sim.get_year() + 1, sim.get_month() + 1, sim.get_day_in_month() + 1, sim.get_treasury(),
 		sim.get_population(), sim.get_employed(), sim.get_workforce(), sim.get_popularity(),
-		walker_nodes.size(), sim.get_state_hash()]
+		walker_nodes.size(), sim.get_state_hash(), demo_status]
 
 func _handle_events(events: Array) -> void:
 	var tiles_dirty := false
@@ -148,6 +199,8 @@ func _handle_events(events: Array) -> void:
 		match e["type"]:
 			"building_placed":
 				_add_building(e)
+				if e["building_type"].begins_with("sanctuary_"):
+					sanctuary_placed = true
 			"building_removed":
 				if building_nodes.has(e["id"]):
 					building_nodes[e["id"]].queue_free()
@@ -267,7 +320,7 @@ func _build_environment() -> void:
 	env.environment = e
 	add_child(env)
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-	cam.size = 30
+	cam.size = 44
 	add_child(cam)
 	_place_camera()
 
