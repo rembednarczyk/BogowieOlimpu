@@ -70,7 +70,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v33 (version field; empty milestone record), monuments L-092.
     // 2026-11-26: save format v34 (version field; no companies here), gods' companies Z:140.
     // 2026-11-26: save format v35 (version field; nothing stockpiled), Z:80 and Z:72.
-    const std::uint64_t kGolden = 0x60c7cd08c93ad553ULL;
+    // 2026-11-26: save format v36 (version field; towers not manned), Z:146.
+    const std::uint64_t kGolden = 0x1da393e55363ded0ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -218,7 +219,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v33 (milestone record; Population and Happiness monuments by milestone), L-092.
     // 2026-11-26: save format v34 (an empty nation per company; no sanctuary of Ares or Artemis here), Z:140.
     // 2026-11-26: save format v35 (Not Buying flag per stall; nothing stockpiled), Z:72, Z:80.
-    const std::uint64_t kGolden = 0x9e1d64222d7ab798ULL;
+    // 2026-11-26: save format v36 (Man All flag; no towers here), Z:146.
+    const std::uint64_t kGolden = 0x739814202e098cb3ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

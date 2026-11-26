@@ -430,6 +430,7 @@ Dictionary BoSimulation::get_scenario() const {
     d["requests"] = requests;
     d["won"] = s.won;
     d["lost"] = sim_->state().episode_lost;
+    d["towers_manned"] = sim_->state().towers_manned;
     d["debt_days"] = static_cast<int64_t>(sim_->state().debt_days);
     return d;
 }
@@ -535,6 +536,12 @@ void BoSimulation::set_stockpile(const String& good, bool on) {
 void BoSimulation::set_not_buying(int64_t stall, bool on) {
     if (sim_ && stall > 0) {
         sim_->issue(bo::core::SetNotBuying{static_cast<std::uint32_t>(stall), on});
+    }
+}
+
+void BoSimulation::man_towers(bool on) {
+    if (sim_) {
+        sim_->issue(bo::core::ManTowers{on});
     }
 }
 
@@ -1044,6 +1051,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_stockpile", "good", "on"), &BoSimulation::set_stockpile);
     ClassDB::bind_method(D_METHOD("set_not_buying", "stall", "on"), &BoSimulation::set_not_buying);
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
+    ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
     ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);
     ClassDB::bind_method(D_METHOD("start_adventure", "data_dir", "path"), &BoSimulation::start_adventure);
     ClassDB::bind_method(D_METHOD("continue_adventure"), &BoSimulation::continue_adventure);

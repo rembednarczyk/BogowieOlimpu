@@ -128,7 +128,7 @@ void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<
     }
     const UnitStats& shot = rabble->second.units.at("rabble");
     for (auto& [id, b] : st.city.buildings.items) {
-        if (b.type != "tower" || b.staffing_percent == 0 || b.cursed_days > 0) {
+        if (b.type != "tower" || !st.towers_manned || b.staffing_percent == 0 || b.cursed_days > 0) {
             continue;
         }
         if (b.cooldown > 0) {

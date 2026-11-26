@@ -271,6 +271,7 @@ void write_world(ByteWriter& w, const WorldState& s) {
     for (const std::string& g : s.stockpiled) {
         w.str(g);
     }
+    w.u8(s.towers_manned ? 1 : 0);  // since v36
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -371,6 +372,11 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
         }
         s.stockpiled.insert(g);
     }
+    std::uint8_t manned = 0;
+    if (version >= 36 && !r.u8(manned)) {
+        return false;
+    }
+    s.towers_manned = manned != 0;
     return true;
 }
 

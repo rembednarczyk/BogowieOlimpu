@@ -121,6 +121,8 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, SetNotBuying>) {
                 w.u32(cmd.building);
                 w.u8(cmd.on ? 1 : 0);
+            } else if constexpr (std::is_same_v<T, ManTowers>) {
+                w.u8(cmd.on ? 1 : 0);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -248,6 +250,14 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             }
             c.on = on != 0;
             out = c;
+            return true;
+        }
+        case 28: {  // since v36 (Z:146)
+            std::uint8_t on = 0;
+            if (!r.u8(on)) {
+                return false;
+            }
+            out = ManTowers{on != 0};
             return true;
         }
         case 27: {  // since v35 (Z:72)

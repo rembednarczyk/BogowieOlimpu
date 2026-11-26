@@ -103,10 +103,20 @@ constexpr std::size_t kGodHelp = 5;  // v31: Zeus and Ares flags, Talos days
 
 constexpr std::size_t kTradeCurses = 8;  // v32: caravan and ship curse days
 
-constexpr std::size_t kStockpiled = 4;  // v35: no goods kept (the end of the world block)
+constexpr std::size_t kStockpiled = 4;  // v35: no goods kept
+
+constexpr std::size_t kTowersManned = 1;  // v36: Man All flag (the end of the world block)
+
+// The save without the v36 Man All flag: the layout of v35.
+std::vector<std::uint8_t> as_v35(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kTowersManned), end);
+    return bytes;
+}
 
 // The save without the v35 stockpile: the layout of v33 and v34 (v34 adds only per-company fields).
 std::vector<std::uint8_t> as_v34(std::vector<std::uint8_t> bytes) {
+    bytes = as_v35(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kStockpiled), end);
     return bytes;
@@ -209,6 +219,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v35(a.save()), 35, h);
     check_load(as_v34(a.save()), 34, h);
     check_load(as_v34(a.save()), 33, h);
     check_load(as_v32(a.save()), 32, h);

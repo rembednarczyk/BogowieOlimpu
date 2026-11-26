@@ -97,6 +97,11 @@ struct SetNotBuying {
     bool on = true;
 };
 
+// Man All (Z:146): sentries to every tower, or back home.
+struct ManTowers {
+    bool on = true;
+};
+
 // Army (Z:137-139): muster a company, move its standard, send its soldiers home. `company` indexes the
 // companies in MilitaryState.
 struct MusterCompany {
@@ -167,7 +172,7 @@ using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, 
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying>;
+                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

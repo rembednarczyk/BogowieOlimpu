@@ -260,6 +260,7 @@ for y in list(range(8, 9)) + list(range(14, 50)):
         put("wall", x, y, day=ARMY)
 put("gatehouse", 73, 9, rot=1, day=ARMY)
 put("tower", 74, 22, day=ARMY + 1)
+steps.append({"day": ARMY + 2, "man_towers": True})  # Man All: the generals send sentries (Z:146)
 put("tower", 74, 44, day=ARMY + 1)
 put("horse_ranch", 56, 46, day=ARMY)
 put("maintenance_office", 64, 46, day=ARMY)

@@ -78,6 +78,8 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetTradeOrder{0, o.at("good").get<std::string>(), o.value("import", 0U) > 0, o.value("import", 0U),
                           o.contains("export_keep"), o.value("export_keep", 0U)},
             pos_of(s.at("at")));
+    } else if (s.contains("man_towers")) {
+        add(ManTowers{s.at("man_towers").get<bool>()});
     } else if (s.contains("stockpile")) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {

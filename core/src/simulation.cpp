@@ -322,6 +322,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const Pray&) { apply_myth_command(command, index); },
                    [&](const SetStockpile&) { apply_stock_command(command, index); },  // Z:80
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
+                   [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});

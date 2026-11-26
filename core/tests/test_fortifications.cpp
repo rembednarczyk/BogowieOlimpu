@@ -112,7 +112,10 @@ TEST_CASE("invaders walled off break through a wall or the gate, then march on (
     CHECK(result == 3);  // nobody defended the Palace
 }
 
-TEST_CASE("a manned tower shoots the invaders in range (Z:146, L-117)") {
+namespace {
+
+// Invaders' total hit points after 8 days next to a tower; `man`: the Man All order was given.
+std::int64_t invader_hp_after_tower(bool man) {
     auto sim = walled();
     for (int y = 13; y < 16; ++y) {
         sim.issue(PlaceBuilding{"wall", 16, y});
@@ -123,18 +126,23 @@ TEST_CASE("a manned tower shoots the invaders in range (Z:146, L-117)") {
     sim.issue(PlaceRoad{17, 11});
     sim.step(1);
     sim.issue(PlaceBuilding{"tower", 15, 13});
+    if (man) {
+        sim.issue(ManTowers{true});
+    }
     sim.issue(StartInvasion{"greek", 5});
     sim.step(1);
-    std::int64_t hp_before = 0;
-    for (const auto& [id, w] : sim.state().walkers.items) {
-        hp_before += w.job == WalkerJob::Invade ? w.hp : 0;
-    }
     sim.run_days(8);
     std::int64_t hp_after = 0;
     for (const auto& [id, w] : sim.state().walkers.items) {
         hp_after += w.job == WalkerJob::Invade ? w.hp : 0;
     }
-    CHECK(hp_after < hp_before);
+    return hp_after;
+}
+
+}  // namespace
+
+TEST_CASE("a manned tower shoots the invaders in range; without Man All it stays silent (Z:146, L-117)") {
+    CHECK(invader_hp_after_tower(true) < invader_hp_after_tower(false));
 }
 
 TEST_CASE("a trireme wharf builds a trireme from wood and armor, one at a time (Z:141, L-117)") {

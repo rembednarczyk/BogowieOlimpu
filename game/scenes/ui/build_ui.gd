@@ -266,6 +266,11 @@ func refresh_report() -> void:
 			keep.set_pressed_no_signal(kept.has(g))
 			row.add_child(keep)
 			report_box.add_child(row)
+	var man := _button("ui.man_all", func(): game.sim.man_towers(not game.sim.get_scenario()["towers_manned"]),
+		Vector2(240, CELL.y))  # Man All (Z:146): sentries to every tower
+	man.toggle_mode = true
+	man.set_pressed_no_signal(sc.get("towers_manned", false))
+	report_box.add_child(man)
 	report_box.add_child(_label(tr("ui.requests"), 20))
 	var requests: Array = sc.get("requests", [])
 	if requests.is_empty():
