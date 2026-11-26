@@ -1,5 +1,17 @@
 # Architektura symulacji
 
+Reguły gry: `docs/gameplay/`. Zasady inżynierskie: `docs/PRAKTYKI.md` (rozdziały 2-4). Ten plik opisuje kształt symulacji.
+
+## Wejście i wyjście
+
+- **Komendy** (wzorzec Command): jedyne wejście. Gracz, autopilot testowy, skrypt scenariusza i AI przywódców używają tych samych komend. Powtórka = ziarno + log komend.
+- **Zdarzenia** (Observer / Event Queue): jedyne wyjście dla prezentacji (render, audio, HUD, haptyka).
+- **Strumienie RNG**: osobne dla migracji, zagrożeń budowlanych, zarazy, przestępczości, bogów, świata, potworów, generacji mapy.
+
+## Kolejność systemów w ticku (robocza)
+
+Jedna jawna tablica, np.: komendy → kalendarz (miesiąc, żniwa, roczne limity handlu, igrzyska) → imigracja/emigracja → przydział pracowników (priorytety sektorów) → produkcja → logistyka (doręczyciele, rozkazy magazynów, vendorzy) → chodzicy (ruch, obsługa w zasięgu) → zużycie dóbr w domach → ewolucja i regres domów → higiena, niepokoje, zagrożenia → religia (ofiary, sanktyfikacja, wizyty, gniew) → wojsko → świat (prośby, opinie, trybut, handel) → cele scenariusza → zdarzenia.
+
 ## Zasady
 
 1. **Separacja.** Rdzeń symulacji to czysta biblioteka bez zależności od silnika. Rendering, audio i UI czytają stan symulacji i wysyłają do niej komendy.

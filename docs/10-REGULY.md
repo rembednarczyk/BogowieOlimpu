@@ -27,13 +27,13 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 
 ## Reguły
 
-### R-001 [OGÓLNE] Wierność mechanikom gatunku
-- Status: propozycja
-- Źródło: decyzja autora 2026-11-26 (pierwsza wiadomość)
-- Treść: Mechaniki rozgrywki odtwarzają działanie gry referencyjnej i jej dodatku. Odstępstwa są dopuszczalne tylko jako usunięcie ograniczeń sprzętowych lub poprawa wygody i czytelności.
-- Uzasadnienie: autor oczekuje, że gra będzie działać jak referencja.
-- Wpływ na: `04-MECHANIKI.md`, `03-ANALIZA-REFERENCJI.md`.
-- Historia: 2026-11-26 utworzona
+### R-001 [OGÓLNE] Mechanika 1:1 z referencją
+- Status: obowiązuje
+- Źródło: decyzja właściciela 2026-11-26 ("Domyślnie mechanika ma być 1:1 w całej grze. Później będziemy rozbudowywać"); S-001, S-002
+- Treść: Mechaniki rozgrywki odtwarzają 1:1 grę referencyjną i dodatek według `docs/gameplay/`. Każde odstępstwo ma wpis w `docs/ODSTEPSTWA.md`; rozbudowa wymaga nowej reguły.
+- Uzasadnienie: wymaganie właściciela.
+- Wpływ na: `docs/gameplay/`, `data/`, `04-MECHANIKI.md`, testy zgodności.
+- Historia: 2026-11-26 utworzona jako propozycja; 2026-11-26 obowiązuje po potwierdzeniu właściciela, treść zaostrzona do 1:1
 
 ### R-002 [OGÓLNE] Własna tożsamość
 - Status: propozycja
@@ -58,3 +58,60 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Uzasadnienie: autor chce gry bez ograniczeń sprzętowych oryginału.
 - Wpływ na: `05-SYMULACJA.md`, `07-TECHNOLOGIA.md`.
 - Historia: 2026-11-26 utworzona
+
+### R-005 [MIASTO] Droga jako warunek działania
+- Status: obowiązuje
+- Źródło: S-001 (Z:24-25)
+- Treść: Każdy budynek wymaga przylegania do drogi, z wyjątkami: struktury estetyczne, tereny rekreacyjne, pomniki, mury, drzewa i krzewy sadów, zwierzęta hodowlane.
+- Uzasadnienie: fundament logistyki gatunku.
+- Wpływ na: walidacja budowy, `data/buildings.json` (`requires_road`).
+- Historia: 2026-11-26 utworzona
+
+### R-006 [CHODZIKI] Dwa typy chodzików i blokady
+- Status: obowiązuje
+- Źródło: S-001 (Z:19-20, Z:25-26)
+- Treść: Chodzik losowy zawraca na Roadblock, chodzik celowy przez niego przechodzi. Wykonawcy kultury i nauki są celowi w drodze ze szkoły do miejsca występu i losowi po wyjściu z miejsca występu.
+- Uzasadnienie: mechanika sterowania pokryciem usług.
+- Wpływ na: `data/walkers.json`, system chodzików.
+- Historia: 2026-11-26 utworzona
+
+### R-007 [DOMY] Regres do najwyższego spełnionego poziomu
+- Status: obowiązuje
+- Źródło: S-001 (Z:31-32, Z:34)
+- Treść: Dom bez wymaganego dobra spada do najwyższego poziomu, którego wymagania spełnia (Townhouse bez żywności staje się Hut). Dom elity bez żywności, wełny, oliwy, kultury albo wysokiej atrakcyjności zostaje opuszczony.
+- Uzasadnienie: kluczowe napięcie ekonomii.
+- Wpływ na: system ewolucji domów, `data/housing.json`.
+- Historia: 2026-11-26 utworzona
+
+### R-008 [EKONOMIA] Żywność tylko ze spichlerza, pszenica w magazynie tylko dla koni
+- Status: obowiązuje
+- Źródło: S-001 (Z:40, Z:68-71, Z:148)
+- Treść: Food vendor pobiera żywność wyłącznie z Granary i z importu; pszenica w Storehouse służy tylko Horse Ranch; Horse Ranch nigdy nie bierze z Granary.
+- Uzasadnienie: rozdzielenie łańcuchów żywności i koni.
+- Wpływ na: logistyka, `data/goods.json`.
+- Historia: 2026-11-26 utworzona
+
+### R-009 [EKONOMIA] Towar na eksport i towar gromadzony są wyłączone z użytku
+- Status: obowiązuje
+- Źródło: S-001 (Z:78-80)
+- Treść: Towar w budynku handlowym ustawionym na sprzedaż oraz towar oznaczony do gromadzenia nie mogą być użyte przez przemysł, budowy ani vendorów (peddler może sprzedać zapas już będący w Agorze).
+- Uzasadnienie: decyzje alokacyjne gracza.
+- Wpływ na: logistyka, handel.
+- Historia: 2026-11-26 utworzona
+
+### R-010 [RELIGIA] Ofiary warunkiem działania sanktuarium
+- Status: obowiązuje
+- Źródło: S-001 (Z:124), S-002 (P:22)
+- Treść: Kapłani pobierają kozy, owce, bydło, a w ich braku żywność z Granary. Długi brak ofiar wyłącza korzyści sanktuarium.
+- Uzasadnienie: koszt utrzymania łaski boga.
+- Wpływ na: system religii, `data/gods.json`.
+- Historia: 2026-11-26 utworzona
+
+### R-011 [PROCES] Praktyki projektu
+- Status: obowiązuje
+- Źródło: S-003, decyzja właściciela 2026-11-26
+- Treść: Obowiązują zasady z `docs/PRAKTYKI.md`; skrót w `CLAUDE.md`.
+- Uzasadnienie: doświadczenie z trzech projektów właściciela.
+- Wpływ na: cały proces i kod.
+- Historia: 2026-11-26 utworzona
+

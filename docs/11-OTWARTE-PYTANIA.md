@@ -1,30 +1,34 @@
 # Otwarte pytania
 
-Pytania blokujące oznaczamy **[B]**. Po decyzji przenosimy odpowiedź do reguły w `10-REGULY.md` i usuwamy pytanie z listy (z odnośnikiem do reguły).
+Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzji odpowiedź trafia do `DECYZJE.md` albo do reguły w `10-REGULY.md`, a pytanie dostaje dopisek z odnośnikiem.
 
 ## Produkt
 
-1. **[B]** Model biznesowy: premium, premium z darmowym demo, free-to-play? Założenie robocze: premium.
-2. **[B]** Platformy startowe i kolejność: Android, iOS, PC razem czy etapami?
-3. Zakres wydania 1.0: tylko odpowiednik gry podstawowej, czy od razu treści na wzór dodatku?
-4. Ostateczny tytuł gry (czy "Bogowie Olimpu" zostaje) i wersje językowe na start.
-5. Tryb wieloosobowy (wspólne miasto, handel między graczami, rankingi): tak, nie, później?
+1. **[B]** Model biznesowy. Rekomendacja: premium (jednorazowy zakup), bez mechanik pay-to-win.
+2. **[B]** Platformy i kolejność. Rekomendacja: Android (Capacitor) jako pierwszy, potem przeglądarka/PC, potem iOS.
+3. Zakres wydania 1.0. Rekomendacja: odpowiednik gry podstawowej; kultura atlantydzka jako pierwsze rozszerzenie (zgodnie z `04-MECHANIKI.md`).
+4. Ostateczny tytuł i języki startowe. Rekomendacja: robocze "Bogowie Olimpu", PL i EN od pierwszego tekstu.
+5. Tryb wieloosobowy. Rekomendacja: później; determinizm z log komend zostawia tę drogę otwartą.
 
 ## Rozgrywka
 
-6. **[B]** Jak wiernie odwzorowujemy zachowanie chodzików losowych (z ich wadami) i jakie usprawnienia dopuszczamy?
-7. Perspektywa: klasyczna izometria z kamerą obracaną o 90°, czy swobodna kamera 3D?
-8. Czy zachowujemy przeniesienie dorobku między epizodami kampanii?
-9. Poziom trudności: czy dodajemy tryb łagodny (bez klęsk, bez gniewu bogów)?
-10. Czy rozszerzamy kampanię o mity spoza gry referencyjnej?
+6. ~~Jak wiernie odwzorowujemy chodzików losowych?~~ Rozstrzygnięte: 1:1 (R-001). Algorytm to luka L-001.
+7. Kamera: obrót co 90° jak w referencji czy swobodny? Rekomendacja: obrót co 90° plus płynny zoom (zgodność z czytelnością siatki), swobodny obrót do sprawdzenia w prototypie.
+8. ~~Przenoszenie dorobku między epizodami?~~ Rozstrzygnięte: 1:1, miasto macierzyste zamrożone podczas kolonizacji (Z:17).
+9. Tryb łagodny (bez klęsk i gniewu bogów). Rekomendacja: później, jako rozbudowa; referencja ma ustawienie trudności (L-091).
+10. Mity spoza referencji w kampanii. Rekomendacja: tak, kampanie piszemy sami (R-002), mechanika ta sama.
+16. **[B]** Limit 20 kompanii (Z:136) a R-004 (brak sztucznych limitów). Limit wpływa na balans walki, nie tylko na sprzęt. Rekomendacja: zostawić 20 jako wartość referencyjną w danych (1:1), zmiana jako przyszła rozbudowa.
+17. **[B]** Nazewnictwo w grze. Instrukcje używają nazw w większości ogólnych lub mitologicznych (Granary, Agora, Hero's Hall). Rekomendacja: lista kontrolna z `02-ORYGINALNOSC.md` dla każdej nazwy; nazwy z mitologii i historii zostają, wymyślone przez twórców referencji (np. nazwa paktu atlantydzkiego) zastępujemy.
+18. Kolejność dostaw tam, gdzie instrukcja milczy (L-019). Rekomendacja: przyjąć kolejność "potrzebujący budynek przetwórczy → eksport → magazyn" jako założenie robocze.
 
 ## Technologia
 
-11. **[B]** Wybór silnika (rekomendacja robocza: Unity 6 URP, patrz `07-TECHNOLOGIA.md`).
-12. Urządzenie referencyjne "średnie" do budżetów wydajności.
-13. Zapis w chmurze: własny backend czy usługi platform (Google Play Games, iCloud, Steam Cloud)?
+11. **[B]** Silnik i stos. Rekomendacja: TypeScript + renderer webowy (Babylon.js albo Three.js) wybrany prototypem pomiarowym, Capacitor; uzasadnienie w `07-TECHNOLOGIA.md` i `DECYZJE.md`.
+12. **[B]** Telefon odniesienia do budżetów. Rekomendacja: telefon właściciela, na którym testowane były poprzednie gry (znane wyniki pomiarów).
+13. Zapis w chmurze. Rekomendacja: najpierw lokalny zapis z eksportem pliku; usługi platform później.
 
-## Prawo i zespół
+## Źródła i prawo
 
-14. Konsultacja prawna granic inspiracji przed fazą 3.
-15. Skład zespołu i budżet: kto robi grafikę, audio, kod? Wpływa na zakres "AAA".
+14. Konsultacja prawna granic inspiracji przed fazą 3. Rekomendacja: tak, przed publicznym materiałem promocyjnym.
+15. Skład zespołu i budżet na grafikę i audio. Wpływa na zakres "AAA" z `01-WIZJA.md`.
+19. **[B]** Źródła liczb do luk P0 (`gameplay/99-luki.md`). Rekomendacja: właściciel dostarcza tabele społeczności lub dane z plików gry; alternatywnie pomiary z nagrań. Bez nich faza 1 startuje na założeniach roboczych strojonych audytem.

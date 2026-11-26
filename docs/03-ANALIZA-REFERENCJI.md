@@ -1,51 +1,46 @@
 # Analiza referencji
 
-Notatki analityczne o grze referencyjnej i pokrewnych tytułach. Służą zrozumieniu, dlaczego mechaniki działają. Projekt własny opisuje `04-MECHANIKI.md`.
-
-Stan: szkic z wiedzy ogólnej. Do uzupełnienia i weryfikacji na podstawie źródeł od autora (`09-ZRODLA.md`). Pozycje bez źródła mają oznaczenie [do weryfikacji].
+Notatki analityczne: dlaczego mechaniki referencji działają i gdzie gracze napotykają tarcie. Same reguły opisuje `docs/gameplay/` (źródła S-001, S-002).
 
 ## Rodowód gatunku
 
-Seria citybuilderów "z chodzikami" rozwijana pod koniec lat 90. i na początku 2000: Caesar III, Faraon (z Kleopatrą), Zeus (z Posejdonem), Emperor: Rise of the Middle Kingdom. Wspólny trzon: siatka izometryczna, domy ewoluujące od potrzeb, chodziki z zasięgiem, łańcuchy produkcji, scenariusze z celami.
+Seria citybuilderów "z chodzikami" z przełomu wieków: Caesar III, Pharaoh (z Cleopatrą), Zeus (z Poseidonem), Emperor. Wspólny trzon: siatka izometryczna, domy ewoluujące od potrzeb, chodzicy z zasięgiem, łańcuchy produkcji, scenariusze z celami.
 
-Współczesni spadkobiercy i remastery warte przejrzenia pod kątem rozwiązań UX: Pharaoh: A New Era, Nebuchadnezzar, Builders of Egypt, Anno, Banished, Farthest Frontier, Manor Lords, Kingdoms and Castles.
+Notatki projektantów referencji (Z:183-187) mówią wprost o kierunku względem poprzedników: gra miała być **mniej poważna, krótsza w rozgrywce i bardziej wyrozumiała dla gracza**, z mitologią w centrum, a gracz jest niezależnym władcą, który nie odpowiada przed nikim.
 
-## Co wyróżnia grę referencyjną na tle serii [do weryfikacji]
+Współczesne tytuły warte przejrzenia pod kątem UX: Pharaoh: A New Era, Nebuchadnezzar, Builders of Egypt, Anno, Banished, Farthest Frontier, Manor Lords. Open-source'owe reimplementacje gier z tej rodziny (Julius, Augustus, Akhenaten) mogą pomóc zamknąć luki w zachowaniu chodzików; ich kod jest na GPL (patrz `PRAKTYKI.md`, rozdział 1).
 
-1. **Brak religii jako osobnej potrzeby domów.** Religia działa na poziomie całego miasta: sanktuaria, łaska bogów, przychylność i gniew. Domy nie potrzebują świątyni w zasięgu.
-2. **Mniej przymusu z chorobami i przestępczością.** Gra kładzie nacisk na budowę i mitologię, kosztem karania gracza.
-3. **Dwa typy zabudowy mieszkalnej:** zwykłe domy oraz rezydencje elity, które dostarczają żołnierzy ciężkiej piechoty i jazdy.
-4. **Struktura "wszystko w jednym kafelku" dla dystrybucji:** rynek z wyspecjalizowanymi stoiskami, które sprzedawcy obnoszą po domach.
-5. **Produkcja żywności rozproszona:** kilka typów żywności, zależnych od mapy (rośliny, zwierzęta hodowlane, połów, polowanie).
-6. **Bogowie z własnym zestawem działań:** przybycie, błogosławieństwo, pomoc, gniew, zsyłanie potworów, walka bogów między sobą.
-7. **Herosi przyzywani przez spełnienie warunków miasta** (konkretne towary, liczba budynków, poziom kultury itp.), wysyłani do walki z potworami.
-8. **Kultura oparta na trzech dziedzinach** (filozofia, teatr/dramat, sport) oraz zawodach i igrzyskach.
-9. **Mapa świata z relacjami:** sojusznicy, wasale, rywale, kolonie; prośby o pomoc, daniny, inwazje.
-10. **Kampanie jako ciąg epizodów** budujących miasto stołeczne i kolonie, z możliwością przenoszenia części dorobku.
-11. **Dodatek:** nowa kultura z własną drogą rozwoju (zaawansowane budowle, naukowa ścieżka, inne potrzeby elity), nowe bogowie i potwory, rozbudowane kampanie, zabudowa wymagająca wcześniejszego przygotowania terenu.
+## Co wyróżnia referencję (zweryfikowane z instrukcją)
 
-## Pytania analityczne do źródeł
+1. **Religia na poziomie miasta.** Domy nie potrzebują świątyń. Bogowie działają przez sanktuaria, ofiary, modlitwy, sanktyfikację, wizyty i gniew (Z:115-133).
+2. **Choroby i przestępczość istnieją, ale są łagodniejsze**: zaraza z kwarantanną, przestępcy celują głównie w domy elity (Z:84-89).
+3. **Dwie klasy mieszkańców**: lud (7 poziomów, rabble) i elita (4 poziomy, hoplici i jeźdźcy z ekwipunku dostarczanego przez Agorę) (Z:29-35).
+4. **Agora ze stoiskami**: vendorzy zaopatrują Agorę, peddler roznosi; Agora jest prywatna, miasto nie zarabia na sprzedaży (Z:69-73).
+5. **Żywność zróżnicowana mapą**: trzy uprawy z kalendarzem żniw, sery, ryby, jeżowce, dziczyzna (Z:39-48).
+6. **Bogowie z pełnym repertuarem**: hierarchia, sanktuaria wymagające marmuru, drewna i rzeźb, ofiary ze zwierząt, sanktyfikacja budynków, modlitwy, wyrocznie, zadania, ataki z celem zależnym od domeny, potwory (Z:115-133).
+7. **Herosi** przyzywani spełnieniem wymagań Hero's Hall, każdy pokonuje dwa konkretne potwory (Z:129-131).
+8. **Kultura z czterech rodzajów** (filozofia, atletyka, dramat, zawody) i czteroletni cykl Igrzysk Panhelleńskich (Z:105-113).
+9. **Mapa świata z pamięcią**: opinia przywódców z historią interakcji, prośby z terminami, dary z malejącą wartością, ataki i rajdy z reakcją grup (Z:167-178).
+10. **Kolonie** z zamrożonym miastem macierzystym (Z:17).
+11. **Dodatek**: druga kultura z nauką w miejsce kultury, hipodromem, piramidami, fregatami z "ogniem", nowymi bogami, potworami i herosami (P:3-29).
 
-Dla każdej mechaniki chcemy zebrać:
+Korekta wcześniejszej wersji tego pliku: dodatek **nie** wprowadza "przygotowania terenu pod zabudowę"; to było błędne założenie.
 
-- Dokładne wartości: zasięgi chodzików, pojemności, czasy produkcji, koszty, liczba pracowników.
-- Wymagania kolejnych poziomów domów i ich pojemność.
-- Formuły: atrakcyjność, przychylność bogów, ryzyko pożaru i zawalenia, podatki, ceny handlowe.
-- Warunki przyzwania herosów, mechanika walki herosa z potworem.
-- Co gracze uważają za frustrujące (kandydaci do poprawy) i co za esencję (do zachowania).
+## Esencja do zachowania
 
-## Lista "esencja do zachowania" (wstępna)
+- Obserwowanie ewolucji domu po zaspokojeniu potrzeb; dotkliwy regres (Townhouse bez żywności spada do Hut).
+- Planowanie bloków mieszkalnych otoczonych usługami i ozdobami.
+- Sanktuarium jako długi, widowiskowy projekt.
+- Przybycie boga lub herosa jako wydarzenie.
+- Mapa świata, która pamięta.
+- Widoki specjalne, które pozwalają zrozumieć miasto.
 
-- Satysfakcja z obserwowania, jak dom ewoluuje, gdy zaspokoisz jego potrzeby.
-- Planowanie bloków mieszkalnych otoczonych usługami.
-- Sanktuarium jako długi, widowiskowy projekt budowlany.
-- Przyjście boga do miasta jako wydarzenie.
-- Mapa świata, która daje poczucie, że miasto jest częścią większego świata.
+## Tarcie do zbadania (kandydaci na rozbudowę po wydaniu 1:1)
 
-## Lista "frustracje do naprawy" (wstępna)
+Ponieważ R-001 każe odwzorować mechanikę 1:1, poniższe zapisujemy jako pomysły na później (każdy wymagałby reguły i wpisu w `ODSTEPSTWA.md`):
 
-- Chodziki losowe skręcające w złą stronę i omijające domy.
-- Mało czytelne przyczyny regresu domów.
-- Brak cofania, kopiowania i szablonów.
-- Mikrozarządzanie magazynami.
-- Nieczytelne komunikaty o zagrożeniach i prośbach z mapy świata.
+- Chodzicy losowi, którzy omijają domy; brak kontroli trasy poza Roadblock.
+- Pułapka importu: kupiec patrzy tylko na zapas w swoim budynku (Z:78).
+- Tracenie niezebranych owoców po żniwach i wypas blokujący łąkę.
+- Mikrozarządzanie rozkazami magazynów.
+- Niejasne wymagania herosów do czasu postawienia Hero's Hall.

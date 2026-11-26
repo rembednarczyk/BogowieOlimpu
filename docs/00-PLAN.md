@@ -9,13 +9,14 @@ Plan jest żywy. Po każdej partii źródeł aktualizujemy fazy, ryzyka i kolejn
 Cel: zebrać źródła, wydestylować reguły, zamknąć kluczowe decyzje.
 
 - [x] Szkielet dokumentacji i zasady pracy (`CLAUDE.md`).
-- [ ] Rejestr źródeł wypełniony materiałami od autora (`09-ZRODLA.md`).
-- [ ] Reguły projektowe R-001+ (`10-REGULY.md`).
-- [ ] Analiza referencji uzupełniona o dane liczbowe (`03-ANALIZA-REFERENCJI.md`).
-- [ ] Decyzje: silnik, perspektywa kamery, model biznesowy, platformy startowe (`11-OTWARTE-PYTANIA.md`).
-- [ ] Katalog mechanik zamknięty w wersji 1.0 (`04-MECHANIKI.md`).
+- [x] Instrukcje gry i dodatku przeczytane; specyfikacja 1:1 w `docs/gameplay/` i `data/` (S-001, S-002).
+- [x] Praktyki projektu z wytycznych właściciela (`docs/PRAKTYKI.md`, S-003); dziennik decyzji, backlog, ADR, rejestry błędów i odstępstw.
+- [x] Reguły R-001 do R-011.
+- [ ] Zamknięcie luk P0 (`docs/gameplay/99-luki.md`) albo zgoda na założenia robocze.
+- [ ] Decyzje blokujące: stos i silnik, telefon odniesienia, model biznesowy, platformy (`11-OTWARTE-PYTANIA.md`).
+- [ ] Prototyp pomiarowy renderera (`07-TECHNOLOGIA.md`).
 
-Kryterium wyjścia: każda mechanika z katalogu ma opis, źródło lub uzasadnienie i priorytet (MVP / v1 / później).
+Kryterium wyjścia: stos wybrany na pomiarze, luki P0 zamknięte lub zastąpione jawnymi założeniami, szkielet kodu z bramkami z `PRAKTYKI.md` rozdział 20.
 
 ### Faza 1: Prototyp symulacji (bez grafiki)
 
@@ -27,8 +28,9 @@ Cel: udowodnić, że rdzeń symulacji działa i daje dobrą rozgrywkę.
 - Łańcuch żywności: farma, magazyn zboża, agora, dom.
 - Jeden łańcuch przemysłowy i handel z jednym miastem.
 - Widok debugowy 2D (kolorowe kafle), zapis i odczyt gry, testy deterministyczne.
+- Test zgodności ze specyfikacją dla każdej zaimplementowanej reguły, złoty hash na scenariuszu 32×32, autopilot i audyty (pokrycie, logistyka, ekonomia, soak).
 
-Kryterium wyjścia: miasto na 2000 mieszkańców działa stabilnie przez 2 godziny gry, a tester rozumie przyczynę każdego problemu miasta.
+Kryterium wyjścia: autopilot buduje miasto na 2000 mieszkańców ze scenariusza testowego na 3 ziarnach, soak 100 lat bez NaN i blokady, wszystkie bramki CI zielone.
 
 ### Faza 2: Vertical slice
 

@@ -1,39 +1,52 @@
 # Technologia
 
-Stan: do decyzji. Poniżej opcje i rekomendacja robocza.
+Stan: rekomendacja czeka na decyzję właściciela (`11-OTWARTE-PYTANIA.md`, pyt. 11). Zasada z `PRAKTYKI.md`: **wybór silnika wynika z pomiaru, nie z rankingu**.
 
 ## Wymagania
 
-- Android i iOS jako platformy pierwszorzędne, PC (Steam) jako drugorzędna.
-- Tysiące animowanych postaci, setki budynków, duża mapa.
-- Deterministyczna symulacja w osobnym wątku.
-- Szybkie iteracje designu (hot reload danych).
+- Android jako platforma pierwszorzędna; iOS i PC w kolejnych etapach.
+- Tysiące animowanych postaci i budynków, duża mapa.
+- Deterministyczna symulacja testowana bez GPU.
+- Praca agentów w sesjach chmurowych: testy, zrzuty i buildy muszą działać w kontenerze bez GPU i bez edytorów z interfejsem graficznym.
 
-## Opcje silnika
+## Rekomendacja
 
-| Silnik | Plusy | Minusy |
+| Warstwa | Wybór | Powód |
 |---|---|---|
-| Unity 6 (URP) + DOTS/ECS | Dojrzały mobile, duży rynek assetów, ECS do masowej symulacji, instancjonowanie GPU | Licencjonowanie, złożoność DOTS |
-| Godot 4 | Otwarte, lekkie, brak opłat, dobre 2D/3D | Słabsza wydajność 3D na mobile, mniej narzędzi AAA |
-| Unreal Engine 5 | Najwyższa jakość grafiki, Mass Entity do tłumów | Ciężki na mobile, duże buildy, dłuższe iteracje |
-| Własny silnik (np. C++/Rust + bgfx/wgpu) | Pełna kontrola wydajności | Bardzo duży koszt i ryzyko |
+| Język | TypeScript (strict, bez `any` w domenie) | stos z trzech poprzednich gier właściciela; jedna baza kodu dla symulacji, UI i narzędzi |
+| Symulacja | czysty pakiet `domain` + `sim`, testy w Node (Vitest) | `PRAKTYKI.md` rozdział 2 i 3 |
+| Renderer | Babylon.js albo Three.js, **wybór pomiarem prototypu** | obie biblioteki znane właścicielowi; silnik za jednym modułem re-eksportów |
+| UI | warstwa DOM/HTML nad płótnem albo UI w silniku, decyzja po makietach | audyt układu skryptem na macierzy ekranów |
+| Paczka mobilna | Capacitor (Android), potem iOS | doświadczenie z poprzednich projektów; świadomość, że WebView ma koszt przeglądarki |
+| Testy wizualne | Playwright z rendererem programowym | zrzuty bez GPU w kontenerze |
+| Strażnik zależności | dependency-cruiser | reguły warstw w CI |
 
-**Rekomendacja robocza:** Unity 6 z URP. Rdzeń symulacji jako osobna biblioteka C# (bez zależności od Unity), uruchamiana w testach poza silnikiem. Rendering postaci przez GPU instancing z animacją w teksturach (vertex animation textures).
+### Prototyp pomiarowy (warunek decyzji)
 
-## Budżety wydajności (wartości robocze)
+Scena: siatka 160×160 kafli, 2 000 budynków (instancing), 3 000 animowanych postaci (animacja w teksturach lub szkieletowa z instancingiem), kamera izometryczna z zoomem. Pomiar na telefonie odniesienia: FPS, czas klatki, wywołania rysowania, temperatura po 10 min. Wariant Babylon.js i Three.js, ta sama scena.
 
-| Element | Telefon średni | Flagowiec |
+Kryterium przyjęcia: stałe 30 FPS na telefonie odniesienia przy rozdzielczości renderu ≥ 70%.
+
+### Odrzucone warianty
+
+- **Unity 6**: wcześniejsza rekomendacja robocza. Odrzucony, bo agenci w chmurze nie uruchomią edytora, a potok testów i zrzutów właściciela jest webowy.
+- **Unreal Engine 5**: ciężki na telefonie, ta sama przeszkoda z edytorem.
+- **Własny silnik natywny**: koszt i ryzyko; wytyczne właściciela wskazują, że telefon ogranicza wypełnianie pikseli, czego natywność nie zmienia.
+
+## Budżety wydajności (robocze, do potwierdzenia po wyborze urządzenia odniesienia)
+
+| Element | Telefon odniesienia | Flagowiec |
 |---|---|---|
-| FPS | 30 stałe | 60 stałe |
-| Draw calls | < 300 | < 600 |
+| FPS | 30 stałe (ogranicznik klatek domyślnie) | 60 stałe |
+| Wywołania rysowania | < 300 | < 600 |
 | Postacie na ekranie | 800 | 3 000 |
-| Pamięć RAM | < 1.5 GB | < 3 GB |
-| Rozmiar instalacji | < 2 GB z pobieranymi pakietami | jw. |
+| Tick symulacji (15 000 mieszkańców) | < 4 ms w Node na rdzeniu porównywalnym | |
+| Pamięć | < 1,5 GB | < 3 GB |
 
-Urządzenie referencyjne "średnie": do ustalenia (np. telefon z Androidem z segmentu średniego sprzed 3 lat).
+Bramką są liczby deterministyczne (wywołania rysowania, instancje, czas ticku w Node). Czas klatki pod rendererem programowym to raport.
 
 ## Narzędzia
 
-- Repozytorium danych balansu w arkuszach z eksportem do plików danych.
-- CI: testy symulacji, test powtarzalności, buildy mobilne.
-- Telemetria w testach zamkniętych (anonimowa, za zgodą).
+- Dane balansu w `data/*.json` (później ewentualnie eksport z arkusza skryptem).
+- CI: typy, lint (z zakazem losowości i czasu w domenie, limitami rozmiaru), architektura, testy; pełny zestaw z audytami na main.
+- Telemetria w testach zamkniętych tylko za zgodą, bez danych osobowych.

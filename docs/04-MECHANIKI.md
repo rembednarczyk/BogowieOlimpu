@@ -1,105 +1,30 @@
 # Katalog mechanik
 
-Projekt własny. Każda mechanika ma priorytet: **MVP** (prototyp i vertical slice), **v1** (wydanie), **później** (rozszerzenie). Wartości liczbowe są robocze, dopóki nie wskaże ich reguła z `10-REGULY.md`.
+Pełna specyfikacja rozgrywki jest w [`docs/gameplay/`](gameplay/README.md) (referencja 1:1, R-001) i w [`/data`](../data/README.md). Ten plik przypisuje systemy do faz projektu (`00-PLAN.md`).
 
-## 1. Teren i budowa
+Wcześniejsza wersja tego pliku powstała przed lekturą instrukcji i zawierała założenia sprzeczne ze specyfikacją; zastąpiona 2026-11-26 (patrz `DECYZJE.md`).
 
-- Siatka kwadratowych kafli, widok 3D z kamerą swobodną (perspektywa do decyzji). **MVP**
-- Typy terenu: łąka, żyzna ziemia, skała, las, piasek, woda słodka, morze, góry. **MVP**
-- Drogi, aleje (szersze, wyższa atrakcyjność), blokady ruchu dla chodzików losowych. **MVP**
-- Budowa natychmiastowa dla zwykłych budynków, budowa etapowa z dostawami materiałów dla monumentów. **MVP / v1**
-- Narzędzia: przeciąganie, kopiowanie układu, szablony, cofnij/ponów, kolejka budowy przy braku funduszy. **v1**
-
-## 2. Mieszkańcy i domy
-
-- Domy zwykłe: kilka poziomów ewolucji, każdy z rosnącą pojemnością i wymaganiami. **MVP**
-- Wymagania poziomów: woda, żywność, tkaniny, oliwa, dostęp do kultury, wino, atrakcyjność otoczenia, bezpieczeństwo (lista robocza). **MVP**
-- Rezydencje elity: większe, bardziej wymagające, dostarczają ciężkie jednostki wojskowe. **v1**
-- Imigracja i emigracja zależne od dostępności pracy, żywności, nastrojów. **MVP**
-- Bezrobocie i niedobór rąk do pracy, priorytety zatrudnienia według sektorów. **MVP**
-- Panel domu wyjaśniający: czego brakuje do awansu, co grozi regresem. **MVP**
-
-## 3. Chodziki
-
-- Chodziki losowe: wychodzą z budynku, poruszają się po drogach, obsługują budynki w zasięgu wzdłuż trasy. **MVP**
-- Chodziki celowe: przenoszą towary między konkretnymi budynkami. **MVP**
-- Usprawnienie względem gatunku: kontrolowane trasy (np. punkty kierunkowe lub preferencje trasy), do decyzji. **v1**
-
-## 4. Żywność
-
-- Uprawy na żyznej ziemi (zboże, warzywa), sady (oliwki, winorośl). **MVP / v1**
-- Hodowla (owce, kozy) dająca żywność i surowce (wełna, mleko/ser). **v1**
-- Połów ryb i owoców morza, polowanie. **v1**
-- Magazyn żywności, rynek, dystrybucja do domów. **MVP**
-
-## 5. Przemysł
-
-- Surowce: drewno, kamień/marmur, ruda (miedź, cyna lub od razu brąz, do decyzji), srebro jako źródło monet. **MVP / v1**
-- Przetwórstwo: tkalnia, tłocznia oliwy, winiarnia, kuźnia (broń, zbroje), rzeźbiarnia. **v1**
-- Magazyny ogólne z ustawieniami przyjmowania i oddawania towarów. **MVP**
-
-## 6. Usługi i bezpieczeństwo
-
-- Woda: studnie, fontanny. **MVP**
-- Ochrona przeciwpożarowa i konserwacja budynków (ryzyko pożaru, ryzyko zawalenia). **MVP**
-- Porządek publiczny (straż). **v1**
-- Zdrowie: lekarze, ryzyko zarazy jako wydarzenie (karanie łagodniejsze niż w starszych grach gatunku). **v1**
-
-## 7. Kultura
-
-- Trzy dziedziny kultury: filozofia, teatr, sport. Każda ma szkołę/trening i miejsce występów. **v1**
-- Zawody i igrzyska panhelleńskie na mapie świata. **później**
-
-## 8. Administracja i finanse
-
-- Pałac/siedziba władz, skarbiec, poborcy podatkowi. **MVP**
-- Podatki, płace, długi, osobisty majątek władcy (do decyzji). **v1**
-- Doradcy z raportami i nakładkami informacyjnymi. **MVP**
-
-## 9. Atrakcyjność
-
-- Każdy budynek ma wpływ na atrakcyjność otoczenia (dodatni lub ujemny) o zasięgu malejącym z odległością. **MVP**
-- Ozdoby: ogrody, posągi, kolumnady, place. **MVP**
-
-## 10. Bogowie
-
-- Panteon bogów olimpijskich, każdy z domeną (np. rolnictwo, morze, wojna, rzemiosło, handel). **MVP: 1 bóg, v1: pełny panteon**
-- Sanktuarium: monument budowany etapami, z wymaganiem materiałów i pracowników. **MVP**
-- Przychylność: rośnie z ofiar, świąt, sanktuarium; spada przy zaniedbaniu lub obrazie. **MVP**
-- Działania bogów: wizyta w mieście, błogosławieństwo (bonus do domeny), pomoc w obronie, gniew (klęska, potwór, zniszczenia). **MVP / v1**
-- Relacje między bogami: sprzymierzeni i wrodzy, wpływ na wybór sanktuariów. **v1**
-
-## 11. Herosi i potwory
-
-- Heros przybywa, gdy miasto spełni jego wymagania (budynki, towary, poziom kultury). Ma własną siedzibę. **MVP: 1 heros**
-- Potwory zsyłane przez wrogich bogów albo stałe zagrożenie scenariusza. Niszczą budynki, zabijają mieszkańców. **MVP: 1 potwór**
-- Walka heros kontra potwór z czytelną prezentacją, misje herosów na mapie świata. **v1**
-
-## 12. Wojsko
-
-- Lekka piechota z domów zwykłych, ciężka piechota i jazda z rezydencji elity. **v1**
-- Uzbrojenie wymagane do rekrutacji ciężkich jednostek. **v1**
-- Mury, wieże, bramy. **v1**
-- Flota: triery, porty wojenne. **v1**
-- Formacje i proste rozkazy, sterowanie gestami. **v1**
-
-## 13. Mapa świata
-
-- Miasta z relacjami: sojusznik, wasal, rywal, kolonia, neutralne. **v1**
-- Handel: szlaki lądowe i morskie, kupcy, ceny, limity. **MVP: 1 partner**
-- Prośby i polecenia: dostawa towarów, wysłanie wojska, pomoc w budowie. **v1**
-- Inwazje i najazdy, wyprawy wojenne gracza. **v1**
-- Daniny i ich egzekwowanie. **v1**
-
-## 14. Scenariusze i kampanie
-
-- Scenariusz: mapa, cele (populacja, sanktuarium, pokonanie potwora, poziom domów itp.), dostępne budynki, zdarzenia. **MVP**
-- Kampanie złożone z epizodów, stolica i kolonie, przenoszenie dorobku między epizodami (do decyzji). **v1**
-- Tryb swobodnej budowy. **v1**
-- Edytor scenariuszy. **później**
-
-## 15. Rozszerzenie (odpowiednik dodatku)
-
-- Nowa kultura z alternatywną drogą rozwoju: zaawansowane budowle naukowe, inne wymagania elity, bogowie morza w centrum. **później**
-- Przygotowanie terenu pod zabudowę jako dodatkowa warstwa planowania. **później**
-- Nowe bogowie, potwory, herosi, kampanie. **później**
+| System | Specyfikacja | Faza 1 (prototyp) | Faza 2 (vertical slice) | Faza 3 (treści) | Faza 5 (rozszerzenie) |
+|---|---|---|---|---|---|
+| Teren, budowa, drogi, blokady, undo | [01](gameplay/01-podstawy.md) | tak | | | |
+| Chodzicy losowi i celowi | [02](gameplay/02-chodziki.md) | tak | | | |
+| Domy zwykłe: ewolucja i regres | [03](gameplay/03-mieszkancy.md) | tak | | | |
+| Domy elity | [03](gameplay/03-mieszkancy.md) | | tak | | |
+| Migracja i popularność | [03](gameplay/03-mieszkancy.md), [13](gameplay/13-przeglad-popularnosc.md) | tak | | | |
+| Farmy, spichlerz, agora | [04](gameplay/04-zywnosc.md), [06](gameplay/06-dystrybucja-handel.md) | tak | | | |
+| Sady, hodowla, łowiectwo, rybołówstwo | [04](gameplay/04-zywnosc.md) | | tak | pełne | |
+| Surowce i warsztaty, płace, zatrudnienie | [05](gameplay/05-przemysl-praca.md) | 1 łańcuch | tak | pełne | |
+| Magazyny i rozkazy | [06](gameplay/06-dystrybucja-handel.md) | tak | | | |
+| Handel | [06](gameplay/06-dystrybucja-handel.md) | 1 partner | tak | pełny | |
+| Higiena, zaraza, niepokoje, przestępcy | [07](gameplay/07-higiena-bezpieczenstwo.md) | | tak | | |
+| Pożary, zawalenia, woda | [07](gameplay/07-higiena-bezpieczenstwo.md) | tak | | | |
+| Pałac, podatki, finanse, przeprawy | [08](gameplay/08-administracja-finanse.md) | tak | | | |
+| Kultura | [09](gameplay/09-kultura.md) | 1 rodzaj | tak | igrzyska | |
+| Bogowie, sanktuaria, ofiary, modlitwy | [10](gameplay/10-mitologia.md) | | 1 bóg | pełny panteon | Hera, Atlas |
+| Potwory i herosi | [10](gameplay/10-mitologia.md) | | 1 + 1 | pełne | nowe |
+| Wojsko lądowe, flota, fortyfikacje | [11](gameplay/11-wojsko.md) | | podstawy, 1 inwazja | pełne | jednostki atlantydzkie |
+| Estetyka i pomniki | [12](gameplay/12-estetyka.md) | atrakcyjność | tak | | piramidy |
+| Raport miasta, prośby | [13](gameplay/13-przeglad-popularnosc.md) | | tak | | |
+| Mapa świata i dyplomacja | [14](gameplay/14-swiat.md) | | | tak | |
+| Kultura atlantydzka | [15](gameplay/15-atlantyda.md) | | | | tak |
+| Przygody, epizody, kolonie | [01](gameplay/01-podstawy.md) | 1 scenariusz | 1 scenariusz | kampanie | |
