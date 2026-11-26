@@ -149,7 +149,7 @@ TEST_CASE("the demo adventure (scenarios/demo.json) parses and starts") {
     CHECK(sim.state().city.map.width() == 80);  // tools/make_demo.py
     CHECK(sim.state().trade.partners.size() == 4);
     CHECK(sim.state().scenario.goals.size() == 5);
-    CHECK(sim.state().scenario.events.size() == 8);
+    CHECK(sim.state().scenario.events.size() == 9);
 }
 
 TEST_CASE("a request fulfilled after its deadline costs 5 opinion (eZeus; owner, L-114)") {

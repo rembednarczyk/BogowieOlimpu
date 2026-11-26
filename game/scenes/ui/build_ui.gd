@@ -251,6 +251,8 @@ func refresh_report() -> void:
 		var chance: int = sc["games_chance"]
 		report_box.add_child(_label(tr("ui.games_line") % [tr("games." + sc["games"]), chance] if chance > 0
 			else tr("ui.games_not_invited") % tr("games." + sc["games"]), 18))
+	if sc.get("games_host_year", -1) >= 0:  # the right to host the Olympian games (Z:111)
+		report_box.add_child(_label(tr("ui.games_host") % (int(sc["games_host_year"]) + 1), 18))
 	report_box.add_child(_label(tr("ui.goals"), 20))
 	for g in sc.get("goals", []):
 		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))

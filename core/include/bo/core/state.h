@@ -143,7 +143,8 @@ struct WorldState {
     // Trade curses (since v32; Z:125-127): no caravans (Zeus, Hermes), no ships (Zeus, Poseidon) for some days.
     // Goods the player keeps (Z:80; since v35): not for industry, traders, sanctuary sites or agora vendors.
     std::set<std::string> stockpiled;
-    bool towers_manned = false;  // Man All (Z:146; since v36): the generals send sentries to every tower
+    bool towers_manned = false;
+    std::int32_t games_host_year = -1;  // the year the city has the right to host the Olympian games (Z:111; v37)  // Man All (Z:146; since v36): the generals send sentries to every tower
     std::uint16_t caravan_curse_days = 0;
     std::uint16_t ship_curse_days = 0;
     ScenarioState scenario;               // since v22 (module D5)

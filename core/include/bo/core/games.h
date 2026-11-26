@@ -18,6 +18,8 @@ struct GamesResult {
     std::int32_t chance = 0;  // percent
     bool invited = false;
     bool won = false;
+    bool hosted = false;      // the city hosted the Olympian games this year (Z:111)
+    bool right_lost = false;  // no working Stadium when its turn came: not invited this year (Z:111)
 };
 
 // Percent chance of the city in `game` now (0 when not invited).

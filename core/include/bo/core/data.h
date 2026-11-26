@@ -230,6 +230,8 @@ struct GamesParams {
     std::int32_t min_score = 15;
     std::int32_t apollo_multiplier_per_mille = 1500;
     std::int32_t olympian_opinion = 10;
+    std::int32_t host_opinion = 10;    // hosting (Z:111) [ZAŁOŻENIE, L-123]
+    std::int32_t host_happiness = 10;
 };
 
 // Debt (L-034, doc 24): days of continuous debt for the yearly warning, the immigration block and the loss.

@@ -277,6 +277,12 @@
    "month": 0
   },
   {
+   "type": "games_host",
+   "host_year": 8,
+   "year": 7,
+   "month": 0
+  },
+  {
    "type": "request",
    "city": "corinth",
    "good": "army",

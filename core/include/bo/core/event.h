@@ -150,6 +150,8 @@ struct GamesHeld {  // L-123: the year's Panhellenic games (Z:110-112)
     std::int32_t chance = 0;
     bool invited = false;
     bool won = false;
+    bool hosted = false;
+    bool right_lost = false;
 };
 
 struct DebtNotice {  // L-034: another year of continuous debt (eZeus debtAnniversary); immigration stops

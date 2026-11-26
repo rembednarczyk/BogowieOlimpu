@@ -130,6 +130,8 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
         }
         st.scenario.quests.push_back(q);
         ev.quests_given.push_back(e.god);
+    } else if (e.type == "games_host") {
+        st.games_host_year = static_cast<std::int32_t>(e.amount);  // the scenario grants the right (Z:110-111)
     } else if (e.type == "relation" && has_city) {
         std::string& relation = st.trade.partners[static_cast<std::size_t>(e.city)].relation;
         if (e.relation == "ally" && relation != "ally") {
@@ -215,6 +217,9 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             ev.god = e.value("god", "");
             ev.x = e.value("x", 0);
             ev.y = e.value("y", 0);
+            if (ev.type == "games_host") {
+                ev.amount = e.value("host_year", 0U);  // an Olympian year (year mod 4 = 0)
+            }
             if (ev.type == "quest") {
                 ev.amount = e.value("index", 0U);
                 ev.nation = e.value("hero", "");

@@ -184,6 +184,8 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["chance"] = static_cast<int64_t>(e.chance);
                        d["invited"] = e.invited;
                        d["won"] = e.won;
+                       d["hosted"] = e.hosted;
+                       d["right_lost"] = e.right_lost;
                    },
                    [&d](const bo::core::DebtNotice& e) {
                        d["type"] = "debt_notice";
@@ -438,6 +440,7 @@ Dictionary BoSimulation::get_scenario() const {
     d["won"] = s.won;
     d["lost"] = sim_->state().episode_lost;
     d["towers_manned"] = sim_->state().towers_manned;
+    d["games_host_year"] = sim_->state().games_host_year;  // -1: no right to host (Z:111)
     const auto year = static_cast<std::uint32_t>(sim_->state().time.year());
     for (const auto& g : catalog_->games.games) {  // this year's Panhellenic games and the city's chance (L-123)
         if (g.year_mod_4 == year % 4) {

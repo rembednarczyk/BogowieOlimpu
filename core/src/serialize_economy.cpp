@@ -272,6 +272,7 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.str(g);
     }
     w.u8(s.towers_manned ? 1 : 0);  // since v36
+    w.i32(s.games_host_year);       // since v37
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -377,7 +378,7 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
         return false;
     }
     s.towers_manned = manned != 0;
-    return true;
+    return version < 37 || r.i32(s.games_host_year);
 }
 
 }  // namespace bo::core

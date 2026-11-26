@@ -95,6 +95,7 @@ scenario = {
         {"type": "god_attack", "god": "hermes", "year": 1, "month": 8},
         {"type": "disaster", "kind": "earthquake", "x": 69, "y": 48, "radius": 1, "year": 3, "month": 6},
         {"type": "quest", "god": "hermes", "index": 0, "hero": "perseus", "year": 3, "month": 0},
+        {"type": "games_host", "host_year": 8, "year": 7, "month": 0},
         {"type": "request", "city": "corinth", "good": "army", "amount": 1, "year": 5, "month": 6,
          "deadline_months": 3},
         {"type": "monster", "monster": "medusa", "strength": 1, "target": "resources", "year": 6, "month": 0},
@@ -266,9 +267,9 @@ put("tower", 74, 44, day=ARMY + 1)
 # Stage JOBS: work for the people of the grown city (unemployment lowers the popularity, Z:159): culture in
 # the west block, more fishing, a third sawmill; wood and bronze go to Corinth.
 JOBS = 450
-put("theater", 7, 12, day=JOBS); put("drama_school", 2, 12, day=JOBS); put("infirmary", 2, 19, day=JOBS)
+put("stadium", 2, 12, day=JOBS)  # one per city (Z:109); competitors from the gymnasiums; hosting the games (Z:111)
+put("infirmary", 2, 19, day=JOBS)
 put("college", 9, 20, day=JOBS); put("gymnasium", 6, 20, day=JOBS); put("fountain", 10, 17, day=JOBS)
-put("podium", 2, 16, day=JOBS); put("watchpost", 4, 16, day=JOBS)
 for x in (30, 46):
     steps.append({"day": JOBS, "road": [x, 46, x, 47]})
     put("fishery", x - 2, 48, day=JOBS)

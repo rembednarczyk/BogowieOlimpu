@@ -83,3 +83,37 @@ TEST_CASE("L-123: the games are decided in August; a win earns the discipline's 
     }
     CHECK(monuments == won);
 }
+
+TEST_CASE("L-123: a city with the right and a working Stadium hosts the Olympian games; without one it loses the right (Z:111)") {
+    for (const bool stadium : {true, false}) {
+        auto sim = city(10);
+        sim.mutable_state().games_host_year = 0;  // the Olympian games of year 0
+        if (stadium) {
+            sim.issue(PlaceBuilding{"stadium", 22, 5});
+            sim.step(1);
+            auto& s = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({22, 5}).building);
+            REQUIRE(s.type == "stadium");
+            s.performing_days = 200;  // its competitors are performing
+        }
+        sim.run_days(7 * 16 - 1);
+        for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+            if (b.type == "stadium") {
+                b.performing_days = 200;
+            }
+        }
+        sim.run_days(2);
+        bool hosted = false;
+        bool lost = false;
+        for (const auto& e : sim.drain_events()) {
+            if (const auto* g = std::get_if<GamesHeld>(&e.event)) {
+                hosted = g->hosted;
+                lost = g->right_lost;
+                CHECK((stadium || !g->invited));  // no stadium: not invited this year
+            }
+        }
+        CHECK(hosted == stadium);
+        CHECK(lost == !stadium);
+        CHECK(sim.state().scenario.monuments.count("games_host") == (stadium ? 1U : 0U));
+        CHECK(sim.state().games_host_year != 0);
+    }
+}

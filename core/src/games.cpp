@@ -38,6 +38,31 @@ std::int32_t games_chance(const WorldState& st, const DataCatalog& catalog, cons
     return static_cast<std::int32_t>(std::clamp<std::int64_t>(chance, 1, 100));
 }
 
+namespace {
+
+bool working_stadium(const CityState& city, const DataCatalog& catalog) {
+    (void)catalog;
+    return std::any_of(city.buildings.items.begin(), city.buildings.items.end(), [](const auto& kv) {
+        const Building& b = kv.second;
+        return b.type == "stadium" && b.staffing_percent > 0 && b.road_access && b.performing_days > 0;
+    });
+}
+
+// Hosting (Z:111): the parade of the athletes of all Greece; other leaders and the city's own people are pleased.
+void host(WorldState& st, const GamesParams& p) {
+    ++st.scenario.monuments["games_host"];
+    for (TradePartner& partner : st.trade.partners) {
+        partner.diplomacy.opinion = std::min(100, partner.diplomacy.opinion + p.host_opinion);
+    }
+    for (auto& [id, b] : st.city.buildings.items) {
+        if (b.house && b.house->population > 0) {
+            b.house->happiness = static_cast<std::uint8_t>(std::min(100, b.house->happiness + p.host_happiness));
+        }
+    }
+}
+
+}  // namespace
+
 std::optional<GamesResult> advance_games(WorldState& st, const DataCatalog& catalog) {
     const GamesParams& p = catalog.games;
     if (st.time.day_in_month() != 0 || st.time.month() != p.end_month) {
@@ -51,6 +76,15 @@ std::optional<GamesResult> advance_games(WorldState& st, const DataCatalog& cata
     }
     GamesResult r;
     r.game = game->id;
+    if (game->id == "olympian" && st.games_host_year == static_cast<std::int32_t>(year)) {
+        st.games_host_year = -1;
+        if (!working_stadium(st.city, catalog)) {
+            r.right_lost = true;  // another city hosts and the player is not invited (Z:111)
+            return r;
+        }
+        host(st, p);
+        r.hosted = true;
+    }
     r.chance = games_chance(st, catalog, *game);
     r.invited = r.chance > 0;
     // Draw only for an invited city: a city without performers leaves the random stream as it was.
@@ -60,6 +94,9 @@ std::optional<GamesResult> advance_games(WorldState& st, const DataCatalog& cata
         if (game->id == "olympian") {
             for (TradePartner& partner : st.trade.partners) {  // other leaders think better of the city (Z:111)
                 partner.diplomacy.opinion = std::min(100, partner.diplomacy.opinion + p.olympian_opinion);
+            }
+            if (st.games_host_year < 0) {
+                st.games_host_year = static_cast<std::int32_t>(year) + 4;  // the right to host in four years (Z:111)
             }
         }
     }

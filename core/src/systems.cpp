@@ -93,7 +93,7 @@ static void run_culture(Simulation& sim) {
     WorldState& st = sim.mutable_state();
     run_schools(st.city, st.walkers, sim.catalog());
     if (const auto g = advance_games(st, sim.catalog())) {
-        sim.emit(GamesHeld{g->game, g->chance, g->invited, g->won});
+        sim.emit(GamesHeld{g->game, g->chance, g->invited, g->won, g->hosted, g->right_lost});
     }
 }
 

@@ -45,7 +45,7 @@ Apollo sanktyfikuje Podium, Gymnasium, Theater, Stadium: wychodzi z nich więcej
 | 3 | Nemean | atleci i zawodnicy | świeży dziki seler |
 
 - Igrzyska "mogą zacząć się odbywać w pewnym momencie" panowania (zależne od scenariusza). [LUKA: warunek startu]
-- Implementacja: co rok od początku epizodu, wynik w sierpniu, szansa z zasięgu wykonawców według eZeus (L-123, `core/src/games.cpp`). Organizacja własnych igrzysk jeszcze nie działa.
+- Implementacja: co rok od początku epizodu, wynik w sierpniu, szansa z zasięgu wykonawców według eZeus (L-123, `core/src/games.cpp`). Organizacja własnych igrzysk działa bez parady (L-123).
 
 ### Udział
 

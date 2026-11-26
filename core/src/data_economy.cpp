@@ -261,6 +261,8 @@ void load_games(const std::map<std::string, json>& docs, GamesParams& p) {
         p.min_score = rules->value("min_score", p.min_score);
         p.apollo_multiplier_per_mille = static_cast<std::int32_t>(std::llround(rules->value("apollo_multiplier", 1.5) * 1000));
         p.olympian_opinion = rules->value("olympian_opinion", p.olympian_opinion);
+        p.host_opinion = rules->value("host_opinion", p.host_opinion);
+        p.host_happiness = rules->value("host_happiness", p.host_happiness);
     }
     for (const auto& g : docs.at("games.json")) {
         if (g.value("id", "") == "rules") {
