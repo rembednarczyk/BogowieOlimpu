@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <type_traits>
 #include "bo/core/appeal.h"
+#include "bo/core/culture.h"
 #include "bo/core/finance.h"
 #include "bo/core/gods.h"
 #include "bo/core/hash.h"
@@ -70,7 +71,8 @@ static void run_walker_spawn(Simulation& sim) {
             continue;
         }
         for (const auto& [wid, wt] : sim.catalog().walkers) {
-            if (wt.kind != WalkerKind::Roaming || !wt.roam_ticks || !walker_from_building(wt, b.type)) {
+            const bool serves = (wt.kind == WalkerKind::Roaming && walker_from_building(wt, b.type)) || venue_performs(b, wt);
+            if (!wt.roam_ticks || !serves) {
                 continue;
             }
             const WalkerId w = spawn_roaming_walker(st.city, st.walkers, sim.catalog(), wid, id, b.next_roam_dir);
@@ -83,6 +85,12 @@ static void run_walker_spawn(Simulation& sim) {
             break;
         }
     }
+}
+
+// Daily (B-008): schools send performers to venues; performances run down.
+static void run_culture(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    run_schools(st.city, st.walkers, sim.catalog());
 }
 
 // Daily: every service counter decays by 1 (96 days per visit, doc 24).
@@ -352,6 +360,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"mythology", 33, &run_mythology},
         {"world", 34, &run_world},
         {"coverage_decay", 35, &run_coverage_decay},
+        {"culture", 35, &run_culture},
         {"scenario", 36, &run_scenario},
         {"monsters", 37, &run_monsters},
     };

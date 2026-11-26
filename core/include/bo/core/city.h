@@ -194,6 +194,10 @@ struct Building {
     std::uint16_t cursed_days = 0;      // D5: a god's curse; the building does not work (Z:125-127); since v23
     std::int32_t hits = 0;              // D3: what a wall, gate or tower can still take (L-117); since v25
     std::uint16_t cooldown = 0;         // D3: ticks until a tower's sentries shoot again; since v25
+    // Culture (B-008, since v28): a venue's days of performance left; a school's days since it sent a
+    // performer and the venue it sent the last one to, per performer type.
+    std::uint16_t performing_days = 0;
+    std::map<std::string, std::pair<std::uint16_t, BuildingId>> schools;
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)

@@ -62,7 +62,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v25 (version field; hits and cooldown per building), module D3 stage 3.
     // 2026-11-26: save format v26 (version field; quests and monuments earned), module D5 quests.
     // 2026-11-26: save format v27 (version field; requested goods on their way), owner's decisions L-108..L-118.
-    const std::uint64_t kGolden = 0xf1dc34467642c689ULL;
+    // 2026-11-26: save format v28 (version field; performances and schools per building), B-008 culture.
+    const std::uint64_t kGolden = 0xce8ba9c25c651c18ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -202,7 +203,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v25: hits and cooldown per building (D3 stage 3, L-117).
     // 2026-11-26: save format v26 (version field; quests and monuments earned), module D5 quests.
     // 2026-11-26: save format v27 (version field; requested goods on their way), owner's decisions L-108..L-118.
-    const std::uint64_t kGolden = 0x50d6042f0f5fcfc6ULL;
+    // 2026-11-26: save format v28 (two culture fields per building; no school with a venue here), B-008.
+    const std::uint64_t kGolden = 0x43f595a1b19b44e9ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

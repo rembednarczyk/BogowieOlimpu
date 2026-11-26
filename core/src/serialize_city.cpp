@@ -123,6 +123,7 @@ void write_building(ByteWriter& w, const Building& b) {
     w.u32(b.cursed_days);                        // since v23
     w.i32(b.hits);                               // since v25
     w.u32(b.cooldown);
+    write_culture(w, b);                         // since v28
 }
 
 bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
@@ -172,7 +173,7 @@ bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
         return false;
     }
     b.cooldown = static_cast<std::uint16_t>(cooldown);
-    return true;
+    return version < 28 || read_culture(r, b);
 }
 
 bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
@@ -451,7 +452,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 20 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > static_cast<std::uint8_t>(WalkerJob::Perform) || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&

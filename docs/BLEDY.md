@@ -43,28 +43,28 @@ Zgłoszone przez agenta weryfikującego (2026-11-26, przebieg demo 10 lat, test 
 Zgłoszone przez agenta przeglądu referencji (2026-11-26, instrukcje Zeusa i Poseidona względem kodu; commit bazowy 90bbc24).
 
 ### B-008 [S2] Spacerujący dwufazowi (filozof, aktor, zawodnik) nigdy nie wychodzą
-- Status: potwierdzone (lektura kodu, bez przebiegu)
+- Status: naprawione: szkoła wysyła wykonawcę do sceny, scena wysyła krążących w trakcie występu (L-120); premia stadionu i muzeum dla miasta; testy "B-008" w `core/tests/test_culture.cpp` (padają bez poprawki)
 - Miejsce: `core/src/systems.cpp:73` wysyła tylko `WalkerKind::Roaming`; `TwoPhase` ustawia jedynie `core/src/data.cpp:157`.
 - Dowód: mównica, teatr i stadion nie dają kultury; w mieście greckim kulturę daje tylko gimnazjon. Bez kultury domy nie dochodzą do poziomu z wymaganiem rozrywki 35 ani do elity (Z:105-109), więc nie ma też hoplitów i jeźdźców. Testy domów ustawiają pokrycie ręcznie (`core/tests/test_housing.cpp:62`).
 - Test "co dziś pada": do napisania (mapa z kolegium i mównicą, pokrycie domu kulturą filozofa).
 - Przyczyna: kurs szkoła → miejsce występu nie został zaimplementowany.
 
 ### B-009 [S2] Brak limitu jednego pałacu i jednego stadionu
-- Status: potwierdzone (grep `unique` w `core/src` daje tylko `check_unique_ids`)
+- Status: naprawione: pole `unique` w rozmieszczeniu (`build.only_one`), hipodrom z segmentów wyłączony; test "B-009" w `core/tests/test_culture.cpp`
 - Miejsce: pole `"unique": true` w `data/buildings.json` nieczytane przez rozmieszczenie.
 - Dowód: Z:95 (jeden pałac), Z:109 (jeden stadion).
 - Test "co dziś pada": do napisania (drugi pałac odrzucony).
 - Przyczyna: pole danych bez obsługi w `placement.cpp`.
 
 ### B-010 [S2] Miejsca występów działają bez szkół, gimnazjon szkoli bez stadionu
-- Status: potwierdzone (lektura kodu)
+- Status: naprawione razem z B-008: scena bez szkoły nie występuje, gimnazjon bez stadionu nie wysyła zawodników; testy w `core/tests/test_culture.cpp`
 - Miejsce: pola `trains_requires` i `target` w danych spacerujących ignorowane.
 - Dowód: Z:108 (gimnazjon nie szkoli zawodnika bez stadionu), Z:105-107 (występy wymagają wykonawców ze szkół).
 - Test "co dziś pada": razem z B-008.
 - Przyczyna: jak B-008.
 
 ### B-011 [S3] Cel "sanktuarium" wymaga łaski boga
-- Status: potwierdzone; reguła do decyzji właściciela
+- Status: naprawione (decyzja właściciela): cel liczy ukończone i stojące sanktuarium bez warunku łaski; test "B-011" w `core/tests/test_gods.cpp` (pada bez poprawki)
 - Miejsce: `core/src/scenario.cpp:64` sprawdza cel przez `god_blesses` (`core/src/gods.cpp:24-34`), więc cel przepada także, gdy kapłani nie znajdą ofiar.
 - Dowód: instrukcja nie wiąże celu z ofiarami (Z:16, Z:21); eZeus liczy cel z postępu budowy (S-008, `eepisodegoal.cpp:378-401`).
 - Przyczyna: użyto warunku błogosławieństwa w miejscu warunku "ukończone i stoi".

@@ -1,4 +1,5 @@
 #include "bo/core/simulation.h"
+#include "bo/core/culture.h"
 
 #include "systems.h"
 
@@ -156,6 +157,8 @@ void Simulation::step_walkers() {
             extinguish_at_target(state_, catalog_, w);
         } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Settle) {
             settle_at_target(state_, catalog_, w);
+        } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Perform) {
+            performer_arrived(state_.city, catalog_, w);
         } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Trade) {
             TradeEvents trades;
             trade_at_target(state_, catalog_, w, trades);

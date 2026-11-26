@@ -43,6 +43,14 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Pomnik kolonii dodany (B-005).
 - Czy cel "sanktuarium" przepada po zniszczeniu sanktuarium: do sprawdzenia w instrukcji (przegląd referencji).
 
+### 2026-11-26: Odpowiedzi po przeglądzie referencji
+- Cytat właściciela: "Leć z rekomendacjami" (na pytania 1-5 raportu z przeglądu instrukcji).
+- Cel "sanktuarium" przepada po zniszczeniu sanktuarium, nie po utracie łaski (B-011; instrukcja milczy, eZeus liczy cel z postępu budowy).
+- Własne angielskie nazwy budynków i domów w polu `name_en`, z wyjątkiem słów zwykłych i historycznych (Granary, Agora, Palace); polska kolumna bez angielskich imion bogów (pytanie 17).
+- K-023: zostaje wzór podatku S-004; atrakcyjność działa przez poziom domu, wpis O-007.
+- L-053: modlitwa ma szansę wysłuchania pokazywaną w panelu (Z:132), liczba jako [ZAŁOŻENIE].
+- Kolejność prac: najpierw kultura i limity budynków (B-008 do B-010), potem przebieg od pustej mapy do domów elity, potem demo, potem mechaniki P1 z przeglądu.
+
 ## Proces
 
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"

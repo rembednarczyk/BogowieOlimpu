@@ -26,5 +26,7 @@ void write_scenario(ByteWriter& w, const ScenarioState& s);
 bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version);
 void write_monsters(ByteWriter& w, const WorldState& s);
 bool read_monsters(ByteReader& r, WorldState& s);
+void write_culture(ByteWriter& w, const Building& b);
+bool read_culture(ByteReader& r, Building& b);
 
 }  // namespace bo::core

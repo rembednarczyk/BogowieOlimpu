@@ -165,3 +165,18 @@ TEST_CASE("Aphrodite: nobody emigrates (doc 10, Z:122)") {
     CHECK(migrate(love.mutable_state(), bo::test::catalog_isolated()).left == 0);
     CHECK(migrate(plain.mutable_state(), bo::test::catalog_isolated()).left > 0);
 }
+
+TEST_CASE("B-011: the sanctuary goal counts a finished sanctuary that stands, without the god's favour") {
+    auto sim = with_god("dionysus");
+    sim.mutable_state().scenario.goals.push_back(ScenarioGoal{"sanctuary", "dionysus", 0, false});
+    sim.mutable_state().scenario.goals.push_back(ScenarioGoal{"population", "", 1000000, false});  // never won
+    sim.mutable_state().city.buildings.items.at(sanctuary_id(sim)).sanctuary->days_since_sacrifice = 10000;
+    sim.run_days(17);
+    REQUIRE(sim.state().city.buildings.items.at(sanctuary_id(sim)).sanctuary->favor_lost);  // no sacrifices
+    CHECK(sim.state().scenario.goals[0].met);
+    const TilePos origin = sim.state().city.buildings.items.at(sanctuary_id(sim)).origin;
+    sim.issue(Demolish{origin.x, origin.y});
+    sim.step(1);
+    sim.run_days(17);
+    CHECK_FALSE(sim.state().scenario.goals[0].met);  // destroyed: the goal is lost again (eZeus, S-008)
+}

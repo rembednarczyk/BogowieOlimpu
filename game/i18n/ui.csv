@@ -35,6 +35,7 @@ build.occupied,Miejsce zajęte,The place is taken
 build.needs_road,Potrzebna droga obok,A road is needed next to it
 build.needs_road_under,Potrzebna droga pod spodem,A road is needed underneath
 build.needs_meadow,Potrzebna łąka,Needs meadow
+build.only_one,W mieście może stać tylko jeden taki budynek,Only one of these per city
 build.needs_straight_coast,Potrzebny prosty brzeg,Needs a straight shore
 build.out_of_bounds,Poza mapą,Outside the map
 build.not_buildable,Na tym terenie nie można budować,Cannot build on this ground

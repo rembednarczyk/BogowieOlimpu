@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "bo/core/appeal.h"
+#include "bo/core/culture.h"
 
 namespace bo::core {
 
@@ -10,18 +11,19 @@ const std::vector<HousingLevel>& levels_of(const DataCatalog& catalog, const Hou
     return h.elite ? catalog.elite_levels : catalog.common_levels;
 }
 
-std::int32_t house_culture(const Building& b, const DataCatalog& catalog) {
-    std::int32_t points = 0;
+std::int32_t house_culture(const Building& b, const DataCatalog& catalog, std::int32_t city_bonus) {
+    std::int32_t points = city_bonus;
     for (const auto& [walker, days] : b.coverage) {
         const auto w = catalog.walkers.find(walker);
         if (days > 0 && w != catalog.walkers.end()) {
             points += w->second.culture_points;
         }
     }
-    return points;  // city-wide bonuses of a working Stadium and Museum (+10 each) arrive with module C (culture)
+    return points;
 }
 
-bool house_needs_met(const Building& b, const DataCatalog& catalog, const HousingLevel& level, Difficulty d) {
+bool house_needs_met(const Building& b, const DataCatalog& catalog, const HousingLevel& level, Difficulty d,
+                     std::int32_t city_bonus) {
     const HouseModel& m = level.model[static_cast<std::size_t>(d)];
     const HouseState& h = *b.house;
     if (m.water) {
@@ -35,7 +37,7 @@ bool house_needs_met(const Building& b, const DataCatalog& catalog, const Housin
             return false;
         }
     }
-    return house_culture(b, catalog) >= m.culture;
+    return house_culture(b, catalog, city_bonus) >= m.culture;
 }
 
 std::uint32_t house_capacity(const DataCatalog& catalog, const HouseState& h, Difficulty d) {
@@ -46,6 +48,7 @@ std::uint32_t house_capacity(const DataCatalog& catalog, const HouseState& h, Di
 std::vector<HouseChange> update_houses(CityState& city, const DataCatalog& catalog, Difficulty d) {
     std::vector<HouseChange> changes;
     const auto di = static_cast<std::size_t>(d);
+    const std::int32_t bonus = city_culture_bonus(city, catalog);
     for (auto& [id, b] : city.buildings.items) {
         if (!b.house || b.house->population == 0 || b.house->abandoned) {
             continue;  // vacant plots wait for immigrants (C8)
@@ -54,10 +57,10 @@ std::vector<HouseChange> update_houses(CityState& city, const DataCatalog& catal
         const auto& levels = levels_of(catalog, h);
         const std::int32_t appeal = building_appeal(city, b);
         const HouseModel& cur = levels[h.level].model[di];
-        if (appeal >= cur.appeal_devolve && house_needs_met(b, catalog, levels[h.level], d)) {
+        if (appeal >= cur.appeal_devolve && house_needs_met(b, catalog, levels[h.level], d, bonus)) {
             h.failed_checks = 0;
             const std::size_t next = h.level + 1U;
-            if (next < levels.size() && appeal >= cur.appeal_evolve && house_needs_met(b, catalog, levels[next], d)) {
+            if (next < levels.size() && appeal >= cur.appeal_evolve && house_needs_met(b, catalog, levels[next], d, bonus)) {
                 h.level = static_cast<std::uint8_t>(next);
                 changes.push_back({id, h.level, false});
             }
@@ -69,7 +72,7 @@ std::vector<HouseChange> update_houses(CityState& city, const DataCatalog& catal
         h.failed_checks = 0;
         std::optional<std::uint8_t> target;
         for (std::size_t k = h.level; k-- > 0;) {
-            if (appeal >= levels[k].model[di].appeal_devolve && house_needs_met(b, catalog, levels[k], d)) {
+            if (appeal >= levels[k].model[di].appeal_devolve && house_needs_met(b, catalog, levels[k], d, bonus)) {
                 target = static_cast<std::uint8_t>(k);
                 break;
             }

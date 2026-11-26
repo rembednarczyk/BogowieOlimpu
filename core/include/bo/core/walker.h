@@ -35,7 +35,8 @@ enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed
 enum class WalkerJob : std::uint8_t {
     None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle, Prowl, Soldier, Invade,
     Supply, Build, Sacrifice,  // D1: carts to a sanctuary site, artisans, priests
-    Monster, Hero              // D5: a monster in the city and the hero who hunts it
+    Monster, Hero,             // D5: a monster in the city and the hero who hunts it
+    Perform                    // B-008: a performer on the way from a school to a venue
 };
 
 struct Walker {

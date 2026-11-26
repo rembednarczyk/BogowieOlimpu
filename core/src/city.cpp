@@ -73,7 +73,8 @@ bool operator==(const Building& a, const Building& b) {
            a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
            a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary &&
            a.sanctified == b.sanctified && a.sanctified_base == b.sanctified_base && a.cursed_days == b.cursed_days &&
-           a.hits == b.hits && a.cooldown == b.cooldown;
+           a.hits == b.hits && a.cooldown == b.cooldown && a.performing_days == b.performing_days &&
+           a.schools == b.schools;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -100,6 +101,11 @@ std::string land_check(const CityState& city, TilePos p) {
     return {};
 }
 
+static bool already_built(const CityState& city, const std::string& type) {
+    return std::any_of(city.buildings.items.begin(), city.buildings.items.end(),
+                       [&type](const auto& kv) { return kv.second.type == type; });
+}
+
 BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficulty difficulty, const std::string& type,
                            TilePos origin, std::uint8_t rotation) {
     BuildResult r;
@@ -110,14 +116,14 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         r.reason = "build.unknown_type";
         return r;
     }
-    if (rotation > 3) {
-        r.reason = "build.bad_rotation";
-        return r;
-    }
     const BuildingType& bt = type_it->second;
     const BuildingStats& stats = stats_it->second;
-    if (!bt.player_placeable) {
-        r.reason = "build.unknown_type";
+    // B-009: one Palace (Z:95), one Stadium (Z:109)
+    r.reason = rotation > 3            ? "build.bad_rotation"
+               : !bt.player_placeable  ? "build.unknown_type"
+               : bt.unique && already_built(city, type) ? "build.only_one"
+                                                        : "";
+    if (!r.reason.empty()) {
         return r;
     }
     const std::string& rule = bt.placement;

@@ -59,3 +59,10 @@ Każda różnica między grą a specyfikacją `docs/gameplay/` (referencja 1:1) 
 - W grze: ludzie pojawiają się w domach i znikają z nich od razu; osiągalność z wejścia zastępuje dostęp domu do drogi; bezdomni czekają na wolne miejsce zamiast odchodzić.
 - Status: zawężone. Na mapach z punktem wejścia ('E') imigranci idą od wejścia do domu z rezerwacją miejsc, dom nieosiągalny nikogo nie dostaje, emigranci wychodzą do wejścia, a pracownicy docierają tylko do budynków osiągalnych pieszo od wejścia (S-005). Skrót zostaje tylko dla map bez punktu wejścia (testy, demo); każda mapa scenariusza ma wejście (Z:17). Bezdomni nadal zajmują wolne miejsca od razu.
 - Powód: mapy testowe bez wejścia.
+
+### O-007: Atrakcyjność nie wchodzi wprost do wzoru podatku
+- Miejsce: `core/src/finance.cpp` (podatek domu).
+- Referencja: wyższa atrakcyjność daje wyższy podatek (Z:97, Z:99).
+- W grze: wzór S-004 bez członu atrakcyjności; atrakcyjność podnosi podatek przez wyższy poziom domu (K-023).
+- Status: celowe.
+- Powód: decyzja właściciela 2026-11-26 (DECYZJE.md, "Odpowiedzi po przeglądzie referencji").

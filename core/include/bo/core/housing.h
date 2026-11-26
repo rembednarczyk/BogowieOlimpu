@@ -15,11 +15,13 @@ namespace bo::core {
 
 const std::vector<HousingLevel>& levels_of(const DataCatalog& catalog, const HouseState& h);
 
-// Culture points of a house: sum over performer walkers whose coverage counter is running (doc 18).
-std::int32_t house_culture(const Building& b, const DataCatalog& catalog);
+// Culture points of a house: sum over performer walkers whose coverage counter is running, plus the city-wide
+// bonus of a working Stadium and Museum (doc 18).
+std::int32_t house_culture(const Building& b, const DataCatalog& catalog, std::int32_t city_bonus = 0);
 
 // Whether the needs of `level` (water, goods, culture) are met now; appeal is checked by the caller.
-bool house_needs_met(const Building& b, const DataCatalog& catalog, const HousingLevel& level, Difficulty d);
+bool house_needs_met(const Building& b, const DataCatalog& catalog, const HousingLevel& level, Difficulty d,
+                     std::int32_t city_bonus = 0);
 
 // People a house can hold at its level.
 std::uint32_t house_capacity(const DataCatalog& catalog, const HouseState& h, Difficulty d);

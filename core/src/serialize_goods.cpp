@@ -207,4 +207,34 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
     return true;
 }
 
+// Culture (B-008): a venue's performance days and a school's state per performer type.
+void write_culture(ByteWriter& w, const Building& b) {
+    w.u32(b.performing_days);
+    w.u32(static_cast<std::uint32_t>(b.schools.size()));
+    for (const auto& [performer, s] : b.schools) {
+        w.str(performer);
+        w.u32(s.first);
+        w.u32(s.second);
+    }
+}
+
+bool read_culture(ByteReader& r, Building& b) {
+    std::uint32_t days = 0;
+    std::uint32_t n = 0;
+    if (!r.u32(days) || days > 0xFFFF || !r.u32(n) || n > 16) {
+        return false;
+    }
+    b.performing_days = static_cast<std::uint16_t>(days);
+    for (std::uint32_t i = 0; i < n; ++i) {
+        std::string performer;
+        std::uint32_t timer = 0;
+        BuildingId last = kNoBuilding;
+        if (!r.str(performer) || !r.u32(timer) || timer > 0xFFFF || !r.u32(last)) {
+            return false;
+        }
+        b.schools[performer] = {static_cast<std::uint16_t>(timer), last};
+    }
+    return true;
+}
+
 }  // namespace bo::core

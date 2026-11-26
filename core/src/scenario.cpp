@@ -62,7 +62,12 @@ bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGo
         return st.finance.treasury >= g.value;
     }
     if (g.type == "sanctuary") {
-        return god_blesses(st.city, catalog, g.target);
+        // B-011, owner's decision: the sanctuary must be finished and standing; the god's favour does not count.
+        return std::any_of(st.city.buildings.items.begin(), st.city.buildings.items.end(), [&](const auto& kv) {
+            const auto p = catalog.sanctuaries.find(kv.second.type);
+            return kv.second.sanctuary && kv.second.sanctuary->complete && p != catalog.sanctuaries.end() &&
+                   p->second.god == g.target;
+        });
     }
     if (g.type == "vassal") {
         return std::any_of(st.trade.partners.begin(), st.trade.partners.end(),

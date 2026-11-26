@@ -90,6 +90,8 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.sells = strings("sells");
         t.sources = strings("sources");
         t.pickup_only = o.value("pickup_only", false);
+        t.unique = o.value("unique", false) && !o.value("segmented", false);  // a hippodrome is many pieces
+        t.city_culture_bonus = o.value("city_culture_bonus", 0);
         t.tends = strings("tends");
         t.requires_building = o.value("requires_building", "");
         t.footprint_text = o.value("footprint", "");
@@ -171,6 +173,10 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
         const auto milli = static_cast<std::int64_t>(std::llround(o.value("speed_tiles_per_month", 54.4) * 1000.0));
         w.speed_raw = (milli * 15 * 65536) / (816 * 1000);
         w.culture_points = o.value("culture_points", 0);
+        w.trained_at = o.value("trained_at", "");
+        w.performs_at = o.value("performs_at", "");
+        w.school_send_days = o.value("school_send_days", w.school_send_days);
+        w.performance_days = o.value("performance_days", w.performance_days);
         w.coverage_days = o.value("coverage_days", static_cast<std::uint8_t>(96));
         w.max_source_distance = opt_int(o.value("max_source_distance_tiles", json()));
         for (const auto& r : o.value("resets", json::array())) {

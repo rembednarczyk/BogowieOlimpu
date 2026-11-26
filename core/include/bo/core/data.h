@@ -98,6 +98,8 @@ struct BuildingType {
     std::int32_t enclosure_size = 0;           // horse ranch: the 3x3 enclosure next to the 4x4 (S-004)
     std::vector<std::string> never_from;       // input sources refused (horse ranch: never from a Granary)
     bool pickup_only = false;                  // output waits for a hostler or a vendor (horse ranch, doc 06)
+    bool unique = false;                       // one per city: Palace (Z:95), Stadium (Z:109), Museum (P:12)
+    std::int32_t city_culture_bonus = 0;       // working Stadium or Museum: points for every house (doc 18)
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -114,6 +116,12 @@ struct WalkerType {
     std::uint8_t resets = 0;      // risk counters a visit clears: 1 fire, 2 collapse, 4 disease, 8 crime (C7)
     bool stops_outlaws = false;   // watchman, nobleman (Z:88)
     bool ignores_roadblocks = false;  // disgruntled citizens (S-010)
+    // Two-phase performers (Z:26, Z:105-109): trained at a school, they walk to a venue; while a performance
+    // lasts the venue sends its own performers roaming (eZeus model, S-008) [ZAŁOŻENIE, L-120].
+    std::string trained_at;
+    std::string performs_at;
+    std::uint16_t school_send_days = 29;
+    std::uint16_t performance_days = 286;
 };
 
 // Mood and migration parameters (data/migration.json, doc 24).
