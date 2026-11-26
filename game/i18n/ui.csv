@@ -66,3 +66,52 @@ build.nothing_to_demolish,Nie ma czego burzyć,Nothing to demolish
 build.too_many_piers,Za dużo przystani,Too many piers
 ui.drag_area,przeciągnij palcem obszar lub linię; mapę przesuwasz dwoma palcami,drag an area or a line; move the map with two fingers
 ui.instant_build,Buduj od razu,Build at once
+ui.report,Raport,Report
+ui.report_title,Raport miasta,City report
+ui.goals,Cele epizodu,Episode goals
+ui.requests,Prośby miast,Requests from cities
+ui.quests,Zadania bogów,Quests of the gods
+ui.send,Wyślij,Send
+ui.save,Zapisz,Save
+ui.saved,Zapisano,Saved
+ui.new_game,Nowa gra,New game
+ui.settings,Ustawienia,Settings
+ui.goal_done,spełniony,met
+ui.goal_open,do zrobienia,to do
+ui.no_requests,Brak próśb,No requests
+ui.request_line,"%s: %d x %s, zostało %d dni","%s: %d x %s, %d days left"
+ui.request_overdue,"%s: %d x %s, po terminie","%s: %d x %s, overdue"
+ui.quest_line,"%s: heros %s, %s","%s: hero %s, %s"
+ui.quest_0,czeka na herosa,waiting for the hero
+ui.quest_1,w drodze,under way
+ui.quest_2,wykonane,done
+ui.episode_won,Epizod wygrany!,Episode won!
+ui.episode_lost,Epizod przegrany,Episode lost
+goal.population,Ludność: %d z %d,Population: %d of %d
+goal.treasury,Skarbiec: %d z %d dr,Treasury: %d of %d dr
+goal.sanctuary,Sanktuarium boga: %s,Sanctuary of %s
+goal.houses,Domy co najmniej na poziomie %s: %d,Houses at least at level %s: %d
+goal.vassal,Wasal: %s,Vassal: %s
+goal.quest,Zadanie boga: %s,Quest of %s
+god.zeus,Zeus,Zeus
+god.poseidon,Posejdon,Poseidon
+god.hades,Hades,Hades
+god.hera,Hera,Hera
+god.demeter,Demeter,Demeter
+god.athena,Atena,Athena
+god.artemis,Artemida,Artemis
+god.apollo,Apollo,Apollo
+god.atlas,Atlas,Atlas
+god.ares,Ares,Ares
+god.hephaestus,Hefajstos,Hephaestus
+god.aphrodite,Afrodyta,Aphrodite
+god.hermes,Hermes,Hermes
+god.dionysus,Dionizos,Dionysus
+hero.hercules,Herakles,Heracles
+hero.achilles,Achilles,Achilles
+hero.odysseus,Odyseusz,Odysseus
+hero.jason,Jazon,Jason
+hero.theseus,Tezeusz,Theseus
+hero.perseus,Perseusz,Perseus
+hero.atalanta,Atalanta,Atalanta
+hero.bellerophon,Bellerofont,Bellerophon

@@ -14,6 +14,7 @@ func check(cond: bool, what: String) -> void:
 
 func _init() -> void:
 	game = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
+	game.use_save = false  # never the player's save
 	root.add_child(game)
 
 func building(x: int, y: int) -> int:
@@ -90,6 +91,46 @@ func _process(_d: float) -> bool:
 	ui.tap(Vector2i(43, 6))
 	check(ui.card.visible and ui.card_text.text != "", "the card of the Palace")
 	check(game.screen_to_tile(Vector2(500, 360)).x >= 0, "screen to tile")
+	# City report: goals of the episode, requests with a Send button that needs the goods in storage.
+	ui.toggle_report()
+	check(ui.report.visible, "the report opens")
+	var sc: Dictionary = game.sim.get_scenario()
+	check(sc["goals"].size() == 2, "two goals in the demo")
+	check(ui._goal_text(sc["goals"][0]).length() > 0, "a goal line")
+	game.sim.run_days(16 * 3 + 1)  # Corinth asks for fleece in month 4
+	ui.refresh_report()
+	check(game.sim.get_scenario()["requests"].size() == 1, "the request of Corinth is open")
+	# The demo's carding shed has no workers yet: the fleece comes by trade into a new storehouse.
+	game.sim.place_building("storehouse", 44, 25)
+	game.sim.set_trade_order(game.sim.get_tile(24, 24)["building"], "fleece", true, 4, false, 0)
+	game.sim.step(1)
+	for d in 120:
+		if ui.city_stock("fleece") >= 2:
+			break
+		game.sim.run_days(1)
+	ui.refresh_report()
+	check(ui.city_stock("fleece") >= 2, "fleece in storage for Corinth: %d" % ui.city_stock("fleece"))
+	check(game.sim.get_scenario()["requests"].size() == 1, "the request is still open (overdue at most)")
+	ui.send_request(0)
+	game.sim.step(1)
+	check(game.sim.get_scenario()["requests"].size() == 0, "one tap sent the fleece")
+	ui.toggle_report()
+
+	# Save and restore: a second scene loads the file and shows the same buildings.
+	game.use_save = true
+	game.save_path = "user://test_autosave.bo"
+	game.save_game()
+	var again = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
+	again.save_path = "user://test_autosave.bo"
+	root.add_child(again)
+	var saved_hash: String = game.sim.get_state_hash()
+	check(again.sim.get_tick() == game.sim.get_tick() + 1, "the save was loaded (one tick on after _ready)")
+	check(again.building_nodes.size() == again.sim.get_buildings().size(), "every building restored on screen: %d vs %d" % [again.building_nodes.size(), again.sim.get_buildings().size()])
+	var copy := BoSimulation.new()
+	copy.start_scenario("res://data", "res://scenarios/demo.json")
+	copy.load(FileAccess.get_file_as_bytes("user://test_autosave.bo"))
+	check(copy.get_state_hash() == saved_hash, "the file holds the state exactly")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_autosave.bo"))
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

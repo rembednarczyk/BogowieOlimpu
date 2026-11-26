@@ -31,6 +31,11 @@ with open(root / 'game' / 'i18n' / 'buildings.csv', 'w', encoding='utf-8', newli
         if b.get('god'):
             pl = f"{pl} ({b['god']})"
         w.writerow([f"building.{b['id']}", pl, en])
+    # Goods and house levels: our Polish names, working English from the ids.
+    for name, prefix in (('goods.json', 'good'), ('housing.json', 'house')):
+        with open(root / 'data' / name, encoding='utf-8') as gh:
+            for g in json.load(gh):
+                w.writerow([f"{prefix}.{g['id']}", g.get('name_pl', g['id']), g['id'].replace('_', ' ')])
 # Adventures (our content, scenarios/*.json) -> game/scenarios/ (res://scenarios).
 sdst = root / 'game' / 'scenarios'
 if sdst.exists():

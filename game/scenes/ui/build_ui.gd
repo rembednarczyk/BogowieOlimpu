@@ -122,15 +122,10 @@ func _build() -> void:
 		speeds.add_child(_button("%dx" % int(s), func(): _speed(s), Vector2(64, CELL.y)))
 	col.add_child(speeds)
 	var last := HBoxContainer.new()
-	last.add_child(_button("ui.undo", func(): game.sim.undo(), Vector2(96, CELL.y)))
-	var inst := CheckButton.new()
-	inst.text = "ui.instant_build"
-	inst.button_pressed = instant
-	inst.add_theme_font_size_override("font_size", 16)
-	inst.custom_minimum_size = Vector2(196, CELL.y)
-	inst.toggled.connect(_set_instant)
-	last.add_child(inst)
+	last.add_child(_button("ui.undo", func(): game.sim.undo(), Vector2(144, CELL.y)))
+	last.add_child(_button("ui.report", toggle_report, Vector2(144, CELL.y)))
 	col.add_child(last)
+	_build_report(root)
 
 	# The column of buildings that slides out next to the panel.
 	flyout = PanelContainer.new()
@@ -158,6 +153,128 @@ func cancel() -> void:
 		b.set_pressed_no_signal(false)
 	flyout.visible = false
 	_set_mode("")
+
+# The city report (06-MOBILE-UX "Informacja", doc 13): episode goals, requests from cities with one-tap
+# sending, quests, settings, save and new game.
+var report: PanelContainer
+var report_box: VBoxContainer
+var report_note := ""
+var _report_day := -1
+
+func _build_report(root: Control) -> void:
+	report = PanelContainer.new()
+	report.set_anchors_preset(Control.PRESET_FULL_RECT)
+	report.offset_left = 40
+	report.offset_top = 40
+	report.offset_right = -PANEL_W - 40
+	report.offset_bottom = -40
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.13, 0.14, 0.17, 0.96)
+	bg.set_content_margin_all(16)
+	report.add_theme_stylebox_override("panel", bg)
+	report_box = VBoxContainer.new()
+	report.add_child(report_box)
+	report.visible = false
+	root.add_child(report)
+
+func toggle_report() -> void:
+	report.visible = not report.visible
+	report_note = ""
+	if report.visible:
+		refresh_report()
+
+func _label(text: String, size := 18) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", size)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return l
+
+func _city_name(i: int) -> String:
+	var cities: Array = game.sim.get_cities()
+	return String(cities[i]["id"]).capitalize() if i < cities.size() else "?"
+
+func _goal_text(g: Dictionary) -> String:
+	match g["type"]:
+		"population":
+			return tr("goal.population") % [game.sim.get_population(), g["value"]]
+		"treasury":
+			return tr("goal.treasury") % [game.sim.get_treasury(), g["value"]]
+		"sanctuary", "quest":
+			return tr("goal." + g["type"]) % tr("god." + g["target"])
+		"houses":
+			return tr("goal.houses") % [tr("house." + g["target"]), g["value"]]
+		"vassal":
+			return tr("goal.vassal") % String(g["target"]).capitalize()
+	return g["type"]
+
+# Loads of a good in the city's storehouses and granaries (trade buildings left out, as the core does).
+func city_stock(good: String) -> int:
+	var total := 0
+	for b in game.sim.get_buildings():
+		if b.has("stock_loads") and b["type"] in ["storehouse", "granary"]:
+			total += int(b["stock_loads"].get(good, 0))
+	return total
+
+func refresh_report() -> void:
+	for c in report_box.get_children():
+		c.queue_free()
+	var sc: Dictionary = game.sim.get_scenario()
+	report_box.add_child(_label(tr("ui.report_title"), 24))
+	if sc.get("won", false):
+		report_box.add_child(_label(tr("ui.episode_won"), 22))
+	if sc.get("lost", false):
+		report_box.add_child(_label(tr("ui.episode_lost"), 22))
+	report_box.add_child(_label(tr("ui.goals"), 20))
+	for g in sc.get("goals", []):
+		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))
+	report_box.add_child(_label(tr("ui.requests"), 20))
+	var requests: Array = sc.get("requests", [])
+	if requests.is_empty():
+		report_box.add_child(_label("  " + tr("ui.no_requests")))
+	for i in requests.size():
+		var r: Dictionary = requests[i]
+		var row := HBoxContainer.new()
+		var line: String
+		if r["days_left"] >= 0:
+			line = tr("ui.request_line") % [_city_name(r["city"]), r["amount"], tr("good." + r["good"]), r["days_left"]]
+		else:
+			line = tr("ui.request_overdue") % [_city_name(r["city"]), r["amount"], tr("good." + r["good"])]
+		var l := _label("  " + line)
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		var send := _button("ui.send", func(): send_request(i), Vector2(140, CELL.y))
+		send.disabled = r["good"] != "drachmas" and city_stock(r["good"]) < int(r["amount"])
+		row.add_child(send)
+		report_box.add_child(row)
+	var quests: Array = sc.get("quests", [])
+	if not quests.is_empty():
+		report_box.add_child(_label(tr("ui.quests"), 20))
+		for q in quests:
+			report_box.add_child(_label("  " + tr("ui.quest_line") % [tr("god." + q["god"]), tr("hero." + q["hero"]),
+				tr("ui.quest_%d" % q["status"])]))
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	report_box.add_child(spacer)
+	var settings := HBoxContainer.new()
+	var inst := CheckButton.new()
+	inst.text = "ui.instant_build"
+	inst.button_pressed = instant
+	inst.add_theme_font_size_override("font_size", 18)
+	inst.custom_minimum_size = Vector2(260, CELL.y)
+	inst.toggled.connect(_set_instant)
+	settings.add_child(inst)
+	settings.add_child(_button("ui.save", func(): game.save_game(); report_note = tr("ui.saved"); refresh_report(), Vector2(140, CELL.y)))
+	settings.add_child(_button("ui.new_game", func(): game.new_game(), Vector2(160, CELL.y)))
+	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
+	report_box.add_child(settings)
+	if report_note != "":
+		report_box.add_child(_label(report_note))
+
+# One tap sends what a city asked for (Z:162). The command runs at the next tick; the report refreshes on the
+# event (boot.gd: request_closed) or the next game day.
+func send_request(i: int) -> void:
+	game.sim.fulfill_request(i)
 
 func _set_instant(on: bool) -> void:
 	instant = on
@@ -218,6 +335,9 @@ func _speed(s: float) -> void:
 	game.ticks_per_second = 60.0 * s
 
 func update_status() -> void:
+	if report != null and report.visible and game.sim.get_day_in_month() != _report_day:
+		_report_day = game.sim.get_day_in_month()
+		refresh_report()  # once a game day while open
 	status.text = tr("ui.status") % [game.sim.get_year() + 1, game.sim.get_month() + 1, game.sim.get_treasury(),
 		game.sim.get_population(), game.sim.get_employed(), game.sim.get_workforce(), game.sim.get_popularity()]
 

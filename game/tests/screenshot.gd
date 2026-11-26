@@ -6,7 +6,7 @@ extends SceneTree
 var frames_left := 10
 var out_path := "user://shot.png"
 var speed := 0.0  # ticks per second of the demo; 0 keeps the scene default
-var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7)
+var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report
 var node: Node
 
 func _init() -> void:
@@ -21,6 +21,7 @@ func _init() -> void:
 			build_view = int(arg.substr(11))
 	var scene: PackedScene = load("res://scenes/boot.tscn")
 	node = scene.instantiate()
+	node.set("use_save", false)  # never the player's save
 	if speed > 0.0:
 		node.set("ticks_per_second", speed)
 	root.add_child(node)
@@ -28,7 +29,9 @@ func _init() -> void:
 func _process(_delta: float) -> bool:
 	if build_view > 0 and frames_left == 5:
 		TranslationServer.set_locale("pl")
-		if build_view == 1:
+		if build_view == 3:
+			node.ui.toggle_report()
+		elif build_view == 1:
 			node.ui._show_tab("husbandry")
 		else:
 			node.ui._show_tab("population")

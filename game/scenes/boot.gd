@@ -53,6 +53,8 @@ var cam_target := Vector3(32, 0, 24)
 # The demo adventure (scenarios/demo.json, D5): a 64x48 map with the first town in the west, room for the
 # Palace, a sanctuary, an Artisans' Guild and a horse ranch in the east, an invasion point and the sea; Corinth
 # (ally) and Sparta (rival) send a gift, a yearly request and an army. This script plays the player.
+var save_path := "user://autosave.bo"  # tests use their own file
+var use_save := true  # tests and the screenshot harness switch it off
 var sanctuary_placed := false
 var demo_status := ""
 var demo_note := ""
@@ -61,6 +63,28 @@ func _ready() -> void:
 	var err: String = sim.start_scenario("res://data", "res://scenarios/demo.json")
 	if err != "":
 		push_error(err)
+	var restored := use_save and _load_game()
+	if not restored:
+		_place_demo_city()
+	_build_environment()
+	add_child(tiles)
+	label.position = Vector2(16, 44)
+	label.add_theme_font_size_override("font_size", 14)
+	add_child(label)
+	ui = preload("res://scenes/ui/build_ui.gd").new()
+	add_child(ui)
+	ui.setup(self)
+	ghost.name = "Ghost"
+	add_child(ghost)
+	if restored:
+		_restore_buildings()
+	sim.step(1)
+	_handle_events(sim.drain_events())
+	_rebuild_tiles()
+	_update_label()
+
+# The demo city as the player built it at the start of a new game.
+func _place_demo_city() -> void:
 	sim.place_road(22, 16)  # demo roadblock below
 	sim.place_roadblock(22, 16)
 	for b in [["fountain", 6, 5, 0], ["maintenance_office", 17, 17, 0], ["watchpost", 10, 14, 0],
@@ -110,20 +134,43 @@ func _ready() -> void:
 		sim.place_building(s[0], s[1], s[2])
 	sim.place_building("tower", 56, 5)  # the walls must exist first
 	sim.place_building("tower", 58, 5)
-	_build_environment()
-	add_child(tiles)
-	label.position = Vector2(16, 44)
-	label.add_theme_font_size_override("font_size", 14)
-	add_child(label)
-	ui = preload("res://scenes/ui/build_ui.gd").new()
-	add_child(ui)
-	ui.setup(self)
-	ghost.name = "Ghost"
-	add_child(ghost)
-	sim.step(1)
-	_handle_events(sim.drain_events())
-	_rebuild_tiles()
-	_update_label()
+
+# Save and autosave (06-MOBILE-UX: pause and autosave when leaving the app): the whole state in one file.
+func save_game() -> void:
+	if not use_save:
+		return
+	var f := FileAccess.open(save_path, FileAccess.WRITE)
+	if f != null:
+		f.store_buffer(sim.save())
+
+func _load_game() -> bool:
+	if not FileAccess.file_exists(save_path):
+		return false
+	var err: String = sim.load(FileAccess.get_file_as_bytes(save_path))
+	if err != "" and err != "save.data_version_mismatch":
+		push_warning("save not loaded: " + err)
+		sim.start_scenario("res://data", "res://scenarios/demo.json")
+		return false
+	return true
+
+# A new game: the save goes, the scene starts again.
+func new_game() -> void:
+	if FileAccess.file_exists(save_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
+	get_tree().reload_current_scene()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED or \
+			what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		save_game()
+
+# Buildings of a loaded state (no placement events come for them).
+func _restore_buildings() -> void:
+	for b in sim.get_buildings():
+		_add_building({"id": b["id"], "building_type": b["type"], "x": b["x"], "y": b["y"], "width": b["width"],
+			"height": b["height"], "parent": b["parent"]})
+		if String(b["type"]).begins_with("sanctuary_"):
+			sanctuary_placed = true
 
 # Demo script: the sanctuary is founded once the imported marble is in storage; an army comes in month 6.
 func _demo_day() -> void:
@@ -131,8 +178,6 @@ func _demo_day() -> void:
 		sim.place_building("sanctuary_dionysus", 41, 17)
 	var scenario: Dictionary = sim.get_scenario()
 	var requests: Array = scenario["requests"]
-	if requests.size() > 0 and _city_stock(requests[0]["good"]) >= requests[0]["amount"]:
-		sim.fulfill_request(0)  # the player sends Corinth what it asked for (Z:162)
 	demo_status = "marmur %d" % _city_stock("marble")
 	for b in sim.get_buildings():
 		if b.has("sanctuary_complete"):
@@ -166,6 +211,8 @@ func _process(delta: float) -> void:
 		_handle_events(sim.drain_events())
 		if sim.get_day_in_month() != day_before:
 			_demo_day()
+			if sim.get_day_in_month() == 0:
+				save_game()  # once a month of game time
 		_update_label()
 		ui.update_status()
 	_sync_walkers()
@@ -272,6 +319,9 @@ func _handle_events(events: Array) -> void:
 				demo_note = "potwór: %s" % e["monster"]
 			"monster_slain":
 				demo_note = "potwór pokonany: %s" % e["monster"]
+			"request_closed", "city_request", "episode_won", "episode_lost":
+				if ui != null and ui.report.visible:
+					ui.refresh_report()
 			"god_attacked":
 				demo_note = "gniew boga: %s%s" % [e["god"], " (odparty)" if e["repelled"] else ""]
 			"disaster":
@@ -361,7 +411,8 @@ func _sync_walkers() -> void:
 	for w in sim.get_walkers():
 		var node: MeshInstance3D = walker_nodes.get(w["id"])
 		if node == null:
-			continue
+			_add_walker(w["id"], w["type"])  # after a load no spawn events come
+			node = walker_nodes[w["id"]]
 		# Entered the current tile at progress 0; approximate the next tile by the last direction.
 		var p: Vector2 = Vector2(w["x"] + 0.5, w["y"] + 0.5) + STEP[w["dir"]] * clampf(w["progress"], 0.0, 1.0) * 0.5
 		node.position = Vector3(p.x, 0.35, p.y)
