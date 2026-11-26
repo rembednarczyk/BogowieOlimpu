@@ -145,6 +145,9 @@ static void run_moods(Simulation& sim) {
 
 static void run_migration(Simulation& sim) {
     const auto r = migrate(sim.mutable_state(), sim.catalog());
+    for (const WalkerId id : r.spawned) {
+        sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
+    }
     if (r.arrived > 0 || r.left > 0) {
         sim.emit(PeopleMoved{r.arrived, r.left});
     }

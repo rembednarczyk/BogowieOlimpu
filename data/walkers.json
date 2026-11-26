@@ -44,5 +44,7 @@
 {"id": "plagued_citizen", "type": "roaming", "from": "house", "speed_tiles_per_month": 13.6, "src": "S-004 units"},
 {"id": "ox_cart", "type": "destination", "from": ["masonry_shop", "timber_mill", "sculpture_studio", "storehouse"], "speed_tiles_per_month": 54.4, "src": "Z:52-58; S-004 units"},
 {"id": "trade_caravan", "type": "destination", "from": "map_entry", "to": "trading_post", "speed_tiles_per_month": 54.4, "src": "Z:76-79; prędkość [ZAŁOŻENIE L-105] jak spacerujący"},
-{"id": "trade_ship", "type": "destination", "from": "sea_entry", "to": "pier", "by_boat": true, "speed_tiles_per_month": 54.4, "src": "Z:76-79; prędkość [ZAŁOŻENIE L-105]"}
+{"id": "trade_ship", "type": "destination", "from": "sea_entry", "to": "pier", "by_boat": true, "speed_tiles_per_month": 54.4, "src": "Z:76-79; prędkość [ZAŁOŻENIE L-105]"},
+{"id": "immigrant", "type": "destination", "from": "map_entry", "to": "house", "speed_tiles_per_month": 54.4, "src": "Z:29 (imigranci zajmują działki), doc 24 (dom osiągalny z wejścia, S-006)"},
+{"id": "emigrant", "type": "destination", "from": "house", "to": "map_entry", "speed_tiles_per_month": 54.4, "src": "Z:159-160, doc 24"}
 ]

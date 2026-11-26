@@ -1,9 +1,12 @@
 #include "bo/core/migration.h"
 
 #include <algorithm>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "bo/core/housing.h"
+#include "bo/core/path.h"
 
 namespace bo::core {
 namespace {
@@ -21,11 +24,43 @@ std::int32_t unemployment_mood(const MigrationParams& p, const LabourState& l) {
 
 std::uint32_t free_places(const DataCatalog& catalog, const HouseState& h, Difficulty d) {
     const std::uint32_t cap = house_capacity(catalog, h, d);
-    return cap > h.population ? cap - h.population : 0;
+    const std::uint32_t taken = h.population + h.incoming;
+    return cap > taken ? cap - taken : 0;
+}
+
+std::optional<TilePos> land_entry(const CityState& city) {
+    for (std::size_t i = 0; i < city.map.size(); ++i) {
+        if (city.map.tiles()[i].feature == static_cast<std::uint8_t>(TileFeature::LandEntry)) {
+            return city.map.pos(i);  // the first entry in tile order
+        }
+    }
+    return std::nullopt;
+}
+
+WalkerId spawn_traveller(WorldState& st, const DataCatalog& catalog, const std::string& type, BuildingId house,
+                         TilePos from, TilePos to) {
+    auto path = find_path(st.city, {from, to, PathMode::Road});
+    const auto t = catalog.walkers.find(type);
+    if (!path || t == catalog.walkers.end()) {
+        return kNoWalker;
+    }
+    Walker w;
+    w.id = st.walkers.next_id++;
+    w.type = type;
+    w.home = house;
+    w.tile = from;
+    w.speed_raw = t->second.speed_raw;
+    w.path = std::move(*path);
+    w.phase = WalkerPhase::Routed;
+    const WalkerId id = w.id;
+    st.walkers.items.emplace(id, std::move(w));
+    return id;
 }
 
 // Moves up to `people` into common houses; houses with many free places first (doc 24). Returns how many.
-std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint32_t people) {
+// With `entry`, they walk from it: the house is reserved and must be reachable (doc 24).
+std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint32_t people,
+                          std::optional<TilePos> entry = std::nullopt, std::vector<WalkerId>* spawned = nullptr) {
     const auto& p = catalog.migration;
     std::uint32_t placed = 0;
     for (const bool big_first : {true, false}) {
@@ -42,6 +77,22 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
                 continue;
             }
             const std::uint32_t n = std::min(room, people - placed);
+            if (entry) {
+                const WalkerId w = spawn_traveller(st, catalog, "immigrant", id, *entry, *b.road_access);
+                if (w == kNoWalker) {
+                    continue;  // not reachable from the entry
+                }
+                Walker& walker = st.walkers.items.at(w);
+                walker.job = WalkerJob::Settle;
+                walker.target = id;
+                walker.want_loads = n;  // people in the group
+                h.incoming += n;
+                placed += n;
+                if (spawned) {
+                    spawned->push_back(w);
+                }
+                continue;
+            }
             if (h.population == 0) {
                 h.happiness = static_cast<std::uint8_t>(p.base_happiness[static_cast<std::size_t>(st.difficulty)]);
             }
@@ -52,8 +103,10 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
     return placed;
 }
 
-// Removes up to `people` from the lowest house levels first (ties: building id).
-std::uint32_t empty_houses(WorldState& st, std::uint32_t people) {
+// Removes up to `people` from the lowest house levels first (ties: building id). With `entry`, each household
+// that leaves walks out to it.
+std::uint32_t empty_houses(WorldState& st, const DataCatalog& catalog, std::uint32_t people,
+                           std::optional<TilePos> entry, std::vector<WalkerId>& spawned) {
     std::vector<std::pair<std::uint8_t, BuildingId>> order;
     for (const auto& [id, b] : st.city.buildings.items) {
         if (b.house && !b.house->elite && b.house->population > 0) {
@@ -63,10 +116,17 @@ std::uint32_t empty_houses(WorldState& st, std::uint32_t people) {
     std::sort(order.begin(), order.end());
     std::uint32_t removed = 0;
     for (const auto& [level, id] : order) {
-        HouseState& h = *st.city.buildings.items.at(id).house;
+        Building& b = st.city.buildings.items.at(id);
+        HouseState& h = *b.house;
         const std::uint32_t n = std::min(h.population, people - removed);
         h.population -= n;
         removed += n;
+        if (entry && b.road_access) {
+            const WalkerId w = spawn_traveller(st, catalog, "emigrant", id, *b.road_access, *entry);
+            if (w != kNoWalker) {
+                spawned.push_back(w);
+            }
+        }
         if (removed == people) {
             break;
         }
@@ -149,18 +209,46 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         st.city.homeless -= r.rehoused;
     }
     st.migration.pool += p.batch_people * migration_percent(p, st.migration.popularity) / 100;
+    const auto entry = land_entry(st.city);
     if (st.migration.pool >= p.min_batch) {
-        r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool));
+        r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool), entry, &r.spawned);
         st.migration.pool = 0;  // no room: immigration is blocked, the batch does not wait (doc 24)
     } else if (st.migration.pool <= -p.min_batch) {
         if (static_cast<std::int32_t>(city_population(st.city)) > p.emigration_min_population) {
-            r.left = empty_houses(st, static_cast<std::uint32_t>(-st.migration.pool));
+            r.left = empty_houses(st, catalog, static_cast<std::uint32_t>(-st.migration.pool), entry, r.spawned);
         }
         st.migration.pool = 0;
     }
     st.migration.arrived_this_month += r.arrived;
     st.migration.left_this_month += r.left;
     return r;
+}
+
+void settle_at_target(WorldState& st, const DataCatalog& catalog, Walker& w) {
+    const auto it = st.city.buildings.items.find(w.target);
+    std::uint32_t people = w.want_loads;
+    if (it != st.city.buildings.items.end() && it->second.house && !it->second.house->abandoned) {
+        HouseState& h = *it->second.house;
+        h.incoming -= std::min(h.incoming, people);
+        const std::uint32_t cap = house_capacity(catalog, h, st.difficulty);
+        const std::uint32_t n = std::min(people, cap > h.population ? cap - h.population : 0U);
+        if (h.population == 0 && n > 0) {
+            h.happiness = static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(st.difficulty)]);
+        }
+        h.population += n;
+        people -= n;
+    }
+    st.city.homeless += people;  // the house shrank or is gone meanwhile
+    w.job = WalkerJob::None;
+    w.phase = WalkerPhase::Done;
+}
+
+void settle_failed(WorldState& st, const Walker& w) {
+    const auto it = st.city.buildings.items.find(w.target);
+    if (it != st.city.buildings.items.end() && it->second.house) {
+        it->second.house->incoming -= std::min(it->second.house->incoming, w.want_loads);
+    }
+    st.city.homeless += w.want_loads;
 }
 
 }  // namespace bo::core

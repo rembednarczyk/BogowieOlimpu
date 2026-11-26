@@ -33,7 +33,7 @@ Hierarchia źródeł (R-012):
 | K-029 | Koszt mostu (Beginner) | S-004: 8 | S-008: 5 | S-004 | otwarty |
 | K-030 | Brąz na zbroję | S-005: 1 | S-008: 2 (decyzja autora) | 1 | rozstrzygnięty |
 | K-032 | Ilu mieszkańców zabija zaraza | S-010: jeden na trzech | S-008: nikt (nie znaleziono) | S-010 | rozstrzygnięty |
-| K-033 | Pożar: tempo | S-007 (OG): ryzyko w 1 dniu na 8 × 1-5, dom ok. 10 mies. | S-008: utrzymanie spada do 0 w ok. 1,6 roku, potem średnio 36 dni | S-007 (rodzina, R-014) | otwarty |
+| K-033 | Pożar: tempo | S-007 (OG): ryzyko w 1 dniu na 8 × 1-5, dom ok. 10 mies. | S-008: utrzymanie spada do 0 w ok. 1,6 roku, potem średnio 36 dni | S-007 (rodzina, R-014) | rozstrzygnięty (decyzja właściciela 2026-11-26) |
 | K-031 | Przydział pracowników przy niedoborze | Z:62: sektory o wyższym priorytecie dostają pracowników pierwsze | S-008: podział proporcjonalny do potrzeb × wag priorytetu | instrukcja: kolejno od najwyższego priorytetu; równe priorytety dzielą proporcjonalnie do potrzeb, reszta według części ułamkowych; przy równym priorytecie higiena i bezpieczeństwo najpierw (S-010) | otwarty |
 
 ## Ocena S-008 (eZeus) po weryfikacji

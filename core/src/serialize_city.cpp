@@ -117,6 +117,7 @@ void write_building(ByteWriter& w, const Building& b) {
     w.u8(b.burning_days);
     w.u32(b.house ? b.house->quarantine_days : 0U);
     w.u8(b.house ? b.house->crime_level : 0U);  // since v13
+    w.u32(b.house ? b.house->incoming : 0U);     // since v15
 }
 
 bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
@@ -142,6 +143,13 @@ bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
     }
     if (b.house) {
         b.house->crime_level = level;
+    }
+    std::uint32_t incoming = 0;
+    if (version >= 15 && !r.u32(incoming)) {
+        return false;
+    }
+    if (b.house) {
+        b.house->incoming = incoming;
     }
     return true;
 }
@@ -418,7 +426,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 11 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 12 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&

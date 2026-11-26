@@ -132,3 +132,53 @@ TEST_CASE("a house cut off from roads empties after more than 4 days; the people
     CHECK(r.rehoused == 8);
     CHECK(st.city.buildings.items.at(2).house->population == 8);
 }
+
+namespace {
+
+std::vector<std::string> entry_street() {
+    std::vector<std::string> r(10, std::string(30, '.'));
+    r[3] = "E" + std::string(29, '=');
+    r[8] = std::string(30, '=');  // a second street not connected to the entry road
+    return r;
+}
+
+}  // namespace
+
+TEST_CASE("immigrants walk from the land entry and move in on arrival (doc 24, O-006 closed for maps with entry)") {
+    Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, entry_street()});
+    sim.issue(PlaceBuilding{"common_housing", 20, 1});
+    sim.step(1);
+    const auto& h = *sim.state().city.buildings.items.begin()->second.house;
+    sim.run_days(1);
+    CHECK(h.population == 0);
+    CHECK(h.incoming == 6);  // reserved for the group on its way
+    bool walking = false;
+    for (const auto& [id, w] : sim.state().walkers.items) {
+        walking = walking || (w.type == "immigrant" && w.job == WalkerJob::Settle);
+    }
+    CHECK(walking);
+    sim.run_days(8);  // 20 tiles at 1 tile per 15 ticks
+    CHECK(h.population >= 6);
+}
+
+TEST_CASE("a house not reachable from the entry gets no immigrants (doc 24)") {
+    Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, entry_street()});
+    sim.issue(PlaceBuilding{"common_housing", 20, 6});  // on the unconnected street
+    sim.step(1);
+    sim.run_days(10);
+    CHECK(sim.state().city.buildings.items.begin()->second.house->population == 0);
+}
+
+TEST_CASE("workers come only to buildings reachable on foot from the entry (S-005)") {
+    auto rows = entry_street();
+    rows[5] = std::string(30, '~');  // a river: the south street cannot be reached on foot
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 1000, rows});
+    sim.issue(PlaceBuilding{"common_housing", 2, 1});
+    sim.issue(PlaceBuilding{"fountain", 6, 1});
+    sim.issue(PlaceBuilding{"fountain", 6, 6});
+    sim.step(1);
+    sim.mutable_state().city.buildings.items.begin()->second.house->population = 40;
+    sim.run_days(1);
+    CHECK(sim.state().city.buildings.items.at(sim.state().city.map.at({6, 1}).building).workers > 0);
+    CHECK(sim.state().city.buildings.items.at(sim.state().city.map.at({6, 6}).building).workers == 0);
+}

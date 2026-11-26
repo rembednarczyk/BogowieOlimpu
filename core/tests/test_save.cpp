@@ -106,6 +106,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     a.step(10);
     const auto current = a.save();
     const std::uint64_t h = a.state_hash();
+    check_load(current, 14, h);  // v15 adds only a house field
     auto v13 = current;
     cut(v13, kWalkersBlock + kFinance, kTrade);
     check_load(v13, 13, h);

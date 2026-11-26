@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <map>
+#include <optional>
+
+#include "bo/core/path.h"
 #include <vector>
 
 namespace bo::core {
@@ -78,8 +81,16 @@ void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, 
         catalog.worker_percent[static_cast<std::size_t>(d)][static_cast<std::size_t>(wage)]);
     labour.workforce = static_cast<std::uint32_t>(people * pct / 100);
 
-    // Needs per sector, buildings per sector in id order. Without road access a building cannot be reached
-    // [ZAŁOŻENIE until the map entry point exists; S-005: walking connection to the entry].
+    // Needs per sector, buildings per sector in id order. A building gets workers when they can walk to it from
+    // the map entry (S-005: a walking connection, not necessarily a road); maps without an entry fall back to
+    // road access only.
+    std::optional<std::vector<std::uint32_t>> from_entry;
+    for (std::size_t i = 0; i < city.map.size(); ++i) {
+        if (city.map.tiles()[i].feature == static_cast<std::uint8_t>(TileFeature::LandEntry)) {
+            from_entry = road_distances(city, {city.map.pos(i)}, PathMode::Walkable);
+            break;
+        }
+    }
     std::array<std::vector<BuildingId>, kSectors> members;
     std::array<std::vector<std::uint32_t>, kSectors> needs;
     labour.sector_need.fill(0);
@@ -87,7 +98,9 @@ void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, 
         const std::uint32_t need = workers_needed(b, catalog, labour);
         b.workers = 0;
         const auto sector = sector_of_tab(catalog.buildings.at(b.type).tab);
-        if (need == 0 || !sector || !b.road_access) {
+        const bool reachable =
+            b.road_access && (!from_entry || (*from_entry)[city.map.index(*b.road_access)] != kUnreachable);
+        if (need == 0 || !sector || !reachable) {
             b.staffing_percent = need == 0 && labour.disabled_types.count(b.type) == 0 ? 100 : 0;
             continue;
         }

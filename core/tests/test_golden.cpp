@@ -49,7 +49,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v12 (version field; wind byte), module C7 risks in the daily schedule.
     // 2026-11-26: save format v13 (version field; city hygiene byte), L-104 revised from S-010 and S-007.
     // 2026-11-26: save format v14 (version field; empty trade block), module C9.
-    const std::uint64_t kGolden = 0x3de79ed55d302eeaULL;
+    // 2026-11-26: save format v15 (version field; immigrants on the way).
+    const std::uint64_t kGolden = 0x3b3b2c4faba122ebULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -174,7 +175,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: L-104 revised (S-010, S-007 OG fire model, family hygiene, plague 1 in 3, crime escalation,
     // firefighters sent to fires, Hygiene & Safety first at equal priority): save format v13.
     // 2026-11-26: module C9 trade: save format v14, a land entry, a trading post and a partner city.
-    const std::uint64_t kGolden = 0x932e401c2eb27479ULL;
+    // 2026-11-26: immigrants walk from the land entry (O-006), workers need a walking link to it (S-005).
+    const std::uint64_t kGolden = 0xebd887ca34071a55ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

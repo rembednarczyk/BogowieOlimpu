@@ -150,6 +150,8 @@ void Simulation::step_walkers() {
             crime_at_target(state_, catalog_, w, crimes);
         } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Extinguish) {
             extinguish_at_target(state_, catalog_, w);
+        } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Settle) {
+            settle_at_target(state_, catalog_, w);
         } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Trade) {
             TradeEvents trades;
             trade_at_target(state_, catalog_, w, trades);
@@ -166,6 +168,9 @@ void Simulation::step_walkers() {
         if (it->second.phase != WalkerPhase::Done) {
             ++it;
             continue;
+        }
+        if (it->second.job == WalkerJob::Settle) {
+            settle_failed(state_, it->second);  // removed on the way: the group becomes homeless
         }
         unload_at_home(state_, catalog_, it->second);
         const auto home = state_.city.buildings.items.find(it->second.home);
