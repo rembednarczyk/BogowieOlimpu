@@ -258,7 +258,9 @@ TEST_CASE("Aphrodite fills the houses; Hermes fulfils a request for nothing (Z:1
 }
 
 TEST_CASE("Ares gives two companies of Sparti, Artemis two of Amazons; they muster from the sanctuary (Z:121, Z:140)") {
-    for (const auto& [god, nation] : {std::pair{"ares", "divine"}, std::pair{"artemis", "amazon"}}) {
+    for (const auto& gn : {std::pair{"ares", "divine"}, std::pair{"artemis", "amazon"}}) {
+        const std::string god = gn.first;
+        const std::string nation = gn.second;
         auto sim = with_god(god);
         sim.issue(PlaceBuilding{"palace", 40, 14});
         sim.run_days(2);
