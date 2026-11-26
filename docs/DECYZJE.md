@@ -4,6 +4,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-26: Domyślny poziom trudności Hero, R-012 przyjęta
+- Decyzja: 5 poziomów trudności 1:1, domyślny Hero (R-013). Hierarchia źródeł R-012 potwierdzona.
+- Cytat właściciela: "Przyjmuję R-012, domyślnie Hero".
+- Gdzie: `docs/10-REGULY.md`, `data/difficulty.json` (`default_level`).
+
 ### 2026-11-26: Mechanika 1:1 z grą referencyjną i dodatkiem
 - Decyzja: domyślna specyfikacja rozgrywki to instrukcje gry podstawowej i dodatku, odwzorowane 1:1. Rozbudowa później, przez nowe reguły.
 - Cytat właściciela: "Domyślnie mechanika ma być 1:1 w całej grze. Później będziemy rozbudowywać".

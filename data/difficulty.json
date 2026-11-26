@@ -145,5 +145,7 @@
   "warship": 800
  },
  "raid_booty_multiplier_note": "łup z rajdu zależy od trudności: Beginner 2x rocznej ilości, Olympian 0.5x (S-004 trivia)",
- "src": "S-004 taxation, worker-percentages, enemy-information, trivia"
+ "src": "S-004 taxation, worker-percentages, enemy-information, trivia",
+ "default_level": "H",
+ "default_level_rule": "R-013"
 }
