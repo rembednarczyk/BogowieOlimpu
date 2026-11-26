@@ -109,6 +109,13 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["kind"] = kKinds[static_cast<int>(e.kind)];
                        d["building"] = static_cast<int64_t>(e.building);
                    },
+                   [&d](const bo::core::TradeDone& e) {
+                       d["type"] = "trade_done";
+                       d["building"] = static_cast<int64_t>(e.building);
+                       d["bought"] = static_cast<int64_t>(e.loads_bought);
+                       d["sold"] = static_cast<int64_t>(e.loads_sold);
+                       d["money"] = static_cast<int64_t>(e.money);
+                   },
                    [&d](const bo::core::PeopleMoved& e) {
                        d["type"] = "people_moved";
                        d["arrived"] = static_cast<int64_t>(e.arrived);
@@ -172,7 +179,7 @@ String BoSimulation::start(const String& data_dir, int64_t seed, const String& d
 
 String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const String& difficulty_code,
                                     int64_t initial_treasury, const PackedStringArray& rows, bool full_staffing,
-                                    const PackedStringArray& elevation) {
+                                    const PackedStringArray& elevation, const Array& trade_partners) {
     const String err = start(data_dir, seed, difficulty_code, initial_treasury);
     if (!err.is_empty()) {
         return err;
@@ -187,6 +194,24 @@ String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const 
     }
     for (int64_t i = 0; i < elevation.size(); ++i) {
         cfg.elevation_map.push_back(to_std(elevation[i]));
+    }
+    // Partners: {"id", "relation", "by_sea", "sells": {good: [price, yearly_limit]}, "buys": {...}}
+    for (int64_t i = 0; i < trade_partners.size(); ++i) {
+        const Dictionary d = trade_partners[i];
+        bo::core::TradePartner p;
+        p.id = to_std(d.get("id", ""));
+        p.relation = to_std(d.get("relation", "ally"));
+        p.by_sea = d.get("by_sea", false);
+        for (const char* key : {"sells", "buys"}) {
+            const Dictionary offers = d.get(key, Dictionary());
+            const Array goods = offers.keys();
+            for (int64_t g = 0; g < goods.size(); ++g) {
+                const Array v = offers[goods[g]];
+                bo::core::TradeOffer o{static_cast<std::int32_t>(int64_t(v[0])), static_cast<std::uint32_t>(int64_t(v[1])), 0};
+                (std::string(key) == "sells" ? p.sells : p.buys)[to_std(goods[g])] = o;
+            }
+        }
+        cfg.trade_partners.push_back(p);
     }
     sim_.emplace(*catalog_, cfg);
     if (!sim_->setup_error().empty()) {
@@ -236,6 +261,21 @@ void BoSimulation::set_storage_order(int64_t building, const String& good, int64
     if (sim_ && building > 0 && kind >= 0 && kind <= 3 && limit >= 0) {
         sim_->issue(bo::core::SetStorageOrder{static_cast<std::uint32_t>(building), to_std(good),
                                               static_cast<std::uint8_t>(kind), static_cast<std::uint32_t>(limit)});
+    }
+}
+
+void BoSimulation::set_trade_partner(int64_t building, int64_t partner) {
+    if (sim_ && building > 0) {
+        sim_->issue(bo::core::SetTradePartner{static_cast<std::uint32_t>(building), static_cast<std::int32_t>(partner)});
+    }
+}
+
+void BoSimulation::set_trade_order(int64_t building, const String& good, bool import_on, int64_t import_limit,
+                                   bool export_on, int64_t export_keep) {
+    if (sim_ && building > 0 && import_limit >= 0 && export_keep >= 0) {
+        sim_->issue(bo::core::SetTradeOrder{static_cast<std::uint32_t>(building), to_std(good), import_on,
+                                            static_cast<std::uint32_t>(import_limit), export_on,
+                                            static_cast<std::uint32_t>(export_keep)});
     }
 }
 
@@ -470,11 +510,15 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_wage_rate", "rate"), &BoSimulation::set_wage_rate);
     ClassDB::bind_method(
         D_METHOD("start_with_map", "data_dir", "seed", "difficulty_code", "initial_treasury", "rows", "full_staffing",
-                 "elevation"),
-        &BoSimulation::start_with_map, DEFVAL(false), DEFVAL(PackedStringArray()));
+                 "elevation", "trade_partners"),
+        &BoSimulation::start_with_map, DEFVAL(false), DEFVAL(PackedStringArray()), DEFVAL(Array()));
     ClassDB::bind_method(D_METHOD("set_sector_priority", "sector", "priority"), &BoSimulation::set_sector_priority);
     ClassDB::bind_method(D_METHOD("set_industry_enabled", "type", "enabled"), &BoSimulation::set_industry_enabled);
     ClassDB::bind_method(D_METHOD("get_workforce"), &BoSimulation::get_workforce);
+    ClassDB::bind_method(D_METHOD("set_trade_partner", "building", "partner"), &BoSimulation::set_trade_partner);
+    ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",
+                                  "export_keep"),
+                         &BoSimulation::set_trade_order);
     ClassDB::bind_method(D_METHOD("set_storage_order", "building", "good", "kind", "limit"),
                          &BoSimulation::set_storage_order);
     ClassDB::bind_method(D_METHOD("get_population"), &BoSimulation::get_population);

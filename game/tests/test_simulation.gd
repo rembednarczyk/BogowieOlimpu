@@ -115,6 +115,22 @@ func _init() -> void:
 	g.step(1)
 	check(g.drain_events().filter(func(e): return e["type"] == "command_rejected").size() == 0, "storage order accepted")
 
+	# Trade through the binding: a partner, a trading post, a caravan from the land entry.
+	var t := BoSimulation.new()
+	var trows := PackedStringArray()
+	for y in 10:
+		trows.append("E" + "=".repeat(29) if y == 6 else ".".repeat(30))
+	var partner := {"id": "corinth", "relation": "ally", "by_sea": false, "sells": {"fleece": [60, 8]}, "buys": {}}
+	check(t.start_with_map("res://data", 3, "", 5000, trows, true, PackedStringArray(), [partner]) == "", "start with a partner")
+	t.place_building("trading_post", 20, 2)
+	t.step(1)
+	var post: int = t.get_tile(20, 2)["building"]
+	t.set_trade_partner(post, 0)
+	t.set_trade_order(post, "fleece", true, 4, false, 0)
+	t.run_days(20)
+	var tev: Array = t.drain_events()
+	check(tev.filter(func(e): return e["type"] == "trade_done").size() >= 1, "trade_done event")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

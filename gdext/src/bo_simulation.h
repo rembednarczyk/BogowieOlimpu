@@ -27,7 +27,8 @@ public:
     godot::String start_with_map(const godot::String& data_dir, int64_t seed, const godot::String& difficulty_code,
                                  int64_t initial_treasury, const godot::PackedStringArray& rows,
                                  bool full_staffing = false,
-                                 const godot::PackedStringArray& elevation = godot::PackedStringArray());
+                                 const godot::PackedStringArray& elevation = godot::PackedStringArray(),
+                                 const godot::Array& trade_partners = godot::Array());
     void step(int64_t ticks);
     void run_days(int64_t days);
 
@@ -51,6 +52,9 @@ public:
     void set_industry_enabled(const godot::String& type, bool enabled);
     // kind: 0 Accept, 3 Don't Accept (Get and Empty come with stage 3)
     void set_storage_order(int64_t building, const godot::String& good, int64_t kind, int64_t limit);
+    void set_trade_partner(int64_t building, int64_t partner);
+    void set_trade_order(int64_t building, const godot::String& good, bool import_on, int64_t import_limit,
+                         bool export_on, int64_t export_keep);
     int64_t get_workforce() const;
     int64_t get_employed() const;
     int64_t get_appeal(int64_t x, int64_t y) const;

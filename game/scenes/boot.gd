@@ -20,13 +20,13 @@ const BUILDING_COLORS := {
 	"fleece_vendor_stall": Color(0.95, 0.95, 0.90), "carrot_farm": Color(0.90, 0.55, 0.20),
 	"onion_farm": Color(0.85, 0.80, 0.55), "carding_shed": Color(0.75, 0.65, 0.50), "granary": Color(0.80, 0.70, 0.40),
 	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0), "ruins": Color(0.35, 0.33, 0.30),
-	"infirmary": Color(0.95, 0.95, 0.98),
+	"infirmary": Color(0.95, 0.95, 0.98), "trading_post": Color(0.55, 0.40, 0.60),
 }
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
 const WALKER_COLORS := {
 	"deliveryman": Color(0.55, 0.35, 0.15), "food_vendor": Color(0.95, 0.80, 0.30), "fleece_vendor": Color(0.9, 0.9, 0.9),
-	"shepherd": Color(0.3, 0.7, 0.3),
+	"shepherd": Color(0.3, 0.7, 0.3), "trade_caravan": Color(0.6, 0.3, 0.6),
 	"water_bearer": Color(0.25, 0.55, 1.0), "superintendent": Color(1.0, 0.75, 0.2),
 	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0), "peddler": Color(0.95, 0.6, 0.1),
 }
@@ -52,6 +52,8 @@ static func demo_map() -> PackedStringArray:
 				c = "T"
 			elif y == 22 and x >= 20 and x < 26:
 				c = ","
+			elif y == 16 and x == 1:
+				c = "E"  # land entry: the road to the rest of Greece (caravans)
 			elif y >= 20 and y < 28 and x >= 5 and x < 15:
 				c = ","  # meadow for farms and sheep
 			elif x >= 30 or y >= 30:
@@ -68,7 +70,9 @@ static func demo_heights() -> PackedStringArray:
 	return rows
 
 func _ready() -> void:
-	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), false, demo_heights())
+	var partner := {"id": "corinth", "relation": "ally", "by_sea": false,
+		"sells": {"olive_oil": [145, 8], "fleece": [60, 8]}, "buys": {}}
+	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), false, demo_heights(), [partner])
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
@@ -83,13 +87,16 @@ func _ready() -> void:
 		sim.place_building("common_housing", x, 2)
 	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
 	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
-			["storehouse", 21, 25]]:
+			["storehouse", 21, 25], ["trading_post", 24, 24]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.set_sector_priority(2, 5)  # distribution first: the granary takes food only when fully staffed
 	sim.set_sector_priority(3, 5)  # maintenance too: unattended buildings burn and collapse (C7)
 	for b in [["maintenance_office", 13, 5], ["maintenance_office", 6, 14], ["infirmary", 9, 9]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.step(1)
+	var post: int = sim.get_tile(24, 24)["building"]
+	sim.set_trade_partner(post, 0)
+	sim.set_trade_order(post, "olive_oil", true, 4, false, 0)
 	for i in 8:
 		sim.place_building("sheep", 7 + i % 4, 21 + i / 4)
 	for s in [["food_vendor_stall", 26, 6], ["fleece_vendor_stall", 26, 8], ["oil_vendor_stall", 26, 10]]:
