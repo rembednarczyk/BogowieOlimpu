@@ -24,8 +24,8 @@ Miasto ma dwie klasy: **lud pracujący** (domy zwykłe) i **elitę** (domy elity
 - Townhouse to szczyt zabudowy ludowej.
 - Każde wymaganie poziomu niższego obowiązuje również na wyższych (kumulacja).
 - **Atrakcyjność**: przy zaspokojonych potrzebach dom nie awansuje, jeśli atrakcyjność otoczenia jest zbyt niska (Z:31). [LUKA: progi atrakcyjności na poziom]
-- "Więcej kultury" oznacza dostęp do większej liczby **rodzajów** kultury (filozofia, atletyka, dramat, zawody). Widok kultury pokazuje "różnorodność" rozrywek domu (Z:110). [LUKA: dokładna liczba rodzajów na poziom; ZAŁOŻENIE: Hovel 1, Tenement 2, Townhouse 3]
-- Wyższy poziom mieści więcej ludzi (Z:35). [LUKA: pojemności]
+- "Więcej kultury" to więcej **punktów kultury** od wykonawców: Hovel 15, Tenement 35, Townhouse 45; elita 40-80 zależnie od trudności. Tabela punktów i progów: [18](18-domy-i-ekonomia-liczby.md).
+- Pojemności, progi atrakcyjności (awans AppE, regres AppD), zużycie dóbr: [18](18-domy-i-ekonomia-liczby.md) i `data/housing.json`.
 
 ### Regres (Z:31-32)
 

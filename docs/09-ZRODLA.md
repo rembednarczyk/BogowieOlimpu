@@ -45,9 +45,25 @@ Materiały chronione prawem autorskim (instrukcje, zrzuty z gry referencyjnej) t
 - Wiarygodność: wysoka (praktyka z trzech projektów właściciela).
 - Wydestylowane: `docs/PRAKTYKI.md`, `CLAUDE.md`, `docs/DECYZJE.md`, `docs/BACKLOG.md`, `docs/BLEDY.md`, `docs/ODSTEPSTWA.md`, `docs/adr/`, R-011.
 
+### S-004: Portal Zeus Heaven (zeus.heavengames.com)
+- Typ: strony WWW, pobrane skryptem 2026-11-26 (200 stron: gameinfo, buildings, units, scendesign, walkthroughs, history, archives, interview).
+- Lokalizacja: https://zeus.heavengames.com/ (kopia robocza poza repo).
+- Dostarczone: 2026-11-26 (linki od właściciela: gameinfo, buildings, units, blocks/legend, downloads fileid=598).
+- Zakres: tabela modelu budynków (rozmiar, pracownicy, koszty per trudność, atrakcyjność, ryzyka), modele domów per trudność, podatki, płace, odsetek pracujących, zasięgi i prędkości chodzików, produkcja, sanktuaria, herosi, zadania, potwory, statystyki jednostek i wrogów, okup, piramidy, hipodrom, porady projektowania scenariuszy.
+- Wiarygodność: wysoka dla tabel "Building Model Data" i "Housing Models" (pochodzą z plików modelu gry); średnia dla opisów i pomiarów (różnice między podstronami, patrz `docs/gameplay/98-konflikty-zrodel.md`).
+- Wydestylowane: `docs/gameplay/17`-`23`, `98`, `99`; `data/building_stats.json`, `housing.json`, `difficulty.json`, `logistics.json`, `production.json`, `gods.json`, `gods_rules.json`, `heroes.json`, `quests.json`, `enemies.json`, `monuments.json`, `hippodrome.json`, `walkers.json`; R-012.
+- Notatki: plik fileid=598 to ZeusMapper 1.2 (narzędzie do minimap z plików .pak/.map/.sav); strona autora z opisem formatów jest niedostępna z tego środowiska (archiwum zablokowane przez politykę sieci). Opisy przejść kampanii (walkthroughs) traktujemy tylko jako źródło obserwacji mechanik; treść kampanii nie trafia do gry (R-002).
+
+### S-005: Wątki forum City Builders (caesar3.heavengames.com, dział Zeus)
+- Typ: 9 wątków wskazanych przez S-004 jako najważniejsze ("Ok Folks - Let's Crunch Numbers", "Hungry? So are your people", "Everything You Ever Wanted to Know About Industries in Zeus", "On the Building of Sanctuaries", "Odds & Ends", "How To Do Colonies", "The Tower Switch of Sparta", "Balanced Block", "My Favorite Housing Blocks").
+- Dostarczone: 2026-11-26 (pobrane w ramach skanu portalu).
+- Zakres: model czasu i prędkości z plików `figure_model`, tempo produkcji, pojemności, zachowanie doręczycieli, fazy budowy sanktuariów, ciekawostki edytora.
+- Wiarygodność: średnia (pomiary graczy, część na wersji 1.0 gry; rozbieżności w 98-konflikty).
+- Wydestylowane: `docs/gameplay/17`, `19`, `21`, `23`; `data/production.json`, `logistics.json`.
+
 ## Kandydaci na kolejne źródła
 
-Potrzebne do zamknięcia luk P0 (`docs/gameplay/99-luki.md`):
-- tabele wartości budynków, domów i chodzików (społeczność graczy, pliki danych gry),
+Potrzebne do zamknięcia pozostałych luk P0 (`docs/gameplay/99-luki.md`: L-001, L-008, L-012b, L-017):
+- opis plików modelu gry albo reimplementacje gier z tej rodziny (algorytm chodzików, migracja),
 - instrukcja edytora przygód dodatku,
-- nagrania rozgrywki do pomiaru zasięgów i prędkości.
+- nagrania rozgrywki do pomiarów.

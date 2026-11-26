@@ -2,7 +2,7 @@
 
 Maszynowa wersja specyfikacji z `docs/gameplay/`. Zasada "dane w tabelach, zachowanie w systemach" (`docs/PRAKTYKI.md`): symulacja i testy czytają te same pliki.
 
-Stan: **referencja 1:1 z instrukcji** (S-001, S-002). Wartości liczbowe, których instrukcje nie podają, mają `null` i odsyłacz do luki `L-NNN` w polu `gaps`.
+Stan: **referencja 1:1** z instrukcji (S-001, S-002) uzupełniona liczbami z S-004 i S-005 (hierarchia źródeł: R-012, `docs/gameplay/98-konflikty-zrodel.md`). Wartości liczbowe, których instrukcje nie podają, mają `null` i odsyłacz do luki `L-NNN` w polu `gaps`.
 
 ## Pliki
 
@@ -19,7 +19,15 @@ Stan: **referencja 1:1 z instrukcji** (S-001, S-002). Wartości liczbowe, który
 | `military.json` | jednostki, rozkazy, taktyki, priorytety trier, statusy |
 | `diplomacy.json` | stany dyplomatyczne, macierz próśb, skutki akcji |
 | `games.json` | Igrzyska Panhelleńskie |
-| `monuments.json` | pomniki pamiątkowe i piramidy |
+| `monuments.json` | pomniki pamiątkowe i piramidy (materiały per poziom) |
+| `building_stats.json` | rozmiar, pracownicy, koszt per trudność (B/M/H/T/O), atrakcyjność (initial/step_tiles/step_change/range), ryzyko pożaru i zawalenia; wygenerowane z tabeli S-004 |
+| `difficulty.json` | stawki podatków, płace, odsetek pracujących, nastroje, okup |
+| `logistics.json` | jednostki, pojemności, doręczyciele, zużycie, limity |
+| `production.json` | tempo produkcji i zasięgi dostaw |
+| `gods_rules.json` | reguły ogólne bogów (limit 4 sanktuariów, sanktyfikacja, pojawianie się) |
+| `quests.json` | zadania bogów |
+| `enemies.json` | statystyki jednostek gracza, wrogów i boskich; składy inwazji |
+| `hippodrome.json` | długość toru, konie, dochód |
 
 ## Konwencje
 
@@ -29,6 +37,6 @@ Stan: **referencja 1:1 z instrukcji** (S-001, S-002). Wartości liczbowe, który
 - `src`: strony instrukcji (`Z:nn`, `P:nn`).
 - `gaps`: lista luk z `docs/gameplay/99-luki.md`.
 - Pliki katalogowe to tablice obiektów, jeden obiekt w linii, żeby ograniczyć konflikty przy scalaniu. `military.json` i `diplomacy.json` to obiekty reguł.
-- Wspólne luki wszystkich budynków: rozmiar (L-005), koszt (L-006), liczba pracowników (L-007), tempo produkcji (L-014). Nie powtarzamy ich w każdym wpisie.
-- `housing.json`: liczby rodzajów kultury (`culture:1/2/3`, `culture:n+k`) są `[ZAŁOŻENIE]` do czasu zamknięcia L-011; pojemności `null` (L-009); progi atrakcyjności domów zwykłych L-010.
+- W tabelach per trudność `null` oznacza "–" w źródle (brak wartości, np. brak ryzyka na poziomie Beginner).
+- `housing.json`: pełny model domu per trudność (`model_by_difficulty`), kolumny opisane w `docs/gameplay/18-domy-i-ekonomia-liczby.md`.
 - Spójność odwołań (bogowie, potwory, herosi, sanktyfikowane budynki) ma być sprawdzana testem, gdy powstanie kod.

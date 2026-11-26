@@ -21,6 +21,14 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Proces
 
+### 2026-11-26: Zeus Heaven jako źródło liczb (S-004, S-005)
+- Decyzja: dane liczbowe i algorytmy uzupełniamy z portalu Zeus Heaven i wskazanych przez niego wątków forum; konflikty rozstrzyga hierarchia R-012.
+- Cytat właściciela: "Tutaj masz kilka linków z wiedzą o grze, na ich podstawie uzupełnij wiedzę. Przeskanuj też cały portal w poszukiwaniu brakującej wiedzy."
+- Zakres skanu: 200 stron treści portalu (bez forum w całości, galerii i katalogu plików do pobrania) oraz 9 wątków forum wskazanych przez portal jako najważniejsze. Archiwa newsów i opisy przejść kampanii przejrzane pod kątem mechanik.
+- Wynik: zamknięte 31 luk, częściowo 13, otwarte 18; otwarte P0: L-001, L-008, L-012b, L-017.
+- Nie sprawdzono: strony autora ZeusMapper (formaty plików), bo archiwum internetowe jest zablokowane w tym środowisku; całego forum (tysiące wątków).
+- Dane w `data/building_stats.json` i `data/housing.json` są generowane skryptem z pobranych tabel; skrypty i surowe strony zostały w katalogu roboczym sesji, poza repo.
+
 ### 2026-11-26: Wytyczne z poprzednich projektów jako praktyki projektu
 - Decyzja: `docs/PRAKTYKI.md` przenosi wytyczne właściciela (S-003) na citybuilder. `CLAUDE.md` streszcza zasady obowiązujące każdą sesję.
 - Cytat właściciela: "Tutaj masz Guidelines, dostosuj praktyki pod ten projekt".

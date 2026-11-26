@@ -8,6 +8,8 @@ Ten katalog opisuje mechaniki gry referencyjnej i dodatku tak, jak przedstawiaj�
 |---|---|
 | `Z:nn` | S-001, instrukcja gry podstawowej (Zeus: Master of Olympus), strona drukowana `nn` |
 | `P:nn` | S-002, instrukcja dodatku (Poseidon), strona drukowana `nn` |
+| `S-004` | portal Zeus Heaven (zeus.heavengames.com): tabele modelu gry, pomiary |
+| `S-005` | wątki forum City Builders z pomiarami społeczności |
 
 Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści).
 
@@ -38,7 +40,15 @@ Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści)
 | [14-swiat.md](14-swiat.md) | Mapa świata, stany dyplomatyczne, akcje, opinie przywódców |
 | [15-atlantyda.md](15-atlantyda.md) | Dodatek: kultura atlantydzka, nauka, hipodrom, piramidy, nowi bogowie |
 | [16-interfejs-referencyjny.md](16-interfejs-referencyjny.md) | Zakładki, widoki specjalne, ikony problemów, komunikaty, skróty |
-| [99-luki.md](99-luki.md) | Dane, których instrukcje nie podają |
+| [17-czas-i-ruch.md](17-czas-i-ruch.md) | Model czasu, prędkości, zasięgi i zachowanie chodzików |
+| [18-domy-i-ekonomia-liczby.md](18-domy-i-ekonomia-liczby.md) | Domy (model per trudność), punkty kultury, zużycie, praca, płace, podatki, hipodrom |
+| [19-produkcja-i-logistyka-liczby.md](19-produkcja-i-logistyka-liczby.md) | Tempo produkcji, pojemności, doręczyciele, sady, hodowla, utrzymanie |
+| [20-atrakcyjnosc-i-budynki.md](20-atrakcyjnosc-i-budynki.md) | Algorytm atrakcyjności, ryzyka, rozmiary, koszty |
+| [21-mitologia-liczby.md](21-mitologia-liczby.md) | Sanktuaria, fazy budowy, sanktyfikacja, herosi, zadania |
+| [22-wojsko-liczby.md](22-wojsko-liczby.md) | Statystyki jednostek, wrogowie, okup, rajdy |
+| [23-przygody-i-edytor.md](23-przygody-i-edytor.md) | Struktura przygód, edytor, zdarzenia, cele |
+| [98-konflikty-zrodel.md](98-konflikty-zrodel.md) | Rozbieżności między źródłami i przyjęte wartości |
+| [99-luki.md](99-luki.md) | Dane, których źródła nie podają, ze statusem |
 
 ## Dane maszynowe
 

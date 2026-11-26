@@ -115,3 +115,11 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Wpływ na: cały proces i kod.
 - Historia: 2026-11-26 utworzona
 
+### R-012 [PROCES] Hierarchia źródeł
+- Status: obowiązuje
+- Źródło: decyzja koordynatora 2026-11-26 po dodaniu S-004 i S-005 (do potwierdzenia przez właściciela)
+- Treść: Reguły jakościowe bierzemy z instrukcji (S-001, S-002). Liczby bierzemy z tabel modelu gry w S-004, potem z opisowych stron S-004, potem z pomiarów S-005. Każda rozbieżność ma wpis K-NNN w `docs/gameplay/98-konflikty-zrodel.md`.
+- Uzasadnienie: instrukcja opisuje zasady, ale nie podaje liczb; tabele S-004 pochodzą z plików gry; pomiary forum bywają niespójne.
+- Wpływ na: `docs/gameplay/`, `data/`.
+- Historia: 2026-11-26 utworzona
+

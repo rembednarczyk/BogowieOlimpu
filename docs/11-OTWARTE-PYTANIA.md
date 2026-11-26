@@ -31,4 +31,6 @@ Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzj
 
 14. Konsultacja prawna granic inspiracji przed fazą 3. Rekomendacja: tak, przed publicznym materiałem promocyjnym.
 15. Skład zespołu i budżet na grafikę i audio. Wpływa na zakres "AAA" z `01-WIZJA.md`.
-19. **[B]** Źródła liczb do luk P0 (`gameplay/99-luki.md`). Rekomendacja: właściciel dostarcza tabele społeczności lub dane z plików gry; alternatywnie pomiary z nagrań. Bez nich faza 1 startuje na założeniach roboczych strojonych audytem.
+19. Źródła liczb do luk P0. Częściowo rozstrzygnięte: S-004 i S-005 zamknęły większość luk. Otwarte: L-001, L-008, L-012b, L-017. Rekomendacja: jeśli właściciel ma oryginalną grę, krótkie pomiary w niej (nagranie + licznik) rozstrzygną te luki i konflikty K-NNN szybciej niż dalsze szukanie źródeł.
+20. Poziom trudności domyślny w naszej grze. Rekomendacja: zachować 5 poziomów 1:1; domyślny Hero (wartości referencyjne okupu = 100%).
+21. Potwierdzenie R-012 (hierarchia źródeł). Rekomendacja: przyjąć.
