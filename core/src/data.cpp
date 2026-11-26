@@ -402,6 +402,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         load_production(docs, cat);
         load_combat(docs, cat.combat);
         load_world(docs, cat.world);
+        detail::load_games(docs, cat.games);
         for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
             const std::string id = m.value("id", "");
             if (id == "population" && m.contains("thresholds")) {

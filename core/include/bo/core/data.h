@@ -216,6 +216,22 @@ struct SanctuaryParams {
 };
 
 // World (data/diplomacy.json; doc 24; assumptions L-063, L-064, L-113).
+// Panhellenic games (data/games.json; Z:110-112; eZeus, L-123).
+struct GameParams {
+    std::string id;
+    std::uint32_t year_mod_4 = 0;
+    std::vector<std::string> walkers;  // performers whose visits count (philosopher, athlete, actor, competitor)
+    std::string monument;              // scholar or athlete
+};
+struct GamesParams {
+    std::vector<GameParams> games;
+    std::uint32_t end_month = 7;  // 0-based: August
+    std::vector<std::pair<std::int64_t, std::int32_t>> population_multiplier_per_mille;  // (from people, x1000)
+    std::int32_t min_score = 15;
+    std::int32_t apollo_multiplier_per_mille = 1500;
+    std::int32_t olympian_opinion = 10;
+};
+
 // Debt (L-034, doc 24): days of continuous debt for the yearly warning, the immigration block and the loss.
 struct DebtParams {
     std::uint32_t warning_every_days = 192;
@@ -349,6 +365,7 @@ struct DataCatalog {
     WorldParams world;
     DebtParams debt;
     MonumentParams monuments;
+    GamesParams games;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

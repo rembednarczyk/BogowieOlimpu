@@ -13,6 +13,7 @@ add_library(bo_core STATIC
     src/gods.cpp
     src/build_order.cpp
     src/culture.cpp
+    src/games.cpp
     src/relations.cpp
     src/prayers.cpp
     src/housing.cpp
@@ -96,6 +97,7 @@ if(BO_BUILD_TESTS)
         tests/test_risks.cpp
         tests/test_sanctuary.cpp
         tests/test_scenario.cpp
+        tests/test_games.cpp
         tests/test_gods.cpp
         tests/test_trade.cpp
     )

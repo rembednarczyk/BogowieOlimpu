@@ -145,6 +145,13 @@ struct CityGift {  // L-121: a friendly city's goodwill gift or debt aid, in dra
     std::int64_t amount = 0;
 };
 
+struct GamesHeld {  // L-123: the year's Panhellenic games (Z:110-112)
+    std::string game;
+    std::int32_t chance = 0;
+    bool invited = false;
+    bool won = false;
+};
+
 struct DebtNotice {  // L-034: another year of continuous debt (eZeus debtAnniversary); immigration stops
     std::uint32_t years = 0;
 };
@@ -193,7 +200,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
-                           TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, CityRebelled, CityGift,
+                           TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, GamesHeld, CityRebelled, CityGift,
                            CityRequestReceived, RequestClosed, EpisodeWon,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
 

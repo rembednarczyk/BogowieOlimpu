@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "bo/core/appeal.h"
 #include "bo/core/culture.h"
+#include "bo/core/games.h"
 #include "bo/core/finance.h"
 #include "bo/core/gods.h"
 #include "bo/core/hash.h"
@@ -91,6 +92,9 @@ static void run_walker_spawn(Simulation& sim) {
 static void run_culture(Simulation& sim) {
     WorldState& st = sim.mutable_state();
     run_schools(st.city, st.walkers, sim.catalog());
+    if (const auto g = advance_games(st, sim.catalog())) {
+        sim.emit(GamesHeld{g->game, g->chance, g->invited, g->won});
+    }
 }
 
 // Daily: every service counter decays by 1 (96 days per visit, doc 24).

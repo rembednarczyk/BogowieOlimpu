@@ -277,6 +277,8 @@ func _handle_events(events: Array) -> void:
 			"request_closed", "city_request", "episode_won", "episode_lost", "debt_notice":
 				if ui != null and ui.report.visible:
 					ui.refresh_report()
+			"games_held":
+				demo_note = "igrzyska %s: %s" % [e["game"], "wygrane" if e["won"] else ("przegrane" if e["invited"] else "bez zaproszenia")]
 			"city_rebelled":
 				demo_note = "bunt: %s" % sim.get_cities()[e["city"]]["id"]
 			"city_gift":

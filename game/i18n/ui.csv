@@ -184,3 +184,9 @@ ui.expedition_line,"%s: %s, kompanie %d, %s, jeszcze %d dni","%s: %s, %d compani
 ui.returning,wraca,coming home
 ui.marching,w drodze,on the way
 ui.companies_soldiers,"kompanie %d, żołnierze %d","%d companies, %d soldiers"
+ui.games_line,W tym roku %s: szansa zwycięstwa %d %%,This year the %s: a %d %% chance to win
+ui.games_not_invited,W tym roku %s: miasto nie jest zaproszone (za mało wykonawców),This year the %s: the city is not invited (too few performers)
+games.olympian,Igrzyska Olimpijskie,Olympic Games
+games.isthmian,Igrzyska Istmijskie,Isthmian Games
+games.pythian,Igrzyska Pytyjskie,Pythian Games
+games.nemean,Igrzyska Nemejskie,Nemean Games

@@ -1,4 +1,5 @@
 // Data loader, economy sections: migration, risks, production (data/*.json, docs/gameplay/19, 23, 24).
+#include <cmath>
 #include <map>
 #include <string>
 
@@ -236,6 +237,45 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.prayer_cooldown_days = cooldowns.value(god, cooldowns.value("default", p.prayer_cooldown_days));
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
+    }
+}
+
+void load_games(const std::map<std::string, json>& docs, GamesParams& p) {
+    if (docs.count("games.json") == 0) {
+        return;
+    }
+    const json* rules = nullptr;
+    for (const auto& g : docs.at("games.json")) {
+        if (g.value("id", "") == "rules") {
+            rules = &g;
+        }
+    }
+    std::map<std::string, std::string> walker_of;
+    if (rules) {
+        walker_of = rules->value("discipline_walkers", std::map<std::string, std::string>{});
+        p.end_month = rules->value("end_month", 8U) - 1U;
+        for (const auto& m : rules->value("population_multiplier", json::array())) {
+            p.population_multiplier_per_mille.emplace_back(m.at(0).get<std::int64_t>(),
+                                                           static_cast<std::int32_t>(std::llround(m.at(1).get<double>() * 1000)));
+        }
+        p.min_score = rules->value("min_score", p.min_score);
+        p.apollo_multiplier_per_mille = static_cast<std::int32_t>(std::llround(rules->value("apollo_multiplier", 1.5) * 1000));
+        p.olympian_opinion = rules->value("olympian_opinion", p.olympian_opinion);
+    }
+    for (const auto& g : docs.at("games.json")) {
+        if (g.value("id", "") == "rules") {
+            continue;
+        }
+        GameParams gp;
+        gp.id = g.at("id").get<std::string>();
+        gp.year_mod_4 = g.value("year_mod_4", 0U);
+        gp.monument = g.value("monument", "");
+        for (const auto& d : g.value("disciplines", std::vector<std::string>{})) {
+            if (walker_of.count(d) != 0) {
+                gp.walkers.push_back(walker_of.at(d));
+            }
+        }
+        p.games.push_back(gp);
     }
 }
 
