@@ -78,6 +78,17 @@ struct TradePartner {
     CityDiplomacy diplomacy;           // D4; saved in the world block (since v21)
 };
 
+// What a city sends at the player's request, on its way (eZeus: 90 days; owner's choice, L-113).
+struct PendingDelivery {
+    std::uint32_t city = 0;
+    std::string good;          // "drachmas": money
+    std::uint32_t amount = 0;  // loads, or drachmas
+    std::uint32_t days_left = 0;
+    friend bool operator==(const PendingDelivery& a, const PendingDelivery& b) {
+        return a.city == b.city && a.good == b.good && a.amount == b.amount && a.days_left == b.days_left;
+    }
+};
+
 // An army sent abroad (Z:177-178): out, battle, back (doc 24: 200 days each way, L-063).
 struct Expedition {
     std::uint32_t city = 0;
@@ -114,6 +125,7 @@ struct WorldState {
     WalkerStore walkers;
     MilitaryState military;  // since v17 (module D3)
     std::vector<Expedition> expeditions;  // since v21 (module D4)
+    std::vector<PendingDelivery> deliveries;  // since v27
     bool episode_lost = false;            // since v21: taken twice by the same rival (Z:172)
     ScenarioState scenario;               // since v22 (module D5)
     std::vector<MonsterState> monsters;   // since v24

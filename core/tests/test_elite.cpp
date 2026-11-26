@@ -14,7 +14,8 @@ Simulation town(bool entry) {
     if (entry) {
         rows[6][0] = 'E';
     }
-    return Simulation(bo::test::catalog_isolated(), SimulationConfig{2, Difficulty::Hero, 9000, rows, true});
+    // The real migration (the elite come from the common pool, L-108); risks are far off in these few weeks.
+    return Simulation(bo::test::catalog(), SimulationConfig{2, Difficulty::Hero, 9000, rows, true});
 }
 
 Building& at(Simulation& sim, TilePos p) {
@@ -45,7 +46,7 @@ bool walker_of_type(const Simulation& sim, const std::string& type) {
 
 }  // namespace
 
-TEST_CASE("elite immigrants walk in from the land entry, outside the common pool (Z:34, L-108)") {
+TEST_CASE("elite immigrants of the common pool walk in from the land entry, 8 at most a group (Z:34, L-108)") {
     auto sim = town(true);
     elite_plot(sim);
     bool walking = false;
@@ -55,6 +56,7 @@ TEST_CASE("elite immigrants walk in from the land entry, outside the common pool
     }
     CHECK(walking);
     CHECK(at(sim, {22, 2}).house->population > 0);
+    CHECK(at(sim, {22, 2}).house->population <= 8);
     CHECK(sim.state().city.homeless == 0);
 }
 
@@ -81,4 +83,15 @@ TEST_CASE("an elite plot sends no nobleman while its family is still on the way"
         CHECK((at(sim, {22, 2}).house->population > 0 || !walker_of_type(sim, "nobleman")));
     }
     CHECK(empty_days > 0);
+}
+
+TEST_CASE("no popularity, no immigrants: the elite do not come either (L-108, eZeus)") {
+    auto sim = town(false);
+    elite_plot(sim);
+    sim.mutable_state().migration.popularity = 0;
+    for (int d = 0; d < 10; ++d) {
+        sim.mutable_state().migration.popularity = 0;
+        sim.run_days(1);
+    }
+    CHECK(at(sim, {22, 2}).house->population == 0);
 }

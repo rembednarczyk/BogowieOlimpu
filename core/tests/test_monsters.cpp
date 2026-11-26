@@ -1,4 +1,5 @@
 // Module D5 stage 3: monsters, Hero's Halls, heroes (docs/gameplay/10, 21, 23; Z:127-131; L-057b, L-116).
+#include "bo/core/military.h"
 #include "bo/core/monsters.h"
 #include "bo/core/serialize.h"
 #include "bo/core/simulation.h"
@@ -137,4 +138,19 @@ TEST_CASE("save v24: a monster on its way survives a round trip with the same fu
     a.run_days(20);
     b->run_days(20);
     CHECK(a.state_hash() == b->state_hash());
+}
+
+TEST_CASE("B-004: morale does not recover while a monster fights in the city") {
+    auto sim = town();
+    WorldState& st = sim.mutable_state();
+    Company c;
+    c.unit = "hoplite";
+    c.morale = 50;
+    st.military.companies.push_back(c);
+    st.monsters.push_back(MonsterState{"medusa", kNoWalker, {0, 10}, "food", kNoBuilding, 0, false, false});
+    recover_morale(st);
+    CHECK(st.military.companies[0].morale == 50);
+    st.monsters[0].slain = true;
+    recover_morale(st);
+    CHECK(st.military.companies[0].morale == 55);
 }

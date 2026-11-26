@@ -218,6 +218,7 @@ struct WorldParams {
     std::int32_t request_loads = 8;
     std::int32_t request_money_per_coin = 250;
     std::int32_t request_cooldown_days = 96;
+    std::int32_t request_delay_days = 90;  // goods arrive after (eZeus; owner, L-113)
     std::int32_t march_days = 200;        // doc 24 [eZeus]
     std::int32_t city_strength_per_shield = 10;
     std::int32_t tribute_per_coin = 200;

@@ -31,6 +31,18 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - W trybach przeciągania jeden palec rysuje, mapę przesuwa się dwoma palcami (szczypnięcie zmienia przybliżenie).
 - Wdrożenie: `game/scenes/ui/build_ui.gd`, test `game/tests/test_ui.gd`.
 
+### 2026-11-26: Odpowiedzi po raporcie agenta weryfikującego
+
+- Demo ma być zawsze rozbudowane tak, żeby dało się w nim przetestować wszystkie mechaniki i funkcje, jakie mamy, i ma dać się wygrać.
+- Walka z potworem w mieście działa na morale jak bitwa (B-004).
+- L-108: elita przychodzi ze wspólnej puli imigracji, tempo zależy od popularności, grupy do 8 osób (model eZeus).
+- L-109: liczba rabble i koszt śmierci bez zmian (20 % mieszkańców, 6 osób).
+- L-114: prośba spełniona po terminie daje −5 opinii.
+- L-113, L-118: towar z prośby gracza przychodzi po 90 dniach; wyprawa herosa trwa 150 dni.
+- L-117, L-107: wytrzymałości, zasięgi, czas triery i odradzanie wilków bez zmian.
+- Pomnik kolonii dodany (B-005).
+- Czy cel "sanktuarium" przepada po zniszczeniu sanktuarium: do sprawdzenia w instrukcji (przegląd referencji).
+
 ## Proces
 
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"

@@ -16,6 +16,7 @@ struct WorldState;
 struct WorldEvents {
     std::vector<std::pair<std::uint32_t, std::int64_t>> tribute;  // city, + received / - paid
     std::vector<Expedition> returned;                             // expeditions back today
+    std::vector<std::uint32_t> delivered;                         // requested goods arrived (city)
     bool episode_lost = false;
 };
 
@@ -25,7 +26,7 @@ struct WorldEvents {
 std::string give_gift(WorldState& state, const DataCatalog& catalog, std::uint32_t city, const std::string& good,
                       std::uint32_t amount);
 // Request (Z:173-175; doc 24): food, goods or money by state and opinion; a rival only gives to a stronger
-// player. Goods arrive in storage at once [ZAŁOŻENIE, L-113]; every city's opinion -10.
+// player. The goods arrive after request_delay_days (90, eZeus; L-113); every city's opinion -10.
 std::string request_from_city(WorldState& state, const DataCatalog& catalog, std::uint32_t city,
                               const std::string& good);
 // Attack or raid (Z:177-178): companies at home, no rabble; 200 days there, a battle by strength (L-063),

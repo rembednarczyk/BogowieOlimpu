@@ -34,7 +34,7 @@
     "gift_needed_x2": 6, "gift_other_x2": 3, "gift_units_per_year": 3, "gift_src": "doc 24 [eZeus]: +3 / +1,5 za jednostkę, maks. 3 jednostki towaru rocznie",
     "gift_money_unit": 500, "gift_money_unit_src": "[ZAŁOŻENIE L-113] jednostka daru pieniężnego",
     "request_opinion": -10, "request_opinion_src": "doc 24 [eZeus]: prośba gracza -10 u wszystkich miast",
-    "request_loads": 8, "request_money_per_coin": 250, "request_cooldown_days": 96, "request_src": "[ZAŁOŻENIE L-113] ilość i odstęp prośby",
+    "request_loads": 8, "request_money_per_coin": 250, "request_cooldown_days": 96, "request_delay_days": 90, "request_delay_src": "eZeus egameboard (90 dni); decyzja właściciela 2026-11-26, L-113", "request_src": "[ZAŁOŻENIE L-113] ilość i odstęp prośby",
     "march_days": 200, "march_src": "doc 24 [eZeus, ZAŁOŻENIE do strojenia]",
     "city_strength_per_shield": 10, "city_strength_src": "[ZAŁOŻENIE L-063] tarcza siły militarnej = 10 żołnierzy",
     "tribute_per_coin": 200, "tribute_src": "[ZAŁOŻENIE L-065] trybut rywala za monetę siły ekonomicznej, gdy scenariusz nie podaje",

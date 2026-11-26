@@ -75,7 +75,7 @@ TEST_CASE("gifts: +3 a needed load, +1.5 otherwise, at most 3 a year; allies hea
     CHECK(sim.state().finance.treasury < 20000 - 1000 + 1);
 }
 
-TEST_CASE("requests: allies give food at any opinion, goods only when fairly happy; every city -10 (Z:174, doc 24)") {
+TEST_CASE("requests: allies give food at any opinion, goods only when fairly happy, after 90 days; every city -10") {
     auto sim = world();
     sim.mutable_state().trade.partners[0].diplomacy.opinion = 20;
     sim.issue(RequestFromCity{0, "olive_oil"});
@@ -84,6 +84,8 @@ TEST_CASE("requests: allies give food at any opinion, goods only when fairly hap
     sim.issue(RequestFromCity{0, "wheat"});
     sim.step(1);
     CHECK(outcome(sim) == "ok");
+    CHECK(city_stock(sim.state().city, bo::test::catalog(), "wheat") == 0);  // on its way: 90 days (L-113)
+    sim.run_days(91);
     CHECK(city_stock(sim.state().city, bo::test::catalog(), "wheat") == 8);
     CHECK(dip(sim, 1).opinion == 50);
     sim.issue(RequestFromCity{0, "wheat"});

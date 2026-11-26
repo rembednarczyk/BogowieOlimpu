@@ -60,8 +60,13 @@ WalkerId spawn_traveller(WorldState& st, const DataCatalog& catalog, const std::
 
 // Moves up to `people` into common houses; houses with many free places first (doc 24). Returns how many.
 // With `entry`, they walk from it: the house is reserved and must be reachable (doc 24).
+// Elite families (L-108, owner's choice after eZeus): settlers of the common pool, so their pace follows the
+// popularity; a group for an elite house brings at most 8 people.
+constexpr std::uint32_t kEliteGroup = 8;
+
 std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint32_t people,
-                          std::optional<TilePos> entry = std::nullopt, std::vector<WalkerId>* spawned = nullptr) {
+                          std::optional<TilePos> entry = std::nullopt, std::vector<WalkerId>* spawned = nullptr,
+                          bool elite_too = false) {
     const auto& p = catalog.migration;
     std::uint32_t placed = 0;
     for (const bool big_first : {true, false}) {
@@ -69,11 +74,15 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
             if (placed == people) {
                 return placed;
             }
-            if (!b.house || b.house->elite || b.house->abandoned || !b.road_access || b.house->quarantine_days > 0) {
-                continue;  // elite households arrive with module C5 (their plots need city stock)
+            if (!b.house || (b.house->elite && !elite_too) || b.house->abandoned || !b.road_access ||
+                b.house->quarantine_days > 0) {
+                continue;  // the homeless only go back to common houses
             }
             HouseState& h = *b.house;
-            const std::uint32_t room = free_places(catalog, h, st.difficulty);
+            std::uint32_t room = free_places(catalog, h, st.difficulty);
+            if (h.elite) {
+                room = std::min(room, kEliteGroup);  // elite families come from the same pool, 8 at most (L-108)
+            }
             if (room == 0 || (big_first && room < static_cast<std::uint32_t>(p.fill_first_free_slots))) {
                 continue;
             }
@@ -100,45 +109,6 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
             h.population += n;
             placed += n;
         }
-    }
-    return placed;
-}
-
-// Elite households (Z:34: "soon, some of Greece's finest moved in"): every elite house with free places and
-// nobody on the way gets a group filling it, from the entry when there is one, regardless of the common
-// immigration pool [ZAŁOŻENIE, L-108].
-std::uint32_t fill_elite(WorldState& st, const DataCatalog& catalog, std::optional<TilePos> entry,
-                         std::vector<WalkerId>& spawned) {
-    std::uint32_t placed = 0;
-    for (auto& [id, b] : st.city.buildings.items) {
-        if (!b.house || !b.house->elite || b.house->abandoned || !b.road_access || b.house->incoming > 0 ||
-            b.house->quarantine_days > 0) {
-            continue;
-        }
-        HouseState& h = *b.house;
-        const std::uint32_t room = free_places(catalog, h, st.difficulty);
-        if (room == 0) {
-            continue;
-        }
-        if (!entry) {
-            if (h.population == 0) {
-                h.happiness = static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(st.difficulty)]);
-            }
-            h.population += room;
-            placed += room;
-            continue;
-        }
-        const WalkerId w = spawn_traveller(st, catalog, "immigrant", id, *entry, *b.road_access);
-        if (w == kNoWalker) {
-            continue;
-        }
-        Walker& walker = st.walkers.items.at(w);
-        walker.job = WalkerJob::Settle;
-        walker.target = id;
-        walker.want_loads = room;
-        h.incoming = room;
-        placed += room;
-        spawned.push_back(w);
     }
     return placed;
 }
@@ -259,7 +229,7 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
     st.migration.pool += p.batch_people * migration_percent(p, st.migration.popularity) / 100;
     const auto entry = land_entry(st.city);
     if (st.migration.pool >= p.min_batch) {
-        r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool), entry, &r.spawned);
+        r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool), entry, &r.spawned, true);
         st.migration.pool = 0;  // no room: immigration is blocked, the batch does not wait (doc 24)
     } else if (st.migration.pool <= -p.min_batch) {
         if (static_cast<std::int32_t>(city_population(st.city)) > p.emigration_min_population &&
@@ -268,7 +238,6 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         }
         st.migration.pool = 0;
     }
-    r.arrived += fill_elite(st, catalog, entry, r.spawned);
     st.migration.arrived_this_month += r.arrived;
     st.migration.left_this_month += r.left;
     return r;

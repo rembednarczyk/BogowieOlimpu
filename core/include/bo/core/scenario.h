@@ -112,12 +112,12 @@ struct ScenarioEvents {
 // Daily: events of the month fire on its first day; requests turn overdue and are withdrawn 96 days after the
 // deadline (-15 opinion, doc 24) [ZAŁOŻENIE, L-114]; goals are checked at the start of each month.
 ScenarioEvents advance_scenario(WorldState& state, const DataCatalog& catalog);
-// Sends what a request asks for (Z:162): on time +10 opinion (doc 24), late +5 [ZAŁOŻENIE, L-114].
+// Sends what a request asks for (Z:162): on time +10 opinion (doc 24), late -5 (eZeus; owner, L-114).
 std::string fulfill_request(WorldState& state, const DataCatalog& catalog, std::uint32_t index);
 // Sends the hero of an open quest from his Hall to the enchanted place (Z:124); he comes back with the quest
 // done after quest_days [ZAŁOŻENIE, L-118] and the god grants a statue (Z:156).
 std::string send_hero_on_quest(WorldState& state, const DataCatalog& catalog, std::uint32_t quest);
-inline constexpr std::uint32_t kQuestDays = 200;  // there and back [ZAŁOŻENIE, L-118: eZeus march, doc 24]
+inline constexpr std::uint32_t kQuestDays = 150;  // there and back (eZeus egodquestevent; owner's choice, L-118)
 
 inline constexpr std::uint32_t kWithdrawAfterDays = 96;
 

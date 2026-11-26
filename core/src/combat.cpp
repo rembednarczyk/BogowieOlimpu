@@ -427,8 +427,9 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
 }
 
 void recover_morale(WorldState& st) {
-    if (st.military.invasion.active) {
-        return;
+    const bool monster = std::any_of(st.monsters.begin(), st.monsters.end(), [](const MonsterState& m) { return !m.slain; });
+    if (st.military.invasion.active || monster) {
+        return;  // a monster in the city is a battle too (owner, B-004)
     }
     for (Company& c : st.military.companies) {
         c.morale = static_cast<std::uint8_t>(std::min(100, c.morale + kMoraleRecoveryPerDay));

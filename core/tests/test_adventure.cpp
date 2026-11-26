@@ -66,6 +66,8 @@ TEST_CASE("an adventure: parent episodes in one city, colonies on their own maps
     CHECK(sim->state().city.map.width() == 30);  // back in the parent city, as it was left
     CHECK(sim->state().city.map.at({5, 5}).building != kNoBuilding);
     CHECK(sim->state().trade.partners[0].relation == "colony");
+    CHECK(sim->state().scenario.monuments.at("colony") == 1);  // B-005, Z:156
+    CHECK(sim->state().scenario.id == "test_adventure#2");      // B-006
     CHECK_FALSE(sim->state().scenario.won);
     REQUIRE(sim->state().scenario.goals.size() == 1);
     CHECK(sim->state().scenario.goals[0].value == 9000);

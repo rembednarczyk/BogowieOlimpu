@@ -252,6 +252,7 @@ void load_world(const std::map<std::string, json>& docs, WorldParams& p) {
     p.request_loads = w.value("request_loads", p.request_loads);
     p.request_money_per_coin = w.value("request_money_per_coin", p.request_money_per_coin);
     p.request_cooldown_days = w.value("request_cooldown_days", p.request_cooldown_days);
+    p.request_delay_days = w.value("request_delay_days", p.request_delay_days);
     p.march_days = w.value("march_days", p.march_days);
     p.city_strength_per_shield = w.value("city_strength_per_shield", p.city_strength_per_shield);
     p.tribute_per_coin = w.value("tribute_per_coin", p.tribute_per_coin);

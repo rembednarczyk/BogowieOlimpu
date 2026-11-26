@@ -183,11 +183,8 @@ std::string request_from_city(WorldState& st, const DataCatalog& catalog, std::u
         return "world.request_refused";
     }
     const WorldParams& w = catalog.world;
-    if (money) {
-        st.finance.treasury += static_cast<std::int64_t>(p.diplomacy.economy) * w.request_money_per_coin;
-    } else if (store_in_city(st.city, catalog, good, static_cast<std::uint32_t>(w.request_loads)) == 0) {
-        return "world.no_room";
-    }
+    const auto amount = static_cast<std::uint32_t>(money ? p.diplomacy.economy * w.request_money_per_coin : w.request_loads);
+    st.deliveries.push_back(PendingDelivery{city, good, amount, static_cast<std::uint32_t>(w.request_delay_days)});
     for (TradePartner& other : st.trade.partners) {
         change_opinion(other.diplomacy, w.request_opinion);  // doc 24: every city thinks less of a beggar
     }
@@ -246,6 +243,27 @@ WorldEvents advance_world(WorldState& st, const DataCatalog& catalog) {
     WorldEvents ev;
     for (TradePartner& p : st.trade.partners) {
         p.diplomacy.request_cooldown = static_cast<std::uint16_t>(p.diplomacy.request_cooldown > 0 ? p.diplomacy.request_cooldown - 1 : 0);
+    }
+    for (auto it = st.deliveries.begin(); it != st.deliveries.end();) {
+        if (it->days_left > 0) {
+            --it->days_left;
+        }
+        if (it->days_left > 0) {
+            ++it;
+            continue;
+        }
+        if (it->good == "drachmas") {
+            st.finance.treasury += it->amount;
+            it->amount = 0;
+        } else {
+            it->amount -= store_in_city(st.city, catalog, it->good, it->amount);  // what fits; the rest waits
+        }
+        if (it->amount == 0) {
+            ev.delivered.push_back(it->city);
+            it = st.deliveries.erase(it);
+        } else {
+            ++it;
+        }
     }
     for (auto it = st.expeditions.begin(); it != st.expeditions.end();) {
         Expedition& e = *it;

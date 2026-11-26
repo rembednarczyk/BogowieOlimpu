@@ -245,9 +245,16 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.u32(e.loot);
     }
     w.u8(s.episode_lost ? 1 : 0);
+    w.u32(static_cast<std::uint32_t>(s.deliveries.size()));  // since v27
+    for (const PendingDelivery& d : s.deliveries) {
+        w.u32(d.city);
+        w.str(d.good);
+        w.u32(d.amount);
+        w.u32(d.days_left);
+    }
 }
 
-bool read_world(ByteReader& r, WorldState& s) {
+bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
     std::uint32_t n = 0;
     if (!r.u32(n) || n != s.trade.partners.size()) {
         return false;
@@ -293,6 +300,19 @@ bool read_world(ByteReader& r, WorldState& s) {
         return false;
     }
     s.episode_lost = lost != 0;
+    if (version < 27) {
+        return true;
+    }
+    std::uint32_t pending = 0;
+    if (!r.u32(pending) || pending > 256) {
+        return false;
+    }
+    s.deliveries.resize(pending);
+    for (PendingDelivery& d : s.deliveries) {
+        if (!r.u32(d.city) || !r.str(d.good) || !r.u32(d.amount) || !r.u32(d.days_left)) {
+            return false;
+        }
+    }
     return true;
 }
 

@@ -85,7 +85,7 @@ TEST_CASE("dated events: a gift in month 2, an invasion by the rival in year 1, 
     CHECK(sim.state().scenario.requests.size() == 2);  // the request comes again a year later
 }
 
-TEST_CASE("requests: on time +10, late +5, withdrawn 96 days after the deadline -15 (doc 24, Z:162, L-114)") {
+TEST_CASE("requests: on time +10, withdrawn 96 days after the deadline -15 (doc 24, Z:162, L-114)") {
     auto sim = start(adventure(R"({"type": "request", "city": "athens", "good": "wheat", "amount": 4, "month": 0,
                                    "deadline_months": 2})",
                                ""));
@@ -150,4 +150,19 @@ TEST_CASE("the demo adventure (scenarios/demo.json) parses and starts") {
     CHECK(sim.state().trade.partners.size() == 2);
     CHECK(sim.state().scenario.goals.size() == 2);
     CHECK(sim.state().scenario.events.size() == 6);
+}
+
+TEST_CASE("a request fulfilled after its deadline costs 5 opinion (eZeus; owner, L-114)") {
+    auto sim = start(adventure(R"({"type": "request", "city": "athens", "good": "wheat", "amount": 4, "month": 0,
+                                   "deadline_months": 1})",
+                               ""));
+    sim.issue(PlaceBuilding{"granary", 10, 2});
+    sim.run_days(1 + 16 + 5);  // past the deadline, not yet withdrawn
+    REQUIRE(sim.state().scenario.requests.size() == 1);
+    auto& granary = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({10, 2}).building);
+    granary.storage->loads["wheat"] = 6;
+    sim.issue(FulfillRequest{0});
+    sim.step(1);
+    CHECK(sim.state().scenario.requests.empty());
+    CHECK(sim.state().trade.partners[0].diplomacy.opinion == 45);
 }

@@ -288,7 +288,7 @@ std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uin
     const bool late = st.time.tick() / kTicksPerDay > r.due_day;
     if (r.city < st.trade.partners.size()) {
         CityDiplomacy& d = st.trade.partners[r.city].diplomacy;
-        d.opinion = std::min(100, d.opinion + (late ? 5 : 10));
+        d.opinion = std::clamp(d.opinion + (late ? -5 : 10), 0, 100);  // late: -5 (eZeus; owner, L-114)
     }
     s.requests.erase(s.requests.begin() + static_cast<std::ptrdiff_t>(index));
     return {};

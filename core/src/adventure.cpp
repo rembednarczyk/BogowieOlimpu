@@ -29,6 +29,7 @@ void start_parent_episode(const AdventureData& adventure, const AdventureRun& ru
     st.scenario.goals = next.goals;
     st.scenario.events = next.events;
     st.scenario.won = false;  // quests, requests and monuments carry over
+    st.scenario.id = adventure.id + "#" + std::to_string(run.step);  // B-006
 }
 
 }  // namespace
@@ -124,6 +125,7 @@ NextEpisode advance_adventure(const AdventureData& adventure, AdventureRun& run,
                 p.relation = "colony";
             }
         }
+        ++sim->mutable_state().scenario.monuments["colony"];  // a Colony monument (Z:156, B-005)
     }
     ++run.step;
     if (run.step >= adventure.steps.size() || adventure.steps[run.step].kind == "victory") {

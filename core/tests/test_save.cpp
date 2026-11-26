@@ -93,8 +93,18 @@ constexpr std::size_t kMonsters = 8;  // v24: no monsters, no heroes
 
 constexpr std::size_t kQuests = 8;  // v26: no quests, no monuments earned (end of the scenario block)
 
+constexpr std::size_t kDeliveries = 4;  // v27: no goods on their way (end of the world block)
+
+// The save without the v27 deliveries: the layout of v26.
+std::vector<std::uint8_t> as_v26(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kDeliveries), end);
+    return bytes;
+}
+
 // The save without the v26 quest fields: the layout of v25.
 std::vector<std::uint8_t> as_v25(std::vector<std::uint8_t> bytes) {
+    bytes = as_v26(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kQuests), end);
     return bytes;
@@ -149,6 +159,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v26(a.save()), 26, h);
     check_load(as_v25(a.save()), 25, h);
     check_load(as_v23(a.save()), 23, h);
     check_load(as_v21(a.save()), 21, h);
