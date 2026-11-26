@@ -256,3 +256,25 @@ TEST_CASE("Aphrodite fills the houses; Hermes fulfils a request for nothing (Z:1
     CHECK(pray_now(hermes) == "answered");
     CHECK(hermes.state().scenario.requests.empty());
 }
+
+TEST_CASE("Ares gives two companies of Sparti, Artemis two of Amazons; they muster from the sanctuary (Z:121, Z:140)") {
+    for (const auto& [god, nation] : {std::pair{"ares", "divine"}, std::pair{"artemis", "amazon"}}) {
+        auto sim = with_god(god);
+        sim.issue(PlaceBuilding{"palace", 40, 14});
+        sim.run_days(2);
+        std::vector<std::uint32_t> divine;
+        for (std::uint32_t i = 0; i < sim.state().military.companies.size(); ++i) {
+            if (sim.state().military.companies[i].nation == nation) {
+                divine.push_back(i);
+            }
+        }
+        REQUIRE_MESSAGE(divine.size() == 2, god);
+        sim.issue(MusterCompany{divine[0]});
+        sim.step(1);
+        const Company& c = sim.state().military.companies[divine[0]];
+        CHECK(c.soldiers.size() == 8);
+        const Walker& w = sim.state().walkers.items.at(c.soldiers.front());
+        CHECK(w.variant == nation);
+        CHECK(w.hp == sim.catalog().combat.nations.at(nation).units.at(c.unit).hp);
+    }
+}

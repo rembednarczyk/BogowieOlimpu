@@ -35,9 +35,12 @@ struct Company {
     std::uint8_t morale = 100;
     std::vector<WalkerId> soldiers;  // soldiers in the field
     bool fled = false;               // fled in this battle: cannot be mustered until it ends (Z:140)
+    // A god's company (Z:121, Z:140; since v34): the unit's stats come from this nation of enemies.json ("divine":
+    // Ares's Sparti, "amazon": Artemis's Amazons); empty for the player's own soldiers. Its morale never drops.
+    std::string nation;
     friend bool operator==(const Company& a, const Company& b) {
         return a.unit == b.unit && a.members == b.members && a.standard == b.standard && a.status == b.status &&
-               a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled;
+               a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled && a.nation == b.nation;
     }
 };
 

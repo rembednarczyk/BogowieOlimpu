@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <optional>
 
+#include "bo/core/gods.h"
 #include "bo/core/housing.h"
 #include "bo/core/path.h"
 #include "bo/core/state.h"
@@ -133,6 +134,29 @@ void form_companies(WorldState& st, const DataCatalog& catalog) {
                 formed.push_back(current);  // a company that is not yet full [ZAŁOŻENIE, L-109]
             }
         }
+        // The gods' companies (Z:121, Z:140): two of Sparti from Ares's sanctuary, two of Amazons from Artemis's;
+        // they leave from the sanctuary, full strength every time, and come first within the 20 (Z:136)
+        // [ZAŁOŻENIE, L-109].
+        std::vector<Company> divine_companies;
+        for (const auto& [god, nation, unit] : {std::tuple{"ares", "divine", "ares_warriors"},
+                                                 std::tuple{"artemis", "amazon", "warrior"}}) {
+            for (const auto& [id, b] : st.city.buildings.items) {
+                const auto sp = catalog.sanctuaries.find(b.type);
+                if (!b.sanctuary || sp == catalog.sanctuaries.end() || sp->second.god != god ||
+                    !god_blesses(st.city, catalog, god)) {
+                    continue;
+                }
+                for (int k = 0; k < 2; ++k) {
+                    Company divine;
+                    divine.unit = unit;
+                    divine.nation = nation;
+                    divine.members.push_back(CompanyMember{id, static_cast<std::uint8_t>(kCompanySize)});
+                    divine_companies.push_back(divine);
+                }
+            }
+        }
+        formed.insert(formed.begin(), divine_companies.begin(), divine_companies.end());
+        formed.resize(std::min(formed.size(), kMaxCompanies));
         const auto sites = standard_sites(st.city, st.city.buildings.items.at(*palace), formed.size());
         for (std::size_t i = 0; i < formed.size(); ++i) {
             const bool kept = i < m.companies.size() && free_land(st.city, m.companies[i].standard);
@@ -173,9 +197,12 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
         return "military.company_fled";  // not again in this battle (Z:140)
     }
     const auto type = catalog.walkers.find(c.unit);
-    if (type == catalog.walkers.end()) {
+    const auto stats = catalog.combat.nations.find(c.nation.empty() ? "player_greek" : c.nation);
+    if ((type == catalog.walkers.end() && c.nation.empty()) || stats == catalog.combat.nations.end() ||
+        stats->second.units.count(c.unit) == 0) {
         return "military.bad_company";
     }
+    const UnitStats& unit = stats->second.units.at(c.unit);
     std::size_t k = 0;
     for (const CompanyMember& member : c.members) {
         const auto house = st.city.buildings.items.find(member.house);
@@ -190,14 +217,12 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
             w.kind = WalkerKind::Destination;
             w.home = member.house;
             w.tile = from;
-            w.speed_raw = type->second.speed_raw;
+            w.speed_raw = c.nation.empty() ? type->second.speed_raw : unit.speed_raw;
+            w.variant = c.nation;  // a god's soldier: stats of that nation (combat.cpp stats_of)
             w.job = WalkerJob::Soldier;
             w.target = index;
             w.want_loads = static_cast<std::uint32_t>(k);  // place in the formation
-            const auto stats = catalog.combat.nations.find("player_greek");
-            if (stats != catalog.combat.nations.end() && stats->second.units.count(c.unit) != 0) {
-                w.hp = stats->second.units.at(c.unit).hp;
-            }
+            w.hp = unit.hp;
             if (!route(st.city, w, slot(st.city, c.standard, k))) {
                 continue;
             }

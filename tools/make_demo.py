@@ -200,7 +200,7 @@ put("growers_lodge", 6, 46, day=CULTURE); put("olive_press", 13, 46, day=CULTURE
 for x in (13, 16, 19, 22, 25, 28):  # more food along the south road (B-003: food first)
     put("carrot_farm" if x % 2 else "onion_farm", x, 42, day=CULTURE)
 put("trading_post", 33, 36, day=FLEECE)
-put("maintenance_office", 37, 36, day=FLEECE)
+put("maintenance_office", 33, 40, day=FLEECE)
 steps.append({"day": FLEECE + 1, "at": [33, 36], "trade_partner": 0})
 for good, n in [("olive_oil", 4), ("marble", 8), ("wood", 4), ("sculpture", 2)]:
     steps.append({"day": FLEECE + 1, "at": [33, 36], "trade_order": {"good": good, "import": n}})
@@ -248,7 +248,9 @@ put("artisans_guild", 68, 12, day=MYTH)
 put("maintenance_office", 66, 24, day=MYTH); put("watchpost", 68, 24, day=MYTH)
 put("sanctuary_hermes", 53, 24, day=MYTH, retry=True, when={"marble": 9})
 put("sanctuary_athena", 53, 31, day=MYTH + 160, retry=True, when={"marble": 24})
-put("heros_hall", 64, 12, day=MYTH, retry=True)  # only once a hero is needed (Z:130)
+put("heros_hall", 64, 12, day=MYTH, retry=True)
+# Ares's fortress by the south road, once Athena's is up: two companies of Sparti for the player (Z:121, Z:140).
+put("sanctuary_ares", 37, 37, day=800, retry=True, when={"marble": 13})  # only once a hero is needed (Z:130)
 
 # Stage ARMY (Z:145-146): the east wall two thick, a gatehouse on the main road, towers, horses, the wharf.
 for y in list(range(8, 9)) + list(range(14, 50)):

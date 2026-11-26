@@ -147,6 +147,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
             w.u32(id);
         }
         w.u8(c.fled ? 1 : 0);  // since v18
+        w.str(c.nation);        // since v34
     }
     const Invasion& inv = m.invasion;  // since v18
     w.u8(inv.active ? 1 : 0);
@@ -195,6 +196,9 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
             return false;
         }
         c.fled = fled != 0;
+        if (version >= 34 && !r.str(c.nation)) {
+            return false;
+        }
     }
     if (version < 18) {
         return true;

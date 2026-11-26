@@ -294,6 +294,8 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(houses_at(st, run.sim->catalog(), true, 0) >= 2);
     CHECK(st.scenario.won);
     CHECK(run.won_day < 7 * kDaysPerMonth * kMonthsPerYear);
+    CHECK(std::any_of(st.military.companies.begin(), st.military.companies.end(),
+                      [](const Company& c) { return c.nation == "divine"; }));  // Ares's Sparti (Z:140)
     CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);  // the earthquake of year 3 (demo.json) cracked the land
     for (const char* m : {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                           "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer"}) {

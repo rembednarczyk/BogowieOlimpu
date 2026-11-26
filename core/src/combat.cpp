@@ -16,8 +16,8 @@ std::int32_t chebyshev(TilePos a, TilePos b) { return std::max(std::abs(a.x - b.
 const UnitStats* stats_of(const DataCatalog& catalog, const Walker& w) {
     std::string nation = "player_greek";
     std::string unit = w.type;
-    if (w.job == WalkerJob::Invade) {
-        nation = w.variant;
+    if (w.job == WalkerJob::Invade || (w.job == WalkerJob::Soldier && !w.variant.empty())) {
+        nation = w.variant;  // invaders, and the gods' soldiers fighting for the player (Z:140)
     } else if (w.job == WalkerJob::Monster || w.job == WalkerJob::Hero) {
         nation = w.job == WalkerJob::Monster ? "monster" : "hero";  // L-057b
         unit = nation;
@@ -208,8 +208,8 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
         horses -= w.type == "horseman" && horses > 0 ? 1 : 0;
     }
     Company* c = company_of(st, w.id);
-    if (!c) {
-        return;
+    if (!c || !c->nation.empty()) {
+        return;  // the gods' companies never lose heart (military.json: morale_never_drops)
     }
     c->morale = static_cast<std::uint8_t>(c->morale > kMoraleLossPerDeath ? c->morale - kMoraleLossPerDeath : 0);
     if (c->morale > kFleeMorale || c->fled) {
