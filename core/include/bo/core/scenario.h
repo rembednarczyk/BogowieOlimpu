@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -63,14 +64,31 @@ struct CityRequest {
     }
 };
 
+// A god's quest (Z:124, P:24, doc 21): only a hero carries it out, at an enchanted place; no deadline.
+enum class QuestStatus : std::uint8_t { Open = 0, Underway, Done };
+
+struct Quest {
+    std::string god;
+    std::uint32_t index = 0;   // data/quests.json
+    std::string hero;          // the scenario's choice, else the traditional hero
+    QuestStatus status = QuestStatus::Open;
+    std::uint32_t days_left = 0;
+    friend bool operator==(const Quest& a, const Quest& b) {
+        return a.god == b.god && a.index == b.index && a.hero == b.hero && a.status == b.status && a.days_left == b.days_left;
+    }
+};
+
 struct ScenarioState {
     std::string id;
     std::vector<ScenarioGoal> goals;
     std::vector<ScenarioEvent> events;
     std::vector<CityRequest> requests;
     bool won = false;
+    std::vector<Quest> quests;                         // since v26
+    std::map<std::string, std::uint32_t> monuments;    // earned and not yet built: god_statue, hero, conquest
     friend bool operator==(const ScenarioState& a, const ScenarioState& b) {
-        return a.id == b.id && a.goals == b.goals && a.events == b.events && a.requests == b.requests && a.won == b.won;
+        return a.id == b.id && a.goals == b.goals && a.events == b.events && a.requests == b.requests && a.won == b.won &&
+               a.quests == b.quests && a.monuments == b.monuments;
     }
 };
 
@@ -86,6 +104,8 @@ struct ScenarioEvents {
     std::vector<const ScenarioEvent*> god_attacks;  // fired this day (pointers into ScenarioState::events)
     std::vector<const ScenarioEvent*> disasters;
     std::vector<const ScenarioEvent*> monsters;  // monster id in `nation`, strength in `amount`, target in `good`
+    std::vector<std::string> quests_given;       // god
+    std::vector<std::string> quests_done;        // god
     bool won = false;
 };
 
@@ -94,6 +114,10 @@ struct ScenarioEvents {
 ScenarioEvents advance_scenario(WorldState& state, const DataCatalog& catalog);
 // Sends what a request asks for (Z:162): on time +10 opinion (doc 24), late +5 [ZAŁOŻENIE, L-114].
 std::string fulfill_request(WorldState& state, const DataCatalog& catalog, std::uint32_t index);
+// Sends the hero of an open quest from his Hall to the enchanted place (Z:124); he comes back with the quest
+// done after quest_days [ZAŁOŻENIE, L-118] and the god grants a statue (Z:156).
+std::string send_hero_on_quest(WorldState& state, const DataCatalog& catalog, std::uint32_t quest);
+inline constexpr std::uint32_t kQuestDays = 200;  // there and back [ZAŁOŻENIE, L-118: eZeus march, doc 24]
 
 inline constexpr std::uint32_t kWithdrawAfterDays = 96;
 

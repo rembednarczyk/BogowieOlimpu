@@ -322,6 +322,7 @@ struct DataCatalog {
     std::map<std::string, std::int32_t> monster_numbers;  // gods_rules.json monster_numbers [ZAŁOŻENIE, L-116]
     std::map<std::string, std::string> monster_slayer;    // monsters.json: monster -> hero (Z:130)
     std::map<std::string, std::vector<std::string>> hero_requirements;  // heroes.json (doc 21)
+    std::map<std::string, std::string> quest_heroes;     // quests.json: "god:index" -> traditional hero
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

@@ -233,8 +233,18 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                            emit(CommandRejected{index, "build.no_hero_needed"});  // only with a reason (Z:130)
                            return;
                        }
+                       auto& earned = state_.scenario.monuments;
+                       const auto monument = std::find_if(earned.begin(), earned.end(), [](const auto& kv) { return kv.second > 0; });
+                       if (c.type == "commemorative_monument" && monument == earned.end()) {
+                           emit(CommandRejected{index, "build.no_monument_earned"});  // earned, never bought (Z:155)
+                           return;
+                       }
+                       const auto before = city.buildings.next_id;
                        apply_build(place_building(city, catalog_, diff, c.type, {c.x, c.y}, c.rotation), index,
                                    {c.x, c.y}, false);
+                       if (c.type == "commemorative_monument" && city.buildings.next_id != before) {
+                           --monument->second;
+                       }
                    },
                    [&](const PlaceRoad& c) { apply_build(place_road(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true); },
                    [&](const PlaceRoadblock& c) {
@@ -310,6 +320,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const DispatchArmy&) { apply_world_command(command, index); },
                    [&](const FulfillRequest&) { apply_world_command(command, index); },
                    [&](const SummonHero&) { apply_myth_command(command, index); },
+                   [&](const SendHeroOnQuest&) { apply_myth_command(command, index); },
                    [&](const Pray&) { apply_myth_command(command, index); },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
@@ -331,6 +342,13 @@ void Simulation::apply_myth_command(const Command& command, std::uint32_t index)
         if (err.empty()) {
             emit(PrayerAnswered{p->building});
         } else {
+            emit(CommandRejected{index, err});
+        }
+        return;
+    }
+    if (const auto* q = std::get_if<SendHeroOnQuest>(&command)) {
+        const std::string err = send_hero_on_quest(state_, catalog_, q->quest);
+        if (!err.empty()) {
             emit(CommandRejected{index, err});
         }
         return;

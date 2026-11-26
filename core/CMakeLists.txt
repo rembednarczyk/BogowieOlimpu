@@ -64,6 +64,7 @@ if(BO_BUILD_TESTS)
         tests/test_path.cpp
         tests/test_walker.cpp
         tests/test_placement.cpp
+        tests/test_quests.cpp
         tests/test_undo.cpp
         tests/test_appeal.cpp
         tests/test_housing.cpp

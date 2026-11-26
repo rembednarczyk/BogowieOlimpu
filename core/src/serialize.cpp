@@ -113,6 +113,8 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u32(cmd.request);
             } else if constexpr (std::is_same_v<T, SummonHero>) {
                 w.u32(cmd.hall);
+            } else if constexpr (std::is_same_v<T, SendHeroOnQuest>) {
+                w.u32(cmd.quest);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -221,12 +223,15 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
         case 22:
             return read_dispatch(r, out);
         case 23:
-        case 24: {
+        case 24:
+        case 25: {
             std::uint32_t v = 0;
             if (!r.u32(v)) {
                 return false;
             }
-            out = index == 23 ? Command{FulfillRequest{v}} : Command{SummonHero{v}};
+            out = index == 23   ? Command{FulfillRequest{v}}
+                  : index == 24 ? Command{SummonHero{v}}
+                                : Command{SendHeroOnQuest{v}};
             return true;
         }
         default:

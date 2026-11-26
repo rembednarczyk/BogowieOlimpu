@@ -123,6 +123,7 @@ TEST_CASE("Hero's Hall only with a monster in the city; the hero comes when his 
         }
     }
     CHECK(slain);
+    CHECK(sim.state().scenario.monuments.at("hero") == 1);  // a Hero monument (Z:131)
 }
 
 TEST_CASE("save v24: a monster on its way survives a round trip with the same future") {

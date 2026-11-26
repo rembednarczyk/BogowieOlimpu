@@ -197,6 +197,12 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             cat.monster_slayer[m.at("id").get<std::string>()] = m.value("slain_by", "");
         }
     }
+    if (docs.count("quests.json") != 0) {
+        for (const auto& q : docs.at("quests.json")) {
+            cat.quest_heroes[q.at("god").get<std::string>() + ":" + std::to_string(q.at("index").get<int>())] =
+                q.value("traditional_hero", "");
+        }
+    }
     if (docs.count("heroes.json") != 0) {
         for (const auto& h : docs.at("heroes.json")) {
             cat.hero_requirements[h.at("id").get<std::string>()] = h.value("requirements", std::vector<std::string>{});

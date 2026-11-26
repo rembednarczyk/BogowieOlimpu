@@ -5,6 +5,8 @@
 
 #include "bo/core/gods.h"
 #include "bo/core/migration.h"
+#include "bo/core/monsters.h"
+#include "bo/core/state.h"
 #include "bo/core/simulation.h"
 #include "bo/core/storage.h"
 #include "nlohmann/json.hpp"
@@ -66,6 +68,10 @@ bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGo
         return std::any_of(st.trade.partners.begin(), st.trade.partners.end(),
                            [&g](const TradePartner& p) { return p.id == g.target && p.relation == "vassal"; });
     }
+    if (g.type == "quest") {
+        return std::any_of(st.scenario.quests.begin(), st.scenario.quests.end(),
+                           [&g](const Quest& q) { return q.god == g.target && q.status == QuestStatus::Done; });
+    }
     if (g.type == "houses") {
         std::int64_t n = 0;
         for (const auto& [id, b] : st.city.buildings.items) {
@@ -106,12 +112,39 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
         ev.disasters.push_back(&e);
     } else if (e.type == "monster") {
         ev.monsters.push_back(&e);
+    } else if (e.type == "quest") {
+        Quest q;
+        q.god = e.god;
+        q.index = e.amount;
+        q.hero = e.nation;
+        if (q.hero.empty()) {
+            const auto t = catalog.quest_heroes.find(e.god + ":" + std::to_string(e.amount));
+            q.hero = t == catalog.quest_heroes.end() ? "" : t->second;  // the traditional hero (doc 21)
+        }
+        st.scenario.quests.push_back(q);
+        ev.quests_given.push_back(e.god);
     } else if (e.type == "relation" && has_city) {
         st.trade.partners[static_cast<std::size_t>(e.city)].relation = e.relation;
     }
 }
 
 }  // namespace
+
+std::string send_hero_on_quest(WorldState& st, const DataCatalog&, std::uint32_t index) {
+    if (index >= st.scenario.quests.size() || st.scenario.quests[index].status != QuestStatus::Open) {
+        return "myth.no_quest";
+    }
+    Quest& q = st.scenario.quests[index];
+    const auto h = std::find_if(st.heroes.begin(), st.heroes.end(), [&q](const HeroState& x) { return x.id == q.hero; });
+    if (h == st.heroes.end() || st.walkers.items.count(h->walker) == 0) {
+        return "myth.hero_not_here";
+    }
+    st.walkers.items.at(h->walker).phase = WalkerPhase::Done;  // he leaves for the enchanted place
+    h->walker = kNoWalker;
+    q.status = QuestStatus::Underway;
+    q.days_left = kQuestDays;
+    return {};
+}
 
 std::optional<SimulationConfig> parse_scenario(const std::string& text, std::string& error) {
     try {
@@ -151,6 +184,10 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             ev.god = e.value("god", "");
             ev.x = e.value("x", 0);
             ev.y = e.value("y", 0);
+            if (ev.type == "quest") {
+                ev.amount = e.value("index", 0U);
+                ev.nation = e.value("hero", "");
+            }
             if (ev.type == "monster") {
                 ev.nation = e.value("monster", "");
                 ev.amount = e.value("strength", 1U);
@@ -189,6 +226,19 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
             if (now && e.last_year != static_cast<std::int32_t>(year)) {
                 e.last_year = static_cast<std::int32_t>(year);
                 fire(st, catalog, e, ev);
+            }
+        }
+    }
+    for (Quest& q : s.quests) {
+        if (q.status != QuestStatus::Underway || q.days_left-- > 1) {
+            continue;
+        }
+        q.status = QuestStatus::Done;
+        ++s.monuments["god_statue"];  // the god's reward (Z:156)
+        ev.quests_done.push_back(q.god);
+        for (HeroState& h : st.heroes) {
+            if (h.id == q.hero && h.walker == kNoWalker) {
+                h.walker = hero_walker(st, catalog, h);  // back in his Hall
             }
         }
     }

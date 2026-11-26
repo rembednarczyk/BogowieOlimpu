@@ -77,6 +77,7 @@ void battle_abroad(WorldState& st, const DataCatalog& catalog, Expedition& e) {
         return;
     }
     p.relation = "vassal";  // conquered: pays tribute (Z:177)
+    ++st.scenario.monuments["conquest"];  // and a Conquest monument (Z:177)
     p.diplomacy.rebelling = false;
     p.diplomacy.tribute_demand = 0;
     if (p.diplomacy.tribute == 0) {

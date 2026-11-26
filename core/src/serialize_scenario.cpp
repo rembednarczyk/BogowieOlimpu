@@ -37,6 +37,15 @@ void write_scenario(ByteWriter& w, const ScenarioState& s) {
         w.u64(r.due_day);
     }
     w.u8(s.won ? 1 : 0);
+    w.u32(static_cast<std::uint32_t>(s.quests.size()));  // since v26
+    for (const Quest& q : s.quests) {
+        w.str(q.god);
+        w.u32(q.index);
+        w.str(q.hero);
+        w.u8(static_cast<std::uint8_t>(q.status));
+        w.u32(q.days_left);
+    }
+    write_counts(w, s.monuments);
 }
 
 bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
@@ -82,7 +91,21 @@ bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
         return false;
     }
     s.won = won != 0;
-    return true;
+    if (version < 26) {
+        return true;
+    }
+    if (!r.u32(n) || n > 256) {
+        return false;
+    }
+    s.quests.resize(n);
+    for (Quest& q : s.quests) {
+        std::uint8_t status = 0;
+        if (!r.str(q.god) || !r.u32(q.index) || !r.str(q.hero) || !r.u8(status) || status > 2 || !r.u32(q.days_left)) {
+            return false;
+        }
+        q.status = static_cast<QuestStatus>(status);
+    }
+    return read_counts(r, s.monuments);
 }
 
 // Monsters and heroes (D5 stage 3, since v24).

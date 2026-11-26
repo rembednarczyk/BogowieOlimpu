@@ -302,6 +302,12 @@ static void run_scenario(Simulation& sim) {
             sim.emit_combat(combat);
         }
     }
+    for (const std::string& god : ev.quests_given) {
+        sim.emit(QuestGiven{god});
+    }
+    for (const std::string& god : ev.quests_done) {
+        sim.emit(QuestCompleted{god});
+    }
     if (ev.won) {
         sim.emit(EpisodeWon{});
     }

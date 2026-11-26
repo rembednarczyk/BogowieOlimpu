@@ -75,6 +75,7 @@ public:
     void pray(int64_t sanctuary);
     // Monsters and heroes (D5): calls the hero to a Hero's Hall; [{"monster", "slain", "resting", "hero"}]
     void summon_hero(int64_t hall);
+    void send_hero_on_quest(int64_t quest);
     godot::Array get_monsters() const;
     // World (D4): `city` indexes the partners given to start_with_map; "drachmas" is money.
     void give_gift(int64_t city, const godot::String& good, int64_t amount);

@@ -217,6 +217,9 @@ void advance_monsters(WorldState& st, const DataCatalog& catalog, MonsterEvents&
             const bool by_hero = std::any_of(st.walkers.items.begin(), st.walkers.items.end(),
                                              [](const auto& kv) { return kv.second.job == WalkerJob::Hero; });
             ev.slain.emplace_back(m.id, by_hero && !apollo);
+            if (by_hero && !apollo) {
+                ++st.scenario.monuments["hero"];  // a monster slain in the city earns a Hero monument (Z:131)
+            }
             continue;
         }
         Walker& w = it->second;
@@ -276,7 +279,9 @@ void advance_monsters(WorldState& st, const DataCatalog& catalog, MonsterEvents&
 }
 
 bool hero_needed(const WorldState& st) {
-    return std::any_of(st.monsters.begin(), st.monsters.end(), [](const MonsterState& m) { return !m.slain; });
+    return std::any_of(st.monsters.begin(), st.monsters.end(), [](const MonsterState& m) { return !m.slain; }) ||
+           std::any_of(st.scenario.quests.begin(), st.scenario.quests.end(),
+                       [](const Quest& q) { return q.status == QuestStatus::Open; });
 }
 
 std::vector<std::string> unmet_requirements(const WorldState& st, const DataCatalog& catalog, const std::string& hero,
@@ -300,12 +305,19 @@ std::string summon_hero(WorldState& st, const DataCatalog& catalog, BuildingId h
         return "myth.no_hall";
     }
     std::string hero;
+    const auto absent = [&st](const std::string& id) {
+        return std::none_of(st.heroes.begin(), st.heroes.end(), [&id](const HeroState& x) { return x.id == id; });
+    };
     for (const MonsterState& m : st.monsters) {
         const auto s = catalog.monster_slayer.find(m.id);
-        if (!m.slain && s != catalog.monster_slayer.end() &&
-            std::none_of(st.heroes.begin(), st.heroes.end(), [&s](const HeroState& x) { return x.id == s->second; })) {
+        if (!m.slain && s != catalog.monster_slayer.end() && absent(s->second)) {
             hero = s->second;
             break;
+        }
+    }
+    for (const Quest& q : st.scenario.quests) {  // a quest is also a reason for a hero to come (Z:129)
+        if (hero.empty() && q.status == QuestStatus::Open && !q.hero.empty() && absent(q.hero)) {
+            hero = q.hero;
         }
     }
     if (hero.empty()) {
@@ -320,20 +332,30 @@ std::string summon_hero(WorldState& st, const DataCatalog& catalog, BuildingId h
             st.finance.treasury -= std::stoll(r.substr(9, r.find(' ') - 9));  // Perseus takes his fee (doc 21)
         }
     }
-    const auto stats = catalog.combat.nations.at("hero").units.at("hero");
+    st.heroes.push_back(HeroState{hero, hall, kNoWalker});
+    st.heroes.back().walker = hero_walker(st, catalog, st.heroes.back());
+    ev.spawned.push_back(st.heroes.back().walker);
+    return {};
+}
+
+WalkerId hero_walker(WorldState& st, const DataCatalog& catalog, const HeroState& hero) {
+    const auto hall = st.city.buildings.items.find(hero.hall);
+    if (hall == st.city.buildings.items.end() || !hall->second.road_access) {
+        return kNoWalker;
+    }
+    const auto& stats = catalog.combat.nations.at("hero").units.at("hero");
     Walker w;
     w.id = st.walkers.next_id++;
-    w.type = hero;
+    w.type = hero.id;
     w.job = WalkerJob::Hero;
-    w.home = hall;
-    w.tile = *h->second.road_access;
+    w.home = hero.hall;
+    w.tile = *hall->second.road_access;
     w.phase = WalkerPhase::AtTarget;
     w.speed_raw = stats.speed_raw;
     w.hp = stats.hp;
-    st.heroes.push_back(HeroState{hero, hall, w.id});
-    ev.spawned.push_back(w.id);
-    st.walkers.items.emplace(w.id, std::move(w));
-    return {};
+    const WalkerId id = w.id;
+    st.walkers.items.emplace(id, std::move(w));
+    return id;
 }
 
 }  // namespace bo::core

@@ -147,11 +147,16 @@ struct SummonHero {
     std::uint32_t hall = 0;
 };
 
+// Sends the hero of an open quest to the enchanted place (Z:124); `quest` indexes ScenarioState::quests.
+struct SendHeroOnQuest {
+    std::uint32_t quest = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest, SummonHero>;
+                             FulfillRequest, SummonHero, SendHeroOnQuest>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

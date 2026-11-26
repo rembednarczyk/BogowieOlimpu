@@ -91,8 +91,18 @@ constexpr std::size_t kScenario = 17;  // v22: empty id, no goals, events or req
 
 constexpr std::size_t kMonsters = 8;  // v24: no monsters, no heroes
 
+constexpr std::size_t kQuests = 8;  // v26: no quests, no monuments earned (end of the scenario block)
+
+// The save without the v26 quest fields: the layout of v25.
+std::vector<std::uint8_t> as_v25(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kQuests), end);
+    return bytes;
+}
+
 // The save without the v24 monster block: the layout of v23.
 std::vector<std::uint8_t> as_v23(std::vector<std::uint8_t> bytes) {
+    bytes = as_v25(std::move(bytes));
     bytes.resize(bytes.size() - kMonsters);
     return bytes;
 }
@@ -139,6 +149,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v25(a.save()), 25, h);
     check_load(as_v23(a.save()), 23, h);
     check_load(as_v21(a.save()), 21, h);
     check_load(as_v20(a.save()), 20, h);

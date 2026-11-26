@@ -55,6 +55,8 @@ bool hero_needed(const WorldState& state);
 // requirements we cannot yet check (triremes, walls, games, tax coverage) count as unmet [L-116].
 std::vector<std::string> unmet_requirements(const WorldState& state, const DataCatalog& catalog, const std::string& hero,
                                             BuildingId hall);
+// A hero's walker standing at his Hall (after summoning or coming back from a quest).
+WalkerId hero_walker(WorldState& state, const DataCatalog& catalog, const HeroState& hero);
 // Summons the hero to a Hall: all requirements met; Perseus takes his 3000 drachmas (doc 21).
 std::string summon_hero(WorldState& state, const DataCatalog& catalog, BuildingId hall, MonsterEvents& ev);
 

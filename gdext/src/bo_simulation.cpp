@@ -142,6 +142,14 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["type"] = "hero_arrived";
                        d["hero"] = String(e.hero.c_str());
                    },
+                   [&d](const bo::core::QuestGiven& e) {
+                       d["type"] = "quest_given";
+                       d["god"] = String(e.god.c_str());
+                   },
+                   [&d](const bo::core::QuestCompleted& e) {
+                       d["type"] = "quest_completed";
+                       d["god"] = String(e.god.c_str());
+                   },
                    [&d](const bo::core::GodAttacked& e) {
                        d["type"] = "god_attacked";
                        d["god"] = String(e.god.c_str());
@@ -296,6 +304,22 @@ Dictionary BoSimulation::get_scenario() const {
         x["days_left"] = static_cast<int64_t>(r.due_day) - static_cast<int64_t>(today);  // < 0: overdue
         requests.append(x);
     }
+    Array quests;
+    for (const auto& q : s.quests) {
+        Dictionary x;
+        x["god"] = String(q.god.c_str());
+        x["index"] = static_cast<int64_t>(q.index);
+        x["hero"] = String(q.hero.c_str());
+        x["status"] = static_cast<int64_t>(q.status);  // 0 open, 1 underway, 2 done
+        x["days_left"] = static_cast<int64_t>(q.days_left);
+        quests.append(x);
+    }
+    Dictionary monuments;
+    for (const auto& [kind, n] : s.monuments) {
+        monuments[String(kind.c_str())] = static_cast<int64_t>(n);
+    }
+    d["quests"] = quests;
+    d["monuments"] = monuments;
     d["id"] = String(s.id.c_str());
     d["goals"] = goals;
     d["requests"] = requests;
@@ -457,6 +481,12 @@ Array BoSimulation::get_cities() const {
         out.append(d);
     }
     return out;
+}
+
+void BoSimulation::send_hero_on_quest(int64_t quest) {
+    if (sim_ && quest >= 0) {
+        sim_->issue(bo::core::SendHeroOnQuest{static_cast<std::uint32_t>(quest)});
+    }
 }
 
 void BoSimulation::summon_hero(int64_t hall) {
@@ -810,6 +840,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("bribe_invaders"), &BoSimulation::bribe_invaders);
     ClassDB::bind_method(D_METHOD("pray", "sanctuary"), &BoSimulation::pray);
     ClassDB::bind_method(D_METHOD("summon_hero", "hall"), &BoSimulation::summon_hero);
+    ClassDB::bind_method(D_METHOD("send_hero_on_quest", "quest"), &BoSimulation::send_hero_on_quest);
     ClassDB::bind_method(D_METHOD("get_monsters"), &BoSimulation::get_monsters);
     ClassDB::bind_method(D_METHOD("give_gift", "city", "good", "amount"), &BoSimulation::give_gift);
     ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);
