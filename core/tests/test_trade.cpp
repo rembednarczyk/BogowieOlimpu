@@ -2,6 +2,7 @@
 #include "bo/core/simulation.h"
 #include "bo/core/storage.h"
 #include "bo/core/trade.h"
+#include "bo/core/wrath.h"
 #include "doctest/doctest.h"
 #include "helpers.h"
 
@@ -140,4 +141,34 @@ TEST_CASE("a pier has a dock on the water; ships come from the sea entry every 3
     at(sim, {18, 7}).storage->loads["olive_oil"] = 30;
     sim.run_days(32 + 20);
     CHECK(at(sim, {18, 7}).storage->loads["olive_oil"] == 18);  // one ship: 12 loads
+}
+
+TEST_CASE("trade curses (Z:125-127): Hermes keeps the caravans away, Zeus all merchants, Poseidon the ships") {
+    Simulation sim(bo::test::catalog_isolated(), config({land_partner()}));
+    sim.issue(PlaceBuilding{"trading_post", 20, 2});
+    sim.step(1);
+    const BuildingId tp = sim.state().city.map.at({20, 2}).building;
+    sim.issue(SetTradePartner{tp, 0});
+    sim.issue(SetTradeOrder{tp, "fleece", true, 6, false, 0});
+    sim.step(1);
+    god_attack(sim.mutable_state(), sim.catalog(), "hermes");
+    CHECK(sim.state().caravan_curse_days == 45);
+    CHECK(sim.state().ship_curse_days == 0);
+    const auto traders = [&sim]() {
+        std::size_t n = 0;
+        for (const auto& e : sim.drain_events()) {
+            if (const auto* w = std::get_if<WalkerSpawned>(&e.event)) {
+                n += w->type == "trade_caravan" ? 1 : 0;
+            }
+        }
+        return n;
+    };
+    sim.drain_events();
+    sim.run_days(40);
+    CHECK(traders() == 0);
+    sim.run_days(12);
+    CHECK(traders() > 0);  // the curse is over
+    god_attack(sim.mutable_state(), sim.catalog(), "poseidon");
+    CHECK(sim.state().ship_curse_days == 45);
+    CHECK(sim.state().caravan_curse_days == 0);
 }

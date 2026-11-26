@@ -82,8 +82,10 @@ WrathEvents god_attack(WorldState& st, const DataCatalog& catalog, const std::st
                                [](const Building& b) { return b.type != "palace" && !b.tiles.empty() && !b.animal; });
         ids.insert(ids.end(), more.begin(), more.end());
         destroy(city, ids, ev);
+        st.caravan_curse_days = st.ship_curse_days = static_cast<std::uint16_t>(n("curse_days", 45));  // Z:125
     } else if (god == "poseidon") {
         curse(city, catalog, {"fishery", "urchin_quay", "trireme_wharf"});
+        st.ship_curse_days = static_cast<std::uint16_t>(n("curse_days", 45));  // no trade ships (Z:126)
     } else if (god == "hades") {
         take_walkers(st, ev);
         curse(city, catalog, {"foundry", "mint"});
@@ -145,6 +147,7 @@ WrathEvents god_attack(WorldState& st, const DataCatalog& catalog, const std::st
         if (st.finance.treasury > 0) {
             st.finance.treasury -= st.finance.treasury * n("money_stolen_percent", 25) / 100;
         }
+        st.caravan_curse_days = static_cast<std::uint16_t>(n("curse_days", 45));  // roads unsafe for caravans
     } else if (god == "dionysus") {
         take_walkers(st, ev);
         curse(city, catalog, {"winery", "grapevine"});

@@ -138,6 +138,9 @@ struct WorldState {
     bool zeus_guard = false;
     bool ares_with_army = false;
     std::uint16_t talos_days = 0;
+    // Trade curses (since v32; Z:125-127): no caravans (Zeus, Hermes), no ships (Zeus, Poseidon) for some days.
+    std::uint16_t caravan_curse_days = 0;
+    std::uint16_t ship_curse_days = 0;
     ScenarioState scenario;               // since v22 (module D5)
     std::vector<MonsterState> monsters;   // since v24
     std::vector<HeroState> heroes;        // since v24

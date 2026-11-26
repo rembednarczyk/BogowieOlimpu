@@ -260,6 +260,8 @@ void write_world(ByteWriter& w, const WorldState& s) {
     }
     w.u8(static_cast<std::uint8_t>((s.zeus_guard ? 1U : 0U) | (s.ares_with_army ? 2U : 0U)));  // since v31
     w.u32(s.talos_days);
+    w.u32(s.caravan_curse_days);  // since v32
+    w.u32(s.ship_curse_days);
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -341,6 +343,13 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
     s.zeus_guard = (help & 1U) != 0;
     s.ares_with_army = (help & 2U) != 0;
     s.talos_days = static_cast<std::uint16_t>(talos);
+    std::uint32_t caravans = 0;
+    std::uint32_t ships = 0;
+    if (version >= 32 && (!r.u32(caravans) || !r.u32(ships) || caravans > 0xFFFF || ships > 0xFFFF)) {
+        return false;
+    }
+    s.caravan_curse_days = static_cast<std::uint16_t>(caravans);
+    s.ship_curse_days = static_cast<std::uint16_t>(ships);
     return true;
 }
 

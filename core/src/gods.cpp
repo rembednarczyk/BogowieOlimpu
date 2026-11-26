@@ -39,6 +39,8 @@ void advance_gods(WorldState& st, const DataCatalog& catalog) {
         b.cursed_days = static_cast<std::uint16_t>(b.cursed_days > 0 ? b.cursed_days - 1 : 0);
     }
     st.talos_days = static_cast<std::uint16_t>(st.talos_days > 0 ? st.talos_days - 1 : 0);
+    st.caravan_curse_days = static_cast<std::uint16_t>(st.caravan_curse_days > 0 ? st.caravan_curse_days - 1 : 0);
+    st.ship_curse_days = static_cast<std::uint16_t>(st.ship_curse_days > 0 ? st.ship_curse_days - 1 : 0);
     std::vector<BuildingId> sanctuaries;
     for (const auto& [id, b] : city.buildings.items) {
         if (b.sanctuary && b.sanctuary->complete) {

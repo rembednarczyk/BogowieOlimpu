@@ -66,7 +66,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v29 (version field; days of debt), L-034 debt.
     // 2026-11-26: save format v30 (version field; no partners here), L-121 long-term relations.
     // 2026-11-26: save format v31 (version field; help of the gods), L-112 prayers.
-    const std::uint64_t kGolden = 0xa69dce3f3ba70e2fULL;
+    // 2026-11-26: save format v32 (version field; trade curses), Z:125-127.
+    const std::uint64_t kGolden = 0x99835eb8c8950b5cULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -210,7 +211,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v29 (days of debt; the treasury here never goes below zero), L-034.
     // 2026-11-26: save format v30 (three relation counters for the one partner; opinion 60 starts none), L-121.
     // 2026-11-26: save format v31 (help of the gods; no prayers here), L-112.
-    const std::uint64_t kGolden = 0x37adb457a3de04daULL;
+    // 2026-11-26: save format v32 (trade curses; no god attacks here), Z:125-127.
+    const std::uint64_t kGolden = 0x83809dcb08da543dULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

@@ -132,6 +132,9 @@ TradeEvents dispatch_traders(WorldState& st, const DataCatalog& catalog) {
         if (!on_terms(catalog, partner) || partner.by_sea != sea) {
             continue;  // a land partner sends caravans to a Trading Post, a sea partner ships to a Pier
         }
+        if ((sea ? st.ship_curse_days : st.caravan_curse_days) > 0) {
+            continue;  // a god's curse: no merchants come (Z:125-127)
+        }
         ++t.days_since_trader;
         const std::uint32_t interval = sea ? catalog.trade.ship_interval_days : catalog.trade.caravan_interval_days;
         if (t.days_since_trader < interval || st.walkers.items.count(t.trader) != 0 ||
