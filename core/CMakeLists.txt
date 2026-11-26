@@ -1,5 +1,6 @@
 # Core simulation library: pure C++17, no Godot headers (checked by tools/checks/check_core.py).
 add_library(bo_core STATIC
+    src/adventure.cpp
     src/agora.cpp
     src/appeal.cpp
     src/city.cpp
@@ -52,6 +53,7 @@ if(BO_BUILD_TESTS)
     add_executable(bo_core_tests
         tests/main.cpp
         tests/test_time.cpp
+        tests/test_adventure.cpp
         tests/test_rng.cpp
         tests/test_fixed.cpp
         tests/test_commands.cpp

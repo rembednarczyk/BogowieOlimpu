@@ -13,6 +13,7 @@
 #include <godot_cpp/variant/string.hpp>
 
 #include "bo/core/data.h"
+#include "bo/core/adventure.h"
 #include "bo/core/simulation.h"
 
 class BoSimulation : public godot::RefCounted {
@@ -33,6 +34,12 @@ public:
     godot::String start_scenario(const godot::String& data_dir, const godot::String& scenario_path,
                                  bool full_staffing = false);
     void fulfill_request(int64_t request);
+    // Adventures of several episodes (doc 23): start, go on after a won episode ("parent", "choose_colony",
+    // "victory"), found a colony; {"id", "step", "steps", "kind", "in_colony", "colony_choices"}.
+    godot::String start_adventure(const godot::String& data_dir, const godot::String& path);
+    godot::String continue_adventure();
+    godot::String found_colony(const godot::String& colony);
+    godot::Dictionary get_adventure() const;
     // {"id", "goals": [{"type", "target", "value", "met"}], "requests": [{"city", "good", "amount",
     // "days_left"}], "won", "lost"}
     godot::Dictionary get_scenario() const;
@@ -121,4 +128,6 @@ private:
 
     std::unique_ptr<bo::core::DataCatalog> catalog_;
     std::optional<bo::core::Simulation> sim_;
+    std::optional<bo::core::AdventureData> adventure_;
+    bo::core::AdventureRun run_;
 };

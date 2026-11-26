@@ -11,4 +11,8 @@ Pliki JSON czytane przez `bo::core::parse_scenario` (`core/src/scenario.cpp`). S
 | `events` | `type`: `invasion` (`city`, `nation`, `amount` żołnierzy), `request` (`city`, `good`, `amount`, `deadline_months`), `gift` (`city`, `good` lub `drachmas`, `amount`), `relation` (`city`, `relation`), `god_attack` (`god`), `disaster` (`kind`: earthquake, tidal_wave, landslide, lava; `x`, `y`, `radius`), `monster` (`monster` z `data/monsters.json`, `strength`, `target`: food, citizens, military, resources), `quest` (`god`, `index` 0 lub 1 z `data/quests.json`, opcjonalnie `hero`); `year` od 0, `month` 0-11, `repeat`: co rok od tego roku (potwory nigdy) |
 | `goals` | `population` (`value`), `treasury` (`value`), `sanctuary` (`target` = bóg), `houses` (`target` = poziom, `value` = liczba domów na nim lub wyżej), `vassal` (`target` = miasto), `quest` (`target` = bóg, zadanie wykonane) |
 
+## Przygoda wieloepizodowa (doc 23, L-119)
+
+Pole `steps` zamienia plik w przygodę: lista kroków `{"type": "parent", "goals", "events"}` (kolejny epizod w tym samym mieście macierzystym; zadania, prośby i pomniki przechodzą dalej), `{"type": "colony", "colonies": [...]}` (gracz wybiera jedną z nieużytych kolonii; każda to pełny plik epizodu z własną mapą, a jej `id` to miasto z listy `cities` miasta macierzystego, które po epizodzie dostaje stan `colony`) i `{"type": "victory"}` na końcu. Pierwszy krok musi być `parent`. Plik bez `steps` to przygoda z jednym epizodem. Przykład: `example_adventure.json`.
+
 Plik `demo.json` to scena demo z `game/scenes/boot.gd`; narzędzie `tools/sync_game_data.py` kopiuje katalog do `game/scenarios/`.

@@ -10,6 +10,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#include "bo/core/adventure.h"
 #include "bo/core/migration.h"
 #include "bo/core/scenario.h"
 
@@ -271,6 +272,64 @@ String BoSimulation::start_scenario(const String& data_dir, const String& scenar
         return e;
     }
     return String();
+}
+
+String BoSimulation::start_adventure(const String& data_dir, const String& path) {
+    sim_.reset();
+    adventure_.reset();
+    const String err = load_catalog(data_dir);
+    if (!err.is_empty()) {
+        return err;
+    }
+    std::string error;
+    auto a = bo::core::parse_adventure(to_std(FileAccess::get_file_as_string(path)), error);
+    if (!a) {
+        return String(error.c_str());
+    }
+    adventure_ = std::move(*a);
+    sim_.emplace(bo::core::begin_adventure(*catalog_, *adventure_, run_));
+    return String();
+}
+
+String BoSimulation::continue_adventure() {
+    if (!sim_ || !adventure_ || !sim_->state().scenario.won) {
+        return "not_won";
+    }
+    switch (bo::core::advance_adventure(*adventure_, run_, sim_)) {
+        case bo::core::NextEpisode::ParentEpisode:
+        case bo::core::NextEpisode::BackToParent:
+            return "parent";
+        case bo::core::NextEpisode::ChooseColony:
+            return "choose_colony";
+        case bo::core::NextEpisode::Victory:
+            return "victory";
+    }
+    return "victory";
+}
+
+String BoSimulation::found_colony(const String& colony) {
+    if (!sim_ || !adventure_) {
+        return "no_adventure";
+    }
+    return String(bo::core::found_colony(*catalog_, *adventure_, run_, to_std(colony), sim_).c_str());
+}
+
+Dictionary BoSimulation::get_adventure() const {
+    Dictionary d;
+    if (!adventure_) {
+        return d;
+    }
+    PackedStringArray choices;
+    for (const auto& c : bo::core::colony_choices(*adventure_, run_)) {
+        choices.append(String(c.c_str()));
+    }
+    d["id"] = String(adventure_->id.c_str());
+    d["step"] = static_cast<int64_t>(run_.step);
+    d["steps"] = static_cast<int64_t>(adventure_->steps.size());
+    d["kind"] = run_.step < adventure_->steps.size() ? String(adventure_->steps[run_.step].kind.c_str()) : String("victory");
+    d["in_colony"] = run_.in_colony;
+    d["colony_choices"] = choices;
+    return d;
 }
 
 void BoSimulation::fulfill_request(int64_t request) {
@@ -849,6 +908,10 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("start_scenario", "data_dir", "scenario_path", "full_staffing"),
                          &BoSimulation::start_scenario, DEFVAL(false));
     ClassDB::bind_method(D_METHOD("fulfill_request", "request"), &BoSimulation::fulfill_request);
+    ClassDB::bind_method(D_METHOD("start_adventure", "data_dir", "path"), &BoSimulation::start_adventure);
+    ClassDB::bind_method(D_METHOD("continue_adventure"), &BoSimulation::continue_adventure);
+    ClassDB::bind_method(D_METHOD("found_colony", "colony"), &BoSimulation::found_colony);
+    ClassDB::bind_method(D_METHOD("get_adventure"), &BoSimulation::get_adventure);
     ClassDB::bind_method(D_METHOD("get_scenario"), &BoSimulation::get_scenario);
     ClassDB::bind_method(D_METHOD("surrender"), &BoSimulation::surrender);
     ClassDB::bind_method(D_METHOD("get_bribe_cost"), &BoSimulation::get_bribe_cost);

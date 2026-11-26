@@ -178,6 +178,12 @@ func _init() -> void:
 	sc.run_days(16 * 3 + 1)
 	check(sc.get_scenario()["requests"].size() == 1, "the request of month 4 is open")
 
+	# Adventure of several episodes (doc 23): example file, parent, then a colony of the player's choice.
+	var ad := BoSimulation.new()
+	check(ad.start_adventure("res://data", "res://scenarios/example_adventure.json") == "", "start the example adventure")
+	check(ad.get_adventure()["steps"] == 4 and ad.get_adventure()["kind"] == "parent", "adventure steps")
+	check(ad.continue_adventure() == "not_won", "no next episode before the goals are met")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")
