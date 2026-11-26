@@ -1,0 +1,149 @@
+{
+ "levels": [
+  "B",
+  "M",
+  "H",
+  "T",
+  "O"
+ ],
+ "level_names": {
+  "B": "Beginner",
+  "M": "Mortal",
+  "H": "Hero",
+  "T": "Titan",
+  "O": "Olympian"
+ },
+ "tax_rates": {
+  "none": 0,
+  "very_low": 0.03,
+  "low": 0.07,
+  "normal": 0.09,
+  "high": 0.11,
+  "very_high": 0.15,
+  "outrageous": 0.2
+ },
+ "tax_formula": "tax_per_month = TRM(house, difficulty) * people_in_house * tax_rate; tylko domy zarejestrowane przez clerka",
+ "tax_sentiment": {
+  "none": [
+   7,
+   4,
+   3,
+   2,
+   1
+  ],
+  "very_low": [
+   5,
+   3,
+   2,
+   1,
+   1
+  ],
+  "low": [
+   3,
+   1,
+   1,
+   0,
+   0
+  ],
+  "normal": [
+   2,
+   0,
+   0,
+   0,
+   0
+  ],
+  "high": [
+   0,
+   0,
+   -1,
+   -2,
+   -3
+  ],
+  "very_high": [
+   -1,
+   -2,
+   -3,
+   -4,
+   -5
+  ],
+  "outrageous": [
+   -2,
+   -4,
+   -5,
+   -6,
+   -7
+  ]
+ },
+ "wage_drachmas_per_worker_year": {
+  "none": 0,
+  "very_low": 2,
+  "low": 2.5,
+  "normal": 3,
+  "high": 3.4,
+  "very_high": 4
+ },
+ "worker_percentage": {
+  "B": [
+   42,
+   46,
+   49,
+   52,
+   55,
+   57
+  ],
+  "M": [
+   37,
+   41,
+   44,
+   47,
+   50,
+   52
+  ],
+  "H": [
+   32,
+   36,
+   39,
+   42,
+   45,
+   47
+  ],
+  "T": [
+   29,
+   33,
+   36,
+   39,
+   42,
+   44
+  ],
+  "O": [
+   27,
+   31,
+   34,
+   37,
+   40,
+   42
+  ]
+ },
+ "worker_percentage_columns": [
+  "none",
+  "very_low",
+  "low",
+  "normal",
+  "high",
+  "very_high"
+ ],
+ "bribe_percent_of_hero": {
+  "B": 25,
+  "M": 75,
+  "H": 100,
+  "T": 125,
+  "O": 175
+ },
+ "bribe_hero_drachmas": {
+  "foot_soldier": 100,
+  "mounted": 200,
+  "warship": 800
+ },
+ "raid_booty_multiplier_note": "łup z rajdu zależy od trudności: Beginner 2x rocznej ilości, Olympian 0.5x (S-004 trivia)",
+ "src": "S-004 taxation, worker-percentages, enemy-information, trivia"
+}

@@ -1,0 +1,55 @@
+{
+ "id": "hippodrome",
+ "segments_to_horses_income": [
+  [
+   4,
+   10,
+   4,
+   10
+  ],
+  [
+   12,
+   22,
+   4,
+   20
+  ],
+  [
+   24,
+   34,
+   8,
+   40
+  ],
+  [
+   36,
+   58,
+   8,
+   60
+  ],
+  [
+   60,
+   98,
+   12,
+   100
+  ],
+  [
+   100,
+   198,
+   12,
+   200
+  ],
+  [
+   200,
+   null,
+   24,
+   500
+  ]
+ ],
+ "columns": [
+  "stades_min",
+  "stades_max",
+  "horses",
+  "drachmas_per_month"
+ ],
+ "over_200_unrest": true,
+ "src": "S-004 buildings/culture, trivia"
+}

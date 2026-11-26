@@ -1,0 +1,15 @@
+{
+ "max_sanctuaries_per_city": 4,
+ "god_arrival": "bóg pojawia się na drodze w promieniu ~7-10 kafli od sanktuarium (szukanie od NE zgodnie z zegarem; według forum: najwyżej atrakcyjna droga)",
+ "defenders_vs_armies": [
+  "athena",
+  "hera",
+  "zeus"
+ ],
+ "heroes_fight_invaders": true,
+ "prayer_cooldown": "zależny od boga: Hermes najkrótszy (miesiące), Ares najdłuższy (lata)",
+ "sanctification": "błogosławiony budynek daje 4x normalnej produkcji przy następnym kursie; Apollo: 2x więcej wykonawców",
+ "god_gifts_do_not_count_to_production_goals": true,
+ "artemis_prayer": "24 ładunki wieprzowiny do spichlerzy",
+ "src": "S-004 trivia, gods; S-005"
+}
