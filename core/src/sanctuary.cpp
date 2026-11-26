@@ -86,8 +86,14 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
         }
         const std::uint32_t batch = std::string(good) == "sculpture" ? 1U : std::min(kBulkLoads, needed - have);
         const auto from = nearest_by_road(st.city, *site.road_access, [&](const Building& b) {
-            if (!b.storage || b.trade || b.staffing_percent == 0) {
-                return false;  // trade buildings: imports for sanctuaries come with stage 2 [L-111]
+            if (!b.storage || b.staffing_percent == 0) {
+                return false;
+            }
+            if (b.trade) {  // a trade building importing the material (Z:117); export goods stay (Z:79)
+                const auto order = b.trade->orders.find(good);
+                if (order == b.trade->orders.end() || !order->second.import_on || order->second.export_on) {
+                    return false;
+                }
             }
             const auto it = b.storage->loads.find(good);
             return it != b.storage->loads.end() && it->second >= batch;

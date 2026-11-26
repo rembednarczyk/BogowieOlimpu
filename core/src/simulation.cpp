@@ -46,6 +46,7 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.finance.treasury = config.initial_treasury;
     state_.labour.full_staffing = config.full_staffing;
     state_.trade.partners = config.trade_partners;
+    state_.scenario = config.scenario;
     state_.migration.popularity =
         static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(state_.difficulty)]);
     if (!config.text_map.empty()) {
@@ -302,6 +303,17 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const GiftToCity&) { apply_world_command(command, index); },
                    [&](const RequestFromCity&) { apply_world_command(command, index); },
                    [&](const DispatchArmy&) { apply_world_command(command, index); },
+                   [&](const FulfillRequest& c) {
+                       const auto city = c.request < state_.scenario.requests.size()
+                                             ? state_.scenario.requests[c.request].city
+                                             : 0U;
+                       const std::string err = fulfill_request(state_, catalog_, c.request);
+                       if (err.empty()) {
+                           emit(RequestClosed{city, true});
+                       } else {
+                           emit(CommandRejected{index, err});
+                       }
+                   },
                    [&](const Pray& c) {
                        const std::string err = pray(state_, catalog_, c.building);
                        if (err.empty()) {

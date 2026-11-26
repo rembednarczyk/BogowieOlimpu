@@ -146,6 +146,8 @@ Etap 2 zrobiony (L-110): statystyki jednostek z `data/enemies.json`, inwazja kom
 Stan D4: etap 1 zrobiony (L-113, L-063, L-064, L-065). Partnerzy scenariusza mają opinię 0-100, siłę militarną i ekonomiczną, trybut; dary z malejącą wartością (+3 / +1,5 za jednostkę, 3 rocznie), prośby gracza z progami według stanu i opinii (rywal tylko pod przymusem siły), trybut wasali i kolonii co rok, trybut dla rywala po zdobyciu miasta, dwie porażki z tym samym rywalem kończą epizod, odparcie inwazji zrywa trybut; atak i rajd za granicą (bez rabble, 200 dni w każdą stronę, siła z doc 24), podbój tworzy wasala, rajd przynosi łup według trudności. Format zapisu v21. Zostaje: prośby miast do gracza i ich terminy (ze zdarzeń scenariusza), bunty, ataki rywali z nienawiści, dary dobrej woli, pakt atlantydzki, pomoc wojskowa sojuszników.
 | D5 Scenariusz | format przygody, cele, zdarzenia, kolonie | doc 23 |
 
+Stan D5: etap 1 zrobiony (L-093, L-114). Format przygody JSON w `scenarios/` (opis w `scenarios/README.md`): mapa, wysokości, skarbiec, trudność, miasta świata z dyplomacją, zdarzenia datowane (inwazja, prośba z terminem, dar, zmiana relacji; opcjonalnie co rok) i cele (populacja, skarbiec, sanktuarium, domy na poziomie, wasal) sprawdzane co miesiąc; zwycięstwo epizodu. Prośby miast z terminem, spełnianiem i wycofaniem. Scena demo gra przygodę `scenarios/demo.json`. Format zapisu v22. Zostaje: bogowie wrodzy i ich ataki, potwory i herosi, zadania bogów, katastrofy, kolonie i kolejne epizody, prośby o wojsko.
+
 Moduły C i D powstają w fazie 1 ("Prototyp symulacji") jako część silnika; ich odbiór to test zgodności ze specyfikacją (`PRAKTYKI.md` rozdz. 4).
 
 ### E. Prezentacja w Godocie (`game/`)

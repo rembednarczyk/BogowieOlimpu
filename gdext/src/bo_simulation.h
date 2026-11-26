@@ -29,6 +29,13 @@ public:
                                  bool full_staffing = false,
                                  const godot::PackedStringArray& elevation = godot::PackedStringArray(),
                                  const godot::Array& trade_partners = godot::Array());
+    // Starts an adventure file (scenarios/*.json, res://scenarios): map, cities, events, goals (D5).
+    godot::String start_scenario(const godot::String& data_dir, const godot::String& scenario_path,
+                                 bool full_staffing = false);
+    void fulfill_request(int64_t request);
+    // {"id", "goals": [{"type", "target", "value", "met"}], "requests": [{"city", "good", "amount",
+    // "days_left"}], "won", "lost"}
+    godot::Dictionary get_scenario() const;
     void step(int64_t ticks);
     void run_days(int64_t days);
 

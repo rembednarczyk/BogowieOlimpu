@@ -170,6 +170,14 @@ func _init() -> void:
 	var cities: Array = t.get_cities()
 	check(cities.size() == 1 and cities[0]["opinion"] == 66, "gift raises the opinion: %s" % [cities])
 
+	# Adventure through the binding (D5): the demo file, its goals and a yearly request.
+	var sc := BoSimulation.new()
+	check(sc.start_scenario("res://data", "res://scenarios/demo.json") == "", "start the demo adventure")
+	check(sc.get_map_width() == 64 and sc.get_cities().size() == 2, "adventure map and cities")
+	check(sc.get_scenario()["goals"].size() == 2, "adventure goals")
+	sc.run_days(16 * 3 + 1)
+	check(sc.get_scenario()["requests"].size() == 1, "the request of month 4 is open")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

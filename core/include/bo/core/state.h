@@ -10,6 +10,7 @@
 #include "bo/core/command.h"
 #include "bo/core/labour.h"
 #include "bo/core/military.h"
+#include "bo/core/scenario.h"
 #include "bo/core/rng.h"
 #include "bo/core/time.h"
 #include "bo/core/types.h"
@@ -113,6 +114,7 @@ struct WorldState {
     MilitaryState military;  // since v17 (module D3)
     std::vector<Expedition> expeditions;  // since v21 (module D4)
     bool episode_lost = false;            // since v21: taken twice by the same rival (Z:172)
+    ScenarioState scenario;               // since v22 (module D5)
     std::uint64_t next_command_sequence = 0;
     CommandLog pending_commands;  // sorted by (tick, sequence)
 };

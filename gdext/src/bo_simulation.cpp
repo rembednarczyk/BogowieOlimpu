@@ -11,6 +11,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 
 #include "bo/core/migration.h"
+#include "bo/core/scenario.h"
 
 using namespace godot;
 using bo::core::Difficulty;
@@ -115,6 +116,19 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["soldiers"] = static_cast<int64_t>(e.soldiers);
                        d["bribe"] = static_cast<int64_t>(e.bribe);
                    },
+                   [&d](const bo::core::CityRequestReceived& e) {
+                       d["type"] = "city_request";
+                       d["request"] = static_cast<int64_t>(e.request);
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["good"] = String(e.good.c_str());
+                       d["amount"] = static_cast<int64_t>(e.amount);
+                   },
+                   [&d](const bo::core::RequestClosed& e) {
+                       d["type"] = "request_closed";
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["fulfilled"] = e.fulfilled;
+                   },
+                   [&d](const bo::core::EpisodeWon&) { d["type"] = "episode_won"; },
                    [&d](const bo::core::TributePaid& e) {
                        d["type"] = "tribute_paid";
                        d["city"] = static_cast<int64_t>(e.city);
@@ -206,6 +220,70 @@ String BoSimulation::start(const String& data_dir, int64_t seed, const String& d
     }
     sim_.emplace(*catalog_, cfg);
     return String();
+}
+
+String BoSimulation::start_scenario(const String& data_dir, const String& scenario_path, bool full_staffing) {
+    sim_.reset();
+    const String err = load_catalog(data_dir);
+    if (!err.is_empty()) {
+        return err;
+    }
+    const String text = FileAccess::get_file_as_string(scenario_path);
+    if (text.is_empty()) {
+        return String("cannot read scenario: ") + scenario_path;
+    }
+    std::string error;
+    auto cfg = bo::core::parse_scenario(to_std(text), error);
+    if (!cfg) {
+        return String(error.c_str());
+    }
+    cfg->full_staffing = full_staffing;
+    sim_.emplace(*catalog_, *cfg);
+    if (!sim_->setup_error().empty()) {
+        const String e(sim_->setup_error().c_str());
+        sim_.reset();
+        return e;
+    }
+    return String();
+}
+
+void BoSimulation::fulfill_request(int64_t request) {
+    if (sim_ && request >= 0) {
+        sim_->issue(bo::core::FulfillRequest{static_cast<std::uint32_t>(request)});
+    }
+}
+
+Dictionary BoSimulation::get_scenario() const {
+    Dictionary d;
+    if (!sim_) {
+        return d;
+    }
+    const auto& s = sim_->state().scenario;
+    Array goals;
+    for (const auto& g : s.goals) {
+        Dictionary x;
+        x["type"] = String(g.type.c_str());
+        x["target"] = String(g.target.c_str());
+        x["value"] = g.value;
+        x["met"] = g.met;
+        goals.append(x);
+    }
+    Array requests;
+    const std::uint64_t today = sim_->state().time.tick() / bo::core::kTicksPerDay;
+    for (const auto& r : s.requests) {
+        Dictionary x;
+        x["city"] = static_cast<int64_t>(r.city);
+        x["good"] = String(r.good.c_str());
+        x["amount"] = static_cast<int64_t>(r.amount);
+        x["days_left"] = static_cast<int64_t>(r.due_day) - static_cast<int64_t>(today);  // < 0: overdue
+        requests.append(x);
+    }
+    d["id"] = String(s.id.c_str());
+    d["goals"] = goals;
+    d["requests"] = requests;
+    d["won"] = s.won;
+    d["lost"] = sim_->state().episode_lost;
+    return d;
 }
 
 String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const String& difficulty_code,
@@ -692,6 +770,10 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);
     ClassDB::bind_method(D_METHOD("dispatch_army", "city", "raid", "good", "companies"), &BoSimulation::dispatch_army);
     ClassDB::bind_method(D_METHOD("get_cities"), &BoSimulation::get_cities);
+    ClassDB::bind_method(D_METHOD("start_scenario", "data_dir", "scenario_path", "full_staffing"),
+                         &BoSimulation::start_scenario, DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("fulfill_request", "request"), &BoSimulation::fulfill_request);
+    ClassDB::bind_method(D_METHOD("get_scenario"), &BoSimulation::get_scenario);
     ClassDB::bind_method(D_METHOD("surrender"), &BoSimulation::surrender);
     ClassDB::bind_method(D_METHOD("get_bribe_cost"), &BoSimulation::get_bribe_cost);
     ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",

@@ -29,6 +29,8 @@ add_library(bo_core STATIC
     src/serialize_city.cpp
     src/serialize_economy.cpp
     src/serialize_goods.cpp
+    src/serialize_scenario.cpp
+    src/scenario.cpp
     src/simulation.cpp
     src/storage.cpp
     src/systems.cpp
@@ -76,6 +78,7 @@ if(BO_BUILD_TESTS)
         tests/test_wildlife.cpp
         tests/test_risks.cpp
         tests/test_sanctuary.cpp
+        tests/test_scenario.cpp
         tests/test_gods.cpp
         tests/test_trade.cpp
     )

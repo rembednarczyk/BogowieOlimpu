@@ -137,10 +137,16 @@ struct DispatchArmy {
     std::vector<std::uint32_t> companies;
 };
 
+// Sends what an open city request asks for (Z:162); `request` indexes ScenarioState::requests.
+struct FulfillRequest {
+    std::uint32_t request = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
-                             StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy>;
+                             StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
+                             FulfillRequest>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

@@ -242,6 +242,32 @@ static void run_world(Simulation& sim) {
     }
 }
 
+// D5: scenario events, city requests, goals.
+static void run_scenario(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    const ScenarioEvents ev = advance_scenario(st, sim.catalog());
+    for (const std::size_t i : ev.new_requests) {
+        const CityRequest& r = st.scenario.requests[i];
+        sim.emit(CityRequestReceived{static_cast<std::uint32_t>(i), r.city, r.good, r.amount});
+    }
+    for (const auto& [city, fulfilled] : ev.closed) {
+        sim.emit(RequestClosed{city, fulfilled});
+    }
+    for (std::size_t i = 0; i < ev.invasions.size(); ++i) {
+        CombatEvents combat;
+        const std::string err =
+            start_invasion(st, sim.catalog(), ev.invasions[i].first, ev.invasions[i].second, combat, ev.invasion_cities[i]);
+        if (err.empty()) {
+            sim.emit(InvasionStarted{ev.invasions[i].first, static_cast<std::uint32_t>(combat.spawned.size()),
+                                     bribe_cost(st, sim.catalog())});
+            sim.emit_combat(combat);
+        }
+    }
+    if (ev.won) {
+        sim.emit(EpisodeWon{});
+    }
+}
+
 // D3: companies in the field settle, companies at home re-form from the houses.
 static void run_military(Simulation& sim) {
     update_companies(sim.mutable_state());
@@ -269,6 +295,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"mythology", 33, &run_mythology},
         {"world", 34, &run_world},
         {"coverage_decay", 35, &run_coverage_decay},
+        {"scenario", 36, &run_scenario},
     };
     return kSchedule;
 }

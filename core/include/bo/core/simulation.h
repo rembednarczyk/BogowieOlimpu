@@ -22,6 +22,7 @@ struct SimulationConfig {
     bool full_staffing = false;            // development switch (LabourState::full_staffing)
     std::vector<std::string> elevation_map;  // optional heights for text_map (one hex digit per tile)
     std::vector<TradePartner> trade_partners;  // scenario partner cities (C9)
+    ScenarioState scenario;                    // goals and events (D5)
 };
 
 class Simulation;

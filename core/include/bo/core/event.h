@@ -136,11 +136,26 @@ struct ExpeditionReturned {  // D4: an army back from abroad
 
 struct EpisodeLost {};  // D4: taken twice by the same rival (Z:172)
 
+struct CityRequestReceived {  // D5: a leader asks for something by a deadline (Z:161)
+    std::uint32_t request = 0;    // index into ScenarioState::requests at the time
+    std::uint32_t city = 0;
+    std::string good;
+    std::uint32_t amount = 0;
+};
+
+struct RequestClosed {  // D5: fulfilled, or withdrawn after the deadline
+    std::uint32_t city = 0;
+    bool fulfilled = false;
+};
+
+struct EpisodeWon {};  // D5: all goals met
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
-                           TributePaid, ExpeditionReturned, EpisodeLost>;
+                           TributePaid, ExpeditionReturned, EpisodeLost,
+                           CityRequestReceived, RequestClosed, EpisodeWon>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

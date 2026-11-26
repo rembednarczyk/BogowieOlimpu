@@ -45,61 +45,14 @@ var walker_nodes := {}  # id -> MeshInstance3D
 var cam := Camera3D.new()
 var cam_target := Vector3(32, 0, 24)
 
-const MAP_W := 64
-const MAP_H := 48
-
-# 64x48 demo: the first town in the west (roads, farms, sheep, granary, trade), the Palace, a sanctuary site,
-# an Artisans' Guild, a horse ranch and an invasion point in the east, the sea in the south.
-static func demo_map() -> PackedStringArray:
-	var rows := PackedStringArray()
-	for y in MAP_H:
-		var row := ""
-		for x in MAP_W:
-			var c := "."
-			if y >= MAP_H - 2:
-				c = "~"
-			elif (y == 4 or y == 16 or y == 28) and x >= 2 and x < 62:
-				c = "="
-			elif (x == 4 or x == 16 or x == 28) and y >= 2 and y < 30:
-				c = "="
-			elif (x == 40 or x == 52) and y >= 2 and y < 44:
-				c = "="
-			elif y == 8 and x >= 20 and x < 26:
-				c = "T"
-			elif y == 22 and x >= 20 and x < 26:
-				c = ","
-			elif y == 16 and x == 1:
-				c = "E"  # land entry: the road to the rest of Greece (caravans, immigrants)
-			elif y == 24 and x == 2:
-				c = "w"  # wolf den near the sheep meadow (Z:45)
-			elif y == 40 and x == MAP_W - 2:
-				c = "i"  # invasion point (doc 23)
-			elif y >= 20 and y < 28 and x >= 5 and x < 15:
-				c = ","  # meadow for farms and sheep
-			row += c
-		rows.append(row)
-	return rows
-
-# A small plateau in the north-west corner, one level up (L-099); no ramp, so it stays out of the road net.
-static func demo_heights() -> PackedStringArray:
-	var rows := PackedStringArray()
-	for y in MAP_H:
-		rows.append("11" + "0".repeat(MAP_W - 2) if y < 12 else "0".repeat(MAP_W))
-	return rows
-
+# The demo adventure (scenarios/demo.json, D5): a 64x48 map with the first town in the west, room for the
+# Palace, a sanctuary, an Artisans' Guild and a horse ranch in the east, an invasion point and the sea; Corinth
+# (ally) and Sparta (rival) send a gift, a yearly request and an army. This script plays the player.
 var sanctuary_placed := false
 var demo_status := ""
-var invasion_started := false
 
 func _ready() -> void:
-	var partner := {"id": "corinth", "relation": "ally", "by_sea": false,
-		"sells": {"olive_oil": [145, 8], "fleece": [60, 8], "marble": [80, 60], "wood": [50, 24],
-			"sculpture": [200, 4]},
-		"buys": {}}
-	var rival := {"id": "sparta", "relation": "rival", "by_sea": false, "sells": {}, "buys": {},
-		"opinion": 20, "military": 3, "economy": 2}
-	var err: String = sim.start_with_map("res://data", 20261126, "", 25000, demo_map(), false, demo_heights(),
-		[partner, rival])
+	var err: String = sim.start_scenario("res://data", "res://scenarios/demo.json")
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
@@ -149,15 +102,20 @@ func _ready() -> void:
 func _demo_day() -> void:
 	if not sanctuary_placed and _city_stock("marble") >= 8:
 		sim.place_building("sanctuary_dionysus", 41, 17)
-	if not invasion_started and sim.get_month() == 5:
-		invasion_started = true
-		sim.start_invasion("greek", 6, 1)  # sent by the rival Sparta (D4)
+	var scenario: Dictionary = sim.get_scenario()
+	var requests: Array = scenario["requests"]
+	if requests.size() > 0 and _city_stock(requests[0]["good"]) >= requests[0]["amount"]:
+		sim.fulfill_request(0)  # the player sends Corinth what it asked for (Z:162)
 	demo_status = "marmur %d" % _city_stock("marble")
 	for b in sim.get_buildings():
 		if b.has("sanctuary_complete"):
 			demo_status = "sanktuarium: %s, ładunki do wbudowania %d" % [
 				"gotowe" if b["sanctuary_complete"] else "budowa", b["sanctuary_loads_needed"]]
 	demo_status += "   kompanie %d" % sim.get_companies().size()
+	var met := 0
+	for g in scenario["goals"]:
+		met += 1 if g["met"] else 0
+	demo_status += "   cele %d/%d   prośby %d" % [met, scenario["goals"].size(), requests.size()]
 	var cities: Array = sim.get_cities()
 	if cities.size() > 1 and cities[1]["tribute_demand"] > 0:
 		demo_status += "   trybut dla Sparty %d dr/rok" % cities[1]["tribute_demand"]

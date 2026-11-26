@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Copies data/*.json into game/data/ so the game reads it from res://data (also inside an APK).
-game/data/ is generated (gitignored); data/ stays the single source of truth."""
+"""Copies data/*.json into game/data/ and scenarios/*.json into game/scenarios/ so the game reads them from
+res:// (also inside an APK). Both are generated (gitignored); data/ and scenarios/ stay the source of truth."""
 import pathlib
 import shutil
 import sys
@@ -15,3 +15,10 @@ for f in sorted(src.glob('*.json')):
     shutil.copy2(f, dst / f.name)
     n += 1
 print(f"sync_game_data: {n} files -> {dst}")
+# Adventures (our content, scenarios/*.json) -> game/scenarios/ (res://scenarios).
+sdst = root / 'game' / 'scenarios'
+if sdst.exists():
+    shutil.rmtree(sdst)
+sdst.mkdir(parents=True)
+for f in sorted((root / 'scenarios').glob('*.json')):
+    shutil.copy2(f, sdst / f.name)

@@ -109,6 +109,8 @@ void write_command(ByteWriter& w, const Command& c) {
                 }
             } else if constexpr (std::is_same_v<T, Pray>) {
                 w.u32(cmd.building);
+            } else if constexpr (std::is_same_v<T, FulfillRequest>) {
+                w.u32(cmd.request);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -216,6 +218,14 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
         }
         case 22:
             return read_dispatch(r, out);
+        case 23: {
+            FulfillRequest c;
+            if (!r.u32(c.request)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
         default:
             return false;
     }
@@ -340,6 +350,7 @@ std::vector<std::uint8_t> serialize_state(const WorldState& s, std::uint64_t dat
     write_walkers(w, s.walkers);  // since v2 (v3: return_north)
     write_military(w, s.military);  // since v17
     write_world(w, s);              // since v21
+    write_scenario(w, s.scenario);  // since v22
     return w.bytes();
 }
 
@@ -399,7 +410,8 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
         (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s, out.format_version)) ||
          !read_walkers(r, s.walkers, out.format_version) ||
          (out.format_version >= 17 && !read_military(r, s.military, out.format_version)) ||
-         (out.format_version >= 21 && !read_world(r, s)))) {
+         (out.format_version >= 21 && !read_world(r, s)) ||
+         (out.format_version >= 22 && !read_scenario(r, s.scenario)))) {
         error = "save.corrupt";
         return std::nullopt;
     }

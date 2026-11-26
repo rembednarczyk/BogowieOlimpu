@@ -1,0 +1,229 @@
+// Module D5 stage 1: adventure format, events, city requests, goals (docs/gameplay/13, 23; Z:161-164; L-114).
+#include "bo/core/scenario.h"
+
+#include <algorithm>
+
+#include "bo/core/gods.h"
+#include "bo/core/migration.h"
+#include "bo/core/simulation.h"
+#include "bo/core/storage.h"
+#include "nlohmann/json.hpp"
+
+namespace bo::core {
+namespace {
+
+using nlohmann::json;
+
+std::vector<std::string> strings(const json& j, const char* key) {
+    std::vector<std::string> out;
+    for (const auto& s : j.value(key, json::array())) {
+        out.push_back(s.get<std::string>());
+    }
+    return out;
+}
+
+TradePartner parse_city(const json& c) {
+    TradePartner p;
+    p.id = c.at("id").get<std::string>();
+    p.relation = c.value("relation", "ally");
+    p.by_sea = c.value("by_sea", false);
+    for (const auto* key : {"sells", "buys"}) {
+        const json offers = c.value(key, json::object());
+        for (const auto& [good, v] : offers.items()) {
+            const TradeOffer o{v.at(0).get<std::int32_t>(), v.at(1).get<std::uint32_t>(), 0};
+            (std::string(key) == "sells" ? p.sells : p.buys)[good] = o;
+        }
+    }
+    CityDiplomacy& d = p.diplomacy;
+    d.opinion = c.value("opinion", d.opinion);
+    d.military = c.value("military", d.military);
+    d.economy = c.value("economy", d.economy);
+    d.tribute = c.value("tribute", d.tribute);
+    return p;
+}
+
+std::int32_t city_index(const std::vector<TradePartner>& cities, const json& e) {
+    const std::string id = e.value("city", "");
+    for (std::size_t i = 0; i < cities.size(); ++i) {
+        if (cities[i].id == id) {
+            return static_cast<std::int32_t>(i);
+        }
+    }
+    return -1;
+}
+
+bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGoal& g) {
+    if (g.type == "population") {
+        return city_population(st.city) >= static_cast<std::uint64_t>(g.value);
+    }
+    if (g.type == "treasury") {
+        return st.finance.treasury >= g.value;
+    }
+    if (g.type == "sanctuary") {
+        return god_blesses(st.city, catalog, g.target);
+    }
+    if (g.type == "vassal") {
+        return std::any_of(st.trade.partners.begin(), st.trade.partners.end(),
+                           [&g](const TradePartner& p) { return p.id == g.target && p.relation == "vassal"; });
+    }
+    if (g.type == "houses") {
+        std::int64_t n = 0;
+        for (const auto& [id, b] : st.city.buildings.items) {
+            if (!b.house || b.house->population == 0) {
+                continue;
+            }
+            const auto& levels = b.house->elite ? catalog.elite_levels : catalog.common_levels;
+            const auto it = std::find_if(levels.begin(), levels.end(),
+                                         [&g](const HousingLevel& lv) { return lv.id == g.target; });
+            if (it != levels.end() && b.house->level >= static_cast<std::size_t>(it - levels.begin())) {
+                ++n;
+            }
+        }
+        return n >= g.value;
+    }
+    return false;
+}
+
+void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, ScenarioEvents& ev) {
+    const bool has_city = e.city >= 0 && static_cast<std::size_t>(e.city) < st.trade.partners.size();
+    if (e.type == "invasion") {
+        ev.invasions.emplace_back(e.nation, e.amount);
+        ev.invasion_cities.push_back(e.city);
+    } else if (e.type == "request" && has_city) {
+        const std::uint64_t today = st.time.tick() / kTicksPerDay;
+        st.scenario.requests.push_back(CityRequest{static_cast<std::uint32_t>(e.city), e.good, e.amount,
+                                                   today + static_cast<std::uint64_t>(e.deadline_months) * kDaysPerMonth});
+        ev.new_requests.push_back(st.scenario.requests.size() - 1);
+    } else if (e.type == "gift" && has_city) {
+        if (e.good == "drachmas") {
+            st.finance.treasury += e.amount;
+        } else {
+            store_in_city(st.city, catalog, e.good, e.amount);
+        }
+    } else if (e.type == "relation" && has_city) {
+        st.trade.partners[static_cast<std::size_t>(e.city)].relation = e.relation;
+    }
+}
+
+}  // namespace
+
+std::optional<SimulationConfig> parse_scenario(const std::string& text, std::string& error) {
+    try {
+        const json j = json::parse(text);
+        SimulationConfig cfg;
+        cfg.seed = j.value("seed", std::uint64_t{1});
+        cfg.initial_treasury = j.value("treasury", std::int64_t{0});
+        if (j.contains("difficulty")) {
+            cfg.difficulty = difficulty_from_code(j.at("difficulty").get<std::string>());
+        }
+        cfg.text_map = strings(j, "map");
+        cfg.elevation_map = strings(j, "elevation");
+        for (const auto& c : j.value("cities", json::array())) {
+            cfg.trade_partners.push_back(parse_city(c));
+        }
+        ScenarioState& s = cfg.scenario;
+        s.id = j.value("id", "");
+        for (const auto& g : j.value("goals", json::array())) {
+            ScenarioGoal goal;
+            goal.type = g.at("type").get<std::string>();
+            goal.target = g.value("target", "");
+            goal.value = g.value("value", std::int64_t{0});
+            s.goals.push_back(goal);
+        }
+        for (const auto& e : j.value("events", json::array())) {
+            ScenarioEvent ev;
+            ev.type = e.at("type").get<std::string>();
+            ev.year = e.value("year", 0U);
+            ev.month = e.value("month", 0U);
+            ev.repeat = e.value("repeat", false) && ev.type != "monster";  // monsters never repeat (doc 23)
+            ev.city = city_index(cfg.trade_partners, e);
+            ev.good = e.value("good", "");
+            ev.nation = e.value("nation", "");
+            ev.relation = e.value("relation", "");
+            ev.amount = e.value("amount", 0U);
+            ev.deadline_months = e.value("deadline_months", 12U);
+            if (ev.month > 11) {
+                error = "scenario.bad_month";
+                return std::nullopt;
+            }
+            s.events.push_back(ev);
+        }
+        if (cfg.text_map.empty()) {
+            error = "scenario.no_map";
+            return std::nullopt;
+        }
+        return cfg;
+    } catch (const std::exception& e) {
+        error = std::string("scenario.invalid: ") + e.what();
+        return std::nullopt;
+    }
+}
+
+ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
+    ScenarioEvents ev;
+    ScenarioState& s = st.scenario;
+    const std::uint64_t today = st.time.tick() / kTicksPerDay;
+    const auto year = static_cast<std::uint32_t>(st.time.year());
+    const auto month = static_cast<std::uint32_t>(st.time.month());
+    if (st.time.day_in_month() == 0) {
+        for (ScenarioEvent& e : s.events) {
+            const bool now = e.month == month && (e.year == year || (e.repeat && e.year < year));
+            if (now && e.last_year != static_cast<std::int32_t>(year)) {
+                e.last_year = static_cast<std::int32_t>(year);
+                fire(st, catalog, e, ev);
+            }
+        }
+    }
+    for (auto it = s.requests.begin(); it != s.requests.end();) {
+        if (today > it->due_day + kWithdrawAfterDays) {
+            if (it->city < st.trade.partners.size()) {
+                CityDiplomacy& d = st.trade.partners[it->city].diplomacy;
+                d.opinion = std::max(0, d.opinion - 15);  // refused or too late (doc 24)
+            }
+            ev.closed.emplace_back(it->city, false);
+            it = s.requests.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    if (st.time.day_in_month() == 0 && !s.won && !s.goals.empty()) {
+        bool all = true;
+        for (ScenarioGoal& g : s.goals) {
+            g.met = goal_met(st, catalog, g);
+            all = all && g.met;
+        }
+        if (all) {
+            s.won = true;
+            ev.won = true;
+        }
+    }
+    return ev;
+}
+
+std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uint32_t index) {
+    ScenarioState& s = st.scenario;
+    if (index >= s.requests.size()) {
+        return "scenario.no_request";
+    }
+    const CityRequest r = s.requests[index];
+    if (r.good == "drachmas") {
+        if (st.finance.treasury < r.amount) {
+            return "scenario.cannot_afford";
+        }
+        st.finance.treasury -= r.amount;
+    } else {
+        if (city_stock(st.city, catalog, r.good) < r.amount) {
+            return "scenario.not_in_storage";
+        }
+        take_from_city(st.city, r.good, r.amount);
+    }
+    const bool late = st.time.tick() / kTicksPerDay > r.due_day;
+    if (r.city < st.trade.partners.size()) {
+        CityDiplomacy& d = st.trade.partners[r.city].diplomacy;
+        d.opinion = std::min(100, d.opinion + (late ? 5 : 10));
+    }
+    s.requests.erase(s.requests.begin() + static_cast<std::ptrdiff_t>(index));
+    return {};
+}
+
+}  // namespace bo::core

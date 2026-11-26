@@ -224,3 +224,31 @@ TEST_CASE("a sanctuary under construction employs nobody; finished, it needs its
     sim.run_days(1);
     CHECK(workers_needed(at(sim, {2, 14}), bo::test::catalog(), sim.state().labour) == 45);
 }
+
+TEST_CASE("carts also bring materials from a trade building importing them, never export goods (Z:117, Z:79)") {
+    std::vector<std::string> rows(40, std::string(60, '.'));
+    rows[20] = std::string(60, '=');
+    rows[20][0] = 'E';
+    SimulationConfig cfg{9, Difficulty::Hero, 30000, rows, true};
+    TradePartner p;
+    p.id = "corinth";
+    p.sells["wood"] = TradeOffer{50, 24, 0};
+    cfg.trade_partners.push_back(p);
+    Simulation sim(bo::test::catalog_isolated(), cfg);
+    sim.issue(PlaceBuilding{"storehouse", 30, 17});
+    sim.issue(PlaceBuilding{"trading_post", 40, 16});
+    sim.step(1);
+    at(sim, {30, 17}).storage->loads["marble"] = 8;
+    at(sim, {30, 17}).storage->orders["wood"] = StorageOrder{StorageOrderKind::DontAccept, 0};  // only carts take it
+    sim.issue(PlaceBuilding{"sanctuary_dionysus", 2, 14});
+    sim.issue(PlaceBuilding{"artisans_guild", 20, 18});
+    sim.step(1);
+    Building& post = at(sim, {40, 16});
+    post.storage->loads["wood"] = 8;
+    post.trade->orders["wood"] = TradeOrder{false, 0, true, 0};  // marked for export: not for the city
+    sim.run_days(5);
+    CHECK(post.storage->loads["wood"] == 8);
+    post.trade->orders["wood"] = TradeOrder{true, 8, false, 0};  // imported
+    sim.run_days(5);
+    CHECK(post.storage->loads["wood"] < 8);
+}
