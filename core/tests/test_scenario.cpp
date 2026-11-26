@@ -149,5 +149,5 @@ TEST_CASE("the demo adventure (scenarios/demo.json) parses and starts") {
     CHECK(sim.state().city.map.width() == 64);
     CHECK(sim.state().trade.partners.size() == 2);
     CHECK(sim.state().scenario.goals.size() == 2);
-    CHECK(sim.state().scenario.events.size() == 3);
+    CHECK(sim.state().scenario.events.size() == 5);
 }

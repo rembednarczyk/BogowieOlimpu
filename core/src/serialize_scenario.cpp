@@ -25,6 +25,9 @@ void write_scenario(ByteWriter& w, const ScenarioState& s) {
         w.u32(e.amount);
         w.u32(e.deadline_months);
         w.i32(e.last_year);
+        w.str(e.god);  // since v23
+        w.i32(e.x);
+        w.i32(e.y);
     }
     w.u32(static_cast<std::uint32_t>(s.requests.size()));
     for (const CityRequest& r : s.requests) {
@@ -36,7 +39,7 @@ void write_scenario(ByteWriter& w, const ScenarioState& s) {
     w.u8(s.won ? 1 : 0);
 }
 
-bool read_scenario(ByteReader& r, ScenarioState& s) {
+bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
     std::uint32_t n = 0;
     if (!r.str(s.id) || !r.u32(n) || n > 4096) {
         return false;
@@ -61,6 +64,9 @@ bool read_scenario(ByteReader& r, ScenarioState& s) {
             return false;
         }
         e.repeat = repeat != 0;
+        if (version >= 23 && (!r.str(e.god) || !r.i32(e.x) || !r.i32(e.y))) {
+            return false;
+        }
     }
     if (!r.u32(n) || n > 4096) {
         return false;

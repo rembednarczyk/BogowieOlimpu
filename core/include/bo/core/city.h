@@ -191,6 +191,7 @@ struct Building {
     std::uint8_t burning_days = 0;  // 0: not burning
     bool sanctified = false;            // D1: the next production gives 4x (doc 21); since v20
     std::uint32_t sanctified_base = 0;  // output loads when last looked at, to see new production
+    std::uint16_t cursed_days = 0;      // D5: a god's curse; the building does not work (Z:125-127); since v23
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)

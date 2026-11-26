@@ -411,7 +411,7 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
          !read_walkers(r, s.walkers, out.format_version) ||
          (out.format_version >= 17 && !read_military(r, s.military, out.format_version)) ||
          (out.format_version >= 21 && !read_world(r, s)) ||
-         (out.format_version >= 22 && !read_scenario(r, s.scenario)))) {
+         (out.format_version >= 22 && !read_scenario(r, s.scenario, out.format_version)))) {
         error = "save.corrupt";
         return std::nullopt;
     }

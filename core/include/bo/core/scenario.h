@@ -26,7 +26,8 @@ struct ScenarioGoal {
     }
 };
 
-// A dated event (doc 23): invasion, request, gift, relation. Year counts from 0 (the first year), month 0-11.
+// A dated event (doc 23): invasion, request, gift, relation, god_attack (`god`), disaster (kind in `nation`:
+// earthquake, tidal_wave, landslide, lava; centre x, y; radius in `amount`). Year counts from 0 (the first year), month 0-11.
 // `repeat`: every year in that month from `year` on (invasions, requests and gifts; doc 23).
 struct ScenarioEvent {
     std::string type;
@@ -40,10 +41,14 @@ struct ScenarioEvent {
     std::uint32_t amount = 0;  // loads, drachmas, soldiers
     std::uint32_t deadline_months = 0;  // request
     std::int32_t last_year = -1;        // year it last fired
+    std::string god;                    // god_attack (since v23)
+    std::int32_t x = 0;                 // disaster: centre and radius (amount), kind in `nation` (since v23)
+    std::int32_t y = 0;
     friend bool operator==(const ScenarioEvent& a, const ScenarioEvent& b) {
         return a.type == b.type && a.year == b.year && a.month == b.month && a.repeat == b.repeat && a.city == b.city &&
                a.good == b.good && a.nation == b.nation && a.relation == b.relation && a.amount == b.amount &&
-               a.deadline_months == b.deadline_months && a.last_year == b.last_year;
+               a.deadline_months == b.deadline_months && a.last_year == b.last_year && a.god == b.god && a.x == b.x &&
+               a.y == b.y;
     }
 };
 
@@ -78,6 +83,8 @@ struct ScenarioEvents {
     std::vector<std::pair<std::uint32_t, bool>> closed;  // city, fulfilled (false: withdrawn)
     std::vector<std::pair<std::string, std::uint32_t>> invasions;  // nation, soldiers (city in `invasion_cities`)
     std::vector<std::int32_t> invasion_cities;
+    std::vector<const ScenarioEvent*> god_attacks;  // fired this day (pointers into ScenarioState::events)
+    std::vector<const ScenarioEvent*> disasters;
     bool won = false;
 };
 

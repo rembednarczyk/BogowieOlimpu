@@ -63,6 +63,9 @@ std::uint32_t workers_needed(const Building& b, const DataCatalog& catalog, cons
     if (type == catalog.buildings.end() || labour.disabled_types.count(b.type) != 0) {
         return 0;
     }
+    if (b.cursed_days > 0) {
+        return 0;  // cursed by a god: nobody works there until the curse ends (Z:125-127)
+    }
     if (b.sanctuary && !b.sanctuary->complete) {
         return 0;  // a building site: priests and staff come when it is finished [ZAŁOŻENIE, L-111]
     }

@@ -316,6 +316,7 @@ struct DataCatalog {
     std::int32_t prayer_money = 1000;                    // [ZAŁOŻENIE, L-112]
     std::int32_t sanctify_every_days = 16;               // [ZAŁOŻENIE, L-112]
     std::int32_t sanctify_reach_tiles = 40;              // [ZAŁOŻENIE, L-112]
+    std::map<std::string, std::int32_t> wrath;           // gods_rules.json wrath_numbers [ZAŁOŻENIE, L-115]
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

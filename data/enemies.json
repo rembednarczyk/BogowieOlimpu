@@ -691,6 +691,13 @@
    }
   },
   "divine": {
+   "composition": [
+    100
+   ],
+   "composition_units": [
+    "ares_warriors"
+   ],
+   "composition_src": "[ZAŁOŻENIE L-115] gniew Aresa: armia samych wojowników Sparti (Z:126)",
    "units": {
     "ares_warriors": {
      "hp": 220,

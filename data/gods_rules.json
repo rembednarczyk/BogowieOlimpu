@@ -8,7 +8,11 @@
  ],
  "heroes_fight_invaders": true,
  "prayer_cooldown": "zależny od boga: Hermes najkrótszy (miesiące), Ares najdłuższy (lata)",
- "prayer_cooldown_days": {"default": 96, "hermes": 48, "ares": 384},
+ "prayer_cooldown_days": {
+  "default": 96,
+  "hermes": 48,
+  "ares": 384
+ },
  "prayer_cooldown_days_src": "[ZAŁOŻENIE L-053] kolejność z S-004 trivia, wartości do strojenia",
  "prayer_goods_loads": 24,
  "prayer_goods_loads_src": "S-004 trivia: Artemis 24 ładunki wieprzowiny; [ZAŁOŻENIE L-112] tyle samo dla innych darów",
@@ -20,5 +24,17 @@
  "sanctification": "błogosławiony budynek daje 4x normalnej produkcji przy następnym kursie; Apollo: 2x więcej wykonawców",
  "god_gifts_do_not_count_to_production_goals": true,
  "artemis_prayer": "24 ładunki wieprzowiny do spichlerzy",
- "src": "S-004 trivia, gods; S-005"
+ "src": "S-004 trivia, gods; S-005",
+ "wrath_numbers": {
+  "curse_days": 45,
+  "buildings_destroyed": 3,
+  "buildings_set_on_fire": 3,
+  "plague_houses": 3,
+  "amazons": 16,
+  "sparti": 16,
+  "residents_leave_percent": 10,
+  "money_stolen_percent": 25,
+  "opinion_loss": 10
+ },
+ "wrath_numbers_src": "[ZAŁOŻENIE L-115, L-054b] Z:125-127 bez liczb; klątwa 45 dni (eZeus ok. 2,8 mies., doc 24)"
 }

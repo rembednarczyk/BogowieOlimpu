@@ -174,6 +174,10 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         cat.prayer_money = gr.value("prayer_money", cat.prayer_money);
         cat.sanctify_every_days = gr.value("sanctify_every_days", cat.sanctify_every_days);
         cat.sanctify_reach_tiles = gr.value("sanctify_reach_tiles", cat.sanctify_reach_tiles);
+        const json wrath = gr.value("wrath_numbers", json::object());
+        for (const auto& [k, v] : wrath.items()) {
+            cat.wrath[k] = v.get<std::int32_t>();
+        }
     }
     if (docs.count("gods.json") == 0) {
         return;

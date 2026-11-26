@@ -120,6 +120,7 @@ void write_building(ByteWriter& w, const Building& b) {
     w.u32(b.house ? b.house->incoming : 0U);     // since v15
     w.u8(b.sanctified ? 1 : 0);                  // since v20
     w.u32(b.sanctified_base);
+    w.u32(b.cursed_days);                        // since v23
 }
 
 bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
@@ -158,6 +159,11 @@ bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
         return false;
     }
     b.sanctified = sanctified != 0;
+    std::uint32_t cursed = 0;
+    if (version >= 23 && (!r.u32(cursed) || cursed > 0xFFFF)) {
+        return false;
+    }
+    b.cursed_days = static_cast<std::uint16_t>(cursed);
     return true;
 }
 

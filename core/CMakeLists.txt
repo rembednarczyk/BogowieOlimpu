@@ -22,6 +22,7 @@ add_library(bo_core STATIC
     src/walker.cpp
     src/wolves.cpp
     src/world.cpp
+    src/wrath.cpp
     src/wildlife.cpp
     src/risks.cpp
     src/sanctuary.cpp
@@ -74,6 +75,7 @@ if(BO_BUILD_TESTS)
         tests/test_husbandry.cpp
         tests/test_wolves.cpp
         tests/test_world.cpp
+        tests/test_wrath.cpp
         tests/test_extraction.cpp
         tests/test_wildlife.cpp
         tests/test_risks.cpp

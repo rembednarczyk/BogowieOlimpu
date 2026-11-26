@@ -129,6 +129,11 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["fulfilled"] = e.fulfilled;
                    },
                    [&d](const bo::core::EpisodeWon&) { d["type"] = "episode_won"; },
+                   [&d](const bo::core::GodAttacked& e) {
+                       d["type"] = "god_attacked";
+                       d["god"] = String(e.god.c_str());
+                       d["repelled"] = e.repelled;
+                   },
                    [&d](const bo::core::TributePaid& e) {
                        d["type"] = "tribute_paid";
                        d["city"] = static_cast<int64_t>(e.city);
@@ -586,6 +591,7 @@ Array BoSimulation::get_buildings() const {
         d["crime_risk"] = static_cast<int64_t>(b.crime_counter);
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
         d["sanctified"] = b.sanctified;
+        d["cursed_days"] = static_cast<int64_t>(b.cursed_days);
         if (b.sanctuary) {  // D1: loads still to build in, delivered loads, sacrifices
             int64_t needed = 0;
             int64_t on_site = 0;

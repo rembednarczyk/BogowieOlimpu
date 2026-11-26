@@ -50,6 +50,7 @@ var cam_target := Vector3(32, 0, 24)
 # (ally) and Sparta (rival) send a gift, a yearly request and an army. This script plays the player.
 var sanctuary_placed := false
 var demo_status := ""
+var demo_note := ""
 
 func _ready() -> void:
 	var err: String = sim.start_scenario("res://data", "res://scenarios/demo.json")
@@ -126,6 +127,8 @@ func _demo_day() -> void:
 	for g in scenario["goals"]:
 		met += 1 if g["met"] else 0
 	demo_status += "   cele %d/%d   prośby %d" % [met, scenario["goals"].size(), requests.size()]
+	if demo_note != "":
+		demo_status += "\n" + demo_note
 	var cities: Array = sim.get_cities()
 	if cities.size() > 1 and cities[1]["tribute_demand"] > 0:
 		demo_status += "   trybut dla Sparty %d dr/rok" % cities[1]["tribute_demand"]
@@ -188,6 +191,8 @@ func _handle_events(events: Array) -> void:
 				if walker_nodes.has(e["id"]):
 					walker_nodes[e["id"]].queue_free()
 					walker_nodes.erase(e["id"])
+			"god_attacked":
+				demo_note = "gniew boga: %s%s" % [e["god"], " (odparty)" if e["repelled"] else ""]
 			"disaster":
 				if e["kind"] == "fire_started" and building_nodes.has(e["building"]):
 					_tint(building_nodes[e["building"]], Color(0.9, 0.25, 0.1))  # placeholder for fire effects (E)

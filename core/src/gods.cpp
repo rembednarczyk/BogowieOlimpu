@@ -35,6 +35,9 @@ bool god_blesses(const CityState& city, const DataCatalog& catalog, const std::s
 
 void advance_gods(WorldState& st, const DataCatalog& catalog) {
     CityState& city = st.city;
+    for (auto& [id, b] : city.buildings.items) {
+        b.cursed_days = static_cast<std::uint16_t>(b.cursed_days > 0 ? b.cursed_days - 1 : 0);
+    }
     std::vector<BuildingId> sanctuaries;
     for (const auto& [id, b] : city.buildings.items) {
         if (b.sanctuary && b.sanctuary->complete) {

@@ -15,6 +15,7 @@
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
 #include "bo/core/world.h"
+#include "bo/core/wrath.h"
 #include "systems.h"
 
 namespace bo::core {
@@ -242,6 +243,15 @@ static void run_world(Simulation& sim) {
     }
 }
 
+static void emit_wrath(Simulation& sim, const WrathEvents& w) {
+    for (const BuildingId id : w.removed) {
+        sim.emit(BuildingRemoved{id});
+    }
+    for (const TilePos p : w.tiles_changed) {
+        sim.emit(TileChanged{p.x, p.y});
+    }
+}
+
 // D5: scenario events, city requests, goals.
 static void run_scenario(Simulation& sim) {
     WorldState& st = sim.mutable_state();
@@ -260,6 +270,25 @@ static void run_scenario(Simulation& sim) {
         if (err.empty()) {
             sim.emit(InvasionStarted{ev.invasions[i].first, static_cast<std::uint32_t>(combat.spawned.size()),
                                      bribe_cost(st, sim.catalog())});
+            sim.emit_combat(combat);
+        }
+    }
+    std::vector<std::pair<std::string, std::uint32_t>> armies;
+    for (const ScenarioEvent* e : ev.god_attacks) {
+        const WrathEvents w = god_attack(st, sim.catalog(), e->god);
+        sim.emit(GodAttacked{e->god, w.repelled});
+        emit_wrath(sim, w);
+        if (w.invasion_soldiers > 0) {
+            armies.emplace_back(w.invasion_nation, w.invasion_soldiers);
+        }
+    }
+    for (const ScenarioEvent* e : ev.disasters) {
+        emit_wrath(sim, disaster(st, e->nation, {e->x, e->y}, static_cast<std::int32_t>(e->amount)));
+    }
+    for (const auto& [nation, soldiers] : armies) {  // the Amazons of Artemis, the Sparti of Ares (Z:126)
+        CombatEvents combat;
+        if (start_invasion(st, sim.catalog(), nation, soldiers, combat).empty()) {
+            sim.emit(InvasionStarted{nation, static_cast<std::uint32_t>(combat.spawned.size()), bribe_cost(st, sim.catalog())});
             sim.emit_combat(combat);
         }
     }

@@ -23,6 +23,6 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version);
 void write_world(ByteWriter& w, const WorldState& s);
 bool read_world(ByteReader& r, WorldState& s);
 void write_scenario(ByteWriter& w, const ScenarioState& s);
-bool read_scenario(ByteReader& r, ScenarioState& s);
+bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version);
 
 }  // namespace bo::core

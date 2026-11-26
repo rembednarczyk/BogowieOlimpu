@@ -100,6 +100,10 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
         } else {
             store_in_city(st.city, catalog, e.good, e.amount);
         }
+    } else if (e.type == "god_attack") {
+        ev.god_attacks.push_back(&e);
+    } else if (e.type == "disaster") {
+        ev.disasters.push_back(&e);
     } else if (e.type == "relation" && has_city) {
         st.trade.partners[static_cast<std::size_t>(e.city)].relation = e.relation;
     }
@@ -142,6 +146,13 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             ev.relation = e.value("relation", "");
             ev.amount = e.value("amount", 0U);
             ev.deadline_months = e.value("deadline_months", 12U);
+            ev.god = e.value("god", "");
+            ev.x = e.value("x", 0);
+            ev.y = e.value("y", 0);
+            if (ev.type == "disaster") {
+                ev.nation = e.value("kind", "earthquake");
+                ev.amount = e.value("radius", 2U);
+            }
             if (ev.month > 11) {
                 error = "scenario.bad_month";
                 return std::nullopt;

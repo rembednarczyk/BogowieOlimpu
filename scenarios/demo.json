@@ -178,6 +178,21 @@
    "amount": 6,
    "year": 0,
    "month": 5
+  },
+  {
+   "type": "god_attack",
+   "god": "hermes",
+   "year": 1,
+   "month": 2
+  },
+  {
+   "type": "disaster",
+   "kind": "earthquake",
+   "x": 57,
+   "y": 36,
+   "radius": 2,
+   "year": 1,
+   "month": 6
   }
  ],
  "goals": [
