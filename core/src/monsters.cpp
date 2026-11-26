@@ -22,7 +22,7 @@ std::int32_t number(const DataCatalog& catalog, const char* key, std::int32_t fa
 std::int32_t chebyshev(TilePos a, TilePos b) { return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y)); }
 
 bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding) {
-    PathRequest req{w.tile, to, PathMode::Walkable};
+    PathRequest req{w.tile, to, PathMode::Walkable};  // monsters go over gates [ZAŁOŻENIE, L-117]
     req.goal_building = goal;
     auto path = find_path(city, req);
     if (!path) {
@@ -98,6 +98,14 @@ std::int64_t horses_in_city(const WorldState& st) {
     return n;
 }
 
+std::int64_t triremes(const WorldState& st) {
+    std::int64_t n = 0;
+    for (const auto& [id, b] : st.city.buildings.items) {
+        n += b.type == "trireme_wharf" && b.producer ? b.producer->output_loads : 0;
+    }
+    return n;
+}
+
 // One requirement of heroes.json (doc 21), without its note in brackets.
 bool requirement_met(const WorldState& st, const DataCatalog& catalog, std::string req) {
     req = req.substr(0, req.find(" ("));
@@ -107,7 +115,7 @@ bool requirement_met(const WorldState& st, const DataCatalog& catalog, std::stri
     if (at_least("population", city_population(st.city)) || at_least("elite_houses", count_houses(st, true)) ||
         at_least("horses_in_city", horses_in_city(st)) || at_least("hoplite_companies", companies_of(st, "hoplite")) ||
         at_least("horsemen_companies", companies_of(st, "horseman")) || at_least("military_companies", companies_of(st, "")) ||
-        at_least("treasury", st.finance.treasury)) {
+        at_least("treasury", st.finance.treasury) || at_least("triremes", triremes(st))) {
         return true;
     }
     if (req.rfind("sanctuary:", 0) == 0 || req.rfind("sanctuaries>=", 0) == 0) {

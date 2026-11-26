@@ -160,7 +160,8 @@ void advance_husbandry(WorldState& st, const DataCatalog& catalog) {
             const bool ready = std::all_of(pp.inputs_multi.begin(), pp.inputs_multi.end(), [&p](const auto& in) {
                 return p.units[in.first] >= static_cast<std::uint32_t>(in.second);
             });
-            if (ready) {
+            const bool room = pp.storage_loads == 0 || p.output_loads < static_cast<std::uint32_t>(pp.storage_loads);
+            if (ready && room) {  // a wharf holds one ship (L-117)
                 p.progress += static_cast<std::uint32_t>(pp.loads_per_year) * b.staffing_percent;
                 if (p.progress >= 100 * kDaysPerYear) {
                     p.progress -= 100 * kDaysPerYear;

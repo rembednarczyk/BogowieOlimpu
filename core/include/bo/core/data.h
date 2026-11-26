@@ -256,6 +256,8 @@ struct CombatParams {
     std::int32_t bribe_mounted = 200;
     std::int32_t rabble_workers_per_soldier = 6;
     std::int32_t rabble_population_loss_per_death = 6;
+    std::map<std::string, std::int32_t> fortification_hits;  // military.json [ZAŁOŻENIE, L-117]
+    std::int32_t tower_shots = 3;                            // sentries shooting at once [ZAŁOŻENIE, L-117]
 };
 
 // Speed in tiles a month (S-004 units) as Q.16 steps per tick: 15 steps a tile, 816 ticks a month.

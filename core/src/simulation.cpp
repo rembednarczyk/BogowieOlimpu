@@ -390,6 +390,9 @@ void Simulation::apply_combat_command(const Command& command, std::uint32_t inde
 }
 
 void Simulation::emit_combat(const CombatEvents& ev) {
+    for (const BuildingId id : ev.removed) {
+        emit(BuildingRemoved{id});
+    }
     for (const WalkerId id : ev.spawned) {
         emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
     }

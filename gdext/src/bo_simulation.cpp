@@ -628,6 +628,7 @@ Array BoSimulation::get_buildings() const {
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
         d["sanctified"] = b.sanctified;
         d["cursed_days"] = static_cast<int64_t>(b.cursed_days);
+        d["hits"] = static_cast<int64_t>(b.hits);  // walls, gates, towers (D3)
         if (b.sanctuary) {  // D1: loads still to build in, delivered loads, sacrifices
             int64_t needed = 0;
             int64_t on_site = 0;

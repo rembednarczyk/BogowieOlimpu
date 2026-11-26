@@ -8,6 +8,7 @@ add_library(bo_core STATIC
     src/combat.cpp
     src/extraction.cpp
     src/finance.cpp
+    src/fortifications.cpp
     src/gods.cpp
     src/housing.cpp
     src/horses.cpp
@@ -56,6 +57,7 @@ if(BO_BUILD_TESTS)
         tests/test_commands.cpp
         tests/test_data.cpp
         tests/test_save.cpp
+        tests/test_fortifications.cpp
         tests/test_golden.cpp
         tests/test_map.cpp
         tests/test_city.cpp

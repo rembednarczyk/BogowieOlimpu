@@ -154,6 +154,13 @@ void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
         }
         p.nations[id] = np;
     }
+    if (docs.count("military.json") != 0) {
+        const json fort = docs.at("military.json").value("fortification_hits", json::object());
+        for (const auto& [k, v] : fort.items()) {
+            p.fortification_hits[k] = v.get<std::int32_t>();
+        }
+        p.tower_shots = docs.at("military.json").value("tower_shots", p.tower_shots);
+    }
     if (docs.count("difficulty.json") != 0) {
         const auto& d = docs.at("difficulty.json");
         const auto& pct = d.value("bribe_percent_of_hero", json::object());

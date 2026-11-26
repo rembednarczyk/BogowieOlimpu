@@ -23,6 +23,7 @@ const BUILDING_COLORS := {
 	"infirmary": Color(0.95, 0.95, 0.98), "trading_post": Color(0.55, 0.40, 0.60),
 	"horse_ranch": Color(0.60, 0.42, 0.25), "palace": Color(0.93, 0.88, 0.70),
 	"sanctuary_dionysus": Color(0.75, 0.55, 0.85), "artisans_guild": Color(0.65, 0.50, 0.45),
+	"wall": Color(0.62, 0.60, 0.55), "tower": Color(0.55, 0.53, 0.50), "gatehouse": Color(0.58, 0.56, 0.52),
 }
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
@@ -80,6 +81,10 @@ func _ready() -> void:
 		sim.place_building("common_housing", x, 2)
 	for f in [[49, 14], [38, 29], [60, 2], [36, 14]]:
 		sim.place_building("fountain", f[0], f[1])
+	# A double wall with two towers by the north-east road (D3, Z:145-146): towers stand on walls two thick.
+	for y in [5, 6]:
+		for x in range(56, 60):
+			sim.place_building("wall", x, y)
 	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
 	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
 			["storehouse", 21, 25], ["trading_post", 24, 24], ["horse_ranch", 42, 29],
@@ -100,6 +105,8 @@ func _ready() -> void:
 		sim.place_building("sheep", 7 + i % 4, 21 + i / 4)
 	for s in [["food_vendor_stall", 26, 6], ["fleece_vendor_stall", 26, 8], ["oil_vendor_stall", 26, 10]]:
 		sim.place_building(s[0], s[1], s[2])
+	sim.place_building("tower", 56, 5)  # the walls must exist first
+	sim.place_building("tower", 58, 5)
 	_build_environment()
 	add_child(tiles)
 	label.position = Vector2(16, 16)

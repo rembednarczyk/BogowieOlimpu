@@ -192,6 +192,8 @@ struct Building {
     bool sanctified = false;            // D1: the next production gives 4x (doc 21); since v20
     std::uint32_t sanctified_base = 0;  // output loads when last looked at, to see new production
     std::uint16_t cursed_days = 0;      // D5: a god's curse; the building does not work (Z:125-127); since v23
+    std::int32_t hits = 0;              // D3: what a wall, gate or tower can still take (L-117); since v25
+    std::uint16_t cooldown = 0;         // D3: ticks until a tower's sentries shoot again; since v25
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)
@@ -279,6 +281,11 @@ std::optional<TilePos> find_road_access(const CityState& city, TilePos origin, s
 
 // Empty when `p` is free buildable land, otherwise the reason key.
 std::string land_check(const CityState& city, TilePos p);
+// Fortifications (fortifications.cpp, Z:145-147, L-117).
+BuildResult place_wall(CityState& city, Building b);
+BuildResult place_tower(CityState& city, Building b);
+BuildResult place_gatehouse(CityState& city, Building b);
+void open_gate(CityState& city, const Building& b);
 // Empty when all tiles lie on one level without ramps [ZAŁOŻENIE, L-099], otherwise the reason key.
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles);
 

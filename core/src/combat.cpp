@@ -66,7 +66,7 @@ std::int32_t distance_to(const Building& b, TilePos p) {
 }
 
 bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding) {
-    PathRequest req{w.tile, to, PathMode::Walkable};
+    PathRequest req{w.tile, to, defends(w) ? PathMode::Walkable : PathMode::Hostile};
     req.goal_building = goal;
     auto path = find_path(city, req);
     if (!path) {
@@ -76,6 +76,83 @@ bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding
     w.path_pos = 0;
     w.phase = WalkerPhase::Routed;
     return true;
+}
+
+bool fortification(const Building& b) { return b.type == "wall" || b.type == "gatehouse" || b.type == "tower"; }
+
+// An invader with no way to its goal attacks the nearest fortification [ZAŁOŻENIE, L-117].
+void breach(WorldState& st, const UnitStats& s, Walker& w, CombatEvents& ev) {
+    std::optional<std::pair<std::int32_t, BuildingId>> best;
+    for (const auto& [id, b] : st.city.buildings.items) {
+        if (fortification(b)) {
+            std::int32_t d = 1 << 30;
+            for (const TilePos t : b.tiles) {
+                d = std::min(d, chebyshev(t, w.tile));
+            }
+            if (!best || d < best->first) {
+                best = std::make_pair(d, id);
+            }
+        }
+    }
+    if (!best) {
+        return;
+    }
+    Building& f = st.city.buildings.items.at(best->second);
+    if (best->first > 1) {
+        PathRequest req{w.tile, f.origin, PathMode::Hostile};
+        req.goal_building = best->second;
+        auto path = find_path(st.city, req);
+        if (path && path->size() > 1) {
+            path->pop_back();  // stop next to it
+            w.path = std::move(*path);
+            w.path_pos = 0;
+            w.phase = WalkerPhase::Routed;
+        }
+        return;
+    }
+    if (w.cooldown > 0) {
+        return;
+    }
+    f.hits -= std::max(1, s.attack);
+    w.cooldown = static_cast<std::uint16_t>(std::max(1, s.melee_rate));
+    if (f.hits <= 0) {
+        remove_building(st.city, best->second, ev.removed);
+    }
+}
+
+// Manned towers shoot at enemies in range (Z:146): rabble missiles, tower_shots at a time [L-117].
+void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<WalkerId>& fighters) {
+    const auto rabble = catalog.combat.nations.find("player_greek");
+    if (rabble == catalog.combat.nations.end() || rabble->second.units.count("rabble") == 0) {
+        return;
+    }
+    const UnitStats& shot = rabble->second.units.at("rabble");
+    for (auto& [id, b] : st.city.buildings.items) {
+        if (b.type != "tower" || b.staffing_percent == 0 || b.cursed_days > 0) {
+            continue;
+        }
+        if (b.cooldown > 0) {
+            --b.cooldown;
+            continue;
+        }
+        const TilePos at{b.origin.x + 1, b.origin.y + 1};
+        std::optional<std::pair<std::int32_t, WalkerId>> foe;
+        for (const WalkerId wid : fighters) {
+            const Walker& o = st.walkers.items.at(wid);
+            const std::int32_t d = chebyshev(o.tile, at);
+            if (fighter(o) && !defends(o) && d <= shot.missile_range && (!foe || d < foe->first)) {
+                foe = std::make_pair(d, wid);
+            }
+        }
+        if (!foe) {
+            continue;
+        }
+        Walker& o = st.walkers.items.at(foe->second);
+        const UnitStats* os = stats_of(catalog, o);
+        const std::int32_t hit = std::max(0, shot.missile_attack - (os ? os->armor_vs_missiles : 0));
+        o.hp -= catalog.combat.tower_shots * hit;
+        b.cooldown = static_cast<std::uint16_t>(shot.missile_rate);
+    }
 }
 
 void stand(Walker& w) {
@@ -258,6 +335,7 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
         }
     }
     const bool rechase = st.time.tick() % 15 == 0;  // re-aim chases once a tile [ZAŁOŻENIE, L-110]
+    towers_shoot(st, catalog, fighters);
     for (const WalkerId id : fighters) {
         Walker& w = items.at(id);
         if (!fighter(w)) {
@@ -318,8 +396,8 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
                 end_invasion(st, 3, ev);  // they reached the Palace with nobody to stop them (Z:144)
                 return;
             }
-            if (w.phase == WalkerPhase::AtTarget) {
-                route(st.city, w, goal->second.origin, goal->first);
+            if (w.phase == WalkerPhase::AtTarget && !route(st.city, w, goal->second.origin, goal->first)) {
+                breach(st, *s, w, ev);  // walled off: break through the nearest wall or gate (Z:146-147)
             }
         }
     }

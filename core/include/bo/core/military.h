@@ -87,6 +87,7 @@ struct CombatEvents {
     std::vector<WalkerId> spawned;
     std::optional<std::uint8_t> ended;  // InvasionEnded::result
     std::int32_t city = -1;             // the city that sent the army that left
+    std::vector<BuildingId> removed;    // walls and gates broken through
 };
 
 // Invaders of `nation` enter at the invasion point (map symbol 'i'; else the land entry): `soldiers` split by

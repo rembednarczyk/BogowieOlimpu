@@ -30,6 +30,14 @@ bool passable(const CityState& city, TilePos p, const PathRequest& req) {
                 return t.building == req.goal_building;
             }
             return t.road || terrain_walkable(t.terrain);
+        case PathMode::Hostile:
+            if (t.road && !(t.roadblock && t.building != kNoBuilding)) {
+                return true;  // a gate is a roadblock with a building on it
+            }
+            if (t.building != kNoBuilding) {
+                return t.building == req.goal_building;
+            }
+            return terrain_walkable(t.terrain);
         case PathMode::Water:
             return t.terrain == Terrain::Water && (t.building == kNoBuilding || t.road || t.building == req.goal_building);
     }

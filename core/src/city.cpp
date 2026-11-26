@@ -72,7 +72,8 @@ bool operator==(const Building& a, const Building& b) {
            a.orchard == b.orchard && a.fire_counter == b.fire_counter && a.damage_counter == b.damage_counter &&
            a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
            a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary &&
-           a.sanctified == b.sanctified && a.sanctified_base == b.sanctified_base && a.cursed_days == b.cursed_days;
+           a.sanctified == b.sanctified && a.sanctified_base == b.sanctified_base && a.cursed_days == b.cursed_days &&
+           a.hits == b.hits && a.cooldown == b.cooldown;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -124,7 +125,13 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     b.type = type;
     b.origin = origin;
     b.rotation = rotation;
-    if (rule == "over_road_both_sides_clear" || rule == "over_road_one_side") {
+    if (type == "wall") {
+        r = place_wall(city, std::move(b));
+    } else if (rule == "on_wall_min_double_thickness") {
+        r = place_tower(city, std::move(b));
+    } else if (type == "gatehouse") {
+        r = place_gatehouse(city, std::move(b));
+    } else if (rule == "over_road_both_sides_clear" || rule == "over_road_one_side") {
         r = place_over_road(city, std::move(b), rule == "over_road_both_sides_clear");
     } else if (!bt.requires_building.empty() && !stats.footprint) {
         r = place_animal(city, catalog, std::move(b), bt.requires_building);  // herds: size "m" (S-004)
@@ -194,6 +201,10 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         }
         if (catalog.sanctuaries.count(type) != 0) {
             lay_foundation(city, catalog, placed);
+        }
+        const auto hits = catalog.combat.fortification_hits.find(type);
+        if (hits != catalog.combat.fortification_hits.end()) {
+            placed.hits = hits->second;  // L-117
         }
         if (bt.trade_building) {
             placed.trade = TradePostState{};
@@ -278,6 +289,7 @@ void remove_building(CityState& city, BuildingId id, std::vector<BuildingId>& re
         return;
     }
     const Building b = it->second;
+    open_gate(city, b);
     for (const BuildingId stall : b.slots) {
         if (stall != kNoBuilding) {
             city.buildings.items.erase(stall);
