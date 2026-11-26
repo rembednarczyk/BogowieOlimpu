@@ -2,14 +2,14 @@ keys,pl,en
 tab.population,Ludność,Housing
 tab.husbandry,Rolnictwo,Farming
 tab.industry,Przemysł,Industry
-tab.distribution,Handel i magazyny,Distribution
-tab.hygiene_safety,Higiena i bezpieczeństwo,Health and safety
+tab.distribution,Handel,Trade
+tab.hygiene_safety,Higiena,Health
 tab.administration,Administracja,Administration
 tab.culture,Kultura,Culture
 tab.mythology,Mitologia,Mythology
 tab.military,Wojsko,Military
 tab.aesthetics,Ozdoby,Beautification
-tab.general,Drogi,Roads
+tab.general,Drogi i teren,Roads and land
 ui.road,Droga,Road
 ui.roadblock,Zapora,Roadblock
 ui.demolish,Burzenie,Demolish
@@ -27,9 +27,9 @@ ui.stock,Zapas: %s,Stock: %s
 ui.fire_risk,Ryzyko pożaru: %d,Fire risk: %d
 ui.collapse_risk,Ryzyko zawalenia: %d,Collapse risk: %d
 ui.status,rok %d  miesiąc %d   skarbiec %d dr   ludność %d   pracownicy %d/%d   popularność %d,year %d  month %d   treasury %d dr   population %d   workers %d/%d   popularity %d
-ui.tap_to_place,"Dotknij mapy, aby wskazać miejsce",Tap the map to choose a place
+ui.tap_to_place,"dotknij mapy, aby wskazać miejsce",tap the map to choose a place
 ui.drag_road,Przeciągnij palcem drogę,Drag the road with your finger
-ui.tap_to_demolish,Dotknij budynku do zburzenia,Tap a building to demolish
+ui.tap_to_demolish,przeciągnij palcem obszar do zburzenia,drag over the area to demolish
 ui.place_ok,Można budować,You can build here
 build.occupied,Miejsce zajęte,The place is taken
 build.needs_road,Potrzebna droga obok,A road is needed next to it
@@ -64,3 +64,5 @@ build.needs_coast,Potrzebny brzeg,Needs a shore
 build.nothing_to_clear,Nie ma czego oczyścić,Nothing to clear
 build.nothing_to_demolish,Nie ma czego burzyć,Nothing to demolish
 build.too_many_piers,Za dużo przystani,Too many piers
+ui.drag_area,przeciągnij palcem obszar lub linię; mapę przesuwasz dwoma palcami,drag an area or a line; move the map with two fingers
+ui.instant_build,Buduj od razu,Build at once

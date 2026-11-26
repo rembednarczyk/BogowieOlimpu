@@ -180,28 +180,32 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventScreenDrag:
 		if touches.size() >= 2 and touches.has(event.index):
+			# Two fingers: the gap zooms, the move pans (one finger draws in the drag-building modes).
 			var other: Vector2 = touches[touches.keys()[0] if touches.keys()[0] != event.index else touches.keys()[1]]
 			var before: float = (touches[event.index] as Vector2).distance_to(other)
 			touches[event.index] = event.position
 			var after: float = event.position.distance_to(other)
 			if before > 1.0 and after > 1.0:
 				_zoom(before / after)
+			_pan(event.relative * 0.5)
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_zoom(0.9 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.1)
 		return
 	if touches.size() >= 2:
 		return  # the second finger zooms; the mouse events emulated from the first do not pan meanwhile
-	if ui != null and ui.map_input(event):
+	if ui != null and not (event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_RIGHT) and ui.map_input(event):
 		return
-	# One finger (mouse events emulated from touch) pans the camera.
-	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-		var rel: Vector2 = event.relative
-		var k := cam.size / float(get_viewport().get_visible_rect().size.y)
-		var right := cam.global_transform.basis.x
-		var fwd := Vector3(cam.global_transform.basis.z.x, 0, cam.global_transform.basis.z.z).normalized()
-		cam_target -= (right * rel.x + fwd * rel.y * 1.4) * k
-		_place_camera()
+	# One finger (mouse events emulated from touch) pans the camera; the right mouse button too on PC.
+	if event is InputEventMouseMotion and event.button_mask & (MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT):
+		_pan(event.relative)
+
+func _pan(rel: Vector2) -> void:
+	var k := cam.size / float(get_viewport().get_visible_rect().size.y)
+	var right := cam.global_transform.basis.x
+	var fwd := Vector3(cam.global_transform.basis.z.x, 0, cam.global_transform.basis.z.z).normalized()
+	cam_target -= (right * rel.x + fwd * rel.y * 1.4) * k
+	_place_camera()
 
 func _zoom(factor: float) -> void:
 	cam.size = clampf(cam.size * factor, 12.0, 80.0)
@@ -218,20 +222,22 @@ func screen_to_tile(pos: Vector2) -> Vector2i:
 		return Vector2i(-1, -1)
 	return t
 
-# The placement ghost (E7): one translucent box a tile, green where it may stand, red where not.
-func show_ghost(tile_list: PackedVector2Array, ok: bool) -> void:
+# The placement ghost (E7): one translucent box a tile, green where it may stand, red where not (or what
+# will be demolished).
+func show_ghost(good: PackedVector2Array, bad: PackedVector2Array) -> void:
 	clear_ghost()
-	var mat := StandardMaterial3D.new()
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.2, 0.9, 0.3, 0.55) if ok else Color(0.95, 0.2, 0.2, 0.55)
-	var box := BoxMesh.new()
-	box.size = Vector3(0.95, 0.4, 0.95)
-	box.material = mat
-	for t in tile_list:
-		var m := MeshInstance3D.new()
-		m.mesh = box
-		m.position = Vector3(t.x + 0.5, 0.2, t.y + 0.5)
-		ghost.add_child(m)
+	for pair in [[good, Color(0.2, 0.9, 0.3, 0.55)], [bad, Color(0.95, 0.2, 0.2, 0.55)]]:
+		var mat := StandardMaterial3D.new()
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color = pair[1]
+		var box := BoxMesh.new()
+		box.size = Vector3(0.95, 0.4, 0.95)
+		box.material = mat
+		for t in pair[0]:
+			var m := MeshInstance3D.new()
+			m.mesh = box
+			m.position = Vector3(t.x + 0.5, 0.2, t.y + 0.5)
+			ghost.add_child(m)
 
 func clear_ghost() -> void:
 	for c in ghost.get_children():

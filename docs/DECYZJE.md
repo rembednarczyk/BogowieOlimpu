@@ -24,6 +24,13 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Decyzja: PDF-y instrukcji (S-001, S-002) zostają poza repo; dokumenty cytują strony.
 - Powód: materiał chroniony prawem autorskim.
 
+### 2026-11-26: Układ interfejsu budowy na telefonie (po pierwszym teście właściciela)
+
+- Decyzja właściciela: przyciski przypięte do prawej krawędzi ekranu; budynki kategorii w wysuwanej kolumnie obok panelu; burzenie odznacza inne wybory; przyciski Zatwierdź, Obróć, Anuluj w stałym miejscu; bez pasków przewijania.
+- Budowanie przeciągnięciem: domy i burzenie prostokątem, droga i mur linią w kształcie L; po puszczeniu palca domyślnie podgląd i Zatwierdź, w ustawieniach przełącznik "Buduj od razu".
+- W trybach przeciągania jeden palec rysuje, mapę przesuwa się dwoma palcami (szczypnięcie zmienia przybliżenie).
+- Wdrożenie: `game/scenes/ui/build_ui.gd`, test `game/tests/test_ui.gd`.
+
 ## Proces
 
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"

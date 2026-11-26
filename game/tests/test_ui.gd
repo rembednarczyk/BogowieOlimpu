@@ -1,4 +1,5 @@
-# Headless test of the player interface (E7, E8): build bar, ghost, confirm, road drag, demolish, card.
+# Headless test of the player interface (E7, E8): right panel, building column, ghost, confirm, dragging as a
+# rectangle (houses, demolish) or a line (roads, walls), instant building, card.
 # Run: godot --headless --path game --script res://tests/test_ui.gd
 extends SceneTree
 
@@ -15,52 +16,80 @@ func _init() -> void:
 	game = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
 	root.add_child(game)
 
+func building(x: int, y: int) -> int:
+	return game.sim.get_tile(x, y)["building"]
+
 func _process(_d: float) -> bool:
 	frame += 1
 	if frame < 2:
-		return false  # _ready has run
+		return false
 	var ui = game.ui
-	game.ticks_per_second = 0.0  # paused: the test drives the ticks
-	check(ui.buildings_by_tab["hygiene_safety"].has("fountain"), "fountain in the health and safety tab")
-	check(not ui.buildings_by_tab["mythology"].has("sanctuary"), "no generic sanctuary in the bar")
+	game.ticks_per_second = 0.0
+	ui.instant = false
+	check(ui.buildings_by_tab["hygiene_safety"].has("fountain"), "fountain in its tab")
+	check(not ui.buildings_by_tab["mythology"].has("sanctuary"), "no generic sanctuary")
+	for tab in ui.TABS:
+		check(ui.buildings_by_tab[tab].size() <= 2 * ui.ITEMS_PER_COLUMN, "tab %s fits two columns" % tab)
 
-	# Build: tab, building, tap, ghost, confirm (06-MOBILE-UX: at most two taps to a building).
+	# One building: tab, building, tap, ghost, confirm.
 	ui._show_tab("hygiene_safety")
+	check(ui.flyout.visible, "the column slides out")
 	ui._select("fountain")
+	check(not ui.flyout.visible, "the column closes on a choice")
+	check(ui.confirm_btn.disabled, "nothing to confirm yet")
 	ui.tap(Vector2i(44, 26))
-	check(game.ghost.get_child_count() == 4, "a 2x2 ghost")
-	var r: Dictionary = game.sim.check_placement("fountain", 44, 26, 0)
-	check(r["ok"], "the fountain may stand there: %s" % r["reason"])
-	var occupied: Dictionary = game.sim.check_placement("fountain", 42, 5, 0)
-	check(not occupied["ok"] and occupied["reason"] != "", "the Palace tile is taken")
+	check(game.ghost.get_child_count() == 4 and not ui.confirm_btn.disabled, "a 2x2 ghost and Confirm")
 	ui._confirm()
 	game.sim.step(1)
-	check(game.sim.get_tile(44, 26)["building"] != 0, "the fountain was built")
+	check(building(44, 26) != 0, "the fountain was built")
 
-	# Road: drag from one tile to another, confirm.
-	ui._set_mode("road")
-	ui.road_from = Vector2i(30, 36)
-	ui.target = Vector2i(34, 38)
-	check(ui._road_tiles().size() == 5 + 2, "an L of 7 tiles")
+	# Demolishing clears the other choice.
+	ui._set_mode("demolish")
+	check(ui.selected == "" and not ui.flyout.visible, "demolish deselects")
+	ui.begin_drag(Vector2i(44, 26))
+	ui.drag_to(Vector2i(45, 27))
+	ui._confirm()
+	game.sim.step(1)
+	check(building(44, 26) == 0, "the area was demolished")
+
+	# Roads as a line.
+	ui._show_tab("general")
+	ui._select("road")
+	ui.begin_drag(Vector2i(30, 36))
+	ui.drag_to(Vector2i(34, 38))
+	check(ui._line_tiles().size() == 7, "an L of 7 tiles")
+	ui.end_drag()
 	ui._confirm()
 	game.sim.step(1)
 	check(game.sim.get_tile(34, 38)["road"], "the road was built")
 
-	# Demolish with confirmation.
-	ui._set_mode("demolish")
-	ui.tap(Vector2i(44, 26))
+	# Houses as a rectangle of 2x2 plots: an 8x2 strip over the new road (x 30-34); the fourth plot has no road.
+	ui._show_tab("population")
+	ui._select("common_housing")
+	ui.begin_drag(Vector2i(30, 34))
+	ui.drag_to(Vector2i(37, 35))
+	check(ui.preview.size() == 3, "three plots by the road: %d" % ui.preview.size())
 	ui._confirm()
 	game.sim.step(1)
-	check(game.sim.get_tile(44, 26)["building"] == 0, "the fountain was demolished")
+	check(building(30, 34) != 0 and building(34, 34) != 0 and building(36, 34) == 0, "the plots were built")
 
-	# Tap a building with no mode: its card.
-	ui._set_mode("")
+	# Build at once: the drag builds when the finger lifts.
+	ui.instant = true
+	ui._show_tab("general")
+	ui._select("road")
+	ui.begin_drag(Vector2i(30, 40))
+	ui.drag_to(Vector2i(33, 40))
+	ui.end_drag()
+	game.sim.step(1)
+	check(game.sim.get_tile(33, 40)["road"], "instant road")
+	ui.instant = false
+
+	# Cancel clears everything; a tap with no mode opens the card.
+	ui.cancel()
+	check(ui.mode == "" and ui.mode_group.get_pressed_button() == null, "cancel")
 	ui.tap(Vector2i(43, 6))
 	check(ui.card.visible and ui.card_text.text != "", "the card of the Palace")
-
-	# Screen to tile: the centre of the screen hits the map.
-	var t: Vector2i = game.screen_to_tile(Vector2(640, 360))
-	check(t.x >= 0 and t.y >= 0, "screen to tile")
+	check(game.screen_to_tile(Vector2(500, 360)).x >= 0, "screen to tile")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

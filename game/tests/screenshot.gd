@@ -6,7 +6,7 @@ extends SceneTree
 var frames_left := 10
 var out_path := "user://shot.png"
 var speed := 0.0  # ticks per second of the demo; 0 keeps the scene default
-var build_view := false  # show the build bar with a ghost (E7)
+var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7)
 var node: Node
 
 func _init() -> void:
@@ -17,8 +17,8 @@ func _init() -> void:
 			frames_left = int(arg.substr(7))
 		elif arg.begins_with("speed="):
 			speed = float(arg.substr(6))
-		elif arg == "build_view=1":
-			build_view = true
+		elif arg.begins_with("build_view="):
+			build_view = int(arg.substr(11))
 	var scene: PackedScene = load("res://scenes/boot.tscn")
 	node = scene.instantiate()
 	if speed > 0.0:
@@ -26,11 +26,15 @@ func _init() -> void:
 	root.add_child(node)
 
 func _process(_delta: float) -> bool:
-	if build_view and frames_left == 5:
+	if build_view > 0 and frames_left == 5:
 		TranslationServer.set_locale("pl")
-		node.ui._show_tab("hygiene_safety")
-		node.ui._select("fountain")
-		node.ui.tap(Vector2i(44, 26))
+		if build_view == 1:
+			node.ui._show_tab("husbandry")
+		else:
+			node.ui._show_tab("population")
+			node.ui._select("common_housing")
+			node.ui.begin_drag(Vector2i(30, 30))
+			node.ui.drag_to(Vector2i(39, 33))
 	frames_left -= 1
 	if frames_left == 0:
 		var img := root.get_texture().get_image()
