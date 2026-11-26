@@ -155,6 +155,39 @@ void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<
     }
 }
 
+// Strength of the living units on one side: hit points times attack, melee and missile [ZAŁOŻENIE, L-110].
+std::int64_t side_strength(const WorldState& st, const DataCatalog& catalog, bool invaders) {
+    std::int64_t total = 0;
+    for (const auto& [id, w] : st.walkers.items) {
+        const bool side = invaders ? w.job == WalkerJob::Invade : (w.job == WalkerJob::Soldier || w.job == WalkerJob::Hero);
+        const UnitStats* s = side && w.hp > 0 && w.phase != WalkerPhase::Done ? stats_of(catalog, w) : nullptr;
+        if (s) {
+            total += static_cast<std::int64_t>(w.hp) * (s->attack + s->missile_attack);
+        }
+    }
+    return total;
+}
+
+// Z:144: the Palace falls to an army stronger than the player's forces.
+bool invaders_stronger(const WorldState& st, const DataCatalog& catalog) {
+    return side_strength(st, catalog, true) > side_strength(st, catalog, false);
+}
+
+// Zeus strikes the army down (Z:119); Talos guards the city (Z:120).
+void divine_help(WorldState& st) {
+    Invasion& inv = st.military.invasion;
+    if (!inv.active || (!st.zeus_guard && st.talos_days == 0)) {
+        return;
+    }
+    for (const WalkerId id : inv.invaders) {
+        const auto it = st.walkers.items.find(id);
+        if (it != st.walkers.items.end()) {
+            it->second.hp = 0;
+        }
+    }
+    st.zeus_guard = false;
+}
+
 void stand(Walker& w) {
     w.path.clear();
     w.path_pos = 0;
@@ -335,15 +368,7 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
         }
     }
     const bool rechase = st.time.tick() % 15 == 0;  // re-aim chases once a tile [ZAŁOŻENIE, L-110]
-    if (inv.active && (st.zeus_guard || st.talos_days > 0)) {
-        for (const WalkerId id : inv.invaders) {  // Zeus strikes the army down (Z:119); Talos guards (Z:120)
-            const auto it = items.find(id);
-            if (it != items.end()) {
-                it->second.hp = 0;
-            }
-        }
-        st.zeus_guard = false;
-    }
+    divine_help(st);
     towers_shoot(st, catalog, fighters);
     for (const WalkerId id : fighters) {
         Walker& w = items.at(id);
@@ -402,8 +427,12 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
                 continue;
             }
             if (distance_to(goal->second, w.tile) <= 1) {
-                end_invasion(st, 3, ev);  // they reached the Palace with nobody to stop them (Z:144)
-                return;
+                if (invaders_stronger(st, catalog)) {
+                    end_invasion(st, 3, ev);  // an army stronger than the player's reached the Palace (Z:144)
+                    return;
+                }
+                stand(w);  // B-015: the player's army is stronger; they fight on at the gates
+                continue;
             }
             if (w.phase == WalkerPhase::AtTarget && !route(st.city, w, goal->second.origin, goal->first)) {
                 breach(st, *s, w, ev);  // walled off: break through the nearest wall or gate (Z:146-147)

@@ -262,6 +262,19 @@ put("gatehouse", 73, 9, rot=1, day=ARMY)
 put("tower", 74, 22, day=ARMY + 1)
 steps.append({"day": ARMY + 2, "man_towers": True})  # Man All: the generals send sentries (Z:146)
 put("tower", 74, 44, day=ARMY + 1)
+
+# Stage JOBS: work for the people of the grown city (unemployment lowers the popularity, Z:159): culture in
+# the west block, more fishing, a third sawmill; wood and bronze go to Corinth.
+JOBS = 900
+put("theater", 7, 12, day=JOBS); put("drama_school", 2, 12, day=JOBS); put("infirmary", 2, 19, day=JOBS)
+put("college", 9, 20, day=JOBS); put("gymnasium", 6, 20, day=JOBS); put("fountain", 10, 17, day=JOBS)
+put("podium", 2, 16, day=JOBS); put("watchpost", 4, 16, day=JOBS)
+for x in (30, 46):
+    steps.append({"day": JOBS, "road": [x, 46, x, 47]})
+    put("fishery", x - 2, 48, day=JOBS)
+put("timber_mill", 8, 9, day=JOBS)
+steps.append({"day": JOBS + 1, "at": [33, 36], "trade_order": {"good": "wood", "export_keep": 16}})
+steps.append({"day": JOBS + 1, "at": [33, 36], "trade_order": {"good": "bronze", "export_keep": 8}})
 put("horse_ranch", 56, 46, day=ARMY)
 put("maintenance_office", 64, 46, day=ARMY)
 steps.append({"day": ARMY, "road": [49, 46, 49, 46]})

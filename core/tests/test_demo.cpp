@@ -58,6 +58,7 @@ void count_events(const std::vector<TimedEvent>& events, std::map<std::string, s
                                : std::is_same_v<T, EpisodeWon>         ? "won"
                                : std::is_same_v<T, CityRebelled>       ? "rebellion"
                                : std::is_same_v<T, CityGift>           ? "city_gift"
+                               : std::is_same_v<T, ExpeditionReturned> ? "aid_returned"
                                : std::is_same_v<T, PrayerAnswered>     ? "prayer"
                                                                        : nullptr;
             if (name != nullptr) {
@@ -221,6 +222,15 @@ void dump(const Simulation& sim) {
     }
 }
 
+// Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
+constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
+                                      "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
+                                      "aid_sent", "aid_returned", "stockpile", "not_buying", "towers_manned"};
+
+bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
+    return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) { return seen.count(m) != 0; });
+}
+
 DemoRun run_demo(std::uint64_t years) {
     DemoRun run;
     std::string error;
@@ -262,8 +272,8 @@ DemoRun run_demo(std::uint64_t years) {
         if (sim.state().scenario.won && run.won_day == 0) {
             run.won_day = day;
         }
-        if (run.won_day != 0 && day > run.won_day + kDaysPerMonth * kMonthsPerYear && !log) {
-            break;  // a year after the victory is enough for the gate
+        if (run.won_day != 0 && day > run.won_day + kDaysPerMonth * kMonthsPerYear && all_seen(run.seen) && !log) {
+            break;  // a year after the victory, every mechanic seen: enough for the gate
         }
         if (log && (day + 1) % (kDaysPerMonth * kMonthsPerYear) == 0) {
             report(sim, (day + 1) / (kDaysPerMonth * kMonthsPerYear));
@@ -305,8 +315,10 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(std::any_of(st.military.companies.begin(), st.military.companies.end(),
                       [](const Company& c) { return c.nation == "divine"; }));  // Ares's Sparti (Z:140)
     CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);  // the earthquake of year 3 (demo.json) cracked the land
-    for (const char* m : {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
-                          "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer", "aid_sent", "stockpile", "not_buying", "towers_manned"}) {
+    // A healthy city at the end: work for nine in ten workers, people content (Z:159-160).
+    CHECK(st.labour.employed * 10 >= st.labour.workforce * 9);
+    CHECK(st.migration.popularity >= 70);
+    for (const char* m : kMechanics) {
         CHECK_MESSAGE(run.seen.count(m) > 0, "the demo never showed: " << std::string(m));
     }
 }

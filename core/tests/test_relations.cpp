@@ -1,4 +1,6 @@
 // Long-term relations (L-121; docs/gameplay/14-swiat.md, Z:169, Z:172, Z:178; Z:100, Z:179).
+#include <cstdio>
+
 #include "bo/core/simulation.h"
 #include "doctest/doctest.h"
 #include "helpers.h"

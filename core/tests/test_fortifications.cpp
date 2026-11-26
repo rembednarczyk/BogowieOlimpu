@@ -175,3 +175,33 @@ TEST_CASE("a trireme wharf builds a trireme from wood and armor, one at a time (
     sim.mutable_state().city.buildings.items.at(wharf).producer->output_loads = 3;      // as if three wharves
     CHECK(unmet_requirements(sim.state(), sim.catalog(), "jason", wharf).size() == 4);  // triremes>=3 met
 }
+
+TEST_CASE("B-015: the Palace falls only to an army stronger than the player's forces (Z:144)") {
+    auto sim = walled(false);
+    for (int y = 0; y < 30; ++y) {  // an open city: no wall in the way
+        sim.issue(Demolish{15, y});
+    }
+    sim.step(1);
+    const UnitStats& hoplite = sim.catalog().combat.nations.at("player_greek").units.at("hoplite");
+    for (int i = 0; i < 12; ++i) {  // a strong army far from the Palace, standing (no chase from that far)
+        Walker w;
+        w.id = sim.mutable_state().walkers.next_id++;
+        w.type = "hoplite";
+        w.job = WalkerJob::Soldier;
+        w.phase = WalkerPhase::AtTarget;
+        w.tile = {39, 29};
+        w.hp = hoplite.hp;
+        sim.mutable_state().walkers.items.emplace(w.id, w);
+    }
+    sim.issue(StartInvasion{"greek", 2});
+    int result = -1;
+    for (int d = 0; d < 40 && result < 0; ++d) {
+        sim.run_days(1);
+        for (const auto& e : sim.drain_events()) {
+            if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
+                result = end->result;
+            }
+        }
+    }
+    CHECK(result != 3);  // the two who reached the Palace did not take it
+}
