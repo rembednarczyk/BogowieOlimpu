@@ -68,12 +68,14 @@ private:
     void apply(const Command& command, std::uint32_t index);
     void apply_build(const BuildResult& r, std::uint32_t index, TilePos tile, bool tile_changed);
     void step_walkers();
+    void apply_undo_command(std::uint32_t index);
 
     const DataCatalog& catalog_;
     WorldState state_;
     EventQueue events_;
     CommandLog executed_;
     std::string setup_error_;
+    std::int64_t tick_build_cost_ = 0;  // cost of this tick's build commands (undo refund)
 };
 
 }  // namespace bo::core

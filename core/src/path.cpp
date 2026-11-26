@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <deque>
 #include <functional>
 #include <limits>
 #include <queue>
@@ -22,6 +23,9 @@ bool passable(const CityState& city, TilePos p, const PathRequest& req) {
         case PathMode::RoadNoRoadblock:
             return t.road && !t.roadblock;
         case PathMode::Walkable:
+            if (t.road) {
+                return true;  // includes agora roads and crossings
+            }
             if (t.building != kNoBuilding) {
                 return t.building == req.goal_building;
             }
@@ -116,6 +120,32 @@ std::optional<TilePos> closest_road_within(const TileMap& map, TilePos c, std::i
         }
     }
     return std::nullopt;
+}
+
+std::vector<std::uint32_t> road_distances(const CityState& city, const std::vector<TilePos>& sources, PathMode mode) {
+    const TileMap& map = city.map;
+    std::vector<std::uint32_t> dist(map.size(), kUnreachable);
+    std::deque<std::size_t> queue;
+    PathRequest req;
+    req.mode = mode;
+    for (const TilePos s : sources) {
+        if (passable(city, s, req) && dist[map.index(s)] == kUnreachable) {
+            dist[map.index(s)] = 0;
+            queue.push_back(map.index(s));
+        }
+    }
+    while (!queue.empty()) {
+        const std::size_t cur = queue.front();
+        queue.pop_front();
+        for (const Dir d : kDirs) {
+            const TilePos n = step(map.pos(cur), d);
+            if (passable(city, n, req) && dist[map.index(n)] == kUnreachable) {
+                dist[map.index(n)] = dist[cur] + 1;
+                queue.push_back(map.index(n));
+            }
+        }
+    }
+    return dist;
 }
 
 }  // namespace bo::core

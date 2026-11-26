@@ -44,6 +44,11 @@ struct BuildingType {
     std::string tab;
     std::string culture;
     bool requires_road = true;  // Z:24-25; false for aesthetics, walls, trees, animals
+    bool rotatable = false;     // Z:24-25: palace, stadium, sanctuaries, gatehouse, horse ranch, pyramids
+    bool return_north = false;  // S-004: roaming walker returns to the road north of the building
+    std::string placement;      // special placement rule, e.g. "straight_coast", "on_agora" (empty: normal)
+    std::int32_t stall_slots = 0;    // agoras (Z:69-70)
+    bool no_adjacent_same = false;   // water crossings (Z:102)
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };

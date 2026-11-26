@@ -145,3 +145,50 @@ TEST_CASE("walker speed: a standard walker covers one tile per 15 ticks (doc 17)
     }
     CHECK(w.tile.x - start.x == 4);
 }
+
+TEST_CASE("wide road: on a double-wide road a roaming walker keeps its lane (S-006 movement.c:386-411)") {
+    std::string err;
+    CityState c;
+    c.map = *parse_text_map({"....................", "====================", "====================",
+                             "...................."},
+                            err);
+    update_roads(c);
+    Walker w;
+    w.kind = WalkerKind::Roaming;
+    w.phase = WalkerPhase::Roaming;
+    w.tile = {2, 1};
+    w.dir = Dir::East;
+    w.came_from = Dir::West;
+    w.speed_raw = 65536;
+    w.max_roam_ticks = 100000;
+    w.ticks_until_next_turn = 100;
+    for (int t = 0; t < 15 * 12; ++t) {
+        step_walker(c, w);
+        CHECK(w.tile.y == 1);
+    }
+    CHECK(w.tile.x == 14);
+}
+
+TEST_CASE("fountain walkers return to the corner tile north of the building (doc 17, S-004)") {
+    const auto& cat = bo::test::catalog();
+    std::string err;
+    CityState c;
+    // Fountain at (3,2)-(4,3); exit road east of it, a loop reaching the north-west corner (2,1).
+    c.map = *parse_text_map({"..........", "..=====...", "..=..=....", "..=..=....", "..====....", ".........."},
+                            err);
+    update_roads(c);
+    const auto r = place_building(c, cat, Difficulty::Hero, "fountain", {3, 2});
+    REQUIRE(r.ok());
+    WalkerStore ws;
+    const WalkerId id = spawn_roaming_walker(c, ws, cat, "water_bearer", r.building, Dir::North);
+    REQUIRE(id != kNoWalker);
+    Walker& w = ws.items.at(id);
+    CHECK(w.return_north);
+    TilePos last = w.tile;
+    for (int t = 0; t < 20000 && w.phase != WalkerPhase::Done; ++t) {
+        last = w.tile;
+        step_walker(c, w);
+    }
+    CHECK(w.tile == TilePos{2, 1});
+    (void)last;
+}

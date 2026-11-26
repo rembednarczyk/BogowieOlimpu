@@ -63,6 +63,12 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.culture = o.value("culture", "");
         const auto& rr = o.value("requires_road", json(true));
         t.requires_road = rr.is_boolean() ? rr.get<bool>() : true;
+        t.rotatable = o.value("rotatable", false);
+        t.return_north = o.value("return_tile", "") == "north";
+        const auto& pl = o.value("placement", json());
+        t.placement = pl.is_string() ? pl.get<std::string>() : "";
+        t.stall_slots = o.value("stall_slots", 0);
+        t.no_adjacent_same = o.value("no_adjacent_same", false);
         cat.buildings.emplace(t.id, t);
     }
     for (const auto& o : stats) {

@@ -89,6 +89,12 @@ void run_coverage_decay(Simulation& sim) {
     }
 }
 
+bool is_build_command(const Command& c) {
+    return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
+           std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
+           std::holds_alternative<Demolish>(c);
+}
+
 bool schedule_order(const ScheduledCommand& a, const ScheduledCommand& b) {
     return a.tick != b.tick ? a.tick < b.tick : a.sequence < b.sequence;
 }
@@ -147,12 +153,54 @@ void Simulation::step(std::uint64_t ticks) {
 void Simulation::execute_due_commands() {
     auto& pending = state_.pending_commands;
     std::size_t done = 0;
+    std::optional<CityState> before;  // the city before this tick's build commands (undo, Z:20)
+    tick_build_cost_ = 0;
     while (done < pending.size() && pending[done].tick <= state_.time.tick()) {
+        if (!before && is_build_command(pending[done].command)) {
+            before = state_.city;
+        }
         apply(pending[done].command, static_cast<std::uint32_t>(pending[done].command.index()));
         executed_.push_back(pending[done]);
         ++done;
     }
     pending.erase(pending.begin(), pending.begin() + static_cast<std::ptrdiff_t>(done));
+    if (before) {
+        record_undo(state_.city, *before, state_.time.tick(), tick_build_cost_);
+    }
+    UndoRecord& undo = state_.city.undo;
+    if (undo.active && state_.time.tick() >= undo.tick + kUndoWindowTicks) {
+        undo = UndoRecord{};  // the undo button goes grey (window: L-035)
+    }
+}
+
+void Simulation::apply_undo_command(std::uint32_t index) {
+    CityState& city = state_.city;
+    if (!city.undo.active) {
+        emit(CommandRejected{index, "undo.nothing"});
+        return;
+    }
+    const UndoRecord rec = city.undo;
+    for (const BuildingId id : rec.added) {
+        emit(BuildingRemoved{id});
+    }
+    for (const Building& b : rec.buildings_before) {
+        if (city.buildings.items.count(b.id) != 0) {
+            emit(BuildingRemoved{b.id});
+        }
+    }
+    const auto refund = apply_undo(city);
+    state_.finance.treasury += *refund;
+    for (const Building& b : rec.buildings_before) {
+        Building& restored = city.buildings.items.at(b.id);
+        if (state_.walkers.items.count(restored.roaming_walker) == 0) {
+            restored.roaming_walker = kNoWalker;  // its walker was removed meanwhile
+        }
+        emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});
+    }
+    for (const auto& [pos, tile] : rec.tiles_before) {
+        emit(TileChanged{pos.x, pos.y});
+    }
+    emit(UndoApplied{*refund});
 }
 
 void Simulation::step_walkers() {
@@ -180,8 +228,21 @@ void Simulation::apply_build(const BuildResult& r, std::uint32_t index, TilePos 
         return;
     }
     state_.finance.treasury -= r.cost;  // debt allowed [ZAŁOŻENIE, L-094]
+    tick_build_cost_ += r.cost;
     if (tile_changed) {
         emit(TileChanged{tile.x, tile.y});
+    }
+    for (const BuildingId id : r.removed) {
+        emit(BuildingRemoved{id});
+    }
+    if (r.building != kNoBuilding) {
+        const Building& b = state_.city.buildings.items.at(r.building);
+        emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});
+        if (b.road_mode == RoadMode::OwnRoad) {
+            for (const TilePos p : b.tiles) {
+                emit(TileChanged{p.x, p.y});
+            }
+        }
     }
 }
 
@@ -199,12 +260,8 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                        emit(WageRateChanged{c.rate});
                    },
                    [&](const PlaceBuilding& c) {
-                       const auto r = place_building(city, catalog_, diff, c.type, {c.x, c.y});
-                       apply_build(r, index, {c.x, c.y}, false);
-                       if (r.ok()) {
-                           const Building& b = city.buildings.items.at(r.building);
-                           emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height});
-                       }
+                       apply_build(place_building(city, catalog_, diff, c.type, {c.x, c.y}, c.rotation), index,
+                                   {c.x, c.y}, false);
                    },
                    [&](const PlaceRoad& c) { apply_build(place_road(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true); },
                    [&](const PlaceRoadblock& c) {
@@ -213,11 +270,9 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const ClearLand& c) { apply_build(clear_land(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true); },
                    [&](const Demolish& c) {
                        const auto r = demolish(city, {c.x, c.y});
-                       apply_build(r, index, {c.x, c.y}, r.building == kNoBuilding);
-                       if (r.ok() && r.building != kNoBuilding) {
-                           emit(BuildingRemoved{r.building});
-                       }
+                       apply_build(r, index, {c.x, c.y}, true);
                    },
+                   [&](const Undo&) { apply_undo_command(index); },
                },
                command);
 }

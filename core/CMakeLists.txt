@@ -4,9 +4,12 @@ add_library(bo_core STATIC
     src/data.cpp
     src/map.cpp
     src/path.cpp
+    src/placement.cpp
     src/walker.cpp
     src/serialize.cpp
+    src/serialize_city.cpp
     src/simulation.cpp
+    src/undo.cpp
 )
 target_include_directories(bo_core PUBLIC include)
 target_include_directories(bo_core PRIVATE ${PROJECT_SOURCE_DIR}/third_party)
@@ -30,6 +33,8 @@ if(BO_BUILD_TESTS)
         tests/test_city.cpp
         tests/test_path.cpp
         tests/test_walker.cpp
+        tests/test_placement.cpp
+        tests/test_undo.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

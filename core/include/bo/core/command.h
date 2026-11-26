@@ -26,6 +26,7 @@ struct PlaceBuilding {
     std::string type;
     std::int32_t x = 0;
     std::int32_t y = 0;
+    std::uint8_t rotation = 0;  // see place_building in city.h
 };
 
 struct PlaceRoad {
@@ -48,7 +49,11 @@ struct Demolish {
     std::int32_t y = 0;
 };
 
-using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish>;
+// Reverts the build commands of the last tick that had any (Z:20), within kUndoWindowTicks.
+struct Undo {};
+
+using Command =
+    std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish, Undo>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

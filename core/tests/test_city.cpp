@@ -74,15 +74,15 @@ TEST_CASE("road access: perimeter from north of the NW corner, clockwise (S-007)
     const auto& b = c.buildings.items.at(r.building);
     REQUIRE(b.road_access);
     CHECK(*b.road_access == TilePos{2, 3});  // south edge scanned east to west
-    CHECK_FALSE(find_road_access(c.map, {1, 0}, 1, 1));
-    CHECK(*find_road_access(c.map, {1, 2}, 1, 1) == TilePos{1, 3});  // south beats west
+    CHECK_FALSE(find_road_access(c, {1, 0}, 1, 1));
+    CHECK(*find_road_access(c, {1, 2}, 1, 1) == TilePos{1, 3});  // south beats west
 }
 
 TEST_CASE("demolishing a building frees every tile; ids are never reused") {
     const auto& cat = bo::test::catalog();
     auto c = city_from({"....", "....", "....", "...."});
     const auto a = place_building(c, cat, Difficulty::Hero, "fountain", {0, 0}).building;
-    CHECK(demolish(c, {1, 1}).building == a);
+    CHECK(demolish(c, {1, 1}).removed == std::vector<BuildingId>{a});
     CHECK(c.map.at({0, 0}).building == kNoBuilding);
     const auto b = place_building(c, cat, Difficulty::Hero, "fountain", {0, 0}).building;
     CHECK(b > a);

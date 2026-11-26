@@ -45,6 +45,8 @@ struct BuildingPlaced {
     std::int32_t y = 0;
     std::int32_t width = 1;
     std::int32_t height = 1;
+    std::uint8_t rotation = 0;
+    std::uint32_t parent = 0;  // agora of a stall
 };
 
 struct BuildingRemoved {
@@ -65,8 +67,12 @@ struct WalkerRemoved {
     std::uint32_t id = 0;
 };
 
+struct UndoApplied {
+    std::int64_t refund = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
-                           BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved>;
+                           BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

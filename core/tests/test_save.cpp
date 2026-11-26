@@ -70,12 +70,26 @@ TEST_CASE("save v1 migrates to v2 with an empty city") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     auto bytes = a.save();
-    // A v1 save is the v2 layout without the city and walker blocks (24 bytes for an empty city).
-    bytes.resize(bytes.size() - 24);
+    // A v1 save is the current layout without the city and walker blocks: for an empty city 16 bytes of map
+    // and buildings, 29 bytes of the undo record (v3) and 8 bytes of walkers.
+    bytes.resize(bytes.size() - 53);
     bytes[4] = 1;
     std::string error;
     auto b = Simulation::load(bo::test::catalog(), bytes, error);
     REQUIRE(b.has_value());
     CHECK(error.empty());
+    CHECK(a.state_hash() == b->state_hash());
+}
+
+TEST_CASE("save v2 migrates to v3: no undo record, no walker flag") {
+    Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
+    a.step(10);
+    auto bytes = a.save();
+    // v2 = v3 without the 29-byte undo record that precedes the 8-byte walker block (empty city).
+    bytes.erase(bytes.end() - 8 - 29, bytes.end() - 8);
+    bytes[4] = 2;
+    std::string error;
+    auto b = Simulation::load(bo::test::catalog(), bytes, error);
+    REQUIRE(b.has_value());
     CHECK(a.state_hash() == b->state_hash());
 }

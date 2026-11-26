@@ -36,7 +36,8 @@ TEST_CASE("golden hash") {
     h.add_bytes(bytes.data(), bytes.size());
     // 2026-11-26: initial value (modules A1-A5).
     // 2026-11-26: save format v2 appends the (empty) city and walker blocks (module B, serialize.cpp).
-    const std::uint64_t kGolden = 0xcf68c117db7a7f70ULL;
+    // 2026-11-26: save format v3 appends the (empty) undo record (Z:20, serialize_city.cpp).
+    const std::uint64_t kGolden = 0xb2cd2b9b56d185f3ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -45,7 +46,8 @@ TEST_CASE("golden hash") {
 
 namespace {
 
-// 32x32 city: a road grid with a roadblock, forest, meadow, four service buildings, two years of play.
+// 32x32 city: a road grid with a roadblock, forest, meadow, four service buildings, an agora with a stall,
+// a boulevard, an undone road, two years of play.
 Simulation golden_city() {
     std::vector<std::string> rows(32, std::string(32, '.'));
     for (std::size_t i = 2; i < 30; ++i) {
@@ -70,6 +72,11 @@ Simulation golden_city() {
     sim.issue_at(kTicksPerMonth * 2, PlaceRoad{10, 10});
     sim.issue_at(kTicksPerMonth * 5, Demolish{16, 10});
     sim.issue_at(kTicksPerYear, PlaceRoadblock{4, 10});
+    sim.issue_at(kTicksPerMonth * 3, PlaceBuilding{"common_agora", 28, 6, 0});
+    sim.issue_at(kTicksPerMonth * 3 + 1, PlaceBuilding{"food_vendor_stall", 29, 8, 0});
+    sim.issue_at(kTicksPerMonth * 4, PlaceBuilding{"boulevard", 8, 4, 1});
+    sim.issue_at(kTicksPerMonth * 6, PlaceRoad{12, 10});
+    sim.issue_at(kTicksPerMonth * 6 + 5, Undo{});
     sim.step(kTicksPerYear * 2 + 17);
     return sim;
 }
@@ -79,14 +86,17 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 4);
+    CHECK(sim.state().city.buildings.items.size() == 7);
+    CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
     CHECK(sim.state().city.map.at({4, 10}).roadblock);
     CHECK_FALSE(sim.state().city.map.at({16, 10}).road);
     const auto bytes = bo::core::serialize_state(sim.state(), 0);
     bo::core::Fnv1a64 h;
     h.add_bytes(bytes.data(), bytes.size());
     // 2026-11-26: initial value (module B: map, construction, roads, A*, roaming and destination walkers).
-    const std::uint64_t kGolden = 0xb7bba380019598a8ULL;
+    // 2026-11-26: module B completed: save format v3, scenario extended with an agora, a stall, a boulevard and
+    // an undo; wide-road rule (S-006) and Fountain return tile (S-004) change walker routes.
+    const std::uint64_t kGolden = 0xf7638d5d17a2eef6ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

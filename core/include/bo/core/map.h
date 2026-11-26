@@ -69,6 +69,12 @@ struct Tile {
     BuildingId building = kNoBuilding;
     std::uint8_t random_byte = 0;  // fixed per tile at map creation (engine family, doc 24)
     std::uint32_t road_network = 0;  // 0 = no road; recomputed by the road system
+
+    friend bool operator==(const Tile& a, const Tile& b) {
+        return a.terrain == b.terrain && a.road == b.road && a.roadblock == b.roadblock && a.building == b.building &&
+               a.random_byte == b.random_byte;  // road_network is derived
+    }
+    friend bool operator!=(const Tile& a, const Tile& b) { return !(a == b); }
 };
 
 class TileMap {

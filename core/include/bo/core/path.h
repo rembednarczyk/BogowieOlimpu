@@ -32,4 +32,10 @@ std::optional<std::vector<TilePos>> find_path(const CityState& city, const PathR
 // roadblocks. Used by roaming walkers to aim 8 tiles out (doc 24).
 std::optional<TilePos> closest_road_within(const TileMap& map, TilePos center, std::int32_t radius, bool roam_only);
 
+inline constexpr std::uint32_t kUnreachable = 0xFFFFFFFFU;
+
+// Distance map (B4): steps from the nearest source to every tile, by breadth-first search in `mode`
+// (kUnreachable where none). Used to rank destinations such as storehouses by walking distance.
+std::vector<std::uint32_t> road_distances(const CityState& city, const std::vector<TilePos>& sources, PathMode mode);
+
 }  // namespace bo::core

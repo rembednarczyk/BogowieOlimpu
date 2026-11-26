@@ -2,8 +2,9 @@
 // Roaming algorithm: engine family (S-006 Julius figure/movement.c, S-007 Akhenaten movement.cpp) with Zeus
 // numbers (docs/gameplay/24-algorytmy-silnika.md). Differences from the family, by choice:
 //  - 4-direction grid indices (N, E, S, W) instead of the family's 0/2/4/6 on an 8-direction compass;
-//  - "wide road" special case (3+ roads with a run of >= 5 road tiles among 8 neighbours) not implemented yet;
-//  - Fountain/Infirmary special return tile (S-004) not implemented yet.
+//  - no roam history (Pharaoh only, S-007), as in Caesar III (S-006).
+// Zeus addition: Fountain and Infirmary walkers return to the road tile north of the building that does not
+// touch it (doc 17, S-004).
 #pragma once
 
 #include <cstdint>
@@ -45,6 +46,7 @@ struct Walker {
     std::int8_t turn = 1;                     // +1 clockwise (right), -1 counter-clockwise
     std::int32_t ticks_until_next_turn = -1;  // failed-pick budget before re-aiming; -1 = never aimed
     std::uint32_t random_counter = 0;
+    bool return_north = false;  // S-004: Fountain, Infirmary
 };
 
 struct WalkerStore {

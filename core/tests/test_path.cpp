@@ -53,3 +53,13 @@ TEST_CASE("closest road: Chebyshev distance, then tile index") {
     CHECK(*closest_road_within(c.map, {3, 2}, 6, false) == TilePos{4, 2});
     CHECK_FALSE(closest_road_within(c.map, {2, 1}, 1, false));
 }
+
+TEST_CASE("distance map: steps along roads from the nearest source, unreachable elsewhere") {
+    auto c = city_from({"=====", "....=", "=====", "....."});
+    const auto d = road_distances(c, {{0, 0}, {0, 2}}, PathMode::Road);
+    CHECK(d[c.map.index({0, 0})] == 0);
+    CHECK(d[c.map.index({4, 0})] == 4);
+    CHECK(d[c.map.index({4, 1})] == 5);
+    CHECK(d[c.map.index({2, 2})] == 2);
+    CHECK(d[c.map.index({2, 3})] == kUnreachable);
+}
