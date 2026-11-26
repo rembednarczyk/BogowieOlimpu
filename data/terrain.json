@@ -1,0 +1,14 @@
+[
+  {"id": "grassland", "name_pl": "łąka", "buildable": true, "fertile": false, "walkable": true, "src": "Z:17"},
+  {"id": "meadow", "name_pl": "łąka kwietna", "buildable": true, "fertile": true, "walkable": true, "notes": "jedyny teren pod farmy, sady i zwierzęta", "src": "Z:17"},
+  {"id": "forest", "name_pl": "las", "buildable": false, "clearable": true, "regrows": false, "resource": "wood", "src": "Z:18"},
+  {"id": "marsh", "name_pl": "bagno", "buildable": false, "walkable": true, "src": "Z:18"},
+  {"id": "beach", "name_pl": "plaża", "buildable": false, "src": "Z:18"},
+  {"id": "rock", "name_pl": "skała", "buildable": false, "walkable": "only_passes_and_stairs", "src": "Z:18"},
+  {"id": "copper_ore_rock", "name_pl": "skała z miedzią", "buildable": false, "resource": "copper_ore", "harvested_by": "foundry", "src": "Z:18"},
+  {"id": "silver_ore_rock", "name_pl": "skała ze srebrem", "buildable": false, "resource": "silver_ore", "harvested_by": "mint", "notes": "jeden górnik na złoże naraz", "src": "Z:18, Z:53"},
+  {"id": "marble_quarry", "name_pl": "kamieniołom marmuru", "buildable": false, "resource": "marble", "harvested_by": "masonry_shop", "notes": "pogłębia się w trakcie wydobycia", "src": "Z:18, Z:52"},
+  {"id": "water", "name_pl": "woda", "buildable": false, "walkable": false, "notes": "fish i urchins jako zasoby; budynki nabrzeżne na prostym brzegu", "src": "Z:18"},
+  {"id": "orichalc_ore_rock", "name_pl": "skała z orichalkiem", "buildable": false, "resource": "orichalc_ore", "harvested_by": "refinery", "culture": "atlantean", "src": "P:9"},
+  {"id": "black_marble_quarry", "name_pl": "kamieniołom czarnego marmuru", "buildable": false, "resource": "black_marble", "harvested_by": "black_marble_workshop", "src": "P:9"}
+]

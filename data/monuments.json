@@ -1,0 +1,22 @@
+[
+  {"id": "population", "kind": "commemorative", "trigger": "population_milestone", "cost": 0, "rebuild_after_demolish": false, "gaps": ["L-092"], "src": "Z:155"},
+  {"id": "happiness", "kind": "commemorative", "trigger": "immense_satisfaction", "cost": 0, "rebuild_after_demolish": false, "gaps": ["L-092"], "src": "Z:155"},
+  {"id": "scholar", "kind": "commemorative", "trigger": "win_pythian_or_isthmian", "cost": 0, "rebuild_after_demolish": false, "src": "Z:155"},
+  {"id": "athlete", "kind": "commemorative", "trigger": "win_nemean_or_olympian", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "victory", "kind": "commemorative", "trigger": "repel_formidable_invader", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "conquest", "kind": "commemorative", "trigger": "city_becomes_vassal", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "colony", "kind": "commemorative", "trigger": "found_colony", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "diplomacy", "kind": "commemorative", "trigger": "city_becomes_ally", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "god_statue", "kind": "commemorative", "trigger": "complete_god_quest", "sizes": 2, "size_chosen_by": "god", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "hero", "kind": "commemorative", "trigger": "hero_slays_monster_in_city", "cost": 0, "rebuild_after_demolish": false, "src": "Z:156"},
+  {"id": "games_host", "kind": "commemorative", "trigger": "host_panhellenic_games", "cost": 0, "rebuild_after_demolish": false, "src": "Z:111"},
+
+  {"id": "pyramid", "kind": "pyramid", "culture": "atlantean", "variants": ["modest", "pyramid", "great", "majestic"], "materials": ["marble_any", "orichalc", "wood"], "gaps": ["L-082"], "src": "P:27"},
+  {"id": "monument_to_the_sky", "kind": "pyramid", "culture": "atlantean", "variants": ["small", "standard", "grand"], "materials": ["marble_any", "orichalc", "wood"], "gaps": ["L-082"], "src": "P:27-28"},
+  {"id": "shrine", "kind": "pyramid", "culture": "atlantean", "per_god": true, "variants": {"shrine": ["marble_any", "orichalc", "wood"], "minor": ["marble_any", "orichalc", "wood", "sculpture"], "major": ["marble_any", "orichalc", "wood", "sculpture"]}, "gaps": ["L-082"], "src": "P:28"},
+  {"id": "pyramid_of_the_pantheon", "kind": "pyramid", "culture": "atlantean", "materials": ["marble_any", "orichalc", "wood", "sculpture"], "gaps": ["L-082"], "src": "P:28"},
+  {"id": "altar_of_olympus", "kind": "pyramid", "culture": "atlantean", "materials": ["marble_any", "wood", "orichalc"], "gaps": ["L-082"], "src": "P:28"},
+  {"id": "temple_of_olympus", "kind": "pyramid", "culture": "atlantean", "materials": ["marble_any", "wood", "orichalc"], "gaps": ["L-082"], "src": "P:28"},
+  {"id": "observatory_kosmika", "kind": "pyramid", "culture": "atlantean", "materials": ["marble_any", "wood", "orichalc"], "gaps": ["L-082"], "src": "P:28"},
+  {"id": "museum_atlantika", "kind": "pyramid", "culture": "atlantean", "materials": ["marble_any", "wood", "orichalc"], "gaps": ["L-082"], "src": "P:28"}
+]

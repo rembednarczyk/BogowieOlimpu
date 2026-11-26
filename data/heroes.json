@@ -1,0 +1,10 @@
+[
+  {"id": "hercules", "slays": ["cerberus", "hydra"], "requirements": null, "requirements_atlantis": ["variety_of_science_education", "hippodrome_access"], "gaps": ["L-056"], "src": "Z:130, P:25"},
+  {"id": "achilles", "slays": ["hector", "maenads"], "requirements": null, "gaps": ["L-056"], "src": "Z:130"},
+  {"id": "odysseus", "slays": ["scylla", "cyclops"], "requirements": null, "gaps": ["L-056"], "src": "Z:130"},
+  {"id": "jason", "slays": ["talos", "dragon"], "requirements": null, "requirements_atlantis": ["frigate_fleet_count"], "gaps": ["L-056"], "src": "Z:130, P:25"},
+  {"id": "theseus", "slays": ["minotaur", "calydonian_boar"], "requirements": null, "gaps": ["L-056"], "src": "Z:130"},
+  {"id": "perseus", "slays": ["medusa", "kraken"], "requirements": null, "gaps": ["L-056"], "src": "Z:130"},
+  {"id": "atalanta", "slays": ["sphinx", "harpies"], "requirements": null, "expansion": true, "gaps": ["L-056"], "src": "P:24"},
+  {"id": "bellerophon", "slays": ["chimera", "echidna"], "requirements": null, "expansion": true, "gaps": ["L-056"], "src": "P:24"}
+]

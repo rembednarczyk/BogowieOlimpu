@@ -1,0 +1,6 @@
+[
+  {"id": "olympian", "year_mod_4": 0, "disciplines": ["philosophy", "athletics", "drama", "competition"], "prize": "laurel", "monument": "athlete", "win_grants_hosting_in_years": 4, "src": "Z:110-111"},
+  {"id": "isthmian", "year_mod_4": 1, "disciplines": ["philosophy"], "prize": "dry_wild_celery", "monument": "scholar", "src": "Z:110-111"},
+  {"id": "pythian", "year_mod_4": 2, "disciplines": ["drama"], "prize": "bay_leaves", "monument": "scholar", "src": "Z:110-111"},
+  {"id": "nemean", "year_mod_4": 3, "disciplines": ["athletics", "competition"], "prize": "fresh_wild_celery", "monument": "athlete", "src": "Z:110-111"}
+]

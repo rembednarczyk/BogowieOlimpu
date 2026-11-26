@@ -1,0 +1,33 @@
+{
+  "states": [
+    {"id": "ally", "trade": true, "group_reputation": "strong", "can_attack": true, "can_raid": true, "src": "Z:168"},
+    {"id": "rival", "trade": false, "group_reputation": "weak", "can_attack": true, "can_raid": true, "demands_tribute_after_conquest": true, "src": "Z:168-169"},
+    {"id": "vassal", "trade": true, "group_reputation": "strong", "can_attack": "only_when_rebelling", "can_raid": "only_when_rebelling", "pays_tribute": true, "may_rebel": true, "src": "Z:168"},
+    {"id": "colony", "trade": true, "group_reputation": "very_strong", "permanent": true, "can_attack": "only_when_rebelling", "can_raid": "only_when_rebelling", "pays_tribute": true, "may_rebel": true, "src": "Z:169"},
+    {"id": "parent_city", "permanent": true, "always_complies_out_of_respect": true, "src": "Z:169"},
+    {"id": "distant_city", "trade": true, "diplomacy": false, "src": "Z:170"},
+    {"id": "enchanted_place", "trade": false, "hero_quests": true, "src": "Z:170"}
+  ],
+  "request_thresholds": {
+    "food": {"ally": "any_attitude", "vassal_colony_parent": "even_very_bad", "rival": "very_good_else_demand"},
+    "goods_or_money": {"ally": "fairly_happy", "vassal_colony_parent": "fairly_happy", "rival": "extremely_good_else_demand"},
+    "defensive_aid": {"ally": "very_high", "vassal_colony_parent": "more_willing_than_ally", "rival": "never"},
+    "strike": {"ally": "adores", "vassal_colony_parent": "above_average", "rival": "never"},
+    "notes": "miasto musi produkować towar; żądanie od rywala skuteczne tylko przy przewadze militarnej; ponowna prośba może zostać odrzucona",
+    "src": "Z:174-175"
+  },
+  "player_actions": {
+    "gift": {"needed_goods_valued_more": true, "cash_always_ok": true, "diminishing_returns": true, "may_be_refused_if_too_many": true, "spills_to_same_state_except_rival": true, "src": "Z:176-177"},
+    "attack": {"exclude_units": ["rabble"], "success": "target_becomes_vassal_pays_tribute_conquest_monument", "attack_ally": "all_allies_turn_away", "attack_rival": "other_rivals_respect", "suppress_rebellion": "normal_relations_resume", "src": "Z:177-178"},
+    "raid": {"exclude_units": ["rabble"], "choose_good": "from_target_production", "raid_ally": "all_allies_hate", "raid_rival": "rivals_respect", "raid_rebel": "other_colonies_vassals_resent", "src": "Z:178"},
+    "fulfill_request": {"late_better_than_never": true, "too_late_withdrawn_opinion_drops": true, "military_requests_never_overdue": true, "src": "Z:161-162, Z:176"}
+  },
+  "long_term": {
+    "good": "goodwill_gift_from_ally_colony_vassal_parent",
+    "bad": {"ally": "stops_trade", "vassal_colony": "stops_tribute_then_rebels", "rival": "may_attack"},
+    "src": "Z:178"
+  },
+  "tribute": {"lose_twice_to_same_rival": "lose_episode", "break_free": ["conquer_rival", "defeat_rival_army_at_home"], "src": "Z:172"},
+  "atlantean_pact": {"attack_atlantean_ally": "all_atlantean_cities_become_rivals", "src": "P:19"},
+  "map_markers": {"player_city": "big_square_red_banner", "colony_or_vassal": "small_player_banner", "ally": "small_red_flag", "rival": "none", "rebelling": "fiery_torch", "economy": "coin_stack", "military": "shields", "src": "Z:170"}
+}

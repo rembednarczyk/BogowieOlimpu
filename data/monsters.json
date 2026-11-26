@@ -1,0 +1,18 @@
+[
+  {"id": "cyclops", "master": "zeus", "slain_by": "odysseus", "src": "Z:127, Z:130"},
+  {"id": "kraken", "master": "poseidon", "slain_by": "perseus", "sea": true, "can_attack_underwater_oceanids": true, "src": "Z:128, Z:130, P:19"},
+  {"id": "cerberus", "master": "hades", "slain_by": "hercules", "src": "Z:128, Z:130"},
+  {"id": "medusa", "master": "demeter", "slain_by": "perseus", "petrifies": true, "src": "Z:128, Z:130"},
+  {"id": "hydra", "master": "athena", "slain_by": "hercules", "src": "Z:128, Z:130"},
+  {"id": "calydonian_boar", "master": "artemis", "slain_by": "theseus", "src": "Z:128, Z:130"},
+  {"id": "scylla", "master": "apollo", "slain_by": "odysseus", "src": "Z:128, Z:130"},
+  {"id": "dragon", "master": "ares", "slain_by": "jason", "src": "Z:128, Z:130"},
+  {"id": "talos", "master": "hephaestus", "slain_by": "jason", "src": "Z:128, Z:130"},
+  {"id": "hector", "master": "aphrodite", "slain_by": "achilles", "src": "Z:128, Z:130"},
+  {"id": "minotaur", "master": "hermes", "slain_by": "theseus", "src": "Z:128, Z:130"},
+  {"id": "maenads", "master": "dionysus", "slain_by": "achilles", "src": "Z:128, Z:130"},
+  {"id": "sphinx", "master": "hera", "slain_by": "atalanta", "expansion": true, "src": "P:23-24"},
+  {"id": "chimera", "master": "atlas", "slain_by": "bellerophon", "expansion": true, "src": "P:23-24"},
+  {"id": "echidna", "master": null, "slain_by": "bellerophon", "always_independent": true, "expansion": true, "src": "P:23-24"},
+  {"id": "harpies", "master": null, "slain_by": "atalanta", "always_independent": true, "expansion": true, "src": "P:23-24"}
+]

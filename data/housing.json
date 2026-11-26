@@ -1,0 +1,14 @@
+[
+  {"id": "hut", "class": "common", "level": 1, "ref_name": "Hut", "name_pl": "chata", "requires": [], "military": null, "capacity": null, "src": "Z:30"},
+  {"id": "shack", "class": "common", "level": 2, "ref_name": "Shack", "name_pl": "szałas", "requires": ["food"], "military": null, "capacity": null, "src": "Z:30"},
+  {"id": "hovel", "class": "common", "level": 3, "ref_name": "Hovel", "name_pl": "lepianka", "requires": ["food", "water", "culture:1"], "military": "rabble", "capacity": null, "src": "Z:30, Z:136"},
+  {"id": "homestead", "class": "common", "level": 4, "ref_name": "Homestead", "name_pl": "zagroda chłopska", "requires": ["food", "water", "culture:1", "fleece"], "military": "rabble", "capacity": null, "src": "Z:30-31"},
+  {"id": "tenement", "class": "common", "level": 5, "ref_name": "Tenement", "name_pl": "kamienica czynszowa", "requires": ["food", "water", "culture:2", "fleece"], "military": "rabble", "capacity": null, "src": "Z:31"},
+  {"id": "apartment", "class": "common", "level": 6, "ref_name": "Apartment", "name_pl": "mieszkanie", "requires": ["food", "water", "culture:2", "fleece", "olive_oil"], "military": "rabble", "capacity": null, "src": "Z:31"},
+  {"id": "townhouse", "class": "common", "level": 7, "ref_name": "Townhouse", "name_pl": "dom miejski", "requires": ["food", "water", "culture:3", "fleece", "olive_oil"], "military": "rabble", "capacity": null, "src": "Z:31"},
+
+  {"id": "residence", "class": "elite", "level": 1, "ref_name": "Residence", "name_pl": "rezydencja", "requires": ["food", "fleece", "olive_oil", "culture:n", "appeal:high"], "military": null, "capacity": null, "src": "Z:32"},
+  {"id": "mansion", "class": "elite", "level": 2, "ref_name": "Mansion", "name_pl": "dwór", "requires": ["food", "fleece", "olive_oil", "culture:n+1", "appeal:high", "armor"], "military": "hoplite", "military_rule": "1 armor = 1 hoplite", "capacity": null, "src": "Z:33-34, Z:136"},
+  {"id": "manor", "class": "elite", "level": 3, "ref_name": "Manor", "name_pl": "posiadłość", "requires": ["food", "fleece", "olive_oil", "culture:n+2", "appeal:high", "armor", "wine"], "military": "hoplite", "military_rule": "1 armor = 1 hoplite", "capacity": null, "src": "Z:34, Z:136"},
+  {"id": "estate", "class": "elite", "level": 4, "ref_name": "Estate", "name_pl": "majątek", "requires": ["food", "fleece", "olive_oil", "culture:n+3", "culture:competition", "appeal:high", "armor", "wine", "horses"], "military": "horseman", "military_rule": "1 armor + 1 horse = 1 horseman; horse eats like a person", "capacity": null, "src": "Z:34, Z:136-137"}
+]
