@@ -115,6 +115,12 @@ func _process(_d: float) -> bool:
 	ui.send_request(0)
 	game.sim.step(1)
 	check(game.sim.get_scenario()["requests"].size() == 0, "one tap sent the fleece")
+	ui._toggle_stockpile("fleece")  # Z:80: the report's switch keeps a good from use
+	game.sim.step(1)
+	check(game.sim.get_stockpiled().has("fleece"), "fleece stockpiled from the report")
+	ui._toggle_stockpile("fleece")
+	game.sim.step(1)
+	check(not game.sim.get_stockpiled().has("fleece"), "and released")
 	ui.toggle_report()
 
 	# Save and restore: a second scene loads the file and shows the same buildings.

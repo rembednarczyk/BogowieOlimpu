@@ -219,6 +219,11 @@ void Simulation::apply_build(const BuildResult& r, std::uint32_t index, TilePos 
 }
 
 void Simulation::apply(const Command& command, std::uint32_t index) {
+    const auto reject = [this, index](const std::string& err) {
+        if (!err.empty()) {
+            emit(CommandRejected{index, err});
+        }
+    };
     // One handler per command type; a missing handler fails to compile.
     CityState& city = state_.city;
     const Difficulty diff = state_.difficulty;
@@ -303,18 +308,8 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                            emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
                        }
                    },
-                   [&](const MoveCompany& c) {
-                       const std::string err = move_company(state_, c.company, {c.x, c.y});
-                       if (!err.empty()) {
-                           emit(CommandRejected{index, err});
-                       }
-                   },
-                   [&](const SendCompanyHome& c) {
-                       const std::string err = send_company_home(state_, c.company);
-                       if (!err.empty()) {
-                           emit(CommandRejected{index, err});
-                       }
-                   },
+                   [&](const MoveCompany& c) { reject(move_company(state_, c.company, {c.x, c.y})); },
+                   [&](const SendCompanyHome& c) { reject(send_company_home(state_, c.company)); },
                    [&](const StartInvasion&) { apply_combat_command(command, index); },
                    [&](const BribeInvaders&) { apply_combat_command(command, index); },
                    [&](const Surrender&) { apply_combat_command(command, index); },
@@ -325,6 +320,8 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const SummonHero&) { apply_myth_command(command, index); },
                    [&](const SendHeroOnQuest&) { apply_myth_command(command, index); },
                    [&](const Pray&) { apply_myth_command(command, index); },
+                   [&](const SetStockpile&) { apply_stock_command(command, index); },  // Z:80
+                   [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});
@@ -423,6 +420,26 @@ void Simulation::emit_combat(const CombatEvents& ev) {
         invasion_outcome(state_, catalog_, ev.city, *ev.ended, world);
         if (world.episode_lost) {
             emit(EpisodeLost{});
+        }
+    }
+}
+
+// Stockpiling (Z:80) and Not Buying (Z:72).
+void Simulation::apply_stock_command(const Command& command, std::uint32_t index) {
+    if (const auto* c = std::get_if<SetStockpile>(&command)) {
+        if (catalog_.goods.count(c->good) == 0) {
+            emit(CommandRejected{index, "storage.unknown_good"});
+        } else if (c->on) {
+            state_.stockpiled.insert(c->good);
+        } else {
+            state_.stockpiled.erase(c->good);
+        }
+    } else if (const auto* n = std::get_if<SetNotBuying>(&command)) {
+        auto it = state_.city.buildings.items.find(n->building);
+        if (it == state_.city.buildings.items.end() || !it->second.stall) {
+            emit(CommandRejected{index, "storage.not_a_stall"});
+        } else {
+            it->second.stall->not_buying = n->on;
         }
     }
 }

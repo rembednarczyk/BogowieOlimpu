@@ -115,6 +115,12 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u32(cmd.hall);
             } else if constexpr (std::is_same_v<T, SendHeroOnQuest>) {
                 w.u32(cmd.quest);
+            } else if constexpr (std::is_same_v<T, SetStockpile>) {
+                w.str(cmd.good);
+                w.u8(cmd.on ? 1 : 0);
+            } else if constexpr (std::is_same_v<T, SetNotBuying>) {
+                w.u32(cmd.building);
+                w.u8(cmd.on ? 1 : 0);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -232,6 +238,26 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             out = index == 23   ? Command{FulfillRequest{v}}
                   : index == 24 ? Command{SummonHero{v}}
                                 : Command{SendHeroOnQuest{v}};
+            return true;
+        }
+        case 26: {  // since v35 (Z:80)
+            SetStockpile c;
+            std::uint8_t on = 0;
+            if (!r.str(c.good) || !r.u8(on)) {
+                return false;
+            }
+            c.on = on != 0;
+            out = c;
+            return true;
+        }
+        case 27: {  // since v35 (Z:72)
+            SetNotBuying c;
+            std::uint8_t on = 0;
+            if (!r.u32(c.building) || !r.u8(on)) {
+                return false;
+            }
+            c.on = on != 0;
+            out = c;
             return true;
         }
         default:

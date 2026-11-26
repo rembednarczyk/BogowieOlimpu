@@ -279,3 +279,48 @@ TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)
     }
     CHECK(homesteads > 0);
 }
+
+namespace {
+
+// A granary with 6 loads of carrots and an agora with a food stall on the main street; the stall's id.
+BuildingId agora_with_food(Simulation& sim) {
+    sim.issue(PlaceBuilding{"granary", 20, 2});
+    sim.issue(PlaceBuilding{"common_agora", 10, 4, 1});
+    sim.step(1);
+    const Building& agora = at(sim, {10, 4});
+    sim.issue(PlaceBuilding{"food_vendor_stall", agora.slot_origins[0].x, agora.slot_origins[0].y});
+    sim.step(1);
+    at(sim, {20, 2}).storage->loads["carrots"] = 6;
+    return at(sim, {10, 4}).slots[0];
+}
+
+}  // namespace
+
+TEST_CASE("stockpiled goods stay in storage: the agora vendor leaves them (Z:80)") {
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    agora_with_food(sim);
+    sim.issue(SetStockpile{"carrots", true});
+    sim.run_days(4);
+    CHECK(at(sim, {20, 2}).storage->loads["carrots"] == 6);
+    sim.issue(SetStockpile{"carrots", false});
+    sim.run_days(4);
+    CHECK(at(sim, {20, 2}).storage->loads["carrots"] == 2);
+}
+
+TEST_CASE("Not Buying: the stall sends no vendor; both orders survive a save (Z:72)") {
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    const BuildingId stall = agora_with_food(sim);
+    sim.issue(SetNotBuying{stall, true});
+    sim.issue(SetStockpile{"olive_oil", true});
+    sim.run_days(4);
+    CHECK(at(sim, {20, 2}).storage->loads["carrots"] == 6);
+    CHECK(sim.state().city.buildings.items.at(stall).stall->not_buying);
+    sim.issue_at(sim.state().time.tick() + 5, SetNotBuying{stall, false});  // pending in the command log
+    std::string error;
+    auto copy = Simulation::load(bo::test::catalog_isolated(), sim.save(), error);
+    REQUIRE(copy.has_value());
+    CHECK(copy->state_hash() == sim.state_hash());
+    CHECK(copy->state().stockpiled.count("olive_oil") == 1);
+    copy->run_days(4);
+    CHECK(copy->state().city.buildings.items.at(stall).stall->not_buying == false);
+}

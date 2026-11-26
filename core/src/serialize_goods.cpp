@@ -56,6 +56,7 @@ void write_goods_state(ByteWriter& w, const Building& b) {
     if (b.stall) {
         write_counts(w, b.stall->units);
         w.u32(b.stall->vendor);
+        w.u8(b.stall->not_buying ? 1 : 0);  // since v35
     }
     if (b.animal) {  // since v9
         w.u32(b.animal->shed);
@@ -139,9 +140,11 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
     }
     if ((flags & 4U) != 0) {
         StallState s;
-        if (!read_counts(r, s.units) || !r.u32(s.vendor)) {
+        std::uint8_t not_buying = 0;
+        if (!read_counts(r, s.units) || !r.u32(s.vendor) || (version >= 35 && !r.u8(not_buying))) {
             return false;
         }
+        s.not_buying = not_buying != 0;
         b.stall = std::move(s);
     }
     auto read_flag = [&r](bool& out) {

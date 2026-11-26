@@ -108,8 +108,9 @@ struct OrchardState {
 struct StallState {
     std::map<std::string, std::uint32_t> units;
     WalkerId vendor = kNoWalker;
+    bool not_buying = false;  // Not Buying (Z:72; since v35): the vendor stays, the peddler sells what is left
     friend bool operator==(const StallState& a, const StallState& b) {
-        return a.units == b.units && a.vendor == b.vendor;
+        return a.units == b.units && a.vendor == b.vendor && a.not_buying == b.not_buying;
     }
 };
 

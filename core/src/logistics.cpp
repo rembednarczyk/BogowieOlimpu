@@ -288,8 +288,8 @@ void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingI
         return;
     }
     for (const auto& [good, loads] : s.storage->loads) {
-        if (loads == 0) {
-            continue;
+        if (loads == 0 || st.stockpiled.count(good) != 0) {
+            continue;  // stockpiled: not for industry (Z:80)
         }
         std::optional<std::pair<std::uint32_t, BuildingId>> best;
         for (const auto& [pid, p] : city.buildings.items) {
@@ -416,8 +416,9 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
                                         : catalog.buildings.at(home->second.type).sells;
                 std::uint32_t taken = 0;
                 for (auto& [good, loads] : s.storage->loads) {
-                    if (!good_matches(catalog, good, sells) || (s.trade && !trade_offers(s, good))) {
-                        continue;
+                    if (!good_matches(catalog, good, sells) || (s.trade && !trade_offers(s, good)) ||
+                        st.stockpiled.count(good) != 0) {
+                        continue;  // stockpiled goods stay in storage (Z:80)
                     }
                     const std::uint32_t n = std::min(loads, kVendorLoads - taken);
                     loads -= n;

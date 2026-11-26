@@ -275,6 +275,13 @@ for x, y in [(53, 19), (57, 19), (64, 19)]:
     put("elite_housing", x, y, day=ELITE + 200, retry=True)
 put("podium", 70, 14, day=ELITE); put("podium", 70, 17, day=ELITE)
 
+# Stockpiling (Z:80): oil kept from the stalls before the elite plots, so a load waits in storage (doc 18).
+steps.append({"day": ELITE + 120, "stockpile": "olive_oil", "on": True})
+steps.append({"day": ELITE + 240, "stockpile": "olive_oil", "on": False})
+# Not Buying (Z:72): the wine stall stops fetching for half a year.
+steps.append({"day": INDUSTRY + 100, "not_buying": [24, 30], "on": True})
+steps.append({"day": INDUSTRY + 200, "not_buying": [24, 30], "on": False})
+
 # Surplus oil goes to Rhodes by sea once the elite houses stand (Z:78-79).
 steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}})
 

@@ -86,6 +86,17 @@ struct SetTradeOrder {
     std::uint32_t export_keep = 0;
 };
 
+// Stockpiling (Z:80): keep a good for the player's own use. Not Buying (Z:72): an agora stall stops fetching.
+struct SetStockpile {
+    std::string good;
+    bool on = true;
+};
+
+struct SetNotBuying {
+    std::uint32_t building = 0;
+    bool on = true;
+};
+
 // Army (Z:137-139): muster a company, move its standard, send its soldiers home. `company` indexes the
 // companies in MilitaryState.
 struct MusterCompany {
@@ -156,7 +167,7 @@ using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, 
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest, SummonHero, SendHeroOnQuest>;
+                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

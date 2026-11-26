@@ -79,6 +79,9 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
         }
     }
     for (const char* good : kMaterials) {
+        if (st.stockpiled.count(good) != 0) {
+            continue;  // stockpiled: not for the sanctuary sites (Z:80)
+        }
         const std::uint32_t needed = site.sanctuary->needed[good];
         const std::uint32_t have = site.sanctuary->on_site[good] + coming[good];
         if (needed <= have) {

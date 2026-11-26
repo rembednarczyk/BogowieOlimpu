@@ -132,3 +132,8 @@ monument.scholar,Pomnik mędrca,Sage monument
 monument.athlete,Pomnik zawodnika,Champion monument
 good.army,kompanii wojska,companies of soldiers
 scenario.not_enough_troops,Za mało kompanii w domu (motłochu nie wysyła się),Too few companies at home (rabble cannot go)
+ui.not_buying,Nie kupuj,Not buying
+ui.stock_title,Zapasy miasta,City stock
+ui.stockpile,Gromadź,Stockpile
+storage.unknown_good,Nieznany towar,Unknown good
+storage.not_a_stall,To nie jest stoisko,Not a stall

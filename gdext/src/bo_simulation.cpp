@@ -526,6 +526,28 @@ void BoSimulation::set_storage_order(int64_t building, const String& good, int64
     }
 }
 
+void BoSimulation::set_stockpile(const String& good, bool on) {
+    if (sim_) {
+        sim_->issue(bo::core::SetStockpile{to_std(good), on});
+    }
+}
+
+void BoSimulation::set_not_buying(int64_t stall, bool on) {
+    if (sim_ && stall > 0) {
+        sim_->issue(bo::core::SetNotBuying{static_cast<std::uint32_t>(stall), on});
+    }
+}
+
+PackedStringArray BoSimulation::get_stockpiled() const {
+    PackedStringArray out;
+    if (sim_) {
+        for (const std::string& g : sim_->state().stockpiled) {
+            out.append(String(g.c_str()));
+        }
+    }
+    return out;
+}
+
 void BoSimulation::muster_company(int64_t company) {
     if (sim_ && company >= 0) {
         sim_->issue(bo::core::MusterCompany{static_cast<std::uint32_t>(company)});
@@ -804,6 +826,9 @@ Array BoSimulation::get_buildings() const {
         d["disease_risk"] = static_cast<int64_t>(b.disease_counter);
         d["crime_risk"] = static_cast<int64_t>(b.crime_counter);
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
+        if (b.stall) {
+            d["not_buying"] = b.stall->not_buying;
+        }
         d["sanctified"] = b.sanctified;
         d["cursed_days"] = static_cast<int64_t>(b.cursed_days);
         d["performing_days"] = static_cast<int64_t>(b.performing_days);
@@ -1016,6 +1041,9 @@ void BoSimulation::_bind_methods() {
                          &BoSimulation::start_scenario, DEFVAL(false));
     ClassDB::bind_method(D_METHOD("fulfill_request", "request"), &BoSimulation::fulfill_request);
     ClassDB::bind_method(D_METHOD("load_build_order", "path"), &BoSimulation::load_build_order);
+    ClassDB::bind_method(D_METHOD("set_stockpile", "good", "on"), &BoSimulation::set_stockpile);
+    ClassDB::bind_method(D_METHOD("set_not_buying", "stall", "on"), &BoSimulation::set_not_buying);
+    ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);
     ClassDB::bind_method(D_METHOD("start_adventure", "data_dir", "path"), &BoSimulation::start_adventure);
     ClassDB::bind_method(D_METHOD("continue_adventure"), &BoSimulation::continue_adventure);

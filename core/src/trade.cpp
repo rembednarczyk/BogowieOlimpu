@@ -179,8 +179,8 @@ void trade_at_target(WorldState& st, const DataCatalog& catalog, Walker& w, Trad
         std::uint32_t carried_out = 0;
         for (auto& [good, offer] : partner.buys) {  // export: the trader buys from us (Z:78-79)
             const auto o = b.trade->orders.find(good);
-            if (o == b.trade->orders.end() || !o->second.export_on) {
-                continue;
+            if (o == b.trade->orders.end() || !o->second.export_on || st.stockpiled.count(good) != 0) {
+                continue;  // stockpiled: not sold to traders (Z:80)
             }
             const std::uint32_t n = std::min({stock_of(b, good), cap - carried_out,
                                               offer.yearly_limit - std::min(offer.traded, offer.yearly_limit)});

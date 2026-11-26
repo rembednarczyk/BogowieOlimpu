@@ -78,6 +78,10 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetTradeOrder{0, o.at("good").get<std::string>(), o.value("import", 0U) > 0, o.value("import", 0U),
                           o.contains("export_keep"), o.value("export_keep", 0U)},
             pos_of(s.at("at")));
+    } else if (s.contains("stockpile")) {
+        add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
+    } else if (s.contains("not_buying")) {
+        add(SetNotBuying{0, s.value("on", true)}, pos_of(s.at("not_buying")));
     } else if (s.contains("fulfill_requests")) {
         BuildStep step = base;
         step.fulfill_all = true;
@@ -162,6 +166,9 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
                 sh->hall = id;
             } else if (auto* pr = std::get_if<Pray>(&c)) {
                 pr->building = id;
+            } else if (auto* nb = std::get_if<SetNotBuying>(&c)) {
+                const auto& b = sim.state().city.buildings.items.at(id);
+                nb->building = b.slots.empty() ? id : b.slots.front();  // a tile of an agora: its first stall
             }
         }
         out.push_back(std::move(c));

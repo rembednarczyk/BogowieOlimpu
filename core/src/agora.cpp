@@ -45,8 +45,8 @@ void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, 
     Building& stall = city.buildings.items.at(id);
     const BuildingType& type = catalog.buildings.at(stall.type);
     const std::string walker_type = walker_type_from(catalog, stall.type);
-    if (walker_type.empty() || !stall.road_access) {
-        return;
+    if (walker_type.empty() || !stall.road_access || stall.stall->not_buying) {
+        return;  // Not Buying (Z:72): the peddler still sells what the stall has
     }
     const WalkerType& wt = catalog.walkers.at(walker_type);
     const std::int32_t reach = wt.max_source_distance.value_or(kVendorReach);
@@ -68,7 +68,8 @@ void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, 
         bool has_goods = pickup && s.producer->output_loads > 0;  // straight from the ranch or factory (doc 06)
         for (const auto& [good, loads] : pickup ? std::map<std::string, std::uint32_t>{} : s.storage->loads) {
             const bool usable = !s.trade || trade_offers(s, good);  // export goods are not for the city (Z:79)
-            has_goods = has_goods || (loads > 0 && usable && good_matches(catalog, good, type.sells));
+            has_goods = has_goods || (loads > 0 && usable && good_matches(catalog, good, type.sells) &&
+                                      st.stockpiled.count(good) == 0);  // stockpiled: not for vendors (Z:80)
         }
         const std::uint32_t d = dist[city.map.index(p)];
         if (has_goods && d != kUnreachable && (!best || d < best->first)) {

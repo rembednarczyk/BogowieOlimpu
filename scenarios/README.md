@@ -32,6 +32,8 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `tax`, `wage` | stawka podatku i płac (indeks jak w `TaxRate`, `WageRate`) |
 | `trade_partner`, `trade_order`, `storage_order` z `at: [x, y]` | rozkazy budynku stojącego na kaflu `at` |
 | `summon_hero: [x, y]`, `hero_quest: n`, `pray: [x, y]` | mitologia: przyzwij herosa z Sali, wyślij na zadanie n, módl się w sanktuarium |
+| `stockpile: towar`, `on` | gromadzenie towaru (Z:80) |
+| `not_buying: [x, y]`, `on` | "Nie kupuj" stoiska na kaflu agory `at` (pierwsze stoisko) albo stoiska (Z:72) |
 | `fulfill_requests: true` | spełnij wszystkie otwarte prośby miast (towar z magazynu, wojsko z domu) |
 
 Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`).

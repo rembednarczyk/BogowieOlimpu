@@ -267,6 +267,10 @@ void write_world(ByteWriter& w, const WorldState& s) {
     w.u32(s.talos_days);
     w.u32(s.caravan_curse_days);  // since v32
     w.u32(s.ship_curse_days);
+    w.u32(static_cast<std::uint32_t>(s.stockpiled.size()));  // since v35
+    for (const std::string& g : s.stockpiled) {
+        w.str(g);
+    }
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -356,6 +360,17 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
     }
     s.caravan_curse_days = static_cast<std::uint16_t>(caravans);
     s.ship_curse_days = static_cast<std::uint16_t>(ships);
+    std::uint32_t kept = 0;
+    if (version >= 35 && (!r.u32(kept) || kept > 64)) {
+        return false;
+    }
+    for (std::uint32_t i = 0; i < kept; ++i) {
+        std::string g;
+        if (!r.str(g)) {
+            return false;
+        }
+        s.stockpiled.insert(g);
+    }
     return true;
 }
 

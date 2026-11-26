@@ -42,6 +42,8 @@ var status: Label
 var card: PanelContainer
 var card_text: Label
 var pray_btn: Button
+var buying_btn: Button  # Not Buying on an agora stall's card (Z:72)
+var card_stall := 0
 var card_sanctuary := 0  # the sanctuary on the card, for the prayer
 
 func setup(g: Node3D) -> void:
@@ -146,6 +148,9 @@ func _build() -> void:
 	card_box.add_child(card_text)
 	pray_btn = _button("ui.pray", func(): _pray(), Vector2(200, CELL.y))
 	card_box.add_child(pray_btn)
+	buying_btn = _button("ui.not_buying", func(): _toggle_buying(), Vector2(200, CELL.y))
+	buying_btn.toggle_mode = true
+	card_box.add_child(buying_btn)
 	card_box.add_child(_button("ui.close", func(): card.visible = false, Vector2(140, CELL.y)))
 	card.add_child(card_box)
 	card.visible = false
@@ -220,6 +225,9 @@ func city_stock(good: String) -> int:
 			total += int(b["stock_loads"].get(good, 0))
 	return total
 
+func _toggle_stockpile(good: String) -> void:
+	game.sim.set_stockpile(good, not game.sim.get_stockpiled().has(good))
+
 func refresh_report() -> void:
 	for c in report_box.get_children():
 		c.queue_free()
@@ -239,6 +247,25 @@ func refresh_report() -> void:
 		report_box.add_child(_label(tr("ui.monuments"), 20))
 		for m in monuments:
 			report_box.add_child(_label("  %s × %d" % [tr("monument." + m), monuments[m]]))
+	# Stock of the city with a stockpile switch per good (Z:80): kept goods are not used up.
+	var stock := {}
+	for b in game.sim.get_buildings():
+		if b.has("stock_loads") and b["type"] in ["storehouse", "granary"]:
+			for g in b["stock_loads"]:
+				stock[g] = int(stock.get(g, 0)) + int(b["stock_loads"][g])
+	var kept: PackedStringArray = game.sim.get_stockpiled()
+	if not stock.is_empty():
+		report_box.add_child(_label(tr("ui.stock_title"), 20))
+		for g in stock:
+			var row := HBoxContainer.new()
+			var l := _label("  %s: %d" % [tr("good." + g), stock[g]])
+			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(l)
+			var keep := _button("ui.stockpile", func(): _toggle_stockpile(g), Vector2(160, CELL.y))
+			keep.toggle_mode = true
+			keep.set_pressed_no_signal(kept.has(g))
+			row.add_child(keep)
+			report_box.add_child(row)
 	report_box.add_child(_label(tr("ui.requests"), 20))
 	var requests: Array = sc.get("requests", [])
 	if requests.is_empty():
@@ -481,6 +508,10 @@ func _confirm() -> void:
 	game.clear_ghost()
 	confirm_btn.disabled = true  # stay in the mode: the next drag or tap builds more
 
+func _toggle_buying() -> void:
+	if card_stall != 0:
+		game.sim.set_not_buying(card_stall, buying_btn.button_pressed)
+
 func _pray() -> void:
 	if card_sanctuary != 0:
 		game.sim.pray(card_sanctuary)
@@ -507,6 +538,10 @@ func _open_card(tile: Vector2i) -> void:
 		lines.append(tr("ui.fire_risk") % b.get("fire_risk", 0))
 		lines.append(tr("ui.collapse_risk") % b.get("damage_risk", 0))
 		# A finished sanctuary: how likely the god listens now (Z:132, L-053), and the prayer.
+		buying_btn.visible = b.has("not_buying")
+		card_stall = id if buying_btn.visible else 0
+		if buying_btn.visible:
+			buying_btn.set_pressed_no_signal(b["not_buying"])
 		pray_btn.visible = b.get("sanctuary_complete", false)
 		card_sanctuary = id if pray_btn.visible else 0
 		if pray_btn.visible:
