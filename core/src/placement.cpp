@@ -20,7 +20,7 @@ std::string rect_check(const CityState& city, const Building& b, std::vector<Til
             tiles.push_back(p);
         }
     }
-    return {};
+    return level_check(city, tiles);
 }
 
 bool is_water(const TileMap& map, TilePos p) { return map.in_bounds(p) && map.at(p).terrain == Terrain::Water; }
@@ -100,6 +100,9 @@ BuildResult place_agora(CityState& city, Building b, bool road_in_center, std::i
                 tiles.push_back(p);
             }
         }
+        if (reason.empty()) {
+            reason = level_check(city, tiles);
+        }
         if (!reason.empty()) {
             r.reason = reason == "build.needs_road_under" ? r.reason : reason;
             continue;
@@ -173,6 +176,10 @@ BuildResult place_over_road(CityState& city, Building b, bool both_sides) {
         const TilePos p = step(road, d);
         r.reason = land_check(city, p);
         if (!r.ok()) {
+            return r;
+        }
+        if (!city.map.can_step(road, d)) {
+            r.reason = "build.uneven_ground";
             return r;
         }
         b.tiles.push_back(p);

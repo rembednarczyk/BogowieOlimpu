@@ -100,7 +100,7 @@ bool roam_decide(const CityState& city, Walker& w) {
     RoadMask mask{};
     int roads = 0;
     for (const Dir d : kDirs) {
-        mask[static_cast<std::size_t>(d)] = city.map.is_roam_road(step(w.tile, d));
+        mask[static_cast<std::size_t>(d)] = city.map.is_roam_road(step(w.tile, d)) && city.map.can_step(w.tile, d);
         roads += roam_ok(mask, d) ? 1 : 0;
     }
     apply_wide_road(city, w, mask, roads);

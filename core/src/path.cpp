@@ -75,7 +75,7 @@ std::optional<std::vector<TilePos>> find_path(const CityState& city, const PathR
         ++expanded;
         for (const Dir d : kDirs) {
             const TilePos np = step(cp, d);
-            if (!passable(city, np, req)) {
+            if (!passable(city, np, req) || !map.can_step(cp, d)) {
                 continue;
             }
             const auto ni = static_cast<std::uint32_t>(map.index(np));
@@ -139,7 +139,7 @@ std::vector<std::uint32_t> road_distances(const CityState& city, const std::vect
         queue.pop_front();
         for (const Dir d : kDirs) {
             const TilePos n = step(map.pos(cur), d);
-            if (passable(city, n, req) && dist[map.index(n)] == kUnreachable) {
+            if (passable(city, n, req) && map.can_step(map.pos(cur), d) && dist[map.index(n)] == kUnreachable) {
                 dist[map.index(n)] = dist[cur] + 1;
                 queue.push_back(map.index(n));
             }

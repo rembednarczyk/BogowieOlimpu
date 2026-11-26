@@ -69,10 +69,15 @@ struct Tile {
     BuildingId building = kNoBuilding;
     std::uint8_t random_byte = 0;  // fixed per tile at map creation (engine family, doc 24)
     std::uint32_t road_network = 0;  // 0 = no road; recomputed by the road system
+    // Terrain height (L-099, S-009): integer level 0-15 above flat land. A ramp tile lies at its own level and
+    // leads up one level in direction ramp - 1 (0 = no ramp). Any other change of level is a cliff.
+    std::uint8_t elevation = 0;
+    std::uint8_t ramp = 0;
 
     friend bool operator==(const Tile& a, const Tile& b) {
         return a.terrain == b.terrain && a.road == b.road && a.roadblock == b.roadblock && a.building == b.building &&
-               a.random_byte == b.random_byte;  // road_network is derived
+               a.random_byte == b.random_byte && a.elevation == b.elevation &&
+               a.ramp == b.ramp;  // road_network is derived
     }
     friend bool operator!=(const Tile& a, const Tile& b) { return !(a == b); }
 };
@@ -102,6 +107,23 @@ public:
     // Road usable by roaming walkers: road and not a roadblock (gatehouse handling arrives with military).
     [[nodiscard]] bool is_roam_road(TilePos p) const { return is_road(p) && !at(p).roadblock; }
 
+    // Whether a walker may step from `a` to its neighbour in direction `d`: same level, or along a ramp
+    // (up its direction or down against it). Cliffs block (S-005, S-009).
+    [[nodiscard]] bool can_step(TilePos a, Dir d) const {
+        const TilePos b = step(a, d);
+        if (!in_bounds(a) || !in_bounds(b)) {
+            return false;
+        }
+        const Tile& ta = at(a);
+        const Tile& tb = at(b);
+        if (ta.elevation == tb.elevation) {
+            return true;
+        }
+        const auto up = static_cast<std::uint8_t>(static_cast<std::uint8_t>(d) + 1);
+        const auto down = static_cast<std::uint8_t>(static_cast<std::uint8_t>(opposite(d)) + 1);
+        return (ta.ramp == up && tb.elevation == ta.elevation + 1) || (tb.ramp == down && ta.elevation == tb.elevation + 1);
+    }
+
     // Fills random_byte for every tile from the map-generation stream.
     void generate_random_bytes(Pcg32& rng);
 
@@ -113,8 +135,11 @@ private:
 
 // Parses a text map used by tests, the golden scenario and debug tools. One character per tile:
 // '.' grassland, ',' meadow, 'T' forest, 'm' marsh, 'b' beach, '#' rock, '~' water, 'c' copper, 's' silver,
-// 'q' marble quarry, 'o' orichalc, 'k' black marble, '=' road on grassland, 'x' roadblock on grassland.
-// All rows must have the same length. Returns nullopt with `error` on bad input.
-std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std::string& error);
+// 'q' marble quarry, 'o' orichalc, 'k' black marble, '=' road on grassland, 'x' roadblock on grassland,
+// '^' '>' 'v' '<' grassland ramp leading up to the north, east, south, west.
+// Optional `elevation` rows: one hex digit (0-f) per tile. All rows must have the same length.
+// Returns nullopt with `error` on bad input.
+std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std::string& error,
+                                      const std::vector<std::string>& elevation = {});
 
 }  // namespace bo::core

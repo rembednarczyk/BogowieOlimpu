@@ -205,7 +205,7 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.migration.popularity =
         static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(state_.difficulty)]);
     if (!config.text_map.empty()) {
-        auto map = parse_text_map(config.text_map, setup_error_);
+        auto map = parse_text_map(config.text_map, setup_error_, config.elevation_map);
         if (map) {
             state_.city.map = std::move(*map);
             state_.city.map.generate_random_bytes(state_.rng.stream(RngStream::MapGeneration));

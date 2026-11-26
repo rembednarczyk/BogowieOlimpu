@@ -61,7 +61,7 @@ Stan: moduły A1-A6 zaimplementowane w `core/`, 21 przypadków testowych, złoty
 | A5 Zapis | zrzut stanu + wersja danych + migracje | Memento, wersjonowanie | zapis/odczyt daje identyczny hash |
 | A6 Złoty hash | stały scenariusz, hash ustawiany ręcznie; rozszerzany o mapę 32×32 wraz z modułami B, C | testy charakteryzujące | hash zmieniany tylko ręcznie |
 
-### B. Mapa i ruch: ZROBIONE 2026-11-26 (bez wysokości terenu, L-099)
+### B. Mapa i ruch: ZROBIONE 2026-11-26 (wysokość terenu bez półspadków, L-099)
 
 Zrobione:
 - B1: siatka, 12 typów terenu zgodnych z `terrain.json`, bajt losowy kafla, parser mapy tekstowej.
@@ -71,6 +71,8 @@ Zrobione:
 - B5: spacerujący wędrowny według rodziny silnika z liczbami Zeusa, reguła szerokiej drogi (S-006), powrót fontanny i lecznicy do kafla na północ (S-004, L-098).
 - B6 i B7 w wersji silnikowej: spacerujący celowy po drogach przez blokady; zapytanie o budynki w kwadracie.
 - Systemy dzienne: wysyłanie spacerujących (S-007) i zanik zasięgu. Format zapisu v3 z migracjami z v1 i v2. Złoty hash miasta 32×32 z agorą, bulwarem i cofnięciem.
+
+- Wysokość terenu (L-099, S-009, S-005): poziomy 0-15 na kaflu, rampy o jeden poziom, klify blokują kroki, sieci dróg, ścieżki, spacerujących i dostęp do drogi; budynki tylko na jednym poziomie i nie na rampie [ZAŁOŻENIE]; droga może biec po rampie (schody). Brak półspadków.
 
 Przeniesione do modułów, które dają im sens: konkretni spacerujący celowi (doręczyciele, wozy, pasterze, myśliwi, rybacy) i molo (obrys złożony) do C; nabrzeże jeżowców (wymaga jeżowców na mapie) do C; mury, wieże, bramy do D; kładka hipodromu do C; wariant przeprawy mała/duża (statki) do D. Otwarte: wysokość terenu (L-099, brak specyfikacji).
 
@@ -94,7 +96,9 @@ Zrobione:
 - C8: zadowolenie domów dwa razy w miesiącu (podatki S-004, płace, bezrobocie, dług, żywność), miasto poniżej 300 mieszkańców na wartości bazowej, popularność jako średnia, migracja dzienna według tabeli (partie od 4 osób), zasiedlanie najpierw domów z ≥ 8 wolnymi miejscami, emigracja z najniższych poziomów powyżej 100 mieszkańców, bezdomni po regresie i po > 4 dniach bez drogi. Parametry w `data/migration.json`. Imigranci bez spacerujących i bez punktu wejścia (O-006).
 - Przełącznik deweloperski `full_staffing` (pełna obsada bez mieszkańców) zostaje dla testów spacerujących; złote miasto i scena demo działają już na prawdziwej migracji i pracy. Nie jest regułą gry.
 
-Zostaje: C4 produkcja, C5 magazyny i dystrybucja (dostawy dóbr do domów, zapasy miasta dla działek elity), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- C4/C5 etap 1: spichlerz i magazyn (8 pól po 4 ładunki, rozkazy Accept i Don't Accept z limitem, spichlerz przyjmuje tylko przy pełnej obsadzie), farmy z żniwami (8 ładunków/rok przy pełnej obsadzie przez rok), doręczyciel z 1 ładunkiem do najbliższego odbiorcy według `delivery_priority`, vendor stoiska (do 4 ładunków, zasięg 37 kafli), peddler sprzedający domom (L-100), działka elity sprawdza zapasy miasta. Test łańcucha: farmy, spichlerz, agora, fontanna i gimnazjum dają lepianki w 2 lata.
+
+Zostaje: C4/C5 etap 2 (hodowla, sady, tłocznia, winiarnia, wydobycie, warsztaty, rozkazy Get i Empty, dostawy do przetwórni), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

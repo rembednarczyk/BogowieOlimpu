@@ -35,6 +35,10 @@ BuildResult place_ordinary(CityState& city, Building b, bool needs_meadow, bool 
             b.tiles.push_back(p);
         }
     }
+    r.reason = level_check(city, b.tiles);
+    if (!r.ok()) {
+        return r;
+    }
     if (needs_meadow && !has_meadow) {
         r.reason = "build.needs_meadow";  // farms: at least one meadow tile (S-004 size legend "m")
         return r;
@@ -64,6 +68,16 @@ bool operator==(const Building& a, const Building& b) {
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
            a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house &&
            a.storage == b.storage && a.producer == b.producer && a.stall == b.stall;
+}
+
+std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
+    for (const TilePos p : tiles) {
+        const Tile& t = city.map.at(p);
+        if (t.ramp != 0 || t.elevation != city.map.at(tiles.front()).elevation) {
+            return "build.uneven_ground";  // one level, no ramps [ZAŁOŻENIE, L-099]
+        }
+    }
+    return {};
 }
 
 std::string land_check(const CityState& city, TilePos p) {
@@ -287,20 +301,23 @@ BuildResult demolish(CityState& city, TilePos p) {
 
 std::optional<TilePos> find_road_access(const CityState& city, TilePos o, std::int32_t w, std::int32_t h) {
     const TileMap& map = city.map;
-    std::vector<TilePos> ring;
+    std::vector<std::pair<TilePos, Dir>> ring;  // perimeter tile and the direction from the footprint to it
     for (std::int32_t x = o.x; x < o.x + w; ++x) {
-        ring.push_back({x, o.y - 1});  // north edge, west to east
+        ring.push_back({{x, o.y - 1}, Dir::North});  // north edge, west to east
     }
     for (std::int32_t y = o.y; y < o.y + h; ++y) {
-        ring.push_back({o.x + w, y});  // east edge, north to south
+        ring.push_back({{o.x + w, y}, Dir::East});  // east edge, north to south
     }
     for (std::int32_t x = o.x + w - 1; x >= o.x; --x) {
-        ring.push_back({x, o.y + h});  // south edge, east to west
+        ring.push_back({{x, o.y + h}, Dir::South});  // south edge, east to west
     }
     for (std::int32_t y = o.y + h - 1; y >= o.y; --y) {
-        ring.push_back({o.x - 1, y});  // west edge, south to north
+        ring.push_back({{o.x - 1, y}, Dir::West});  // west edge, south to north
     }
-    for (const TilePos p : ring) {
+    for (const auto& [p, d] : ring) {
+        if (!map.can_step(step(p, opposite(d)), d)) {
+            continue;  // a cliff between the building and this tile (L-099)
+        }
         if (map.is_road(p)) {
             return p;
         }
@@ -332,7 +349,7 @@ void update_roads(CityState& city) {
             queue.pop_front();
             for (const Dir d : kDirs) {
                 const TilePos n = step(p, d);
-                if (map.is_road(n) && map.at(n).road_network == 0) {
+                if (map.is_road(n) && map.at(n).road_network == 0 && map.can_step(p, d)) {
                     map.at(n).road_network = next_network;
                     queue.push_back(map.index(n));
                 }

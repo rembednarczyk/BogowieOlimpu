@@ -48,6 +48,7 @@ if(BO_BUILD_TESTS)
         tests/test_labour.cpp
         tests/test_migration.cpp
         tests/test_goods.cpp
+        tests/test_terrain.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

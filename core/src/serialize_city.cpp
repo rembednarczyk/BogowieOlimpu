@@ -37,9 +37,10 @@ void write_tile(ByteWriter& w, const Tile& t) {
     w.u8(static_cast<std::uint8_t>((t.road ? 1U : 0U) | (t.roadblock ? 2U : 0U)));
     w.u32(t.building);
     w.u8(t.random_byte);
+    w.u8(static_cast<std::uint8_t>(t.elevation | (t.ramp << 4U)));  // since v8
 }
 
-bool read_tile(ByteReader& r, Tile& t) {
+bool read_tile(ByteReader& r, Tile& t, std::uint32_t version) {
     std::uint8_t terrain = 0;
     std::uint8_t flags = 0;
     if (!r.u8(terrain) || terrain >= static_cast<std::uint8_t>(Terrain::Count) || !r.u8(flags) || !r.u32(t.building) ||
@@ -49,6 +50,14 @@ bool read_tile(ByteReader& r, Tile& t) {
     t.terrain = static_cast<Terrain>(terrain);
     t.road = (flags & 1U) != 0;
     t.roadblock = (flags & 2U) != 0;
+    std::uint8_t height = 0;
+    if (version >= 8) {
+        if (!r.u8(height) || (height >> 4U) > 4) {
+            return false;
+        }
+        t.elevation = height & 0x0FU;
+        t.ramp = static_cast<std::uint8_t>(height >> 4U);
+    }
     return true;
 }
 
@@ -299,7 +308,7 @@ bool read_undo(ByteReader& r, UndoRecord& u, std::uint32_t version) {
     u.active = active != 0;
     u.tiles_before.resize(n);
     for (auto& [pos, tile] : u.tiles_before) {
-        if (!read_pos(r, pos) || !read_tile(r, tile)) {
+        if (!read_pos(r, pos) || !read_tile(r, tile, version)) {
             return false;
         }
     }
@@ -349,7 +358,7 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
     }
     c.map = TileMap(width, height);
     for (Tile& t : c.map.tiles()) {
-        if (!read_tile(r, t)) {
+        if (!read_tile(r, t, version)) {
             return false;
         }
     }

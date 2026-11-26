@@ -181,6 +181,8 @@ std::optional<TilePos> find_road_access(const CityState& city, TilePos origin, s
 
 // Empty when `p` is free buildable land, otherwise the reason key.
 std::string land_check(const CityState& city, TilePos p);
+// Empty when all tiles lie on one level without ramps [ZAŁOŻENIE, L-099], otherwise the reason key.
+std::string level_check(const CityState& city, const std::vector<TilePos>& tiles);
 
 // Special placements (placement.cpp). Each validates, then calls add_building.
 BuildResult place_on_coast(CityState& city, Building b);

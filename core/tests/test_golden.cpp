@@ -41,7 +41,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v5 adds labour and finance blocks (modules C3, C6).
     // 2026-11-26: save format v6 adds the migration state; popularity starts at the base (module C8).
     // 2026-11-26: save format v7 (version field; empty city has no new blocks), modules C4-C5 stage 1.
-    const std::uint64_t kGolden = 0x93eb69a058aa8b23ULL;
+    // 2026-11-26: save format v8 (version field; terrain height per tile, L-099).
+    const std::uint64_t kGolden = 0x30739a17bb562238ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -68,7 +69,13 @@ Simulation golden_city() {
         rows[22][i] = ',';
         rows[26][i] = ',';
     }
-    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows});
+    // A one-level plateau on the two east columns, reached by a ramp at (30, 16) (L-099).
+    rows[16][30] = '>';
+    const std::vector<std::string> heights(32, std::string(31, '0') + "1");
+    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows, false, heights});
+    sim.issue(PlaceRoad{30, 16});
+    sim.issue(PlaceRoad{31, 16});
+    sim.issue(PlaceRoad{31, 15});
     sim.issue(PlaceBuilding{"carrot_farm", 20, 25, 0});
     sim.issue(PlaceBuilding{"granary", 5, 24, 0});
     sim.issue(SetSectorPriority{2, 5});  // distribution first: the Granary needs full staffing (Z:66)
@@ -104,6 +111,7 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     REQUIRE(sim.setup_error().empty());
     CHECK(sim.state().city.buildings.items.size() == 26);  // the plot on the x = 16 road is refused
     CHECK(sim.state().labour.workforce > 0);
+    CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
     const auto& granary = sim.state().city.buildings.items.at(sim.state().city.map.at({5, 24}).building);
     std::uint32_t food = 0;
     for (const auto& [good, loads] : granary.storage->loads) {
@@ -133,7 +141,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: module C8: save format v6, immigration fills six house plots, real labour replaces full staffing.
     // 2026-11-26: modules C4-C5 stage 1: save format v7 (storage, producers, stalls, cargo), scenario extended
     // with a farm, a granary and eleven more house plots; the agora stall now fetches food.
-    const std::uint64_t kGolden = 0xd3642488ca4e1ad4ULL;
+    // 2026-11-26: terrain height (L-099): save format v8, a plateau with a ramp and a road over it.
+    const std::uint64_t kGolden = 0xbcd5c8d244a62950ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
