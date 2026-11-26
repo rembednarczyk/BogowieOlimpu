@@ -2,6 +2,7 @@
 // Rules: docs/gameplay/01-podstawy.md, 20-atrakcyjnosc-i-budynki.md, 17-czas-i-ruch.md (exit point).
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -21,6 +22,23 @@ inline constexpr WalkerId kNoWalker = 0;
 inline constexpr std::uint64_t kUndoWindowTicks = 51;
 // Longest water span of a crossing [ZAŁOŻENIE, L-097: Z:101 says only "not too far"].
 inline constexpr std::int32_t kMaxCrossingSpan = 8;
+
+// A house plot and its people (module C2, docs/gameplay/03, 18). Population 0 = vacant plot.
+struct HouseState {
+    bool elite = false;
+    std::uint8_t level = 0;  // index into DataCatalog::common_levels or elite_levels
+    std::uint32_t population = 0;
+    std::array<std::uint32_t, kHouseGoods> goods{};  // stock in units (100 = one load)
+    std::uint32_t food_remainder = 0;  // carried part of the population-scaled food consumption
+    std::uint8_t failed_checks = 0;    // devolution after 3 failed daily checks [RODZINA]
+    bool abandoned = false;            // elite house left by its owners (Z:34)
+
+    friend bool operator==(const HouseState& a, const HouseState& b) {
+        return a.elite == b.elite && a.level == b.level && a.population == b.population && a.goods == b.goods &&
+               a.food_remainder == b.food_remainder && a.failed_checks == b.failed_checks &&
+               a.abandoned == b.abandoned;
+    }
+};
 
 // How a building relates to roads under it.
 enum class RoadMode : std::uint8_t {
@@ -42,6 +60,7 @@ struct Building {
     BuildingId parent = kNoBuilding;   // agora stall: its agora
     std::vector<TilePos> slot_origins;  // agora: north-west corners of the 2x2 stall slots
     std::vector<BuildingId> slots;      // agora: stall per slot (kNoBuilding = free)
+    std::optional<HouseState> house;    // houses only
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set by the labour module (C3); 100 until it exists
     std::uint32_t days_since_spawn = 0;
@@ -75,6 +94,8 @@ struct CityState {
     TileMap map;
     BuildingStore buildings;
     UndoRecord undo;
+    std::uint32_t homeless = 0;          // people pushed out of houses, waiting for module C8
+    std::vector<std::int32_t> appeal;    // derived (C1): recomputed daily, not saved
 };
 
 // Reason keys are i18n keys (docs/PRAKTYKI.md ch. 12). Empty string = success.

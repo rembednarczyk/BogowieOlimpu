@@ -37,7 +37,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: initial value (modules A1-A5).
     // 2026-11-26: save format v2 appends the (empty) city and walker blocks (module B, serialize.cpp).
     // 2026-11-26: save format v3 appends the (empty) undo record (Z:20, serialize_city.cpp).
-    const std::uint64_t kGolden = 0xb2cd2b9b56d185f3ULL;
+    // 2026-11-26: save format v4 appends the homeless count (module C2, serialize_city.cpp).
+    const std::uint64_t kGolden = 0x78d7def5911d51d8ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -77,6 +78,8 @@ Simulation golden_city() {
     sim.issue_at(kTicksPerMonth * 4, PlaceBuilding{"boulevard", 8, 4, 1});
     sim.issue_at(kTicksPerMonth * 6, PlaceRoad{12, 10});
     sim.issue_at(kTicksPerMonth * 6 + 5, Undo{});
+    sim.issue_at(kTicksPerMonth * 7, PlaceBuilding{"common_housing", 5, 2, 0});
+    sim.issue_at(kTicksPerMonth * 7, PlaceBuilding{"flower_garden", 8, 1, 0});
     sim.step(kTicksPerYear * 2 + 17);
     return sim;
 }
@@ -86,7 +89,7 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 7);
+    CHECK(sim.state().city.buildings.items.size() == 9);
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
     CHECK(sim.state().city.map.at({4, 10}).roadblock);
     CHECK_FALSE(sim.state().city.map.at({16, 10}).road);
@@ -96,7 +99,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: initial value (module B: map, construction, roads, A*, roaming and destination walkers).
     // 2026-11-26: module B completed: save format v3, scenario extended with an agora, a stall, a boulevard and
     // an undo; wide-road rule (S-006) and Fountain return tile (S-004) change walker routes.
-    const std::uint64_t kGolden = 0xf7638d5d17a2eef6ULL;
+    // 2026-11-26: modules C1-C2: save format v4 (house state), scenario extended with a house plot and a garden.
+    const std::uint64_t kGolden = 0x78835f62665f7823ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

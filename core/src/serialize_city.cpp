@@ -79,6 +79,46 @@ void write_building(ByteWriter& w, const Building& b) {
     for (const BuildingId id : b.slots) {
         w.u32(id);
     }
+    // since v4
+    w.u8(b.house ? 1 : 0);
+    if (b.house) {
+        const HouseState& h = *b.house;
+        w.u8(static_cast<std::uint8_t>((h.elite ? 1U : 0U) | (h.abandoned ? 2U : 0U)));
+        w.u8(h.level);
+        w.u32(h.population);
+        for (const std::uint32_t g : h.goods) {
+            w.u32(g);
+        }
+        w.u32(h.food_remainder);
+        w.u8(h.failed_checks);
+    }
+}
+
+bool read_house(ByteReader& r, Building& b) {
+    std::uint8_t has = 0;
+    if (!r.u8(has)) {
+        return false;
+    }
+    if (has == 0) {
+        return true;
+    }
+    HouseState h;
+    std::uint8_t flags = 0;
+    if (!r.u8(flags) || !r.u8(h.level) || !r.u32(h.population)) {
+        return false;
+    }
+    for (auto& g : h.goods) {
+        if (!r.u32(g)) {
+            return false;
+        }
+    }
+    if (!r.u32(h.food_remainder) || !r.u8(h.failed_checks)) {
+        return false;
+    }
+    h.elite = (flags & 1U) != 0;
+    h.abandoned = (flags & 2U) != 0;
+    b.house = h;
+    return true;
 }
 
 bool read_building_v3(ByteReader& r, Building& b) {
@@ -122,7 +162,7 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
         b.coverage[service] = days;
     }
     if (version >= 3) {
-        return read_building_v3(r, b);
+        return read_building_v3(r, b) && (version < 4 || read_house(r, b));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -152,7 +192,7 @@ void write_undo(ByteWriter& w, const UndoRecord& u) {
     }
 }
 
-bool read_undo(ByteReader& r, UndoRecord& u) {
+bool read_undo(ByteReader& r, UndoRecord& u, std::uint32_t version) {
     std::uint8_t active = 0;
     std::uint32_t n = 0;
     if (!r.u8(active) || !r.u64(u.tick) || !r.i64(u.cost) || !r.u32(n) || n > (1U << 24)) {
@@ -170,7 +210,7 @@ bool read_undo(ByteReader& r, UndoRecord& u) {
     }
     u.buildings_before.resize(n);
     for (Building& b : u.buildings_before) {
-        if (!read_building(r, b, 3)) {
+        if (!read_building(r, b, version)) {
             return false;
         }
     }
@@ -200,6 +240,7 @@ void write_city(ByteWriter& w, const CityState& c) {
         write_building(w, b);
     }
     write_undo(w, c.undo);  // since v3
+    w.u32(c.homeless);      // since v4
 }
 
 bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
@@ -225,7 +266,10 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
         }
         c.buildings.items.emplace(b.id, std::move(b));
     }
-    if (version >= 3 && !read_undo(r, c.undo)) {
+    if (version >= 3 && !read_undo(r, c.undo, version)) {
+        return false;
+    }
+    if (version >= 4 && !r.u32(c.homeless)) {
         return false;
     }
     update_roads(c);  // derived data: networks and road access

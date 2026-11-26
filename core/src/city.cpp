@@ -19,7 +19,7 @@ std::int64_t cost_of(const DataCatalog& catalog, const std::string& id, Difficul
 bool road_terrain(Terrain t) { return t == Terrain::Grassland || t == Terrain::Meadow || t == Terrain::Beach; }
 
 // Ordinary rectangle on free buildable land (Z:19, Z:24-25).
-BuildResult place_ordinary(CityState& city, Building b, bool needs_meadow) {
+BuildResult place_ordinary(CityState& city, Building b, bool needs_meadow, bool needs_road) {
     BuildResult r;
     bool has_meadow = false;
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -37,9 +37,17 @@ BuildResult place_ordinary(CityState& city, Building b, bool needs_meadow) {
         r.reason = "build.needs_meadow";  // farms: at least one meadow tile (S-004 size legend "m")
         return r;
     }
+    if (needs_road && !find_road_access(city, b.origin, b.width, b.height)) {
+        r.reason = "build.needs_road";  // house plots touch a road (Z:29, Z:32)
+        return r;
+    }
     r.building = add_building(city, std::move(b));
     return r;
 }
+
+// Elite plots need goods in city storage (doc 18: 2 loads of food, 1 fleece, 1 olive oil). Storage arrives
+// with module C5; until then the city holds no stock, so elite plots are refused.
+bool elite_site_ok(const CityState&) { return false; }
 
 }  // namespace
 
@@ -49,7 +57,7 @@ bool operator==(const Building& a, const Building& b) {
            a.parent == b.parent && a.slot_origins == b.slot_origins && a.slots == b.slots &&
            a.road_access == b.road_access && a.staffing_percent == b.staffing_percent &&
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
-           a.roaming_walker == b.roaming_walker && a.coverage == b.coverage;
+           a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house;
 }
 
 std::string land_check(const CityState& city, TilePos p) {
@@ -70,7 +78,8 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
                            TilePos origin, std::uint8_t rotation) {
     BuildResult r;
     const auto type_it = catalog.buildings.find(type);
-    const auto stats_it = catalog.building_stats.find(type);
+    const auto stats_it =
+        type_it == catalog.buildings.end() ? catalog.building_stats.end() : catalog.building_stats.find(type_it->second.stats_id);
     if (type_it == catalog.buildings.end() || stats_it == catalog.building_stats.end()) {
         r.reason = "build.unknown_type";
         return r;
@@ -113,11 +122,21 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         } else if (rotation != 0 && !bt.rotatable) {
             r.reason = "build.not_rotatable";
         } else {
-            r = place_ordinary(city, std::move(b), stats.size_text.find('m') != std::string::npos);
+            const bool elite = type == "elite_housing";
+            if (elite && !elite_site_ok(city)) {
+                r.reason = "build.elite_needs_goods";  // 2 food, 1 fleece, 1 oil in storage (doc 18; storage: C5)
+            } else {
+                if (type == "common_housing" || elite) {
+                    b.house = HouseState{};
+                    b.house->elite = elite;
+                }
+                r = place_ordinary(city, std::move(b), stats.size_text.find('m') != std::string::npos,
+                                   bt.plot_needs_road);
+            }
         }
     }
     if (r.ok()) {
-        r.cost = cost_of(catalog, type, difficulty);
+        r.cost = cost_of(catalog, bt.stats_id, difficulty);
     }
     return r;
 }

@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "bo/core/appeal.h"
 #include "bo/core/hash.h"
+#include "bo/core/housing.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
 
@@ -89,6 +91,29 @@ void run_coverage_decay(Simulation& sim) {
     }
 }
 
+// C1: the appeal field is derived data, recomputed once a day before the houses read it.
+void run_appeal(Simulation& sim) {
+    CityState& city = sim.mutable_state().city;
+    city.appeal = compute_appeal(city, sim.catalog());
+}
+
+// C2: consumption on days 0 and 8 of the month (doc 24).
+void run_house_consumption(Simulation& sim) {
+    const std::uint32_t day = sim.state().time.day_in_month();
+    if (day == 0 || day == 8) {
+        consume_house_goods(sim.mutable_state().city, sim.catalog());
+    }
+}
+
+// C2: daily evolution check (doc 24).
+void run_house_evolution(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    for (const auto& c : update_houses(st.city, sim.catalog(), st.difficulty)) {
+        const bool elite = st.city.buildings.items.at(c.id).house->elite;
+        sim.emit(HouseChanged{c.id, c.level, elite, c.abandoned});
+    }
+}
+
 bool is_build_command(const Command& c) {
     return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
            std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
@@ -105,6 +130,9 @@ const std::vector<DailySystem>& daily_schedule() {
     // Ticks of the day follow the engine family layout; new systems get their own slot (docs/05-SYMULACJA.md).
     static const std::vector<DailySystem> kSchedule = {
         {"calendar", 0, &run_calendar},
+        {"appeal", 20, &run_appeal},
+        {"house_consumption", 21, &run_house_consumption},
+        {"house_evolution", 22, &run_house_evolution},
         {"walker_spawn", 31, &run_walker_spawn},
         {"coverage_decay", 35, &run_coverage_decay},
     };

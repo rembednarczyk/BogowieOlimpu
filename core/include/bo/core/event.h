@@ -71,8 +71,16 @@ struct UndoApplied {
     std::int64_t refund = 0;
 };
 
+struct HouseChanged {  // level change or abandonment (C2)
+    std::uint32_t id = 0;
+    std::uint8_t level = 0;
+    bool elite = false;
+    bool abandoned = false;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
-                           BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied>;
+                           BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
+                           HouseChanged>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

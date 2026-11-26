@@ -69,6 +69,8 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.placement = pl.is_string() ? pl.get<std::string>() : "";
         t.stall_slots = o.value("stall_slots", 0);
         t.no_adjacent_same = o.value("no_adjacent_same", false);
+        t.plot_needs_road = o.value("plot_needs_road", false);
+        t.stats_id = o.value("stats_from", t.id);
         cat.buildings.emplace(t.id, t);
     }
     for (const auto& o : stats) {
@@ -114,7 +116,42 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
         // Decimal speeds (54.4, 72.53...) are converted once at load time in integer thousandths.
         const auto milli = static_cast<std::int64_t>(std::llround(o.value("speed_tiles_per_month", 54.4) * 1000.0));
         w.speed_raw = (milli * 15 * 65536) / (816 * 1000);
+        w.culture_points = o.value("culture_points", 0);
         cat.walkers.emplace(w.id, w);
+    }
+}
+
+void load_housing(const json& housing, DataCatalog& cat) {
+    constexpr const char* kGoodKeys[] = {"Fd", "Fl", "Oil", "Wi", "Ar", "Hrs"};
+    for (const auto& h : housing) {
+        HousingLevel lv;
+        lv.id = h.at("id").get<std::string>();
+        lv.elite = h.value("class", "common") == "elite";
+        lv.level = h.value("level", 1);
+        cat.housing_levels.push_back(lv.id);
+        const auto& use = h.at("consumption_units_per_month_full");
+        constexpr const char* kUseKeys[] = {"food", "fleece", "olive_oil", "wine"};
+        for (std::size_t g = 0; g < 4; ++g) {
+            lv.consumption[g] = use.value(kUseKeys[g], 0);
+        }
+        const auto& models = h.at("model_by_difficulty");
+        for (std::size_t d = 0; d < lv.model.size(); ++d) {
+            const auto& m = models.at(std::string(difficulty_code(static_cast<Difficulty>(d))));
+            HouseModel& hm = lv.model[d];
+            hm.appeal_devolve = m.at("AppD").get<std::int32_t>();
+            hm.appeal_evolve = m.at("AppE").get<std::int32_t>();
+            hm.culture = m.at("Ent").get<std::int32_t>();
+            hm.water = m.at("W").get<std::int32_t>() != 0;
+            for (std::size_t g = 0; g < kHouseGoods; ++g) {
+                hm.needs[g] = m.at(kGoodKeys[g]).get<std::int32_t>() != 0;
+            }
+            hm.population = m.at("Pop").get<std::int32_t>();
+            hm.tax_multiplier = m.at("TRM").get<std::int32_t>();
+            hm.disease_risk = opt_int(m.value("DRI", json())).value_or(0);
+            hm.crime_risk = opt_int(m.value("CRI", json())).value_or(0);
+            hm.soldiers_percent = opt_int(m.value("%S", json())).value_or(0);
+        }
+        (lv.elite ? cat.elite_levels : cat.common_levels).push_back(lv);
     }
 }
 
@@ -247,9 +284,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         validate(docs, result.errors);
         load_buildings(docs.at("buildings.json"), docs.at("building_stats.json"), cat);
         load_walkers(docs.at("walkers.json"), cat);
-        for (const auto& h : docs.at("housing.json")) {
-            cat.housing_levels.push_back(h.at("id").get<std::string>());
-        }
+        load_housing(docs.at("housing.json"), cat);
         const auto& diff = docs.at("difficulty.json");
         const auto level = difficulty_from_code(diff.value("default_level", "H"));
         if (!level) {
