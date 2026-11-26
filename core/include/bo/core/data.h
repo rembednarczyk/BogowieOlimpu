@@ -216,6 +216,13 @@ struct SanctuaryParams {
 };
 
 // World (data/diplomacy.json; doc 24; assumptions L-063, L-064, L-113).
+// Debt (L-034, doc 24): days of continuous debt for the yearly warning, the immigration block and the loss.
+struct DebtParams {
+    std::uint32_t warning_every_days = 192;
+    std::uint32_t immigration_block_days = 192;
+    std::uint32_t loss_days = 576;
+};
+
 struct WorldParams {
     std::map<std::string, std::int32_t> attitude;  // named opinion levels -> 0-100 threshold
     std::int32_t gift_needed_x2 = 6;      // +3 opinion a unit of a needed good (doc 24), in half points
@@ -321,6 +328,7 @@ struct DataCatalog {
     WolfParams wolves;
     CombatParams combat;
     WorldParams world;
+    DebtParams debt;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

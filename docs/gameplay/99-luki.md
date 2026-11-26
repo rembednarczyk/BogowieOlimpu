@@ -41,7 +41,7 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 | L-031 | Płace | P1 | zamknięta: doc 18 |
 | L-032 | Ceny towarów | P1 | częściowa: przykładowe ceny (doc 19); ceny ustala scenariusz |
 | L-033 | Pojemność karawan i statków, częstotliwość | P1 | zamknięta [RODZINA]: 8/12 ładunków, 4/30 dni, doc 24 |
-| L-034 | Lata długu do przegranej | P2 | częściowa: założenie 3 lata, doc 24 |
+| L-034 | Lata długu do przegranej | P2 | częściowa; zaimplementowane [ZAŁOŻENIE]: komunikat co rok ciągłego długu i blokada imigracji po roku (eZeus), przegrana po 3 latach (doc 24); liczby w `data/difficulty.json` (`debt`), testy `core/tests/test_debt.cpp` |
 | L-035 | Okno Undo | P2 | częściowa: okno liczy się w czasie gry, "kilka chwil" (S-010; poradnik: cofnięcie wymaga odpauzowania); rozbiórkę da się cofnąć (S-005, średnia pewność). Dokładny czas nieznany; [ZAŁOŻENIE] 1 dzień (51 ticków), cofa komendy budowy jednego ticku |
 | L-036 | Wydajność Mint | P1 | zamknięta: doc 19 (próg K-009 otwarty) |
 | L-037 | Zwierzęta na budynek | P1 | zamknięta: 8 |

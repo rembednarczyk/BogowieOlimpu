@@ -169,6 +169,10 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["loot"] = static_cast<int64_t>(e.loot);
                    },
                    [&d](const bo::core::EpisodeLost&) { d["type"] = "episode_lost"; },
+                   [&d](const bo::core::DebtNotice& e) {
+                       d["type"] = "debt_notice";
+                       d["years"] = static_cast<int64_t>(e.years);
+                   },
                    [&d](const bo::core::PrayerAnswered& e) {
                        d["type"] = "prayer_answered";
                        d["building"] = static_cast<int64_t>(e.building);
@@ -417,6 +421,7 @@ Dictionary BoSimulation::get_scenario() const {
     d["requests"] = requests;
     d["won"] = s.won;
     d["lost"] = sim_->state().episode_lost;
+    d["debt_days"] = static_cast<int64_t>(sim_->state().debt_days);
     return d;
 }
 

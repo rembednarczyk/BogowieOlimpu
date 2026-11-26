@@ -137,6 +137,16 @@ static void run_labour(Simulation& sim) {
 // C6: taxes and wages at the start of each month; the yearly record rolls over at the year start.
 static void run_finance(Simulation& sim) {
     WorldState& st = sim.mutable_state();
+    // L-034: continuous debt; a notice every year, the episode is lost after `loss_days` (Z:16).
+    st.debt_days = st.finance.treasury < 0 ? st.debt_days + 1 : 0;
+    const DebtParams& debt = sim.catalog().debt;
+    if (st.debt_days > 0 && st.debt_days % debt.warning_every_days == 0) {
+        sim.emit(DebtNotice{st.debt_days / debt.warning_every_days});
+    }
+    if (st.debt_days == debt.loss_days && !st.episode_lost) {
+        st.episode_lost = true;
+        sim.emit(EpisodeLost{});
+    }
     if (st.time.day_in_month() != 0) {
         return;
     }

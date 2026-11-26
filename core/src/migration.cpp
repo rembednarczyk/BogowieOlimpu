@@ -228,7 +228,9 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         r.rehoused = fill_houses(st, catalog, st.city.homeless);
         st.city.homeless -= r.rehoused;
     }
-    st.migration.pool += p.batch_people * migration_percent(p, st.migration.popularity) / 100;
+    const std::int32_t change = p.batch_people * migration_percent(p, st.migration.popularity) / 100;
+    // L-034 (eZeus prolongedDebt): after a year of debt nobody moves in; people may still leave.
+    st.migration.pool += st.debt_days >= catalog.debt.immigration_block_days ? std::min(change, 0) : change;
     const auto entry = land_entry(st.city);
     if (st.migration.pool >= p.min_batch) {
         r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool), entry, &r.spawned, true);

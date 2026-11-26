@@ -274,7 +274,7 @@ func _handle_events(events: Array) -> void:
 				demo_note = "potwór: %s" % e["monster"]
 			"monster_slain":
 				demo_note = "potwór pokonany: %s" % e["monster"]
-			"request_closed", "city_request", "episode_won", "episode_lost":
+			"request_closed", "city_request", "episode_won", "episode_lost", "debt_notice":
 				if ui != null and ui.report.visible:
 					ui.refresh_report()
 			"god_attacked":

@@ -126,7 +126,8 @@ struct WorldState {
     MilitaryState military;  // since v17 (module D3)
     std::vector<Expedition> expeditions;  // since v21 (module D4)
     std::vector<PendingDelivery> deliveries;  // since v27
-    bool episode_lost = false;            // since v21: taken twice by the same rival (Z:172)
+    bool episode_lost = false;            // since v21: taken twice by the same rival (Z:172), or debt (L-034)
+    std::uint32_t debt_days = 0;          // since v29: days of continuous debt (L-034)
     ScenarioState scenario;               // since v22 (module D5)
     std::vector<MonsterState> monsters;   // since v24
     std::vector<HeroState> heroes;        // since v24

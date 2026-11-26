@@ -225,6 +225,8 @@ func refresh_report() -> void:
 		report_box.add_child(_label(tr("ui.episode_won"), 22))
 	if sc.get("lost", false):
 		report_box.add_child(_label(tr("ui.episode_lost"), 22))
+	if sc.get("debt_days", 0) > 0:  # L-034: no immigrants after a year, the episode lost after three
+		report_box.add_child(_label(tr("ui.debt_line") % sc["debt_days"], 20))
 	report_box.add_child(_label(tr("ui.goals"), 20))
 	for g in sc.get("goals", []):
 		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))

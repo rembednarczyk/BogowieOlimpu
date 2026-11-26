@@ -369,6 +369,10 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
             cat.tax_rate_per_mille[i] =
                 static_cast<std::int32_t>(std::llround(diff.at("tax_rates").at(kTaxKeys[i]).get<double>() * 1000.0));
         }
+        const json debt = diff.value("debt", json::object());
+        cat.debt.warning_every_days = debt.value("warning_every_days", cat.debt.warning_every_days);
+        cat.debt.immigration_block_days = debt.value("immigration_block_days", cat.debt.immigration_block_days);
+        cat.debt.loss_days = debt.value("loss_days", cat.debt.loss_days);
         constexpr const char* kWageKeys[] = {"none", "very_low", "low", "normal", "high", "very_high"};
         for (std::size_t i = 0; i < cat.wage_per_mille.size(); ++i) {
             cat.wage_per_mille[i] = static_cast<std::int32_t>(

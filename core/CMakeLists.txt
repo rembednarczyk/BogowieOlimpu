@@ -72,6 +72,7 @@ if(BO_BUILD_TESTS)
         tests/test_undo.cpp
         tests/test_appeal.cpp
         tests/test_culture.cpp
+        tests/test_debt.cpp
         tests/test_demo.cpp
         tests/test_housing.cpp
         tests/test_labour.cpp

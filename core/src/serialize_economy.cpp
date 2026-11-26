@@ -252,6 +252,7 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.u32(d.amount);
         w.u32(d.days_left);
     }
+    w.u32(s.debt_days);  // since v29
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -313,7 +314,7 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
             return false;
         }
     }
-    return true;
+    return version < 29 || r.u32(s.debt_days);
 }
 
 }  // namespace bo::core

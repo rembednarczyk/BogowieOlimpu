@@ -134,7 +134,11 @@ struct ExpeditionReturned {  // D4: an army back from abroad
     std::uint32_t loot = 0;
 };
 
-struct EpisodeLost {};  // D4: taken twice by the same rival (Z:172)
+struct EpisodeLost {};  // D4: taken twice by the same rival (Z:172), or years of debt (L-034)
+
+struct DebtNotice {  // L-034: another year of continuous debt (eZeus debtAnniversary); immigration stops
+    std::uint32_t years = 0;
+};
 
 struct CityRequestReceived {  // D5: a leader asks for something by a deadline (Z:161)
     std::uint32_t request = 0;    // index into ScenarioState::requests at the time
@@ -180,7 +184,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
-                           TributePaid, ExpeditionReturned, EpisodeLost,
+                           TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice,
                            CityRequestReceived, RequestClosed, EpisodeWon,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
 

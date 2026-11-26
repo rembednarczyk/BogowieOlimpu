@@ -95,8 +95,18 @@ constexpr std::size_t kQuests = 8;  // v26: no quests, no monuments earned (end 
 
 constexpr std::size_t kDeliveries = 4;  // v27: no goods on their way (end of the world block)
 
+constexpr std::size_t kDebt = 4;  // v29: days of debt (the end of the world block)
+
+// The save without the v29 debt days: the layout of v27 and v28 (v28 adds only per-building fields).
+std::vector<std::uint8_t> as_v28(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kDebt), end);
+    return bytes;
+}
+
 // The save without the v27 deliveries: the layout of v26.
 std::vector<std::uint8_t> as_v26(std::vector<std::uint8_t> bytes) {
+    bytes = as_v28(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kDeliveries), end);
     return bytes;
@@ -159,6 +169,8 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v28(a.save()), 28, h);
+    check_load(as_v28(a.save()), 27, h);
     check_load(as_v26(a.save()), 26, h);
     check_load(as_v25(a.save()), 25, h);
     check_load(as_v23(a.save()), 23, h);
