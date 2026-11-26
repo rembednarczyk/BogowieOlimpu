@@ -61,6 +61,33 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["type"] = "command_rejected";
                        d["reason"] = String(e.reason_key.c_str());
                    },
+                   [&d](const bo::core::BuildingPlaced& e) {
+                       d["type"] = "building_placed";
+                       d["id"] = static_cast<int64_t>(e.id);
+                       d["building_type"] = String(e.type.c_str());
+                       d["x"] = static_cast<int64_t>(e.x);
+                       d["y"] = static_cast<int64_t>(e.y);
+                       d["width"] = static_cast<int64_t>(e.width);
+                       d["height"] = static_cast<int64_t>(e.height);
+                   },
+                   [&d](const bo::core::BuildingRemoved& e) {
+                       d["type"] = "building_removed";
+                       d["id"] = static_cast<int64_t>(e.id);
+                   },
+                   [&d](const bo::core::TileChanged& e) {
+                       d["type"] = "tile_changed";
+                       d["x"] = static_cast<int64_t>(e.x);
+                       d["y"] = static_cast<int64_t>(e.y);
+                   },
+                   [&d](const bo::core::WalkerSpawned& e) {
+                       d["type"] = "walker_spawned";
+                       d["id"] = static_cast<int64_t>(e.id);
+                       d["walker_type"] = String(e.type.c_str());
+                   },
+                   [&d](const bo::core::WalkerRemoved& e) {
+                       d["type"] = "walker_removed";
+                       d["id"] = static_cast<int64_t>(e.id);
+                   },
                },
                te.event);
     return d;
@@ -110,6 +137,119 @@ String BoSimulation::start(const String& data_dir, int64_t seed, const String& d
     }
     sim_.emplace(*catalog_, cfg);
     return String();
+}
+
+String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const String& difficulty_code,
+                                    int64_t initial_treasury, const PackedStringArray& rows) {
+    const String err = start(data_dir, seed, difficulty_code, initial_treasury);
+    if (!err.is_empty()) {
+        return err;
+    }
+    bo::core::SimulationConfig cfg;
+    cfg.seed = static_cast<std::uint64_t>(seed);
+    cfg.initial_treasury = initial_treasury;
+    cfg.difficulty = sim_->state().difficulty;
+    for (int64_t i = 0; i < rows.size(); ++i) {
+        cfg.text_map.push_back(to_std(rows[i]));
+    }
+    sim_.emplace(*catalog_, cfg);
+    if (!sim_->setup_error().empty()) {
+        const String e(sim_->setup_error().c_str());
+        sim_.reset();
+        return e;
+    }
+    return String();
+}
+
+namespace {
+bo::core::TilePos pos(int64_t x, int64_t y) { return {static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)}; }
+}  // namespace
+
+void BoSimulation::place_building(const String& type, int64_t x, int64_t y) {
+    if (sim_) {
+        const auto p = pos(x, y);
+        sim_->issue(bo::core::PlaceBuilding{to_std(type), p.x, p.y});
+    }
+}
+
+void BoSimulation::place_road(int64_t x, int64_t y) {
+    if (sim_) {
+        sim_->issue(bo::core::PlaceRoad{pos(x, y).x, pos(x, y).y});
+    }
+}
+
+void BoSimulation::place_roadblock(int64_t x, int64_t y) {
+    if (sim_) {
+        sim_->issue(bo::core::PlaceRoadblock{pos(x, y).x, pos(x, y).y});
+    }
+}
+
+void BoSimulation::clear_land(int64_t x, int64_t y) {
+    if (sim_) {
+        sim_->issue(bo::core::ClearLand{pos(x, y).x, pos(x, y).y});
+    }
+}
+
+void BoSimulation::demolish(int64_t x, int64_t y) {
+    if (sim_) {
+        sim_->issue(bo::core::Demolish{pos(x, y).x, pos(x, y).y});
+    }
+}
+
+int64_t BoSimulation::get_map_width() const { return sim_ ? sim_->state().city.map.width() : 0; }
+int64_t BoSimulation::get_map_height() const { return sim_ ? sim_->state().city.map.height() : 0; }
+
+Dictionary BoSimulation::get_tile(int64_t x, int64_t y) const {
+    Dictionary d;
+    const auto p = pos(x, y);
+    if (!sim_ || !sim_->state().city.map.in_bounds(p)) {
+        return d;
+    }
+    const auto& t = sim_->state().city.map.at(p);
+    d["terrain"] = String(std::string(bo::core::terrain_id(t.terrain)).c_str());
+    d["road"] = t.road;
+    d["roadblock"] = t.roadblock;
+    d["building"] = static_cast<int64_t>(t.building);
+    return d;
+}
+
+Array BoSimulation::get_buildings() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    for (const auto& [id, b] : sim_->state().city.buildings.items) {
+        Dictionary d;
+        d["id"] = static_cast<int64_t>(id);
+        d["type"] = String(b.type.c_str());
+        d["x"] = static_cast<int64_t>(b.origin.x);
+        d["y"] = static_cast<int64_t>(b.origin.y);
+        d["width"] = static_cast<int64_t>(b.width);
+        d["height"] = static_cast<int64_t>(b.height);
+        d["has_road_access"] = b.road_access.has_value();
+        out.push_back(d);
+    }
+    return out;
+}
+
+Array BoSimulation::get_walkers() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    constexpr double kStepsPerTileRaw = 15.0 * 65536.0;  // presentation only: floats never enter the core
+    for (const auto& [id, w] : sim_->state().walkers.items) {
+        Dictionary d;
+        d["id"] = static_cast<int64_t>(id);
+        d["type"] = String(w.type.c_str());
+        d["x"] = static_cast<int64_t>(w.tile.x);
+        d["y"] = static_cast<int64_t>(w.tile.y);
+        d["dir"] = static_cast<int64_t>(w.dir);
+        d["phase"] = static_cast<int64_t>(w.phase);
+        d["progress"] = static_cast<double>(w.step_accum_raw) / kStepsPerTileRaw;
+        out.push_back(d);
+    }
+    return out;
 }
 
 void BoSimulation::step(int64_t ticks) {
@@ -207,6 +347,18 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_data_version"), &BoSimulation::get_data_version);
     ClassDB::bind_method(D_METHOD("set_tax_rate", "rate"), &BoSimulation::set_tax_rate);
     ClassDB::bind_method(D_METHOD("set_wage_rate", "rate"), &BoSimulation::set_wage_rate);
+    ClassDB::bind_method(D_METHOD("start_with_map", "data_dir", "seed", "difficulty_code", "initial_treasury", "rows"),
+                         &BoSimulation::start_with_map);
+    ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y"), &BoSimulation::place_building);
+    ClassDB::bind_method(D_METHOD("place_road", "x", "y"), &BoSimulation::place_road);
+    ClassDB::bind_method(D_METHOD("place_roadblock", "x", "y"), &BoSimulation::place_roadblock);
+    ClassDB::bind_method(D_METHOD("clear_land", "x", "y"), &BoSimulation::clear_land);
+    ClassDB::bind_method(D_METHOD("demolish", "x", "y"), &BoSimulation::demolish);
+    ClassDB::bind_method(D_METHOD("get_map_width"), &BoSimulation::get_map_width);
+    ClassDB::bind_method(D_METHOD("get_map_height"), &BoSimulation::get_map_height);
+    ClassDB::bind_method(D_METHOD("get_tile", "x", "y"), &BoSimulation::get_tile);
+    ClassDB::bind_method(D_METHOD("get_buildings"), &BoSimulation::get_buildings);
+    ClassDB::bind_method(D_METHOD("get_walkers"), &BoSimulation::get_walkers);
     ClassDB::bind_method(D_METHOD("drain_events"), &BoSimulation::drain_events);
     ClassDB::bind_method(D_METHOD("save"), &BoSimulation::save);
     ClassDB::bind_method(D_METHOD("load", "bytes"), &BoSimulation::load);

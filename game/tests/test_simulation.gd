@@ -38,6 +38,26 @@ func _init() -> void:
 	var d := BoSimulation.new()
 	check(d.start("res://no_such_dir", 1, "", 0) != "", "missing data is reported")
 
+	# Module B through the binding: map, build commands, events, queries, walkers.
+	var rows := PackedStringArray()
+	for y in 12:
+		rows.append("================" if y == 5 else "................")
+	var m := BoSimulation.new()
+	check(m.start_with_map("res://data", 7, "", 2000, rows) == "", "start_with_map")
+	check(m.get_map_width() == 16 and m.get_map_height() == 12, "map size")
+	m.place_building("fountain", 2, 3)
+	m.place_building("fountain", 2, 3)
+	m.place_road(3, 9)
+	m.step(40)
+	var ev: Array = m.drain_events()
+	check(ev.filter(func(e): return e["type"] == "building_placed").size() == 1, "building_placed event")
+	check(ev.filter(func(e): return e["type"] == "command_rejected").size() == 1, "occupied tile rejected")
+	check(ev.filter(func(e): return e["type"] == "walker_spawned").size() == 1, "water bearer spawned")
+	check(m.get_tile(3, 9)["road"] == true, "road tile")
+	check(m.get_buildings().size() == 1 and m.get_buildings()[0]["has_road_access"], "building with road access")
+	check(m.get_walkers().size() == 1, "one walker out")
+	check(m.get_treasury() == 2000 - 35 - 3, "costs on Hero (S-004)")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")
