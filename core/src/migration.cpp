@@ -103,6 +103,45 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
     return placed;
 }
 
+// Elite households (Z:34: "soon, some of Greece's finest moved in"): every elite house with free places and
+// nobody on the way gets a group filling it, from the entry when there is one, regardless of the common
+// immigration pool [ZAŁOŻENIE, L-108].
+std::uint32_t fill_elite(WorldState& st, const DataCatalog& catalog, std::optional<TilePos> entry,
+                         std::vector<WalkerId>& spawned) {
+    std::uint32_t placed = 0;
+    for (auto& [id, b] : st.city.buildings.items) {
+        if (!b.house || !b.house->elite || b.house->abandoned || !b.road_access || b.house->incoming > 0 ||
+            b.house->quarantine_days > 0) {
+            continue;
+        }
+        HouseState& h = *b.house;
+        const std::uint32_t room = free_places(catalog, h, st.difficulty);
+        if (room == 0) {
+            continue;
+        }
+        if (!entry) {
+            if (h.population == 0) {
+                h.happiness = static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(st.difficulty)]);
+            }
+            h.population += room;
+            placed += room;
+            continue;
+        }
+        const WalkerId w = spawn_traveller(st, catalog, "immigrant", id, *entry, *b.road_access);
+        if (w == kNoWalker) {
+            continue;
+        }
+        Walker& walker = st.walkers.items.at(w);
+        walker.job = WalkerJob::Settle;
+        walker.target = id;
+        walker.want_loads = room;
+        h.incoming = room;
+        placed += room;
+        spawned.push_back(w);
+    }
+    return placed;
+}
+
 // Removes up to `people` from the lowest house levels first (ties: building id). With `entry`, each household
 // that leaves walks out to it.
 std::uint32_t empty_houses(WorldState& st, const DataCatalog& catalog, std::uint32_t people,
@@ -200,7 +239,7 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         HouseState& h = *b.house;
         h.days_without_road = b.road_access ? 0 : static_cast<std::uint8_t>(std::min(h.days_without_road + 1, 255));
         if (h.days_without_road > 4) {
-            st.city.homeless += h.population;  // no road for more than 4 days (doc 24)
+            st.city.homeless += h.elite ? 0 : h.population;  // no road for more than 4 days (doc 24); elite leave
             h.population = 0;
         }
     }
@@ -219,6 +258,7 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         }
         st.migration.pool = 0;
     }
+    r.arrived += fill_elite(st, catalog, entry, r.spawned);
     st.migration.arrived_this_month += r.arrived;
     st.migration.left_this_month += r.left;
     return r;
@@ -237,6 +277,7 @@ void settle_at_target(WorldState& st, const DataCatalog& catalog, Walker& w) {
         }
         h.population += n;
         people -= n;
+        people = h.elite ? 0 : people;  // elite do not take common houses
     }
     st.city.homeless += people;  // the house shrank or is gone meanwhile
     w.job = WalkerJob::None;
@@ -247,6 +288,9 @@ void settle_failed(WorldState& st, const Walker& w) {
     const auto it = st.city.buildings.items.find(w.target);
     if (it != st.city.buildings.items.end() && it->second.house) {
         it->second.house->incoming -= std::min(it->second.house->incoming, w.want_loads);
+        if (it->second.house->elite) {
+            return;  // elite do not take common houses
+        }
     }
     st.city.homeless += w.want_loads;
 }

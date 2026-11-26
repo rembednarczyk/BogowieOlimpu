@@ -60,6 +60,7 @@ if(BO_BUILD_TESTS)
         tests/test_migration.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp
+        tests/test_elite.cpp
         tests/test_horses.cpp
         tests/test_husbandry.cpp
         tests/test_wolves.cpp

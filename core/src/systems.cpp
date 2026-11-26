@@ -51,14 +51,17 @@ static bool walker_from_building(const WalkerType& w, const std::string& buildin
     return false;
 }
 
-// Daily: each staffed building with road access sends its roaming walker when the previous one is back.
+// Daily: each staffed building with road access sends its roaming walker when the previous one is back;
+// an inhabited elite house sends its nobleman (Z:25, Z:88).
 static void run_walker_spawn(Simulation& sim) {
     WorldState& st = sim.mutable_state();
     for (auto& [id, b] : st.city.buildings.items) {
-        if (b.roaming_walker != kNoWalker || !b.road_access || b.staffing_percent == 0) {
+        const bool nobles = b.house && b.house->elite && b.house->population > 0 && !b.house->abandoned;
+        const std::uint8_t staffing = b.house ? (nobles ? std::uint8_t{100} : std::uint8_t{0}) : b.staffing_percent;
+        if (b.roaming_walker != kNoWalker || !b.road_access || staffing == 0) {
             continue;
         }
-        if (b.days_since_spawn++ < spawn_delay_days(b.staffing_percent)) {
+        if (b.days_since_spawn++ < spawn_delay_days(staffing)) {
             continue;
         }
         for (const auto& [wid, wt] : sim.catalog().walkers) {

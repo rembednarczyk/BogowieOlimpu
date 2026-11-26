@@ -178,7 +178,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: module C9 trade: save format v14, a land entry, a trading post and a partner city.
     // 2026-11-26: immigrants walk from the land entry (O-006), workers need a walking link to it (S-005).
     // 2026-11-26: save format v16: the boar spawn point stores a (no) hunting wolf field (L-107).
-    const std::uint64_t kGolden = 0x706d6e5c8c24dab8ULL;
+    // 2026-11-26: houses no longer count days toward a roaming walker unless they are inhabited elite houses
+    // sending a nobleman (Z:25, Z:88, L-108).
+    const std::uint64_t kGolden = 0x39be37345ff4a4eaULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

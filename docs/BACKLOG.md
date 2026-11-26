@@ -5,7 +5,7 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 ## Następne
 
 1. **Test APK na Xiaomi 15T Pro** przez właściciela: start, renderer Mobile, przewijanie palcem, spacerujący w ruchu. Wynik decyduje o prototypie E4.
-2. **Szlachcice z domów elity**, potem moduły D (mit, wojsko, świat, scenariusz). Zrobione: C1-C9, imigranci z punktu wejścia (O-006), stadnina i fabryka rydwanów (L-106), wilki (L-107).
+2. **Moduły D**: mit, wojsko, świat, scenariusz. Zrobione: C1-C9, imigranci z punktu wejścia (O-006), stadnina i fabryka rydwanów (L-106), wilki (L-107), elita i szlachcice (L-108).
 3. **C7 ryzyka, C9 handel, punkt wejścia na mapę (O-006)**. Zrobione C1, C2, C3, C6, C8 i etap 1 C4/C5; wysokość terenu bez półspadków.
 4. **Skrypt instalacji narzędzi** w środowisku chmurowym (Godot, Blender, Vulkan lavapipe, Xvfb, Android SDK i NDK, szablony eksportu). Zostaje: potwierdzić w świeżej sesji.
 5. **Uzupełnienia szkieletu**: deterministyczny zrzut (zamrożona symulacja zamiast czasu klatki), gdUnit4 dla testów GDScript, clang-tidy w CI, zadanie CI budujące APK.

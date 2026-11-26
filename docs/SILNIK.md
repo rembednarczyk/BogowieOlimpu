@@ -112,7 +112,9 @@ Zrobione:
 
 - Wilki (L-107): legowisko na mapie (symbol `w`), wataha 8, wilk wychodzi średnio raz na 20 dni po najbliższą owcę lub kozę w zasięgu 60 kafli, porywa ją, chyba że pasterz tej zagrody jest w promieniu 5 kafli; bydło chronią byki. Parametry w `data/walkers.json` (wpis `wolf`). Format zapisu v16.
 
-Zostaje: domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- Elita (L-108): rodziny elity przychodzą od punktu wejścia do domów elity z wolnymi miejscami, poza pulą imigracji ludu (Z:34); zamieszkany dom elity wysyła szlachcica, który zatrzymuje przestępców i zeruje ryzyko przestępczości (Z:88).
+
+Zostaje: premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|
