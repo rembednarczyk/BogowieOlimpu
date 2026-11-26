@@ -50,7 +50,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v13 (version field; city hygiene byte), L-104 revised from S-010 and S-007.
     // 2026-11-26: save format v14 (version field; empty trade block), module C9.
     // 2026-11-26: save format v15 (version field; immigrants on the way).
-    const std::uint64_t kGolden = 0x3b3b2c4faba122ebULL;
+    // 2026-11-26: save format v16 (version field; hunting wolf per spawn point), wolves (Z:45, L-107).
+    const std::uint64_t kGolden = 0x3d3291c634ab2518ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -176,7 +177,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // firefighters sent to fires, Hygiene & Safety first at equal priority): save format v13.
     // 2026-11-26: module C9 trade: save format v14, a land entry, a trading post and a partner city.
     // 2026-11-26: immigrants walk from the land entry (O-006), workers need a walking link to it (S-005).
-    const std::uint64_t kGolden = 0xebd887ca34071a55ULL;
+    // 2026-11-26: save format v16: the boar spawn point stores a (no) hunting wolf field (L-107).
+    const std::uint64_t kGolden = 0x706d6e5c8c24dab8ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

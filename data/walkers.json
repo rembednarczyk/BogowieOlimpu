@@ -46,5 +46,6 @@
 {"id": "trade_caravan", "type": "destination", "from": "map_entry", "to": "trading_post", "speed_tiles_per_month": 54.4, "src": "Z:76-79; prędkość [ZAŁOŻENIE L-105] jak spacerujący"},
 {"id": "trade_ship", "type": "destination", "from": "sea_entry", "to": "pier", "by_boat": true, "speed_tiles_per_month": 54.4, "src": "Z:76-79; prędkość [ZAŁOŻENIE L-105]"},
 {"id": "immigrant", "type": "destination", "from": "map_entry", "to": "house", "speed_tiles_per_month": 54.4, "src": "Z:29 (imigranci zajmują działki), doc 24 (dom osiągalny z wejścia, S-006)"},
-{"id": "emigrant", "type": "destination", "from": "house", "to": "map_entry", "speed_tiles_per_month": 54.4, "src": "Z:159-160, doc 24"}
+{"id": "emigrant", "type": "destination", "from": "house", "to": "map_entry", "speed_tiles_per_month": 54.4, "src": "Z:159-160, doc 24"},
+{"id": "wolf", "type": "destination", "from": "wolf_spawn", "to": "sheep_or_goat", "speed_tiles_per_month": 68, "src": "Z:45, P:7; doc 17 (prędkość zwierząt); liczby [ZAŁOŻENIE L-107] z S-008 (eZeus: wolf_max_count 8, wolf_hunt_wait 20, wolf_hunt_distance 60)", "wolves": {"pack": 8, "refill_days": 26, "hunt_one_in_days": 20, "reach_tiles": 60, "guard_tiles": 5, "prey": ["sheep", "goat"]}}
 ]

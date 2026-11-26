@@ -33,7 +33,7 @@ enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed
 
 // What a destination walker carries out (module C5). Stored in saves: append only.
 enum class WalkerJob : std::uint8_t {
-    None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle
+    None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle, Prowl
 };
 
 struct Walker {

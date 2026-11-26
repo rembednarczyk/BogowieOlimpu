@@ -160,6 +160,13 @@ static void run_production(Simulation& sim) {
     advance_husbandry(st, sim.catalog());
     advance_extraction(st, sim.catalog());
     advance_wildlife(st, sim.catalog());
+    const WolfEvents wolves = advance_wolves(st, sim.catalog());
+    for (const BuildingId id : wolves.removed) {
+        sim.emit(BuildingRemoved{id});
+    }
+    for (const WalkerId id : wolves.spawned) {
+        sim.emit(WalkerSpawned{id, st.walkers.items.at(id).type});
+    }
     for (const BuildingId id : herd_births(st, sim.catalog())) {
         const Building& b = st.city.buildings.items.at(id);
         sim.emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});

@@ -136,3 +136,15 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     v1.resize(v1.size() - kCityBase - kWalkersBlock);
     check_load(v1, 1, h);
 }
+
+TEST_CASE("save v15: spawn points load without the hunting wolf field (v16)") {
+    std::vector<std::string> rows(6, std::string(6, '.'));
+    rows[2][2] = 'w';
+    Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100, rows});
+    a.run_days(2);  // the den gets its pack; no prey, so no wolf is out
+    REQUIRE(a.state().city.spawns.size() == 1);
+    REQUIRE(a.state().walkers.items.empty());
+    auto v15 = a.save();
+    cut(v15, kWalkersBlock + kFinance + kTrade + kMigration + kLabour, 4);  // the hunter id of the one den
+    check_load(v15, 15, a.state_hash());
+}

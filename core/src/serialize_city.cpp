@@ -59,7 +59,7 @@ bool read_tile(ByteReader& r, Tile& t, std::uint32_t version) {
         t.elevation = height & 0x0FU;
         t.ramp = static_cast<std::uint8_t>(height >> 4U);
     }
-    if (version >= 11 && (!r.u8(t.feature) || t.feature > 6)) {
+    if (version >= 11 && (!r.u8(t.feature) || t.feature > 7)) {
         return false;
     }
     return true;
@@ -312,6 +312,7 @@ void write_city(ByteWriter& w, const CityState& c) {
         w.u32(tile);
         w.u8(s.animals);
         w.u32(s.timer);
+        w.u32(s.hunter);  // since v16
     }
 }
 
@@ -358,7 +359,8 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
         std::uint32_t tile = 0;
         std::uint32_t timer = 0;
         SpawnState s;
-        if (!r.u32(tile) || !r.u8(s.animals) || !r.u32(timer) || timer > 0xFFFF) {
+        if (!r.u32(tile) || !r.u8(s.animals) || !r.u32(timer) || timer > 0xFFFF ||
+            (version >= 16 && !r.u32(s.hunter))) {
             return false;
         }
         s.timer = static_cast<std::uint16_t>(timer);
@@ -426,7 +428,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 12 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 13 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&

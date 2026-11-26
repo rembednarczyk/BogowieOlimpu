@@ -194,6 +194,17 @@ struct RiskParams {
 };
 
 // Trade parameters (data/trade.json, module C9).
+// Wolves (Z:45, P:7; numbers L-107): pack at a spawn point, a hunt on average once in `hunt_one_in_days`,
+// prey within `reach_tiles`; a shepherd of the same shed within `guard_tiles` scares the wolf off.
+struct WolfParams {
+    std::int32_t pack = 8;
+    std::int32_t refill_days = 26;
+    std::int32_t hunt_one_in_days = 20;
+    std::int32_t reach_tiles = 60;
+    std::int32_t guard_tiles = 5;
+    std::vector<std::string> prey;
+};
+
 struct TradeParams {
     std::uint32_t caravan_loads = 8;
     std::uint32_t ship_loads = 12;
@@ -226,6 +237,7 @@ struct DataCatalog {
     MigrationParams migration;
     RiskParams risks;
     TradeParams trade;
+    WolfParams wolves;
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

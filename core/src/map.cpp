@@ -59,6 +59,11 @@ std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std:
                 tile.feature = static_cast<std::uint8_t>(c == 'E' ? TileFeature::LandEntry : TileFeature::SeaEntry);
                 continue;
             }
+            if (c == 'w') {
+                tile.terrain = Terrain::Grassland;
+                tile.feature = static_cast<std::uint8_t>(TileFeature::WolfSpawn);
+                continue;
+            }
             const std::string_view kFeatures = "hdfu";
             if (kFeatures.find(c) != std::string_view::npos) {
                 const auto f = kFeatures.find(c);

@@ -21,6 +21,7 @@ const BUILDING_COLORS := {
 	"onion_farm": Color(0.85, 0.80, 0.55), "carding_shed": Color(0.75, 0.65, 0.50), "granary": Color(0.80, 0.70, 0.40),
 	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0), "ruins": Color(0.35, 0.33, 0.30),
 	"infirmary": Color(0.95, 0.95, 0.98), "trading_post": Color(0.55, 0.40, 0.60),
+	"horse_ranch": Color(0.60, 0.42, 0.25),
 }
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
@@ -29,6 +30,7 @@ const WALKER_COLORS := {
 	"shepherd": Color(0.3, 0.7, 0.3), "trade_caravan": Color(0.6, 0.3, 0.6),
 	"water_bearer": Color(0.25, 0.55, 1.0), "superintendent": Color(1.0, 0.75, 0.2),
 	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0), "peddler": Color(0.95, 0.6, 0.1),
+	"wolf": Color(0.35, 0.35, 0.38),
 }
 
 var sim := BoSimulation.new()
@@ -52,6 +54,8 @@ static func demo_map() -> PackedStringArray:
 				c = "T"
 			elif y == 22 and x >= 20 and x < 26:
 				c = ","
+			elif y == 24 and x == 2:
+				c = "w"  # wolf den near the sheep meadow (Z:45)
 			elif y == 16 and x == 1:
 				c = "E"  # land entry: the road to the rest of Greece (caravans)
 			elif y >= 20 and y < 28 and x >= 5 and x < 15:
@@ -87,7 +91,7 @@ func _ready() -> void:
 		sim.place_building("common_housing", x, 2)
 	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
 	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
-			["storehouse", 21, 25], ["trading_post", 24, 24]]:
+			["storehouse", 21, 25], ["trading_post", 24, 24], ["horse_ranch", 17, 12]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.set_sector_priority(2, 5)  # distribution first: the granary takes food only when fully staffed
 	sim.set_sector_priority(3, 5)  # maintenance too: unattended buildings burn and collapse (C7)

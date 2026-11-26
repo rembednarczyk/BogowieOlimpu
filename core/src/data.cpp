@@ -138,6 +138,16 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
 
 void load_walkers(const json& walkers, DataCatalog& cat) {
     for (const auto& o : walkers) {
+        if (o.contains("wolves")) {
+            const auto& j = o.at("wolves");
+            WolfParams& p = cat.wolves;
+            p.pack = j.value("pack", p.pack);
+            p.refill_days = j.value("refill_days", p.refill_days);
+            p.hunt_one_in_days = j.value("hunt_one_in_days", p.hunt_one_in_days);
+            p.reach_tiles = j.value("reach_tiles", p.reach_tiles);
+            p.guard_tiles = j.value("guard_tiles", p.guard_tiles);
+            p.prey = j.value("prey", std::vector<std::string>{});
+        }
         WalkerType w;
         w.id = o.at("id").get<std::string>();
         const auto kind = o.value("type", "destination");

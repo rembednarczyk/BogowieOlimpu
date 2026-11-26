@@ -204,7 +204,10 @@ struct UndoRecord {
 struct SpawnState {
     std::uint8_t animals = 0;
     std::uint16_t timer = 0;
-    friend bool operator==(const SpawnState& a, const SpawnState& b) { return a.animals == b.animals && a.timer == b.timer; }
+    WalkerId hunter = kNoWalker;  // a wolf out hunting (since v16)
+    friend bool operator==(const SpawnState& a, const SpawnState& b) {
+        return a.animals == b.animals && a.timer == b.timer && a.hunter == b.hunter;
+    }
 };
 
 struct CityState {

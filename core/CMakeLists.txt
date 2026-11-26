@@ -17,6 +17,7 @@ add_library(bo_core STATIC
     src/path.cpp
     src/placement.cpp
     src/walker.cpp
+    src/wolves.cpp
     src/wildlife.cpp
     src/risks.cpp
     src/serialize.cpp
@@ -61,6 +62,7 @@ if(BO_BUILD_TESTS)
         tests/test_terrain.cpp
         tests/test_horses.cpp
         tests/test_husbandry.cpp
+        tests/test_wolves.cpp
         tests/test_extraction.cpp
         tests/test_wildlife.cpp
         tests/test_risks.cpp

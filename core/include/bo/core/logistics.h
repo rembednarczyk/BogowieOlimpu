@@ -102,6 +102,15 @@ void dispatch_hostlers(WorldState& state, const DataCatalog& catalog, LogisticsE
 void fetch_from_producer(WorldState& state, const DataCatalog& catalog, Walker& w, Building& producer);
 void hostler_unload(const DataCatalog& catalog, const Walker& w, Building& home);
 
+// Wolves (wolves.cpp, Z:45, L-107): daily, a den with wolves sends one on average once in hunt_one_in_days
+// to the nearest sheep or goat in reach; at the prey it takes the animal unless a shepherd of its shed is
+// near, then goes back to the den. Packs refill one wolf every refill_days.
+struct WolfEvents {
+    std::vector<WalkerId> spawned;
+    std::vector<BuildingId> removed;
+};
+WolfEvents advance_wolves(WorldState& state, const DataCatalog& catalog);
+
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
 // next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d);
