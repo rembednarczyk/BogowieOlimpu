@@ -40,6 +40,35 @@ Zgłoszone przez agenta weryfikującego (2026-11-26, przebieg demo 10 lat, test 
 - Dowód: przez 10 lat ludność 200 (25 chat po 8), farmy, zgrzeblarnia, stadnina, gimnazjon i wieże z obsadą 0; bez żywności domy zostają chatami; 0 kompanii; wieże nie strzelają.
 - Przyczyna: 84 pracowników idzie na dystrybucję, utrzymanie i mitologię (priorytet 5), na żywność nie zostaje nikt.
 
+Zgłoszone przez agenta przeglądu referencji (2026-11-26, instrukcje Zeusa i Poseidona względem kodu; commit bazowy 90bbc24).
+
+### B-008 [S2] Spacerujący dwufazowi (filozof, aktor, zawodnik) nigdy nie wychodzą
+- Status: potwierdzone (lektura kodu, bez przebiegu)
+- Miejsce: `core/src/systems.cpp:73` wysyła tylko `WalkerKind::Roaming`; `TwoPhase` ustawia jedynie `core/src/data.cpp:157`.
+- Dowód: mównica, teatr i stadion nie dają kultury; w mieście greckim kulturę daje tylko gimnazjon. Bez kultury domy nie dochodzą do poziomu z wymaganiem rozrywki 35 ani do elity (Z:105-109), więc nie ma też hoplitów i jeźdźców. Testy domów ustawiają pokrycie ręcznie (`core/tests/test_housing.cpp:62`).
+- Test "co dziś pada": do napisania (mapa z kolegium i mównicą, pokrycie domu kulturą filozofa).
+- Przyczyna: kurs szkoła → miejsce występu nie został zaimplementowany.
+
+### B-009 [S2] Brak limitu jednego pałacu i jednego stadionu
+- Status: potwierdzone (grep `unique` w `core/src` daje tylko `check_unique_ids`)
+- Miejsce: pole `"unique": true` w `data/buildings.json` nieczytane przez rozmieszczenie.
+- Dowód: Z:95 (jeden pałac), Z:109 (jeden stadion).
+- Test "co dziś pada": do napisania (drugi pałac odrzucony).
+- Przyczyna: pole danych bez obsługi w `placement.cpp`.
+
+### B-010 [S2] Miejsca występów działają bez szkół, gimnazjon szkoli bez stadionu
+- Status: potwierdzone (lektura kodu)
+- Miejsce: pola `trains_requires` i `target` w danych spacerujących ignorowane.
+- Dowód: Z:108 (gimnazjon nie szkoli zawodnika bez stadionu), Z:105-107 (występy wymagają wykonawców ze szkół).
+- Test "co dziś pada": razem z B-008.
+- Przyczyna: jak B-008.
+
+### B-011 [S3] Cel "sanktuarium" wymaga łaski boga
+- Status: potwierdzone; reguła do decyzji właściciela
+- Miejsce: `core/src/scenario.cpp:64` sprawdza cel przez `god_blesses` (`core/src/gods.cpp:24-34`), więc cel przepada także, gdy kapłani nie znajdą ofiar.
+- Dowód: instrukcja nie wiąże celu z ofiarami (Z:16, Z:21); eZeus liczy cel z postępu budowy (S-008, `eepisodegoal.cpp:378-401`).
+- Przyczyna: użyto warunku błogosławieństwa w miejscu warunku "ukończone i stoi".
+
 ### B-004 [S2] Morale kompanii odbudowuje się podczas walki z potworem
 - Status: naprawione: brak odbudowy morale, póki potwór walczy w mieście (decyzja właściciela); test "B-004" w test_monsters.cpp (test walki agenta)
 - Miejsce: `core/src/combat.cpp`, `recover_morale` (+5 dziennie, gdy nie trwa inwazja).
