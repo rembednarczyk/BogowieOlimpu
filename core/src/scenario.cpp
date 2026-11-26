@@ -1,6 +1,8 @@
 // Module D5 stage 1: adventure format, events, city requests, goals (docs/gameplay/13, 23; Z:161-164; L-114).
 #include "bo/core/scenario.h"
 
+#include "bo/core/world.h"
+
 #include <algorithm>
 
 #include "bo/core/gods.h"
@@ -273,6 +275,11 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
         }
     }
     for (auto it = s.requests.begin(); it != s.requests.end();) {
+        if (it->good == "army" && today > it->due_day) {  // never overdue: after the battle it is gone (Z:161)
+            ev.closed.emplace_back(it->city, false);
+            it = s.requests.erase(it);
+            continue;
+        }
         if (today > it->due_day + kWithdrawAfterDays) {
             if (it->city < st.trade.partners.size()) {
                 CityDiplomacy& d = st.trade.partners[it->city].diplomacy;
@@ -304,7 +311,15 @@ std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uin
         return "scenario.no_request";
     }
     const CityRequest r = s.requests[index];
-    if (free) {
+    if (r.good == "army") {
+        if (free) {
+            return "scenario.not_for_the_gods";  // Hermes fulfils requests for goods, not for troops
+        }
+        const std::string err = dispatch_aid(st, catalog, r.city, std::max<std::uint32_t>(r.amount, 1));
+        if (!err.empty()) {
+            return err;
+        }
+    } else if (free) {
         // Hermes's prayer (Z:122): the request is fulfilled without the player's goods.
     } else if (r.good == "drachmas") {
         if (st.finance.treasury < r.amount) {

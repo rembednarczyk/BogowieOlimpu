@@ -238,7 +238,8 @@ void write_world(ByteWriter& w, const WorldState& s) {
     w.u32(static_cast<std::uint32_t>(s.expeditions.size()));
     for (const Expedition& e : s.expeditions) {
         w.u32(e.city);
-        w.u8(static_cast<std::uint8_t>((e.raid ? 1U : 0U) | (e.returning ? 2U : 0U) | (e.won ? 4U : 0U)));
+        w.u8(static_cast<std::uint8_t>((e.raid ? 1U : 0U) | (e.returning ? 2U : 0U) | (e.won ? 4U : 0U) |
+                                       (e.aid ? 8U : 0U)));
         w.str(e.good);
         w.u32(static_cast<std::uint32_t>(e.companies.size()));
         for (const std::uint32_t c : e.companies) {
@@ -299,6 +300,7 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
         e.raid = (flags & 1U) != 0;
         e.returning = (flags & 2U) != 0;
         e.won = (flags & 4U) != 0;
+        e.aid = (flags & 8U) != 0;  // bit 3: an aid expedition (Z:161); older saves have none
         e.companies.resize(companies);
         for (std::uint32_t& c : e.companies) {
             if (!r.u32(c)) {

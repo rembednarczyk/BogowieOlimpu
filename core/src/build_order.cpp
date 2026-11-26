@@ -78,6 +78,11 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetTradeOrder{0, o.at("good").get<std::string>(), o.value("import", 0U) > 0, o.value("import", 0U),
                           o.contains("export_keep"), o.value("export_keep", 0U)},
             pos_of(s.at("at")));
+    } else if (s.contains("fulfill_requests")) {
+        BuildStep step = base;
+        step.fulfill_all = true;
+        step.command = FulfillRequest{0};
+        out.push_back(std::move(step));
     } else if (s.contains("summon_hero")) {
         add(SummonHero{0}, pos_of(s.at("summon_hero")));
     } else if (s.contains("hero_quest")) {
@@ -132,6 +137,12 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
             stocked = stocked && city_stock(sim.state().city, sim.catalog(), good) >= n;  // without trade buildings (Z:79)
         }
         if (!stocked) {
+            continue;
+        }
+        if (s.fulfill_all) {  // last first: a fulfilled request shifts the ones after it
+            for (std::size_t i = sim.state().scenario.requests.size(); i-- > 0;) {
+                out.emplace_back(FulfillRequest{static_cast<std::uint32_t>(i)});
+            }
             continue;
         }
         Command c = s.command;

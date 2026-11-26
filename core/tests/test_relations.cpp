@@ -75,3 +75,35 @@ TEST_CASE("L-121: an ally fond of the player for two years sends a gift; allies 
     CHECK(count<CityGift>(debt) == 1);  // after half a year of debt, from the ally only, once a year
     CHECK(debt.state().finance.treasury > 0);
 }
+
+TEST_CASE("L-122: a city's call for troops is answered by sending companies; unanswered, it lapses without penalty (Z:161)") {
+    auto sim = with({partner("athens", "ally", 50)});
+    auto& m = sim.mutable_state().military;
+    Company rabble;
+    rabble.unit = "rabble";
+    rabble.members.push_back(CompanyMember{9999, 8});
+    Company hoplites;
+    hoplites.unit = "hoplite";
+    hoplites.members.push_back(CompanyMember{9999, 8});
+    m.companies = {rabble, hoplites};
+    CityRequest r;
+    r.city = 0;
+    r.good = "army";
+    r.amount = 1;
+    r.due_day = sim.state().time.total_days() + 30;
+    sim.mutable_state().scenario.requests.push_back(r);
+    sim.issue(FulfillRequest{0});
+    sim.step(1);
+    CHECK(sim.state().scenario.requests.empty());
+    REQUIRE(sim.state().expeditions.size() == 1);
+    CHECK(sim.state().expeditions[0].aid);
+    CHECK(sim.state().expeditions[0].companies == std::vector<std::uint32_t>{1});  // the hoplites, not the rabble
+    CHECK(sim.state().trade.partners[0].diplomacy.opinion == 60);
+
+    auto late = with({partner("athens", "ally", 50)});
+    r.due_day = late.state().time.total_days() + 5;
+    late.mutable_state().scenario.requests.push_back(r);
+    late.run_days(7);
+    CHECK(late.state().scenario.requests.empty());
+    CHECK(late.state().trade.partners[0].diplomacy.opinion == 50);  // no penalty: it was never overdue
+}

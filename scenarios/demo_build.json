@@ -339,7 +339,8 @@
   {"day": 400, "place": "podium", "x": 70, "y": 14},
   {"day": 400, "place": "podium", "x": 70, "y": 17},
   {"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}},
-  {"day": 656, "every": 48, "pray": [53, 24]},
+  {"day": 64, "every": 8, "fulfill_requests": true},
+  {"day": 1000, "every": 48, "pray": [37, 37]},
   {"day": 256, "every": 16, "summon_hero": [64, 12]},
   {"day": 256, "every": 16, "hero_quest": 0}
  ]

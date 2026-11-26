@@ -242,6 +242,9 @@ DemoRun run_demo(std::uint64_t years) {
         }
         sim.run_days(1);
         count_events(sim.drain_events(), run.seen);
+        for (const Expedition& e : sim.state().expeditions) {
+            run.seen["aid_sent"] += e.aid ? 1 : 0;  // companies sent where a city asked for them (Z:161)
+        }
         for (const auto& [id, b] : sim.state().city.buildings.items) {
             if (log && b.house && b.house->elite && b.house->population > 0 && !watched[id]) {
                 watched[id] = true;
@@ -298,7 +301,7 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
                       [](const Company& c) { return c.nation == "divine"; }));  // Ares's Sparti (Z:140)
     CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);  // the earthquake of year 3 (demo.json) cracked the land
     for (const char* m : {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
-                          "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer"}) {
+                          "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer", "aid_sent"}) {
         CHECK_MESSAGE(run.seen.count(m) > 0, "the demo never showed: " << std::string(m));
     }
 }

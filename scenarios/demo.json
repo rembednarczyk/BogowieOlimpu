@@ -277,6 +277,15 @@
    "month": 0
   },
   {
+   "type": "request",
+   "city": "corinth",
+   "good": "army",
+   "amount": 1,
+   "year": 5,
+   "month": 6,
+   "deadline_months": 3
+  },
+  {
    "type": "monster",
    "monster": "medusa",
    "strength": 1,

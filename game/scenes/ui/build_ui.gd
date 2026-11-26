@@ -255,7 +255,8 @@ func refresh_report() -> void:
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(l)
 		var send := _button("ui.send", func(): send_request(i), Vector2(140, CELL.y))
-		send.disabled = r["good"] != "drachmas" and city_stock(r["good"]) < int(r["amount"])
+		# Troops (Z:161): the core picks companies at home and says if there are too few.
+		send.disabled = r["good"] != "drachmas" and r["good"] != "army" and city_stock(r["good"]) < int(r["amount"])
 		row.add_child(send)
 		report_box.add_child(row)
 	var quests: Array = sc.get("quests", [])

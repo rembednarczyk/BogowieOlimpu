@@ -19,6 +19,7 @@ struct BuildStep {
     std::uint64_t day = 0;
     bool retry = false;                        // place steps: try daily until the building stands
     std::uint64_t every = 0;                   // other steps: again every `every` days from `day` (0: once)
+    bool fulfill_all = false;                  // send what every open city request asks for (Z:161)
     std::map<std::string, std::uint32_t> when;  // loads in the city's storage needed first
     Command command;
     std::optional<TilePos> at;  // building commands: a tile of the building, resolved when due

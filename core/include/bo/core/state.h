@@ -105,10 +105,11 @@ struct Expedition {
     bool won = false;
     std::uint32_t losses = 0;           // soldiers lost in the battle
     std::uint32_t loot = 0;             // loads (or drachmas for "drachmas")
+    bool aid = false;                   // help asked for by the city (Z:161): fights its enemy, not the city
     friend bool operator==(const Expedition& a, const Expedition& b) {
         return a.city == b.city && a.raid == b.raid && a.good == b.good && a.companies == b.companies &&
                a.days_left == b.days_left && a.returning == b.returning && a.won == b.won && a.losses == b.losses &&
-               a.loot == b.loot;
+               a.loot == b.loot && a.aid == b.aid;
     }
 };
 

@@ -95,6 +95,8 @@ scenario = {
         {"type": "god_attack", "god": "hermes", "year": 1, "month": 8},
         {"type": "disaster", "kind": "earthquake", "x": 69, "y": 48, "radius": 1, "year": 3, "month": 6},
         {"type": "quest", "god": "hermes", "index": 0, "hero": "perseus", "year": 3, "month": 0},
+        {"type": "request", "city": "corinth", "good": "army", "amount": 1, "year": 5, "month": 6,
+         "deadline_months": 3},
         {"type": "monster", "monster": "medusa", "strength": 1, "target": "resources", "year": 6, "month": 0},
     ],
     "goals": [
@@ -276,9 +278,12 @@ put("podium", 70, 14, day=ELITE); put("podium", 70, 17, day=ELITE)
 # Surplus oil goes to Rhodes by sea once the elite houses stand (Z:78-79).
 steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}})
 
-# Prayers (Z:124): Hermes fulfils a city's request; the god may refuse (Z:132, L-053). Gifts of goods (Athena:
-# 24 loads) would fill the storehouses that keep the sculptures for Perseus.
-steps.append({"day": MYTH + 400, "every": 48, "pray": [53, 24]})
+# City requests (Z:161): goods from storage, troops from the companies at home; tried twice a month.
+steps.append({"day": 64, "every": 8, "fulfill_requests": True})
+
+# Prayers (Z:124): Ares marches with the next army abroad; the god may refuse (Z:132, L-053). Goods (Athena: 24
+# loads) would fill the storehouses that keep the sculptures for Perseus; Hermes finds no request left open.
+steps.append({"day": 1000, "every": 48, "pray": [37, 37]})
 
 # Perseus (doc 21): summoned when the hall's needs are met, then sent on Hermes's quest.
 steps.append({"day": MYTH, "every": 16, "summon_hero": [64, 12]})

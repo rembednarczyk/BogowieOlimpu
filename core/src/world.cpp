@@ -66,8 +66,8 @@ void battle_abroad(WorldState& st, const DataCatalog& catalog, Expedition& e) {
     }
     const std::int64_t lost = ours_x2 > 0 ? soldiers * theirs_x2 / (2 * ours_x2) : soldiers;
     e.losses = static_cast<std::uint32_t>(std::min<std::int64_t>(lost, soldiers));
-    if (!e.won) {
-        return;
+    if (!e.won || e.aid) {
+        return;  // aid: the city keeps what it is; the request was fulfilled when the army left
     }
     if (e.raid) {
         const std::int32_t pct = catalog.world.raid_percent[static_cast<std::size_t>(st.difficulty)];
@@ -190,6 +190,31 @@ std::string request_from_city(WorldState& st, const DataCatalog& catalog, std::u
         change_opinion(other.diplomacy, w.request_opinion);  // doc 24: every city thinks less of a beggar
     }
     p.diplomacy.request_cooldown = static_cast<std::uint16_t>(w.request_cooldown_days);
+    return {};
+}
+
+// Help a city asked for (Z:161, 13-przeglad): the companies march there and fight its enemy, of the city's own
+// strength [ZAŁOŻENIE, L-122]; nobody's opinion turns.
+std::string dispatch_aid(WorldState& st, const DataCatalog& catalog, std::uint32_t city, std::uint32_t companies) {
+    std::vector<std::uint32_t> chosen;
+    for (std::uint32_t i = 0; i < st.military.companies.size() && chosen.size() < companies; ++i) {
+        const Company& c = st.military.companies[i];
+        if (c.status == CompanyStatus::AtHome && c.unit != "rabble" && !c.members.empty()) {
+            chosen.push_back(i);  // no rabble abroad (Z:136, 13-przeglad)
+        }
+    }
+    if (city >= st.trade.partners.size() || chosen.size() < std::max<std::uint32_t>(companies, 1)) {
+        return "scenario.not_enough_troops";
+    }
+    for (const std::uint32_t c : chosen) {
+        st.military.companies[c].status = CompanyStatus::ServingAbroad;
+    }
+    Expedition e;
+    e.city = city;
+    e.aid = true;
+    e.companies = chosen;
+    e.days_left = static_cast<std::uint32_t>(catalog.world.march_days);
+    st.expeditions.push_back(e);
     return {};
 }
 

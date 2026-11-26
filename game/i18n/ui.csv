@@ -130,3 +130,5 @@ monument.god_statue,Posąg boga,Statue of a god
 monument.hero,Pomnik herosa,Hero monument
 monument.scholar,Pomnik mędrca,Sage monument
 monument.athlete,Pomnik zawodnika,Champion monument
+good.army,kompanii wojska,companies of soldiers
+scenario.not_enough_troops,Za mało kompanii w domu (motłochu nie wysyła się),Too few companies at home (rabble cannot go)
