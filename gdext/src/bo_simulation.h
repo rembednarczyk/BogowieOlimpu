@@ -102,6 +102,8 @@ public:
     void dispatch_army(int64_t city, bool raid, const godot::String& good, const godot::Array& companies);
     // Array of {"id", "relation", "opinion", "military", "economy", "tribute", "tribute_demand", "rebelling"}
     godot::Array get_cities() const;
+    godot::Array get_expeditions() const;
+    godot::Dictionary get_invasion() const;
     void surrender();
     int64_t get_bribe_cost() const;
     int64_t get_workforce() const;

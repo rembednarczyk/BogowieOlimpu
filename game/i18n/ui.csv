@@ -138,3 +138,49 @@ ui.stockpile,Gromadź,Stockpile
 storage.unknown_good,Nieznany towar,Unknown good
 storage.not_a_stall,To nie jest stoisko,Not a stall
 ui.man_all,Obsadź wszystkie wieże,Man all towers
+ui.army,Wojsko,Army
+ui.world,Świat,World
+ui.army_title,Wojsko miasta,The city's army
+ui.invasion_line,Najazd: %d najeźdźców w mieście. Przekupstwo kosztuje %d dr.,Invasion: %d invaders in the city. A bribe costs %d dr.
+ui.bribe,Przekup,Bribe
+ui.surrender,Poddaj się,Surrender
+ui.call_all,Wezwij wszystkie,Call all
+ui.no_companies,Brak kompanii: potrzebny pałac i domy z żołnierzami,No companies: a palace and houses with soldiers are needed
+unit.rabble,Motłoch,Rabble
+unit.hoplite,Hoplici,Hoplites
+unit.horseman,Jeźdźcy,Horsemen
+unit.ares_warriors,Sparci,Sparti
+unit.warrior,Amazonki,Amazons
+ui.morale,morale,morale
+company.status.0,w domach,at home
+company.status.1,w marszu,marching
+company.status.2,na pozycji,in position
+company.status.3,wraca do domów,going home
+company.status.4,walczy,fighting
+company.status.5,ucieka,fleeing
+company.status.6,za granicą,abroad
+ui.muster,Wezwij,Muster
+ui.move,Przesuń,Move
+ui.go_home,Do domu,Home
+ui.world_title,Miasta świata,Cities of the world
+relation.ally,sojusznik,ally
+relation.rival,rywal,rival
+relation.vassal,wasal,vassal
+relation.colony,kolonia,colony
+relation.parent,miasto macierzyste,mother city
+relation.distant,dalekie miasto,distant city
+ui.rebelling,bunt,rising
+ui.opinion,opinia,opinion
+ui.military,siła,strength
+ui.economy,bogactwo,wealth
+ui.tribute_demand,żąda trybutu %d dr/rok,demands %d dr a year
+ui.gift,Dar 500 dr,Gift 500 dr
+ui.ask,Poproś,Ask
+ui.attack,Atak,Attack
+ui.raid,Rajd,Raid
+ui.expeditions,Wyprawy,Expeditions
+ui.aid,Pomoc,Aid
+ui.expedition_line,"%s: %s, kompanie %d, %s, jeszcze %d dni","%s: %s, %d companies, %s, %d days to go"
+ui.returning,wraca,coming home
+ui.marching,w drodze,on the way
+ui.companies_soldiers,"kompanie %d, żołnierze %d","%d companies, %d soldiers"

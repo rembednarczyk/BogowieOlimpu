@@ -6,7 +6,7 @@ extends SceneTree
 var frames_left := 10
 var out_path := "user://shot.png"
 var speed := 0.0  # ticks per second of the demo; 0 keeps the scene default
-var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report
+var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report, 4: the army, 5: the world
 var node: Node
 
 func _init() -> void:
@@ -31,6 +31,10 @@ func _process(_delta: float) -> bool:
 		TranslationServer.set_locale("pl")
 		if build_view == 3:
 			node.ui.toggle_report()
+		elif build_view == 4:
+			node.ui.army_world.toggle_army()
+		elif build_view == 5:
+			node.ui.army_world.toggle_world()
 		elif build_view == 1:
 			node.ui._show_tab("husbandry")
 		else:

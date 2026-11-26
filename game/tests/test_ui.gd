@@ -121,6 +121,33 @@ func _process(_d: float) -> bool:
 	ui._toggle_stockpile("fleece")
 	game.sim.step(1)
 	check(not game.sim.get_stockpiled().has("fleece"), "and released")
+
+	# Army and world panels (Z:135-178): the autopilot builds on until there are companies.
+	for d in 400:
+		if game.sim.get_companies().size() > 0:
+			break
+		game.sim.apply_build_order()
+		game.sim.run_days(1)
+	check(game.sim.get_companies().size() > 0, "companies formed in the demo")
+	var aw = ui.army_world
+	aw.toggle_army()
+	check(aw.army.visible and aw.army_box.get_child_count() > 2, "the army panel lists the companies")
+	aw.call_all()
+	game.sim.step(1)
+	check(game.sim.get_companies()[0]["status"] != 0, "Call All mustered the first company")
+	aw.start_move(0)
+	check(not aw.army.visible, "the panel steps aside for the tap on the map")
+	ui.tap(Vector2i(40, 20))
+	game.sim.step(1)
+	var c0: Dictionary = game.sim.get_companies()[0]
+	check(c0["x"] == 40 and c0["y"] == 20, "the tap moved the standard: %s" % [c0])
+	aw.toggle_world()
+	check(aw.world.visible and aw.world_box.get_child_count() > 2, "the world panel lists the cities")
+	var before: int = game.sim.get_cities()[0]["opinion"]
+	game.sim.give_gift(0, "drachmas", 500)
+	game.sim.step(1)
+	check(game.sim.get_cities()[0]["opinion"] > before, "a gift raises the opinion")
+	aw.toggle_world()
 	ui.toggle_report()
 
 	# Save and restore: a second scene loads the file and shows the same buildings.

@@ -598,6 +598,40 @@ void BoSimulation::dispatch_army(int64_t city, bool raid, const String& good, co
     sim_->issue(c);
 }
 
+// Armies abroad (D4) for the world panel: where, what for, days to go.
+Array BoSimulation::get_expeditions() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    for (const auto& e : sim_->state().expeditions) {
+        Dictionary d;
+        d["city"] = static_cast<int64_t>(e.city);
+        d["raid"] = e.raid;
+        d["aid"] = e.aid;
+        d["returning"] = e.returning;
+        d["days_left"] = static_cast<int64_t>(e.days_left);
+        d["companies"] = static_cast<int64_t>(e.companies.size());
+        out.append(d);
+    }
+    return out;
+}
+
+// The invasion now in the city (Z:137): for the army panel.
+Dictionary BoSimulation::get_invasion() const {
+    Dictionary d;
+    if (!sim_) {
+        return d;
+    }
+    const auto& inv = sim_->state().military.invasion;
+    d["active"] = inv.active;
+    d["nation"] = String(inv.nation.c_str());
+    d["invaders"] = static_cast<int64_t>(inv.invaders.size());
+    d["city"] = static_cast<int64_t>(inv.city);
+    d["bribe"] = bo::core::bribe_cost(sim_->state(), *catalog_);
+    return d;
+}
+
 Array BoSimulation::get_cities() const {
     Array out;
     if (!sim_) {
@@ -613,6 +647,12 @@ Array BoSimulation::get_cities() const {
         d["tribute"] = p.diplomacy.tribute;
         d["tribute_demand"] = p.diplomacy.tribute_demand;
         d["rebelling"] = p.diplomacy.rebelling;
+        d["by_sea"] = p.by_sea;
+        PackedStringArray sells;
+        for (const auto& [good, offer] : p.sells) {
+            sells.append(String(good.c_str()));
+        }
+        d["sells"] = sells;
         out.append(d);
     }
     return out;
@@ -727,6 +767,9 @@ Array BoSimulation::get_companies() const {
         }
         Dictionary d;
         d["unit"] = String(c.unit.c_str());
+        d["nation"] = String(c.nation.c_str());  // a god's company (Z:140): "divine", "amazon"
+        d["fled"] = c.fled;
+        d["in_field"] = static_cast<int64_t>(c.soldiers.size());
         d["soldiers"] = soldiers;
         d["status"] = static_cast<int64_t>(c.status);
         d["morale"] = static_cast<int64_t>(c.morale);
@@ -1052,6 +1095,8 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_not_buying", "stall", "on"), &BoSimulation::set_not_buying);
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
+    ClassDB::bind_method(D_METHOD("get_expeditions"), &BoSimulation::get_expeditions);
+    ClassDB::bind_method(D_METHOD("get_invasion"), &BoSimulation::get_invasion);
     ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);
     ClassDB::bind_method(D_METHOD("start_adventure", "data_dir", "path"), &BoSimulation::start_adventure);
     ClassDB::bind_method(D_METHOD("continue_adventure"), &BoSimulation::continue_adventure);

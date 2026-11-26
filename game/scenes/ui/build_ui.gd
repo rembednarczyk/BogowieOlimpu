@@ -129,7 +129,12 @@ func _build() -> void:
 	last.add_child(_button("ui.undo", func(): game.sim.undo(), Vector2(144, CELL.y)))
 	last.add_child(_button("ui.report", toggle_report, Vector2(144, CELL.y)))
 	col.add_child(last)
+	var more := HBoxContainer.new()
+	more.add_child(_button("ui.army", func(): report.visible = false; army_world.toggle_army(), Vector2(144, CELL.y)))
+	more.add_child(_button("ui.world", func(): report.visible = false; army_world.toggle_world(), Vector2(144, CELL.y)))
+	col.add_child(more)
 	_build_report(root)
+	army_world.setup(self, root)
 
 	# The column of buildings that slides out next to the panel.
 	flyout = PanelContainer.new()
@@ -165,6 +170,7 @@ func cancel() -> void:
 
 # The city report (06-MOBILE-UX "Informacja", doc 13): episode goals, requests from cities with one-tap
 # sending, quests, settings, save and new game.
+var army_world = preload("res://scenes/ui/army_world_ui.gd").new()  # army and world panels (Z:135-178)
 var report: PanelContainer
 var report_box: VBoxContainer
 var report_note := ""
@@ -187,6 +193,8 @@ func _build_report(root: Control) -> void:
 	root.add_child(report)
 
 func toggle_report() -> void:
+	army_world.army.visible = false
+	army_world.world.visible = false
 	report.visible = not report.visible
 	report_note = ""
 	if report.visible:
@@ -428,6 +436,8 @@ func end_drag() -> void:
 
 # A tap: place the ghost of a single building, or open the card of a building with no mode.
 func tap(tile: Vector2i) -> void:
+	if army_world.map_tap(tile):
+		return  # the standard of a company moved (Z:137)
 	if mode == "":
 		_open_card(tile)
 		return
