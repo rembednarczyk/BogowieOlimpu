@@ -57,7 +57,7 @@ Zgłoszone przez agenta weryfikującego (2026-11-26, przebieg demo 10 lat, test 
 - Dowód: `get_scenario()["id"]` w drugim epizodzie przykładowej przygody jest pusty.
 
 ### B-007 [S1] Zapis gry w trakcie przygody gubi przygodę i miasto macierzyste
-- Status: potwierdzone
+- Status: naprawione: zapis przygody w kontenerze (tekst przygody, krok, kolonie, zapis miasta macierzystego, bieżąca symulacja); `load` rozpoznaje rodzaj zapisu i czyści stary stan; testy "B-007" w test_adventure.cpp i test_simulation.gd
 - Miejsce: `gdext/src/bo_simulation.cpp` (`save` zapisuje tylko symulację; `AdventureRun` z zapisem miasta macierzystego jest tylko w pamięci).
 - Dowód: po `load()` w nowej instancji `get_adventure()` zwraca {}; `load()` w tej samej instancji zostawia stare `run_`.
 - Przyczyna: zapis przebiegu przygody nie powstał (L-119); autozapis z kroku E2 zapisuje tylko demo jednoepizodowe.

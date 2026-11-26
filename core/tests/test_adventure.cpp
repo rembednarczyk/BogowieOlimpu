@@ -101,3 +101,31 @@ TEST_CASE("the example adventure (scenarios/example_adventure.json) parses") {
     CHECK(a->steps.size() == 4);
     CHECK(a->steps[1].colonies.size() == 2);
 }
+
+TEST_CASE("B-007: a save in the middle of a colony keeps the adventure and the parent city") {
+    std::string error;
+    const auto adventure = parse_adventure(kAdventure, error);
+    REQUIRE(adventure.has_value());
+    AdventureRun run;
+    std::optional<Simulation> sim;
+    sim.emplace(begin_adventure(bo::test::catalog_isolated(), *adventure, run));
+    sim->issue(PlaceBuilding{"granary", 5, 5});
+    sim->step(1);
+    win(sim, 6000);
+    REQUIRE(advance_adventure(*adventure, run, sim) == NextEpisode::ChooseColony);
+    REQUIRE(found_colony(bo::test::catalog_isolated(), *adventure, run, "argos", sim).empty());
+    sim->run_days(3);
+
+    const auto bytes = save_adventure(kAdventure, run, *sim);
+    CHECK(is_adventure_save(bytes));
+    auto loaded = load_adventure(bo::test::catalog_isolated(), bytes, error);
+    REQUIRE_MESSAGE(loaded.has_value(), error);
+    CHECK(loaded->run.in_colony);
+    CHECK(loaded->run.step == run.step);
+    CHECK(loaded->sim->state_hash() == sim->state_hash());
+    win(loaded->sim, 3000);
+    CHECK(advance_adventure(loaded->data, loaded->run, loaded->sim) == NextEpisode::ParentEpisode);
+    CHECK(loaded->sim->state().city.map.at({5, 5}).building != kNoBuilding);  // the parent city came back
+    CHECK(loaded->sim->state().trade.partners[0].relation == "colony");
+    CHECK_FALSE(is_adventure_save(sim->save()));
+}

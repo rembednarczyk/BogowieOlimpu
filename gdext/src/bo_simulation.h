@@ -133,4 +133,5 @@ private:
     std::optional<bo::core::Simulation> sim_;
     std::optional<bo::core::AdventureData> adventure_;
     bo::core::AdventureRun run_;
+    std::string adventure_text_;
 };

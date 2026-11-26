@@ -282,7 +282,8 @@ String BoSimulation::start_adventure(const String& data_dir, const String& path)
         return err;
     }
     std::string error;
-    auto a = bo::core::parse_adventure(to_std(FileAccess::get_file_as_string(path)), error);
+    adventure_text_ = to_std(FileAccess::get_file_as_string(path));
+    auto a = bo::core::parse_adventure(adventure_text_, error);
     if (!a) {
         return String(error.c_str());
     }
@@ -882,7 +883,8 @@ PackedByteArray BoSimulation::save() const {
     if (!sim_) {
         return out;
     }
-    const auto bytes = sim_->save();
+    // With an adventure under way the save holds it too (B-007): the text, the step, the parent city.
+    const auto bytes = adventure_ ? bo::core::save_adventure(adventure_text_, run_, *sim_) : sim_->save();
     out.resize(static_cast<int64_t>(bytes.size()));
     for (std::size_t i = 0; i < bytes.size(); ++i) {
         out.set(static_cast<int64_t>(i), bytes[i]);
@@ -899,10 +901,24 @@ String BoSimulation::load(const PackedByteArray& bytes) {
         raw[static_cast<std::size_t>(i)] = bytes[i];
     }
     std::string error;
+    if (bo::core::is_adventure_save(raw)) {
+        auto adv = bo::core::load_adventure(*catalog_, raw, error);
+        if (!adv) {
+            return String(error.c_str());
+        }
+        sim_.reset();
+        sim_.emplace(std::move(*adv->sim));
+        adventure_ = std::move(adv->data);
+        adventure_text_ = std::move(adv->text);
+        run_ = std::move(adv->run);
+        return String();
+    }
     auto loaded = bo::core::Simulation::load(*catalog_, raw, error);
     if (!loaded) {
         return String(error.c_str());
     }
+    adventure_.reset();  // a plain save: no adventure left over from before (B-007)
+    run_ = bo::core::AdventureRun{};
     sim_.reset();
     sim_.emplace(std::move(*loaded));
     return String(error.c_str());  // may carry "save.data_version_mismatch" as a warning

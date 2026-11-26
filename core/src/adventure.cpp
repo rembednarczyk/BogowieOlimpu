@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include "bo/core/serialize.h"
 #include "nlohmann/json.hpp"
 
 namespace bo::core {
@@ -152,6 +153,79 @@ std::string found_colony(const DataCatalog& catalog, const AdventureData& advent
     run.founded.push_back(colony);
     sim.emplace(catalog, *it);
     return {};
+}
+
+namespace {
+
+std::string as_string(const std::vector<std::uint8_t>& b) { return std::string(b.begin(), b.end()); }
+std::vector<std::uint8_t> as_bytes(const std::string& s) { return std::vector<std::uint8_t>(s.begin(), s.end()); }
+
+}  // namespace
+
+std::vector<std::uint8_t> save_adventure(const std::string& text, const AdventureRun& run, const Simulation& sim) {
+    ByteWriter w;
+    w.u32(kAdventureMagic);
+    w.u32(1);  // container version
+    w.str(text);
+    w.u32(static_cast<std::uint32_t>(run.step));
+    w.u8(run.in_colony ? 1 : 0);
+    w.u32(static_cast<std::uint32_t>(run.founded.size()));
+    for (const std::string& c : run.founded) {
+        w.str(c);
+    }
+    w.str(as_string(run.parent_save));
+    w.str(as_string(sim.save()));
+    return w.bytes();
+}
+
+bool is_adventure_save(const std::vector<std::uint8_t>& bytes) {
+    ByteReader r(bytes);
+    std::uint32_t magic = 0;
+    return r.u32(magic) && magic == kAdventureMagic;
+}
+
+std::optional<LoadedAdventure> load_adventure(const DataCatalog& catalog, const std::vector<std::uint8_t>& bytes,
+                                              std::string& error) {
+    ByteReader r(bytes);
+    std::uint32_t magic = 0;
+    std::uint32_t version = 0;
+    std::uint32_t step = 0;
+    std::uint8_t colony = 0;
+    std::uint32_t founded = 0;
+    LoadedAdventure out;
+    if (!r.u32(magic) || magic != kAdventureMagic || !r.u32(version) || version != 1 || !r.str(out.text) ||
+        !r.u32(step) || !r.u8(colony) || !r.u32(founded) || founded > 64) {
+        error = "adventure.bad_save";
+        return std::nullopt;
+    }
+    out.run.step = step;
+    out.run.in_colony = colony != 0;
+    out.run.founded.resize(founded);
+    std::string parent;
+    std::string current;
+    for (std::string& c : out.run.founded) {
+        if (!r.str(c)) {
+            error = "adventure.bad_save";
+            return std::nullopt;
+        }
+    }
+    if (!r.str(parent) || !r.str(current) || !r.at_end()) {
+        error = "adventure.bad_save";
+        return std::nullopt;
+    }
+    out.run.parent_save = as_bytes(parent);
+    auto data = parse_adventure(out.text, error);
+    if (!data || step >= data->steps.size()) {
+        error = error.empty() ? "adventure.bad_save" : error;
+        return std::nullopt;
+    }
+    out.data = std::move(*data);
+    auto sim = Simulation::load(catalog, as_bytes(current), error);
+    if (!sim) {
+        return std::nullopt;
+    }
+    out.sim.emplace(std::move(*sim));
+    return out;
 }
 
 }  // namespace bo::core

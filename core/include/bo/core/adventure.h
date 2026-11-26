@@ -50,4 +50,19 @@ std::vector<std::string> colony_choices(const AdventureData& adventure, const Ad
 std::string found_colony(const DataCatalog& catalog, const AdventureData& adventure, AdventureRun& run,
                          const std::string& colony, std::optional<Simulation>& sim);
 
+// Saving an adventure (B-007): the adventure text, where the player is, the parent city kept while a colony is
+// played, and the city being played, in one container. A plain save (no adventure) stays a Simulation save.
+inline constexpr std::uint32_t kAdventureMagic = 0x56414F42;  // "BOAV"
+std::vector<std::uint8_t> save_adventure(const std::string& adventure_text, const AdventureRun& run,
+                                         const Simulation& sim);
+struct LoadedAdventure {
+    std::string text;
+    AdventureData data;
+    AdventureRun run;
+    std::optional<Simulation> sim;
+};
+bool is_adventure_save(const std::vector<std::uint8_t>& bytes);
+std::optional<LoadedAdventure> load_adventure(const DataCatalog& catalog, const std::vector<std::uint8_t>& bytes,
+                                              std::string& error);
+
 }  // namespace bo::core

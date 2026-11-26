@@ -183,6 +183,12 @@ func _init() -> void:
 	check(ad.start_adventure("res://data", "res://scenarios/example_adventure.json") == "", "start the example adventure")
 	check(ad.get_adventure()["steps"] == 4 and ad.get_adventure()["kind"] == "parent", "adventure steps")
 	check(ad.continue_adventure() == "not_won", "no next episode before the goals are met")
+	# B-007: the save keeps the adventure; a new instance resumes it.
+	var adv_bytes: PackedByteArray = ad.save()
+	var ad2 := BoSimulation.new()
+	ad2.start("res://data", 1, "", 0)
+	check(ad2.load(adv_bytes) == "", "load an adventure save")
+	check(ad2.get_adventure().get("steps", 0) == 4 and ad2.get_state_hash() == ad.get_state_hash(), "the adventure came back")
 
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
