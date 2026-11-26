@@ -147,6 +147,11 @@ void report(const Simulation& sim, std::uint64_t year) {
     std::printf("\n");
 }
 
+const Building* w_levels(const Simulation& sim, BuildingId id) {
+    const auto it = sim.state().city.buildings.items.find(id);
+    return it == sim.state().city.buildings.items.end() || !it->second.house ? nullptr : &it->second;
+}
+
 // BO_DEMO_LOG=2: per building type, the count, mean staffing and stock; houses by level with their goods.
 void dump(const Simulation& sim) {
     std::map<std::string, std::array<std::uint64_t, 4>> types;  // count, staffing, output, stall units
@@ -251,7 +256,54 @@ DemoRun run_demo(std::uint64_t years) {
             sim.issue(c);
         }
         sim.run_days(1);
-        count_events(sim.drain_events(), run.seen);
+        const auto events = sim.drain_events();
+        count_events(events, run.seen);
+        if (const char* m = std::getenv("BO_DEMO_MONTHLY")) {  // e.g. BO_DEMO_MONTHLY=7: a line a month from year 7
+            static std::map<std::string, std::uint32_t> tally;
+            for (const auto& e : events) {
+                if (const auto* d = std::get_if<Disaster>(&e.event)) {
+                    ++tally["disaster" + std::to_string(static_cast<int>(d->kind))];
+                }
+                if (const auto* h = std::get_if<HouseChanged>(&e.event)) {
+                    static std::map<BuildingId, std::uint8_t> last_level;
+                    const auto it = w_levels(sim, h->id);
+                    if (last_level.count(h->id) && h->level < last_level[h->id] && it) {
+                        // What the level above lacks now: water, food, fleece, oil, culture, appeal.
+                        const Building& b = *it;
+                        const auto& lv = levels_of(sim.catalog(), *b.house)[h->level + 1U];
+                        const HouseModel& mo = lv.model[static_cast<std::size_t>(sim.state().difficulty)];
+                        const auto wb = b.coverage.find("water_bearer");
+                        if (mo.water && (wb == b.coverage.end() || wb->second == 0)) ++tally["no_water"];
+                        for (std::size_t g = 0; g < 3; ++g) {
+                            if (mo.needs[g] && b.house->goods[g] == 0) ++tally[g == 0 ? "no_food" : g == 1 ? "no_fleece" : "no_oil"];
+                        }
+                        if (house_culture(b, sim.catalog(), city_culture_bonus(sim.state().city, sim.catalog())) < mo.culture) ++tally["no_culture"];
+                        if (building_appeal(sim.state().city, b) < levels_of(sim.catalog(), *b.house)[h->level + 1U].model[static_cast<std::size_t>(sim.state().difficulty)].appeal_devolve) ++tally["low_appeal"];
+                        ++tally["drops"];
+                    }
+                    last_level[h->id] = h->level;
+                }
+            }
+            const WorldState& w = sim.state();
+            if (w.time.day_in_month() == kDaysPerMonth - 1 && day / (kDaysPerMonth * kMonthsPerYear) >= std::strtoull(m, nullptr, 10)) {
+                std::size_t lv[8] = {};
+                for (const auto& [id, b] : w.city.buildings.items) {
+                    if (b.house && !b.house->elite && b.house->population > 0) {
+                        ++lv[std::min<std::size_t>(b.house->level, 7)];
+                    }
+                }
+                std::printf("y%llu m%u pop %u in %u out %u homeless %u pop%% %u food %u fleece %u | lv %zu %zu %zu %zu %zu %zu %zu |",
+                            static_cast<unsigned long long>(day / 192), w.time.month(), city_population(w.city),
+                            w.migration.arrived_this_month, w.migration.left_this_month, w.city.homeless,
+                            w.migration.popularity, city_stock(w.city, sim.catalog(), "food"),
+                            city_stock(w.city, sim.catalog(), "fleece"), lv[0], lv[1], lv[2], lv[3], lv[4], lv[5], lv[6]);
+                for (const auto& [k, v] : tally) {
+                    std::printf(" %s %u", k.c_str(), v);
+                }
+                std::printf("\n");
+                tally.clear();
+            }
+        }
         run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
         run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
         for (const auto& [id, b] : sim.state().city.buildings.items) {
