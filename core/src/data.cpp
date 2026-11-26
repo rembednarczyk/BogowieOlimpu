@@ -61,6 +61,8 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.id = o.at("id").get<std::string>();
         t.tab = o.value("tab", "");
         t.culture = o.value("culture", "");
+        const auto& rr = o.value("requires_road", json(true));
+        t.requires_road = rr.is_boolean() ? rr.get<bool>() : true;
         cat.buildings.emplace(t.id, t);
     }
     for (const auto& o : stats) {
@@ -82,6 +84,31 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
                                     opt_int(a.value("range", json())).value_or(0)};
         }
         cat.building_stats.emplace(s.id, s);
+    }
+}
+
+void load_walkers(const json& walkers, DataCatalog& cat) {
+    for (const auto& o : walkers) {
+        WalkerType w;
+        w.id = o.at("id").get<std::string>();
+        const auto kind = o.value("type", "destination");
+        w.kind = kind == "roaming" ? WalkerKind::Roaming : kind == "two_phase" ? WalkerKind::TwoPhase : WalkerKind::Destination;
+        const auto& from = o.value("from", json());
+        if (from.is_string()) {
+            w.from.push_back(from.get<std::string>());
+        } else if (from.is_array()) {
+            for (const auto& f : from) {
+                w.from.push_back(f.get<std::string>());
+            }
+        }
+        if (o.contains("roam_ticks")) {
+            w.roam_ticks = o.at("roam_ticks").get<std::uint32_t>();
+        }
+        // Speed in tiles per month -> steps per tick, as Q.16 fixed point: tiles * 15 / 816 ticks.
+        // Decimal speeds (54.4, 72.53...) are converted once at load time in integer thousandths.
+        const auto milli = static_cast<std::int64_t>(std::llround(o.value("speed_tiles_per_month", 54.4) * 1000.0));
+        w.speed_raw = (milli * 15 * 65536) / (816 * 1000);
+        cat.walkers.emplace(w.id, w);
     }
 }
 
@@ -213,6 +240,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
     try {
         validate(docs, result.errors);
         load_buildings(docs.at("buildings.json"), docs.at("building_stats.json"), cat);
+        load_walkers(docs.at("walkers.json"), cat);
         for (const auto& h : docs.at("housing.json")) {
             cat.housing_levels.push_back(h.at("id").get<std::string>());
         }

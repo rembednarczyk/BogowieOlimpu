@@ -1,6 +1,10 @@
 # Core simulation library: pure C++17, no Godot headers (checked by tools/checks/check_core.py).
 add_library(bo_core STATIC
+    src/city.cpp
     src/data.cpp
+    src/map.cpp
+    src/path.cpp
+    src/walker.cpp
     src/serialize.cpp
     src/simulation.cpp
 )
@@ -22,6 +26,10 @@ if(BO_BUILD_TESTS)
         tests/test_data.cpp
         tests/test_save.cpp
         tests/test_golden.cpp
+        tests/test_map.cpp
+        tests/test_city.cpp
+        tests/test_path.cpp
+        tests/test_walker.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

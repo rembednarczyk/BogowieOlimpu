@@ -43,6 +43,17 @@ struct BuildingType {
     std::string id;
     std::string tab;
     std::string culture;
+    bool requires_road = true;  // Z:24-25; false for aesthetics, walls, trees, animals
+};
+
+enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
+
+struct WalkerType {
+    std::string id;
+    WalkerKind kind = WalkerKind::Destination;
+    std::vector<std::string> from;              // building ids (or family ids such as "agora")
+    std::optional<std::uint32_t> roam_ticks;    // roaming budget (doc 24)
+    std::int64_t speed_raw = 0;                 // steps per tick as Fixed raw value (54.4 tiles/month = 1.0)
 };
 
 struct DataCatalog {
@@ -50,6 +61,7 @@ struct DataCatalog {
     std::vector<std::string> files;                 // loaded file names, sorted
     std::map<std::string, BuildingType> buildings;  // std::map: deterministic iteration order
     std::map<std::string, BuildingStats> building_stats;
+    std::map<std::string, WalkerType> walkers;
     std::vector<std::string> housing_levels;        // in file order
     Difficulty default_difficulty = Difficulty::Hero;
     std::array<std::int32_t, static_cast<std::size_t>(TaxRate::Count)> tax_rate_per_mille{};

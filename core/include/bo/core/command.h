@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <variant>
 #include <vector>
 
@@ -21,7 +22,33 @@ struct SetWageRate {
     WageRate rate = WageRate::Normal;
 };
 
-using Command = std::variant<SetTaxRate, SetWageRate>;
+struct PlaceBuilding {
+    std::string type;
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+struct PlaceRoad {
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+struct PlaceRoadblock {
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+struct ClearLand {
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+struct Demolish {
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

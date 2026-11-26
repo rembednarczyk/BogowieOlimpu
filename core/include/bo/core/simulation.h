@@ -18,6 +18,7 @@ struct SimulationConfig {
     std::uint64_t seed = 0;
     std::optional<Difficulty> difficulty;  // default: catalog default (R-013: Hero)
     std::int64_t initial_treasury = 0;     // from the scenario
+    std::vector<std::string> text_map;     // optional map in the parse_text_map format (tests, golden scenario)
 };
 
 class Simulation;
@@ -36,6 +37,8 @@ const std::vector<DailySystem>& daily_schedule();
 class Simulation {
 public:
     Simulation(const DataCatalog& catalog, const SimulationConfig& config);
+    // Valid when the map in the config parsed correctly; otherwise holds the error key.
+    [[nodiscard]] const std::string& setup_error() const { return setup_error_; }
     Simulation(const DataCatalog& catalog, WorldState state);
 
     // Queues a command for the start of the next tick. Returns its sequence number.
@@ -63,11 +66,14 @@ public:
 private:
     void execute_due_commands();
     void apply(const Command& command, std::uint32_t index);
+    void apply_build(const BuildResult& r, std::uint32_t index, TilePos tile, bool tile_changed);
+    void step_walkers();
 
     const DataCatalog& catalog_;
     WorldState state_;
     EventQueue events_;
     CommandLog executed_;
+    std::string setup_error_;
 };
 
 }  // namespace bo::core

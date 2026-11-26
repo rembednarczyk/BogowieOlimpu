@@ -12,7 +12,7 @@
 namespace bo::core {
 
 inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian bytes: B S O V
-inline constexpr std::uint32_t kSaveFormatVersion = 1;
+inline constexpr std::uint32_t kSaveFormatVersion = 2;  // v2: city map, buildings, walkers
 
 class ByteWriter {
 public:
@@ -28,6 +28,13 @@ public:
         }
     }
     void i64(std::int64_t v) { u64(static_cast<std::uint64_t>(v)); }
+    void i32(std::int32_t v) { u32(static_cast<std::uint32_t>(v)); }
+    void str(const std::string& s) {
+        u32(static_cast<std::uint32_t>(s.size()));
+        for (const char c : s) {
+            u8(static_cast<std::uint8_t>(c));
+        }
+    }
     [[nodiscard]] const std::vector<std::uint8_t>& bytes() const { return bytes_; }
 
 private:
@@ -47,6 +54,8 @@ public:
     bool u32(std::uint32_t& v);
     bool u64(std::uint64_t& v);
     bool i64(std::int64_t& v);
+    bool i32(std::int32_t& v);
+    bool str(std::string& s);
     [[nodiscard]] bool at_end() const { return pos_ == bytes_.size(); }
 
 private:

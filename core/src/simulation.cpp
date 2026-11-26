@@ -5,6 +5,7 @@
 
 #include "bo/core/hash.h"
 #include "bo/core/serialize.h"
+#include "bo/core/walker.h"
 
 namespace bo::core {
 namespace {
@@ -28,6 +29,66 @@ void run_calendar(Simulation& sim) {
     sim.emit(DayStarted{t.total_days()});
 }
 
+// Spawn delay in days by staffing (S-007 Akhenaten, doc 24): 100% -> 0, >=75% -> 1, >=50% -> 3, >=25% -> 7, else 15.
+std::uint32_t spawn_delay_days(std::uint8_t staffing) {
+    if (staffing >= 100) {
+        return 0;
+    }
+    if (staffing >= 75) {
+        return 1;
+    }
+    if (staffing >= 50) {
+        return 3;
+    }
+    return staffing >= 25 ? 7 : 15;
+}
+
+bool walker_from_building(const WalkerType& w, const std::string& building_type) {
+    for (const auto& f : w.from) {
+        if (f == building_type || (f == "agora" && building_type.find("agora") != std::string::npos)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Daily: each staffed building with road access sends its roaming walker when the previous one is back.
+void run_walker_spawn(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    for (auto& [id, b] : st.city.buildings.items) {
+        if (b.roaming_walker != kNoWalker || !b.road_access || b.staffing_percent == 0) {
+            continue;
+        }
+        if (b.days_since_spawn++ < spawn_delay_days(b.staffing_percent)) {
+            continue;
+        }
+        for (const auto& [wid, wt] : sim.catalog().walkers) {
+            if (wt.kind != WalkerKind::Roaming || !wt.roam_ticks || !walker_from_building(wt, b.type)) {
+                continue;
+            }
+            const WalkerId w = spawn_roaming_walker(st.city, st.walkers, sim.catalog(), wid, id, b.next_roam_dir);
+            if (w != kNoWalker) {
+                b.roaming_walker = w;
+                b.days_since_spawn = 0;
+                b.next_roam_dir = rotate(b.next_roam_dir, 1);
+                sim.emit(WalkerSpawned{w, wid});
+            }
+            break;
+        }
+    }
+}
+
+// Daily: every service counter decays by 1 (96 days per visit, doc 24).
+void run_coverage_decay(Simulation& sim) {
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        for (auto& [service, days] : b.coverage) {
+            if (days > 0) {
+                --days;
+            }
+        }
+    }
+}
+
 bool schedule_order(const ScheduledCommand& a, const ScheduledCommand& b) {
     return a.tick != b.tick ? a.tick < b.tick : a.sequence < b.sequence;
 }
@@ -38,6 +99,8 @@ const std::vector<DailySystem>& daily_schedule() {
     // Ticks of the day follow the engine family layout; new systems get their own slot (docs/05-SYMULACJA.md).
     static const std::vector<DailySystem> kSchedule = {
         {"calendar", 0, &run_calendar},
+        {"walker_spawn", 31, &run_walker_spawn},
+        {"coverage_decay", 35, &run_coverage_decay},
     };
     return kSchedule;
 }
@@ -46,6 +109,14 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.rng.reseed(config.seed);
     state_.difficulty = config.difficulty.value_or(catalog.default_difficulty);
     state_.finance.treasury = config.initial_treasury;
+    if (!config.text_map.empty()) {
+        auto map = parse_text_map(config.text_map, setup_error_);
+        if (map) {
+            state_.city.map = std::move(*map);
+            state_.city.map.generate_random_bytes(state_.rng.stream(RngStream::MapGeneration));
+            update_roads(state_.city);
+        }
+    }
 }
 
 Simulation::Simulation(const DataCatalog& catalog, WorldState state) : catalog_(catalog), state_(std::move(state)) {}
@@ -62,6 +133,7 @@ std::uint64_t Simulation::issue_at(std::uint64_t tick, const Command& command) {
 void Simulation::step(std::uint64_t ticks) {
     for (std::uint64_t i = 0; i < ticks; ++i) {
         execute_due_commands();
+        step_walkers();
         const std::uint32_t tick_in_day = state_.time.tick_in_day();
         for (const auto& system : daily_schedule()) {
             if (system.tick_in_day == tick_in_day) {
@@ -83,8 +155,40 @@ void Simulation::execute_due_commands() {
     pending.erase(pending.begin(), pending.begin() + static_cast<std::ptrdiff_t>(done));
 }
 
-void Simulation::apply(const Command& command, std::uint32_t /*index*/) {
+void Simulation::step_walkers() {
+    auto& walkers = state_.walkers.items;
+    for (auto& [id, w] : walkers) {
+        step_walker(state_.city, w);
+    }
+    for (auto it = walkers.begin(); it != walkers.end();) {
+        if (it->second.phase != WalkerPhase::Done) {
+            ++it;
+            continue;
+        }
+        const auto home = state_.city.buildings.items.find(it->second.home);
+        if (home != state_.city.buildings.items.end() && home->second.roaming_walker == it->first) {
+            home->second.roaming_walker = kNoWalker;
+        }
+        emit(WalkerRemoved{it->first});
+        it = walkers.erase(it);
+    }
+}
+
+void Simulation::apply_build(const BuildResult& r, std::uint32_t index, TilePos tile, bool tile_changed) {
+    if (!r.ok()) {
+        emit(CommandRejected{index, r.reason});
+        return;
+    }
+    state_.finance.treasury -= r.cost;  // debt allowed [ZAŁOŻENIE, L-094]
+    if (tile_changed) {
+        emit(TileChanged{tile.x, tile.y});
+    }
+}
+
+void Simulation::apply(const Command& command, std::uint32_t index) {
     // One handler per command type; a missing handler fails to compile.
+    CityState& city = state_.city;
+    const Difficulty diff = state_.difficulty;
     std::visit(Overloaded{
                    [this](const SetTaxRate& c) {
                        state_.finance.tax_rate = c.rate;
@@ -93,6 +197,26 @@ void Simulation::apply(const Command& command, std::uint32_t /*index*/) {
                    [this](const SetWageRate& c) {
                        state_.finance.wage_rate = c.rate;
                        emit(WageRateChanged{c.rate});
+                   },
+                   [&](const PlaceBuilding& c) {
+                       const auto r = place_building(city, catalog_, diff, c.type, {c.x, c.y});
+                       apply_build(r, index, {c.x, c.y}, false);
+                       if (r.ok()) {
+                           const Building& b = city.buildings.items.at(r.building);
+                           emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height});
+                       }
+                   },
+                   [&](const PlaceRoad& c) { apply_build(place_road(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true); },
+                   [&](const PlaceRoadblock& c) {
+                       apply_build(place_roadblock(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true);
+                   },
+                   [&](const ClearLand& c) { apply_build(clear_land(city, catalog_, diff, {c.x, c.y}), index, {c.x, c.y}, true); },
+                   [&](const Demolish& c) {
+                       const auto r = demolish(city, {c.x, c.y});
+                       apply_build(r, index, {c.x, c.y}, r.building == kNoBuilding);
+                       if (r.ok() && r.building != kNoBuilding) {
+                           emit(BuildingRemoved{r.building});
+                       }
                    },
                },
                command);
