@@ -200,3 +200,24 @@ TEST_CASE("save v15: spawn points load without the hunting wolf field (v16)") {
     cut(v15, kWalkersBlock + kFinance + kTrade + kMigration + kLabour, 4);  // the hunter id of the one den
     check_load(v15, 15, a.state_hash());
 }
+
+TEST_CASE("B-001: burning days and quarantine survive a save (read in the order they are written)") {
+    std::vector<std::string> rows(10, std::string(20, '.'));
+    rows[5] = std::string(20, '=');
+    Simulation a(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 5000, rows});
+    a.issue(PlaceBuilding{"common_housing", 2, 3});
+    a.issue(PlaceBuilding{"granary", 10, 1});
+    a.step(1);
+    for (auto& [id, b] : a.mutable_state().city.buildings.items) {
+        if (b.house) {
+            b.house->quarantine_days = 1;  // a value that the misread turned into 256
+        } else {
+            b.burning_days = 3;
+        }
+    }
+    std::string error;
+    auto b = Simulation::load(bo::test::catalog_isolated(), a.save(), error);
+    REQUIRE(b.has_value());
+    CHECK(b->state().city.buildings.items == a.state().city.buildings.items);
+    CHECK(b->state_hash() == a.state_hash());
+}

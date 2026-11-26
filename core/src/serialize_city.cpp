@@ -126,13 +126,14 @@ void write_building(ByteWriter& w, const Building& b) {
 }
 
 bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
+    // In the order write_risks writes them: four counters, the burning days, then the quarantine (B-001).
     std::uint32_t v[5] = {};
-    for (auto& x : v) {
-        if (!r.u32(x) || x > 0xFFFF) {
+    for (std::size_t i = 0; i < 4; ++i) {
+        if (!r.u32(v[i]) || v[i] > 0xFFFF) {
             return false;
         }
     }
-    if (!r.u8(b.burning_days)) {
+    if (!r.u8(b.burning_days) || !r.u32(v[4]) || v[4] > 0xFFFF) {
         return false;
     }
     b.fire_counter = static_cast<std::uint16_t>(v[0]);
