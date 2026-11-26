@@ -16,6 +16,7 @@
 #include "bo/core/trade.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
+#include "bo/core/world.h"
 
 namespace bo::core {
 namespace {
@@ -298,6 +299,9 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const StartInvasion&) { apply_combat_command(command, index); },
                    [&](const BribeInvaders&) { apply_combat_command(command, index); },
                    [&](const Surrender&) { apply_combat_command(command, index); },
+                   [&](const GiftToCity&) { apply_world_command(command, index); },
+                   [&](const RequestFromCity&) { apply_world_command(command, index); },
+                   [&](const DispatchArmy&) { apply_world_command(command, index); },
                    [&](const Pray& c) {
                        const std::string err = pray(state_, catalog_, c.building);
                        if (err.empty()) {
@@ -319,12 +323,27 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                command);
 }
 
+// World commands (D4): gifts, requests, armies abroad.
+void Simulation::apply_world_command(const Command& command, std::uint32_t index) {
+    std::string err;
+    if (const auto* g = std::get_if<GiftToCity>(&command)) {
+        err = give_gift(state_, catalog_, g->city, g->good, g->amount);
+    } else if (const auto* r = std::get_if<RequestFromCity>(&command)) {
+        err = request_from_city(state_, catalog_, r->city, r->good);
+    } else if (const auto* d = std::get_if<DispatchArmy>(&command)) {
+        err = dispatch_army(state_, catalog_, d->city, d->raid, d->good, d->companies);
+    }
+    if (!err.empty()) {
+        emit(CommandRejected{index, err});
+    }
+}
+
 // Invasion commands (D3 stage 2): start, bribe, surrender.
 void Simulation::apply_combat_command(const Command& command, std::uint32_t index) {
     CombatEvents ev;
     std::string err;
     if (const auto* c = std::get_if<StartInvasion>(&command)) {
-        err = start_invasion(state_, catalog_, c->nation, c->soldiers, ev);
+        err = start_invasion(state_, catalog_, c->nation, c->soldiers, ev, c->city);
         if (err.empty()) {
             emit(InvasionStarted{c->nation, static_cast<std::uint32_t>(ev.spawned.size()), bribe_cost(state_, catalog_)});
         }
@@ -345,6 +364,11 @@ void Simulation::emit_combat(const CombatEvents& ev) {
     }
     if (ev.ended) {
         emit(InvasionEnded{*ev.ended});
+        WorldEvents world;
+        invasion_outcome(state_, catalog_, ev.city, *ev.ended, world);
+        if (world.episode_lost) {
+            emit(EpisodeLost{});
+        }
     }
 }
 

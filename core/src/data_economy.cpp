@@ -202,4 +202,34 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
     }
 }
 
+void load_world(const std::map<std::string, json>& docs, WorldParams& p) {
+    if (docs.count("diplomacy.json") == 0) {
+        return;
+    }
+    const json w = docs.at("diplomacy.json").value("world_numbers", json::object());
+    const json attitudes = w.value("attitude", json::object());
+    for (const auto& [name, v] : attitudes.items()) {
+        p.attitude[name] = v.get<std::int32_t>();
+    }
+    p.gift_needed_x2 = w.value("gift_needed_x2", p.gift_needed_x2);
+    p.gift_other_x2 = w.value("gift_other_x2", p.gift_other_x2);
+    p.gift_units_per_year = w.value("gift_units_per_year", p.gift_units_per_year);
+    p.gift_money_unit = w.value("gift_money_unit", p.gift_money_unit);
+    p.request_opinion = w.value("request_opinion", p.request_opinion);
+    p.request_loads = w.value("request_loads", p.request_loads);
+    p.request_money_per_coin = w.value("request_money_per_coin", p.request_money_per_coin);
+    p.request_cooldown_days = w.value("request_cooldown_days", p.request_cooldown_days);
+    p.march_days = w.value("march_days", p.march_days);
+    p.city_strength_per_shield = w.value("city_strength_per_shield", p.city_strength_per_shield);
+    p.tribute_per_coin = w.value("tribute_per_coin", p.tribute_per_coin);
+    p.stops_tribute_below = w.value("stops_tribute_below", p.stops_tribute_below);
+    p.refused_tribute_opinion = w.value("refused_tribute_opinion", p.refused_tribute_opinion);
+    p.attacked_ally_opinion = w.value("attacked_ally_opinion", p.attacked_ally_opinion);
+    p.attacked_rival_respect = w.value("attacked_rival_respect", p.attacked_rival_respect);
+    const json raid = w.value("raid_percent", json::object());
+    for (std::size_t i = 0; i < p.raid_percent.size(); ++i) {
+        p.raid_percent[i] = raid.value(std::string(difficulty_code(static_cast<Difficulty>(i))), 100);
+    }
+}
+
 }  // namespace bo::core::detail

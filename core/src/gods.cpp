@@ -19,20 +19,6 @@ bool sanctifiable(const SanctuaryParams& p, const Building& b) {
                        [&b](const std::string& t) { return t == "any" || t == b.type; });
 }
 
-// Loads of `good` into storages that accept it, in id order; returns the loads placed.
-std::uint32_t gift(CityState& city, const DataCatalog& catalog, const std::string& good, std::uint32_t loads) {
-    std::uint32_t placed = 0;
-    for (auto& [id, b] : city.buildings.items) {
-        if (placed == loads || !b.storage || b.trade || !storage_accepts(b, catalog, good)) {
-            continue;
-        }
-        const std::uint32_t n = std::min(loads - placed, storage_room(b, catalog, good));
-        b.storage->loads[good] += n;
-        placed += n;
-    }
-    return placed;
-}
-
 }  // namespace
 
 bool god_blesses(const CityState& city, const DataCatalog& catalog, const std::string& god) {
@@ -113,15 +99,15 @@ std::string pray(WorldState& st, const DataCatalog& catalog, BuildingId id) {
     const std::string& effect = p.prayer;
     std::uint32_t given = 0;
     if (effect == "food_to_granaries") {
-        given = gift(st.city, catalog, "wheat", loads);
+        given = store_in_city(st.city, catalog, "wheat", loads);
     } else if (effect == "pork") {
-        given = gift(st.city, catalog, "pork", loads);
+        given = store_in_city(st.city, catalog, "pork", loads);
     } else if (effect == "seafood_when_low_food") {
-        given = gift(st.city, catalog, "fish", loads);
+        given = store_in_city(st.city, catalog, "fish", loads);
     } else if (effect == "olives_and_olive_oil") {
-        given = gift(st.city, catalog, "olives", loads / 2) + gift(st.city, catalog, "olive_oil", loads / 2);
+        given = store_in_city(st.city, catalog, "olives", loads / 2) + store_in_city(st.city, catalog, "olive_oil", loads / 2);
     } else if (effect == "wine_by_satyrs") {
-        given = gift(st.city, catalog, "wine", loads);
+        given = store_in_city(st.city, catalog, "wine", loads);
     } else if (effect == "money") {
         st.finance.treasury += catalog.prayer_money;
         given = 1;

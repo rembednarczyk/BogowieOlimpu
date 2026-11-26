@@ -96,7 +96,10 @@ func _ready() -> void:
 		"sells": {"olive_oil": [145, 8], "fleece": [60, 8], "marble": [80, 60], "wood": [50, 24],
 			"sculpture": [200, 4]},
 		"buys": {}}
-	var err: String = sim.start_with_map("res://data", 20261126, "", 25000, demo_map(), false, demo_heights(), [partner])
+	var rival := {"id": "sparta", "relation": "rival", "by_sea": false, "sells": {}, "buys": {},
+		"opinion": 20, "military": 3, "economy": 2}
+	var err: String = sim.start_with_map("res://data", 20261126, "", 25000, demo_map(), false, demo_heights(),
+		[partner, rival])
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
@@ -148,13 +151,16 @@ func _demo_day() -> void:
 		sim.place_building("sanctuary_dionysus", 41, 17)
 	if not invasion_started and sim.get_month() == 5:
 		invasion_started = true
-		sim.start_invasion("greek", 6)
+		sim.start_invasion("greek", 6, 1)  # sent by the rival Sparta (D4)
 	demo_status = "marmur %d" % _city_stock("marble")
 	for b in sim.get_buildings():
 		if b.has("sanctuary_complete"):
 			demo_status = "sanktuarium: %s, ładunki do wbudowania %d" % [
 				"gotowe" if b["sanctuary_complete"] else "budowa", b["sanctuary_loads_needed"]]
 	demo_status += "   kompanie %d" % sim.get_companies().size()
+	var cities: Array = sim.get_cities()
+	if cities.size() > 1 and cities[1]["tribute_demand"] > 0:
+		demo_status += "   trybut dla Sparty %d dr/rok" % cities[1]["tribute_demand"]
 
 func _city_stock(good: String) -> int:
 	var total := 0

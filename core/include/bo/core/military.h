@@ -17,7 +17,7 @@ namespace bo::core {
 struct WorldState;
 
 // Stored in saves: append only.
-enum class CompanyStatus : std::uint8_t { AtHome = 0, Marching, Still, GoingHome, Fighting, Fleeing };
+enum class CompanyStatus : std::uint8_t { AtHome = 0, Marching, Still, GoingHome, Fighting, Fleeing, ServingAbroad };
 
 struct CompanyMember {
     BuildingId house = kNoBuilding;
@@ -47,8 +47,10 @@ struct Invasion {
     std::string nation;
     std::vector<WalkerId> invaders;
     TilePos origin{0, 0};  // where they came in and where they leave
+    std::int32_t city = -1;  // the partner city that sent them (D4), -1: none (since v21)
     friend bool operator==(const Invasion& a, const Invasion& b) {
-        return a.active == b.active && a.nation == b.nation && a.invaders == b.invaders && a.origin == b.origin;
+        return a.active == b.active && a.nation == b.nation && a.invaders == b.invaders && a.origin == b.origin &&
+               a.city == b.city;
     }
 };
 
@@ -84,12 +86,13 @@ std::uint32_t workers_in_the_field(const WorldState& state, const DataCatalog& c
 struct CombatEvents {
     std::vector<WalkerId> spawned;
     std::optional<std::uint8_t> ended;  // InvasionEnded::result
+    std::int32_t city = -1;             // the city that sent the army that left
 };
 
 // Invaders of `nation` enter at the invasion point (map symbol 'i'; else the land entry): `soldiers` split by
 // the nation's composition, rounded down (doc 22), at most 256. They march on the Palace.
 std::string start_invasion(WorldState& state, const DataCatalog& catalog, const std::string& nation,
-                           std::uint32_t soldiers, CombatEvents& ev);
+                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city = -1);
 // Bribe (doc 22): 100 dr a foot soldier, 200 a mounted one, x the difficulty percent; they walk away.
 std::int64_t bribe_cost(const WorldState& state, const DataCatalog& catalog);
 std::string bribe_invaders(WorldState& state, const DataCatalog& catalog, CombatEvents& ev);

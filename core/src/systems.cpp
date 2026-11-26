@@ -14,6 +14,7 @@
 #include "bo/core/trade.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
+#include "bo/core/world.h"
 #include "systems.h"
 
 namespace bo::core {
@@ -230,6 +231,17 @@ static void run_mythology(Simulation& sim) {
     }
 }
 
+// D4: expeditions, request cooldowns, yearly tribute.
+static void run_world(Simulation& sim) {
+    const WorldEvents ev = advance_world(sim.mutable_state(), sim.catalog());
+    for (const auto& [city, amount] : ev.tribute) {
+        sim.emit(TributePaid{city, amount});
+    }
+    for (const Expedition& e : ev.returned) {
+        sim.emit(ExpeditionReturned{e.city, e.won, e.losses, e.loot});
+    }
+}
+
 // D3: companies in the field settle, companies at home re-form from the houses.
 static void run_military(Simulation& sim) {
     update_companies(sim.mutable_state());
@@ -255,6 +267,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"walker_spawn", 31, &run_walker_spawn},
         {"military", 32, &run_military},
         {"mythology", 33, &run_mythology},
+        {"world", 34, &run_world},
         {"coverage_decay", 35, &run_coverage_decay},
     };
     return kSchedule;

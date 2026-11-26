@@ -82,4 +82,34 @@ std::uint32_t city_stock(const CityState& city, const DataCatalog& catalog, cons
     return total;
 }
 
+std::uint32_t store_in_city(CityState& city, const DataCatalog& catalog, const std::string& good, std::uint32_t loads) {
+    std::uint32_t placed = 0;
+    for (auto& [id, b] : city.buildings.items) {
+        if (placed == loads || !b.storage || b.trade || !storage_accepts(b, catalog, good)) {
+            continue;
+        }
+        const std::uint32_t n = std::min(loads - placed, storage_room(b, catalog, good));
+        b.storage->loads[good] += n;
+        placed += n;
+    }
+    return placed;
+}
+
+std::uint32_t take_from_city(CityState& city, const std::string& good, std::uint32_t loads) {
+    std::uint32_t taken = 0;
+    for (auto& [id, b] : city.buildings.items) {
+        if (taken == loads || !b.storage || b.trade) {
+            continue;
+        }
+        const auto it = b.storage->loads.find(good);
+        if (it == b.storage->loads.end()) {
+            continue;
+        }
+        const std::uint32_t n = std::min(loads - taken, it->second);
+        it->second -= n;
+        taken += n;
+    }
+    return taken;
+}
+
 }  // namespace bo::core

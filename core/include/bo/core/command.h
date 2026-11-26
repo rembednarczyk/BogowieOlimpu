@@ -106,6 +106,7 @@ struct SendCompanyHome {
 struct StartInvasion {
     std::string nation;  // data/enemies.json
     std::uint32_t soldiers = 0;
+    std::int32_t city = -1;  // the partner city that sends them (D4), -1: none
 };
 
 // The player's answer to an invasion (Z:137): buy them off or give in. Fighting needs no command.
@@ -117,10 +118,29 @@ struct Pray {
     std::uint32_t building = 0;
 };
 
+// World (D4, Z:173-178): `city` indexes the partner cities of the scenario; "drachmas" is money.
+struct GiftToCity {
+    std::uint32_t city = 0;
+    std::string good;
+    std::uint32_t amount = 0;  // loads, or drachmas
+};
+
+struct RequestFromCity {
+    std::uint32_t city = 0;
+    std::string good;
+};
+
+struct DispatchArmy {
+    std::uint32_t city = 0;
+    bool raid = false;
+    std::string good;  // raid only
+    std::vector<std::uint32_t> companies;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
-                             StartInvasion, BribeInvaders, Surrender, Pray>;
+                             StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

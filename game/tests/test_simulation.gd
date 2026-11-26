@@ -164,6 +164,12 @@ func _init() -> void:
 	var prej: Array = sa.drain_events().filter(func(e): return e["type"] == "command_rejected")
 	check(prej.size() == 1 and prej[0]["reason"] == "myth.no_sanctuary", "prayer needs a finished sanctuary")
 
+	# World through the binding (D4): a money gift raises Corinth's opinion (2 units x 3, doc 24).
+	t.give_gift(0, "drachmas", 1000)
+	t.step(1)
+	var cities: Array = t.get_cities()
+	check(cities.size() == 1 and cities[0]["opinion"] == 66, "gift raises the opinion: %s" % [cities])
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

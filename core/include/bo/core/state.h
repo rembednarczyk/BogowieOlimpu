@@ -48,12 +48,50 @@ struct TradeOffer {
     std::uint32_t traded = 0;          // loads traded this year
 };
 
+// Module D4: what a leader thinks of the player and owes or demands (Z:167-178; doc 24; L-064, L-113).
+struct CityDiplomacy {
+    std::int32_t opinion = 60;      // 0-100, scenario "favour" (doc 24)
+    std::int32_t military = 1;      // shields 1-6 (Z:171, S-008)
+    std::int32_t economy = 1;       // coins 1-6
+    std::int64_t tribute = 0;       // what a vassal or colony pays a year (Z:172)
+    std::int64_t tribute_demand = 0;  // what this rival demands a year after taking the player's city
+    bool rebelling = false;
+    std::uint8_t player_defeats = 0;  // times this rival took the player's city (two: the episode is lost)
+    std::map<std::string, std::uint32_t> gift_units_this_year;
+    std::uint16_t request_cooldown = 0;  // days until a new request is heard
+    friend bool operator==(const CityDiplomacy& a, const CityDiplomacy& b) {
+        return a.opinion == b.opinion && a.military == b.military && a.economy == b.economy &&
+               a.tribute == b.tribute && a.tribute_demand == b.tribute_demand && a.rebelling == b.rebelling &&
+               a.player_defeats == b.player_defeats && a.gift_units_this_year == b.gift_units_this_year &&
+               a.request_cooldown == b.request_cooldown;
+    }
+};
+
 struct TradePartner {
     std::string id;
     std::string relation = "ally";     // ally, colony, vassal, rival, distant (Z:167-170)
     bool by_sea = false;               // sea route (blue) or land route (red-brown) (Z:75)
     std::map<std::string, TradeOffer> sells;  // what we can import
     std::map<std::string, TradeOffer> buys;   // what we can export
+    CityDiplomacy diplomacy;           // D4; saved in the world block (since v21)
+};
+
+// An army sent abroad (Z:177-178): out, battle, back (doc 24: 200 days each way, L-063).
+struct Expedition {
+    std::uint32_t city = 0;
+    bool raid = false;
+    std::string good;                   // raid: what to bring back
+    std::vector<std::uint32_t> companies;
+    std::uint32_t days_left = 0;
+    bool returning = false;
+    bool won = false;
+    std::uint32_t losses = 0;           // soldiers lost in the battle
+    std::uint32_t loot = 0;             // loads (or drachmas for "drachmas")
+    friend bool operator==(const Expedition& a, const Expedition& b) {
+        return a.city == b.city && a.raid == b.raid && a.good == b.good && a.companies == b.companies &&
+               a.days_left == b.days_left && a.returning == b.returning && a.won == b.won && a.losses == b.losses &&
+               a.loot == b.loot;
+    }
 };
 
 struct TradeWorld {
@@ -73,6 +111,8 @@ struct WorldState {
     TradeWorld trade;
     WalkerStore walkers;
     MilitaryState military;  // since v17 (module D3)
+    std::vector<Expedition> expeditions;  // since v21 (module D4)
+    bool episode_lost = false;            // since v21: taken twice by the same rival (Z:172)
     std::uint64_t next_command_sequence = 0;
     CommandLog pending_commands;  // sorted by (tick, sequence)
 };

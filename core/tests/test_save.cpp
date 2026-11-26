@@ -84,10 +84,18 @@ constexpr std::size_t kTrade = 16;
 constexpr std::size_t kUndo = 29;
 constexpr std::size_t kCityBase = 16;
 constexpr std::size_t kInvasion = 17;  // v18: no invasion (flag, empty nation, no invaders, origin)
+constexpr std::size_t kWorldTail = 4 + 9;  // v21: invasion city, then the world block (no partners, no armies)
 constexpr std::size_t kMilitary = 4 + kInvasion;  // v17: company count, after the walkers
+
+// The save without the v21 tail: the layout of v20.
+std::vector<std::uint8_t> as_v20(std::vector<std::uint8_t> bytes) {
+    bytes.resize(bytes.size() - kWorldTail);
+    return bytes;
+}
 
 // The save without the v17 army block (no companies): the layout of v16 and older.
 std::vector<std::uint8_t> without_military(std::vector<std::uint8_t> bytes) {
+    bytes = as_v20(std::move(bytes));
     bytes.resize(bytes.size() - kMilitary);
     return bytes;
 }
@@ -113,7 +121,8 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
-    auto v17 = a.save();
+    check_load(as_v20(a.save()), 20, h);
+    auto v17 = as_v20(a.save());
     v17.resize(v17.size() - kInvasion);
     check_load(v17, 17, h);
     const auto current = without_military(a.save());

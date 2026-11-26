@@ -29,4 +29,10 @@ std::uint32_t city_stock(const CityState& city, const DataCatalog& catalog, cons
 // Whether a good belongs to a list that may name goods or classes (e.g. stall "sells": ["food"]).
 bool good_matches(const DataCatalog& catalog, const std::string& good, const std::vector<std::string>& list);
 
+// Puts up to `loads` of `good` into city storages that accept it, in id order (gifts of gods and cities);
+// returns the loads placed. Trade buildings are left out.
+std::uint32_t store_in_city(CityState& city, const DataCatalog& catalog, const std::string& good, std::uint32_t loads);
+// Takes up to `loads` of `good` out of city storages in id order; returns the loads taken.
+std::uint32_t take_from_city(CityState& city, const std::string& good, std::uint32_t loads);
+
 }  // namespace bo::core

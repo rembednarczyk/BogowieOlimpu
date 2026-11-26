@@ -122,10 +122,25 @@ struct PrayerAnswered {  // D1: the god granted the prayer (Z:124)
     std::uint32_t building = 0;
 };
 
+struct TributePaid {  // D4: yearly tribute; amount > 0 received from a vassal or colony, < 0 paid to a rival
+    std::uint32_t city = 0;
+    std::int64_t amount = 0;
+};
+
+struct ExpeditionReturned {  // D4: an army back from abroad
+    std::uint32_t city = 0;
+    bool won = false;
+    std::uint32_t losses = 0;
+    std::uint32_t loot = 0;
+};
+
+struct EpisodeLost {};  // D4: taken twice by the same rival (Z:172)
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
-                           InvasionEnded, SanctuaryCompleted, PrayerAnswered>;
+                           InvasionEnded, SanctuaryCompleted, PrayerAnswered,
+                           TributePaid, ExpeditionReturned, EpisodeLost>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

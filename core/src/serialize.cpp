@@ -91,6 +91,22 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, StartInvasion>) {
                 w.str(cmd.nation);
                 w.u32(cmd.soldiers);
+                w.i32(cmd.city);  // since v21
+            } else if constexpr (std::is_same_v<T, GiftToCity>) {
+                w.u32(cmd.city);
+                w.str(cmd.good);
+                w.u32(cmd.amount);
+            } else if constexpr (std::is_same_v<T, RequestFromCity>) {
+                w.u32(cmd.city);
+                w.str(cmd.good);
+            } else if constexpr (std::is_same_v<T, DispatchArmy>) {
+                w.u32(cmd.city);
+                w.u8(cmd.raid ? 1 : 0);
+                w.str(cmd.good);
+                w.u32(static_cast<std::uint32_t>(cmd.companies.size()));
+                for (const std::uint32_t c : cmd.companies) {
+                    w.u32(c);
+                }
             } else if constexpr (std::is_same_v<T, Pray>) {
                 w.u32(cmd.building);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
@@ -122,8 +138,26 @@ bool read_xy(ByteReader& r, Command& out) {
     return true;
 }
 
-// Commands of modules D (army, invasions, gods), indices 13 and up.
-bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out) {
+bool read_dispatch(ByteReader& r, Command& out) {
+    DispatchArmy c;
+    std::uint8_t raid = 0;
+    std::uint32_t n = 0;
+    if (!r.u32(c.city) || !r.u8(raid) || !r.str(c.good) || !r.u32(n) || n > kMaxCompanies) {
+        return false;
+    }
+    c.raid = raid != 0;
+    c.companies.resize(n);
+    for (std::uint32_t& id : c.companies) {
+        if (!r.u32(id)) {
+            return false;
+        }
+    }
+    out = c;
+    return true;
+}
+
+// Commands of modules D (army, invasions, gods, world), indices 13 and up.
+bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std::uint32_t version) {
     switch (index) {
         case 13:
         case 15: {
@@ -144,7 +178,7 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out) {
         }
         case 16: {
             StartInvasion c;
-            if (!r.str(c.nation) || !r.u32(c.soldiers)) {
+            if (!r.str(c.nation) || !r.u32(c.soldiers) || (version >= 21 && !r.i32(c.city))) {
                 return false;
             }
             out = c;
@@ -164,6 +198,24 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out) {
             out = c;
             return true;
         }
+        case 20: {
+            GiftToCity c;
+            if (!r.u32(c.city) || !r.str(c.good) || !r.u32(c.amount)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 21: {
+            RequestFromCity c;
+            if (!r.u32(c.city) || !r.str(c.good)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 22:
+            return read_dispatch(r, out);
         default:
             return false;
     }
@@ -253,7 +305,7 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
             return true;
         }
         default:
-            return read_module_d_command(r, index, out);
+            return read_module_d_command(r, index, out, version);
     }
 }
 
@@ -287,6 +339,7 @@ std::vector<std::uint8_t> serialize_state(const WorldState& s, std::uint64_t dat
     write_economy(w, s);          // since v5: labour and finance details
     write_walkers(w, s.walkers);  // since v2 (v3: return_north)
     write_military(w, s.military);  // since v17
+    write_world(w, s);              // since v21
     return w.bytes();
 }
 
@@ -345,7 +398,8 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
     if (out.format_version >= 2 &&
         (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s, out.format_version)) ||
          !read_walkers(r, s.walkers, out.format_version) ||
-         (out.format_version >= 17 && !read_military(r, s.military, out.format_version)))) {
+         (out.format_version >= 17 && !read_military(r, s.military, out.format_version)) ||
+         (out.format_version >= 21 && !read_world(r, s)))) {
         error = "save.corrupt";
         return std::nullopt;
     }

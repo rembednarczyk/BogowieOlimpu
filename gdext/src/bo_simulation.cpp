@@ -115,6 +115,19 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["soldiers"] = static_cast<int64_t>(e.soldiers);
                        d["bribe"] = static_cast<int64_t>(e.bribe);
                    },
+                   [&d](const bo::core::TributePaid& e) {
+                       d["type"] = "tribute_paid";
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["amount"] = static_cast<int64_t>(e.amount);
+                   },
+                   [&d](const bo::core::ExpeditionReturned& e) {
+                       d["type"] = "expedition_returned";
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["won"] = e.won;
+                       d["losses"] = static_cast<int64_t>(e.losses);
+                       d["loot"] = static_cast<int64_t>(e.loot);
+                   },
+                   [&d](const bo::core::EpisodeLost&) { d["type"] = "episode_lost"; },
                    [&d](const bo::core::PrayerAnswered& e) {
                        d["type"] = "prayer_answered";
                        d["building"] = static_cast<int64_t>(e.building);
@@ -213,13 +226,18 @@ String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const 
     for (int64_t i = 0; i < elevation.size(); ++i) {
         cfg.elevation_map.push_back(to_std(elevation[i]));
     }
-    // Partners: {"id", "relation", "by_sea", "sells": {good: [price, yearly_limit]}, "buys": {...}}
+    // Partners: {"id", "relation", "by_sea", "sells": {good: [price, yearly_limit]}, "buys": {...},
+    // "opinion", "military", "economy", "tribute"}
     for (int64_t i = 0; i < trade_partners.size(); ++i) {
         const Dictionary d = trade_partners[i];
         bo::core::TradePartner p;
         p.id = to_std(d.get("id", ""));
         p.relation = to_std(d.get("relation", "ally"));
         p.by_sea = d.get("by_sea", false);
+        p.diplomacy.opinion = static_cast<std::int32_t>(int64_t(d.get("opinion", 60)));  // D4
+        p.diplomacy.military = static_cast<std::int32_t>(int64_t(d.get("military", 1)));
+        p.diplomacy.economy = static_cast<std::int32_t>(int64_t(d.get("economy", 1)));
+        p.diplomacy.tribute = int64_t(d.get("tribute", 0));
         for (const char* key : {"sells", "buys"}) {
             const Dictionary offers = d.get(key, Dictionary());
             const Array goods = offers.keys();
@@ -295,10 +313,54 @@ void BoSimulation::move_company(int64_t company, int64_t x, int64_t y) {
     }
 }
 
-void BoSimulation::start_invasion(const String& nation, int64_t soldiers) {
+void BoSimulation::start_invasion(const String& nation, int64_t soldiers, int64_t city) {
     if (sim_ && soldiers > 0) {
-        sim_->issue(bo::core::StartInvasion{to_std(nation), static_cast<std::uint32_t>(soldiers)});
+        sim_->issue(bo::core::StartInvasion{to_std(nation), static_cast<std::uint32_t>(soldiers),
+                                            static_cast<std::int32_t>(city)});
     }
+}
+
+void BoSimulation::give_gift(int64_t city, const String& good, int64_t amount) {
+    if (sim_ && city >= 0 && amount > 0) {
+        sim_->issue(bo::core::GiftToCity{static_cast<std::uint32_t>(city), to_std(good), static_cast<std::uint32_t>(amount)});
+    }
+}
+
+void BoSimulation::request_from_city(int64_t city, const String& good) {
+    if (sim_ && city >= 0) {
+        sim_->issue(bo::core::RequestFromCity{static_cast<std::uint32_t>(city), to_std(good)});
+    }
+}
+
+void BoSimulation::dispatch_army(int64_t city, bool raid, const String& good, const Array& companies) {
+    if (!sim_ || city < 0) {
+        return;
+    }
+    bo::core::DispatchArmy c{static_cast<std::uint32_t>(city), raid, to_std(good), {}};
+    for (int64_t i = 0; i < companies.size(); ++i) {
+        c.companies.push_back(static_cast<std::uint32_t>(int64_t(companies[i])));
+    }
+    sim_->issue(c);
+}
+
+Array BoSimulation::get_cities() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    for (const auto& p : sim_->state().trade.partners) {
+        Dictionary d;
+        d["id"] = String(p.id.c_str());
+        d["relation"] = String(p.relation.c_str());
+        d["opinion"] = p.diplomacy.opinion;
+        d["military"] = p.diplomacy.military;
+        d["economy"] = p.diplomacy.economy;
+        d["tribute"] = p.diplomacy.tribute;
+        d["tribute_demand"] = p.diplomacy.tribute_demand;
+        d["rebelling"] = p.diplomacy.rebelling;
+        out.append(d);
+    }
+    return out;
 }
 
 void BoSimulation::pray(int64_t sanctuary) {
@@ -622,9 +684,14 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("move_company", "company", "x", "y"), &BoSimulation::move_company);
     ClassDB::bind_method(D_METHOD("send_company_home", "company"), &BoSimulation::send_company_home);
     ClassDB::bind_method(D_METHOD("get_companies"), &BoSimulation::get_companies);
-    ClassDB::bind_method(D_METHOD("start_invasion", "nation", "soldiers"), &BoSimulation::start_invasion);
+    ClassDB::bind_method(D_METHOD("start_invasion", "nation", "soldiers", "city"), &BoSimulation::start_invasion,
+                         DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("bribe_invaders"), &BoSimulation::bribe_invaders);
     ClassDB::bind_method(D_METHOD("pray", "sanctuary"), &BoSimulation::pray);
+    ClassDB::bind_method(D_METHOD("give_gift", "city", "good", "amount"), &BoSimulation::give_gift);
+    ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);
+    ClassDB::bind_method(D_METHOD("dispatch_army", "city", "raid", "good", "companies"), &BoSimulation::dispatch_army);
+    ClassDB::bind_method(D_METHOD("get_cities"), &BoSimulation::get_cities);
     ClassDB::bind_method(D_METHOD("surrender"), &BoSimulation::surrender);
     ClassDB::bind_method(D_METHOD("get_bribe_cost"), &BoSimulation::get_bribe_cost);
     ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",

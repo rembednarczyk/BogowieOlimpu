@@ -157,6 +157,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
     }
     w.i32(inv.origin.x);
     w.i32(inv.origin.y);
+    w.i32(inv.city);  // since v21
 }
 
 bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
@@ -178,7 +179,7 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
                 return false;
             }
         }
-        if (!r.i32(c.standard.x) || !r.i32(c.standard.y) || !r.u8(status) || status > 5 || !r.u8(c.morale) ||
+        if (!r.i32(c.standard.x) || !r.i32(c.standard.y) || !r.u8(status) || status > 6 || !r.u8(c.morale) ||
             !r.u32(soldiers) || soldiers > 64) {
             return false;
         }
@@ -211,7 +212,88 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
             return false;
         }
     }
-    return r.i32(inv.origin.x) && r.i32(inv.origin.y);
+    return r.i32(inv.origin.x) && r.i32(inv.origin.y) && (version < 21 || r.i32(inv.city));
+}
+
+// World (D4): diplomacy per partner, expeditions abroad, the lost episode (since v21).
+void write_world(ByteWriter& w, const WorldState& s) {
+    w.u32(static_cast<std::uint32_t>(s.trade.partners.size()));
+    for (const auto& p : s.trade.partners) {
+        const CityDiplomacy& d = p.diplomacy;
+        w.str(p.relation);
+        w.i32(d.opinion);
+        w.i32(d.military);
+        w.i32(d.economy);
+        w.i64(d.tribute);
+        w.i64(d.tribute_demand);
+        w.u8(d.rebelling ? 1 : 0);
+        w.u8(d.player_defeats);
+        write_counts(w, d.gift_units_this_year);
+        w.u32(d.request_cooldown);
+    }
+    w.u32(static_cast<std::uint32_t>(s.expeditions.size()));
+    for (const Expedition& e : s.expeditions) {
+        w.u32(e.city);
+        w.u8(static_cast<std::uint8_t>((e.raid ? 1U : 0U) | (e.returning ? 2U : 0U) | (e.won ? 4U : 0U)));
+        w.str(e.good);
+        w.u32(static_cast<std::uint32_t>(e.companies.size()));
+        for (const std::uint32_t c : e.companies) {
+            w.u32(c);
+        }
+        w.u32(e.days_left);
+        w.u32(e.losses);
+        w.u32(e.loot);
+    }
+    w.u8(s.episode_lost ? 1 : 0);
+}
+
+bool read_world(ByteReader& r, WorldState& s) {
+    std::uint32_t n = 0;
+    if (!r.u32(n) || n != s.trade.partners.size()) {
+        return false;
+    }
+    for (auto& p : s.trade.partners) {
+        CityDiplomacy& d = p.diplomacy;
+        std::uint8_t rebel = 0;
+        std::uint32_t cooldown = 0;
+        if (!r.str(p.relation) || !r.i32(d.opinion) || !r.i32(d.military) || !r.i32(d.economy) || !r.i64(d.tribute) ||
+            !r.i64(d.tribute_demand) || !r.u8(rebel) || !r.u8(d.player_defeats) ||
+            !read_counts(r, d.gift_units_this_year) || !r.u32(cooldown) || cooldown > 0xFFFF) {
+            return false;
+        }
+        d.rebelling = rebel != 0;
+        d.request_cooldown = static_cast<std::uint16_t>(cooldown);
+    }
+    std::uint32_t count = 0;
+    if (!r.u32(count) || count > 64) {
+        return false;
+    }
+    s.expeditions.resize(count);
+    for (Expedition& e : s.expeditions) {
+        std::uint8_t flags = 0;
+        std::uint32_t companies = 0;
+        if (!r.u32(e.city) || !r.u8(flags) || !r.str(e.good) || !r.u32(companies) || companies > kMaxCompanies) {
+            return false;
+        }
+        e.raid = (flags & 1U) != 0;
+        e.returning = (flags & 2U) != 0;
+        e.won = (flags & 4U) != 0;
+        e.companies.resize(companies);
+        for (std::uint32_t& c : e.companies) {
+            if (!r.u32(c)) {
+                return false;
+            }
+        }
+        if (!r.u32(e.days_left) || !r.u32(e.losses) || !r.u32(e.loot)) {
+            return false;
+        }
+    }
+    std::uint8_t lost = 0;
+    if (!r.u8(lost)) {
+        return false;
+    }
+    s.episode_lost = lost != 0;
+    return true;
 }
 
 }  // namespace bo::core

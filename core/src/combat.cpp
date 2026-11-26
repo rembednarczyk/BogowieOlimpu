@@ -85,6 +85,7 @@ void end_invasion(WorldState& st, std::uint8_t result, CombatEvents& ev) {
             w.phase = WalkerPhase::Done;
         }
     }
+    ev.city = inv.city;
     inv = Invasion{};
     for (Company& c : st.military.companies) {
         c.fled = false;
@@ -140,7 +141,7 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
 }  // namespace
 
 std::string start_invasion(WorldState& st, const DataCatalog& catalog, const std::string& nation,
-                           std::uint32_t soldiers, CombatEvents& ev) {
+                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city) {
     const auto n = catalog.combat.nations.find(nation);
     if (st.military.invasion.active || n == catalog.combat.nations.end() || n->second.composition.empty()) {
         return "military.bad_invasion";
@@ -162,6 +163,7 @@ std::string start_invasion(WorldState& st, const DataCatalog& catalog, const std
     inv.active = true;
     inv.nation = nation;
     inv.origin = *origin;
+    inv.city = city;
     const Building& target = st.city.buildings.items.at(*goal);
     for (std::size_t k = 0; k < n->second.composition.size() && k < n->second.composition_units.size(); ++k) {
         const std::string& unit = n->second.composition_units[k];

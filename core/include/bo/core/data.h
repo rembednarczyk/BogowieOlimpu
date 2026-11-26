@@ -207,6 +207,27 @@ struct SanctuaryParams {
     std::int32_t prayer_cooldown_days = 96;         // gods_rules.json [ZAŁOŻENIE, L-053]
 };
 
+// World (data/diplomacy.json; doc 24; assumptions L-063, L-064, L-113).
+struct WorldParams {
+    std::map<std::string, std::int32_t> attitude;  // named opinion levels -> 0-100 threshold
+    std::int32_t gift_needed_x2 = 6;      // +3 opinion a unit of a needed good (doc 24), in half points
+    std::int32_t gift_other_x2 = 3;       // +1.5 otherwise
+    std::int32_t gift_units_per_year = 3;
+    std::int32_t gift_money_unit = 500;
+    std::int32_t request_opinion = -10;   // doc 24: every city
+    std::int32_t request_loads = 8;
+    std::int32_t request_money_per_coin = 250;
+    std::int32_t request_cooldown_days = 96;
+    std::int32_t march_days = 200;        // doc 24 [eZeus]
+    std::int32_t city_strength_per_shield = 10;
+    std::int32_t tribute_per_coin = 200;
+    std::int32_t stops_tribute_below = 30;
+    std::int32_t refused_tribute_opinion = -20;
+    std::int32_t attacked_ally_opinion = -30;
+    std::int32_t attacked_rival_respect = 10;
+    std::array<std::int32_t, static_cast<std::size_t>(Difficulty::Count)> raid_percent{};  // of a yearly limit
+};
+
 // Combat stats of one unit (data/enemies.json, doc 22): hit = max(0, attack - armor), rates in ticks.
 struct UnitStats {
     std::int32_t hp = 0;
@@ -288,6 +309,7 @@ struct DataCatalog {
     TradeParams trade;
     WolfParams wolves;
     CombatParams combat;
+    WorldParams world;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

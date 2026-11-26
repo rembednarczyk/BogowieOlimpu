@@ -62,10 +62,16 @@ public:
     // Array of {"unit", "soldiers", "status" (0 home, 1 marching, 2 still, 3 going home), "morale", "x", "y"}
     godot::Array get_companies() const;
     // Invasions (D3 stage 2): started by the scenario later; the player bribes, surrenders or fights.
-    void start_invasion(const godot::String& nation, int64_t soldiers);
+    void start_invasion(const godot::String& nation, int64_t soldiers, int64_t city = -1);
     void bribe_invaders();
     // Gods (D1): a prayer at a finished sanctuary; the answer comes as "prayer_answered" or "command_rejected".
     void pray(int64_t sanctuary);
+    // World (D4): `city` indexes the partners given to start_with_map; "drachmas" is money.
+    void give_gift(int64_t city, const godot::String& good, int64_t amount);
+    void request_from_city(int64_t city, const godot::String& good);
+    void dispatch_army(int64_t city, bool raid, const godot::String& good, const godot::Array& companies);
+    // Array of {"id", "relation", "opinion", "military", "economy", "tribute", "tribute_demand", "rebelling"}
+    godot::Array get_cities() const;
     void surrender();
     int64_t get_bribe_cost() const;
     int64_t get_workforce() const;
