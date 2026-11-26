@@ -31,7 +31,12 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 | `docs/00-PLAN.md` ... `docs/08-OPRAWA.md` | plan, wizja, oryginalność, analiza, symulacja, UX, technologia, oprawa |
 | `docs/SILNIK.md` | plan rozbudowy silnika na Godocie, moduły A-F, potok Blendera |
 | `docs/ASSETY.md` | inwentarz assetów do wyprodukowania |
-| (kod) | jeszcze nie istnieje; planowane `core/` (C++), `gdext/`, `game/` (Godot), `tools/blender/` |
+| `core/` | rdzeń symulacji C++17 bez Godota: `include/bo/core/*.h`, `src/`, `tests/` (doctest) |
+| `gdext/` | GDExtension: klasa `BoSimulation` (jedyne miejsce łączące rdzeń z Godotem) |
+| `game/` | projekt Godota (renderer Mobile): `scenes/`, `tests/` (test bez okna, zrzuty); `game/data/` generowane z `data/` |
+| `tools/` | `checks/check_core.py` (strażnik rdzenia), `sync_game_data.py`, `blender/` (potok assetów) |
+| `third_party/` | doctest, nlohmann/json, godot-cpp (submoduł); rejestr w `third_party/README.md` |
+| `BUILD.md` | polecenia budowania i testów |
 
 ## Zasady nadrzędne (skrót `docs/PRAKTYKI.md`)
 

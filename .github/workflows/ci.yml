@@ -23,3 +23,24 @@ jobs:
           CXX=clang++ cmake -S . -B build-clang -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build build-clang
           ctest --test-dir build-clang --output-on-failure
+  godot:
+    runs-on: ubuntu-24.04
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y ninja-build
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip && sudo mv Godot_v4.7.2-stable_linux.x86_64 /usr/local/bin/godot
+      - name: Build GDExtension
+        run: |
+          cmake -S . -B build-gd -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBO_BUILD_GDEXT=ON -DBO_BUILD_TESTS=OFF
+          cmake --build build-gd
+      - name: Headless Godot tests
+        run: |
+          python3 tools/sync_game_data.py .
+          godot --headless --path game --import || true
+          godot --headless --path game --script res://tests/test_simulation.gd

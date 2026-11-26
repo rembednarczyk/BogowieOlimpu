@@ -4,7 +4,7 @@ Strategiczny citybuilder w mitologii greckiej, projektowany od początku pod tel
 
 ## Stan projektu
 
-Faza 0: kontekst i reguły (specyfikacja gotowa). Następna: rozbudowa silnika na Godocie 4. Następne kroki: `docs/BACKLOG.md`.
+Faza 0.5: rozbudowa silnika na Godocie 4. Gotowe: specyfikacja, rdzeń symulacji (moduły A), połączenie z Godotem. Budowanie: [BUILD.md](BUILD.md). Następne kroki: `docs/BACKLOG.md`.
 
 ## Mapa dokumentacji
 

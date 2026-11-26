@@ -1,0 +1,16 @@
+; Bogowie Olimpu - game project (Godot 4.7). Renderer: Mobile (Vulkan), R-015.
+config_version=5
+
+[application]
+config/name="Bogowie Olimpu"
+run/main_scene="res://scenes/boot.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/handheld/orientation=0
+
+[rendering]
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"

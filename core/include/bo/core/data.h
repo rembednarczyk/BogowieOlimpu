@@ -63,6 +63,10 @@ struct DataLoadResult {
 // Loads every *.json file in `directory` and validates cross references.
 DataLoadResult load_data_catalog(const std::string& directory);
 
+// Same, from file contents already in memory (name -> bytes). Used by the engine layer, which reads files
+// through its own virtual filesystem (e.g. res:// inside an Android APK).
+DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::string>& files);
+
 // Parses "24×16", "3x3m", "4×4+ 3×3" (first rectangle). Returns nullopt for "m", "2xn", "–".
 std::optional<Footprint> parse_footprint(const std::string& text);
 

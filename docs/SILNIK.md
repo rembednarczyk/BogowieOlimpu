@@ -47,7 +47,9 @@ Prezentacja, UI i narzędzia edytora: GDScript.
 
 Każdy moduł ma: wzorzec, testy, kryterium odbioru. Kolejność = kolejność prac.
 
-### A. Fundament rdzenia (`core/`)
+### A. Fundament rdzenia (`core/`): ZROBIONE 2026-11-26
+
+Stan: moduły A1-A6 zaimplementowane w `core/`, 21 przypadków testowych, złoty hash `0x8e4d415da80bd045` zgodny w GCC i Clang (Debug, Release). Strażnik `tools/checks/check_core.py`. Pierwszy scenariusz złotego hasha obejmuje kalendarz, komendy i finanse; scenariusz 32×32 z łańcuchami dojdzie z modułami B i C.
 
 | Moduł | Zakres | Wzorzec | Kryterium odbioru |
 |---|---|---|---|
@@ -56,7 +58,7 @@ Każdy moduł ma: wzorzec, testy, kryterium odbioru. Kolejność = kolejność p
 | A3 Komendy i zdarzenia | rozdzielnik komend (tabela handlerów), kolejka zdarzeń | Command, Event Queue | log komend + ziarno odtwarza stan |
 | A4 Dane | ładowanie `data/*.json`, walidacja schematu i odwołań, wersja danych | Type Object | test spójności przechodzi na całych danych |
 | A5 Zapis | zrzut stanu + wersja danych + migracje | Memento, wersjonowanie | zapis/odczyt daje identyczny hash |
-| A6 Złoty hash i scenariusz 32×32 | mały scenariusz ze wszystkimi łańcuchami | testy charakteryzujące | hash zmieniany tylko ręcznie |
+| A6 Złoty hash | stały scenariusz, hash ustawiany ręcznie; rozszerzany o mapę 32×32 wraz z modułami B, C | testy charakteryzujące | hash zmieniany tylko ręcznie |
 
 ### B. Mapa i ruch
 
@@ -97,6 +99,8 @@ Każdy moduł ma: wzorzec, testy, kryterium odbioru. Kolejność = kolejność p
 Moduły C i D powstają w fazie 1 ("Prototyp symulacji") jako część silnika; ich odbiór to test zgodności ze specyfikacją (`PRAKTYKI.md` rozdz. 4).
 
 ### E. Prezentacja w Godocie (`game/`)
+
+Stan: E1 w wersji minimalnej (klasa `BoSimulation` w `gdext/`, scena `game/scenes/boot.tscn` z datą i hashem; test bez okna `game/tests/test_simulation.gd`; zrzuty `game/tests/screenshot.gd` w rendererze Mobile).
 
 | Moduł | Zakres | Uwagi |
 |---|---|---|

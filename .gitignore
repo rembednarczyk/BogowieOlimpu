@@ -4,3 +4,4 @@ build*/
 game/bin/
 __pycache__/
 *.blend1
+game/data/

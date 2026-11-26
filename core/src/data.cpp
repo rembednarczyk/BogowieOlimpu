@@ -167,28 +167,30 @@ std::optional<Footprint> parse_footprint(const std::string& text) {
 }
 
 DataLoadResult load_data_catalog(const std::string& directory) {
-    DataLoadResult result;
-    std::vector<fs::path> paths;
+    std::map<std::string, std::string> files;
     std::error_code ec;
     for (const auto& entry : fs::directory_iterator(directory, ec)) {
         if (entry.path().extension() == ".json") {
-            paths.push_back(entry.path());
+            std::ifstream f(entry.path(), std::ios::binary);
+            std::stringstream buf;
+            buf << f.rdbuf();
+            files.emplace(entry.path().filename().string(), buf.str());
         }
     }
     if (ec) {
+        DataLoadResult result;
         result.errors.push_back("cannot read data directory: " + directory);
         return result;
     }
-    std::sort(paths.begin(), paths.end());
+    return load_data_catalog_from_memory(files);
+}
+
+DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::string>& files) {
+    DataLoadResult result;
     DataCatalog cat;
     Fnv1a64 version;
     std::map<std::string, json> docs;
-    for (const auto& p : paths) {
-        std::ifstream f(p, std::ios::binary);
-        std::stringstream buf;
-        buf << f.rdbuf();
-        const std::string bytes = buf.str();
-        const auto name = p.filename().string();
+    for (const auto& [name, bytes] : files) {  // std::map: sorted by name
         version.add_string(name);
         version.add_string(bytes);
         cat.files.push_back(name);
