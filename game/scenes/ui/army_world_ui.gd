@@ -58,6 +58,7 @@ func refresh() -> void:
 
 func _clear(box: VBoxContainer) -> void:
 	for c in box.get_children():
+		box.remove_child(c)  # at once: the new rows take the indices now, not after the frame
 		c.queue_free()
 
 func _row(box: VBoxContainer, text: String, buttons: Array) -> void:
@@ -166,16 +167,24 @@ func refresh_world() -> void:
 		if c["tribute_demand"] > 0:
 			text += ", " + tr("ui.tribute_demand") % c["tribute_demand"]
 		var sells: PackedStringArray = c["sells"]
-		var wants := sells[0] if sells.size() > 0 else ""
+		var pick := OptionButton.new()  # the good to ask for or to raid (Z:174-175, Z:178)
+		pick.custom_minimum_size = Vector2(150, ui.CELL.y)
+		pick.add_theme_font_size_override("font_size", 18)
+		for g in sells:
+			pick.add_item(tr("good." + g))
+		pick.disabled = sells.is_empty()
+		var chosen := func() -> String: return sells[pick.selected] if pick.selected >= 0 and sells.size() > 0 else ""
 		var friendly: bool = c["relation"] in ["ally", "vassal", "colony", "parent"]
 		var at_war: bool = c["relation"] in ["ally", "rival"] or c["rebelling"]
 		_row(world_box, text, [
 			_small("ui.gift", func(): game.sim.give_gift(i, "drachmas", 500); refresh_world(), c["relation"] != "distant"),
-			_small("ui.ask", func(): game.sim.request_from_city(i, wants); refresh_world(), wants != "" and friendly),
+			pick,
+			_small("ui.ask", func(): game.sim.request_from_city(i, chosen.call()); refresh_world(),
+				not sells.is_empty() and friendly),
 			_small("ui.attack", func(): game.sim.dispatch_army(i, false, "", ready); refresh_world(),
 				at_war and not ready.is_empty()),
-			_small("ui.raid", func(): game.sim.dispatch_army(i, true, wants, ready); refresh_world(),
-				at_war and wants != "" and not ready.is_empty())])
+			_small("ui.raid", func(): game.sim.dispatch_army(i, true, chosen.call() if not sells.is_empty() else "drachmas",
+				ready); refresh_world(), at_war and not ready.is_empty())])
 	var exps: Array = game.sim.get_expeditions()
 	if not exps.is_empty():
 		world_box.add_child(ui._label(tr("ui.expeditions"), 20))

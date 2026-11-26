@@ -34,6 +34,7 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `summon_hero: [x, y]`, `hero_quest: n`, `pray: [x, y]` | mitologia: przyzwij herosa z Sali, wyślij na zadanie n, módl się w sanktuarium |
 | `stockpile: towar`, `on` | gromadzenie towaru (Z:80) |
 | `not_buying: [x, y]`, `on` | "Nie kupuj" stoiska na kaflu agory `at` (pierwsze stoisko) albo stoiska (Z:72) |
+| `dispatch: {"city": n, "raid": bool, "good": towar}` | atak albo rajd wszystkimi kompaniami z domu poza motłochem (Z:177-178) |
 | `fulfill_requests: true` | spełnij wszystkie otwarte prośby miast (towar z magazynu, wojsko z domu) |
 
 Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`).

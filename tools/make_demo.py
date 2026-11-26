@@ -302,6 +302,11 @@ steps.append({"day": INDUSTRY + 200, "not_buying": [24, 30], "on": False})
 # Surplus oil goes to Rhodes by sea once the elite houses stand (Z:78-79).
 steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}})
 
+# Armies abroad (Z:177-178) with the Sparti, the companies at home that may go: a raid on Sparta for drachmas
+# while the first company helps Corinth, then the rising vassal Argos is put down.
+steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachmas"}})
+steps.append({"day": 1480, "every": 16, "dispatch": {"city": 3}})
+
 # City requests (Z:161): goods from storage, troops from the companies at home; tried twice a month.
 steps.append({"day": 64, "every": 8, "fulfill_requests": True})
 

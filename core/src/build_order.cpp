@@ -84,6 +84,12 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {
         add(SetNotBuying{0, s.value("on", true)}, pos_of(s.at("not_buying")));
+    } else if (s.contains("dispatch")) {  // {"city": i, "raid": bool, "good": g}: companies picked when due
+        const json& d = s.at("dispatch");
+        BuildStep step = base;
+        step.dispatch_ready = true;
+        step.command = DispatchArmy{d.at("city").get<std::uint32_t>(), d.value("raid", false), d.value("good", ""), {}};
+        out.push_back(std::move(step));
     } else if (s.contains("fulfill_requests")) {
         BuildStep step = base;
         step.fulfill_all = true;
@@ -152,6 +158,19 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
             continue;
         }
         Command c = s.command;
+        if (s.dispatch_ready) {
+            auto& army = std::get<DispatchArmy>(c);
+            const auto& companies = sim.state().military.companies;
+            for (std::uint32_t i = 0; i < companies.size(); ++i) {
+                if (companies[i].status == CompanyStatus::AtHome && companies[i].unit != "rabble" &&
+                    !companies[i].members.empty()) {
+                    army.companies.push_back(i);
+                }
+            }
+            if (army.companies.empty()) {
+                continue;  // nobody to send today
+            }
+        }
         if (s.at) {
             const auto& map = sim.state().city.map;
             if (!map.in_bounds(*s.at) || map.at(*s.at).building == kNoBuilding) {

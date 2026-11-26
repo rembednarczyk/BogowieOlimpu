@@ -143,10 +143,21 @@ func _process(_d: float) -> bool:
 	check(c0["x"] == 40 and c0["y"] == 20, "the tap moved the standard: %s" % [c0])
 	aw.toggle_world()
 	check(aw.world.visible and aw.world_box.get_child_count() > 2, "the world panel lists the cities")
+	# The buttons themselves: the first city's row is label, Gift, the good to pick, Ask, Attack, Raid.
+	var row: HBoxContainer = aw.world_box.get_child(1)
 	var before: int = game.sim.get_cities()[0]["opinion"]
-	game.sim.give_gift(0, "drachmas", 500)
+	var treasury: int = game.sim.get_treasury()
+	(row.get_child(1) as Button).pressed.emit()
 	game.sim.step(1)
-	check(game.sim.get_cities()[0]["opinion"] > before, "a gift raises the opinion")
+	check(game.sim.get_cities()[0]["opinion"] > before or game.sim.get_treasury() < treasury, "the Gift button gives 500 dr")
+	row = aw.world_box.get_child(1)
+	var pick: OptionButton = row.get_child(2)
+	check(pick.item_count > 1, "the goods of Corinth to choose from: %d" % pick.item_count)
+	pick.select(1)
+	var asked_before: int = game.sim.get_cities()[0]["opinion"]
+	(row.get_child(3) as Button).pressed.emit()
+	game.sim.step(1)
+	check(game.sim.get_cities()[0]["opinion"] < asked_before, "the Ask button sent a request (every city's opinion -10)")
 	aw.toggle_world()
 	ui.toggle_report()
 
