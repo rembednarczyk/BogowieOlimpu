@@ -38,6 +38,7 @@ void write_tile(ByteWriter& w, const Tile& t) {
     w.u32(t.building);
     w.u8(t.random_byte);
     w.u8(static_cast<std::uint8_t>(t.elevation | (t.ramp << 4U)));  // since v8
+    w.u8(t.feature);                                                  // since v11
 }
 
 bool read_tile(ByteReader& r, Tile& t, std::uint32_t version) {
@@ -57,6 +58,9 @@ bool read_tile(ByteReader& r, Tile& t, std::uint32_t version) {
         }
         t.elevation = height & 0x0FU;
         t.ramp = static_cast<std::uint8_t>(height >> 4U);
+    }
+    if (version >= 11 && (!r.u8(t.feature) || t.feature > 4)) {
+        return false;
     }
     return true;
 }
@@ -259,6 +263,12 @@ void write_city(ByteWriter& w, const CityState& c) {
     }
     write_undo(w, c.undo);  // since v3
     w.u32(c.homeless);      // since v4
+    w.u32(static_cast<std::uint32_t>(c.spawns.size()));  // since v11
+    for (const auto& [tile, s] : c.spawns) {
+        w.u32(tile);
+        w.u8(s.animals);
+        w.u32(s.timer);
+    }
 }
 
 bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
@@ -289,6 +299,20 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
     }
     if (version >= 4 && !r.u32(c.homeless)) {
         return false;
+    }
+    std::uint32_t spawns = 0;
+    if (version >= 11 && (!r.u32(spawns) || spawns > c.map.size())) {
+        return false;
+    }
+    for (std::uint32_t i = 0; i < spawns; ++i) {
+        std::uint32_t tile = 0;
+        std::uint32_t timer = 0;
+        SpawnState s;
+        if (!r.u32(tile) || !r.u8(s.animals) || !r.u32(timer) || timer > 0xFFFF) {
+            return false;
+        }
+        s.timer = static_cast<std::uint16_t>(timer);
+        c.spawns[tile] = s;
     }
     update_roads(c);  // derived data: networks and road access
     return true;
@@ -349,7 +373,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 6 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 8 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&

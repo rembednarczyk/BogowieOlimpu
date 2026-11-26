@@ -15,6 +15,7 @@ enum class PathMode : std::uint8_t {
     Road = 0,            // roads including roadblocks (destination walkers pass roadblocks, Z:19-20)
     RoadNoRoadblock,     // roads without roadblocks (roaming walkers)
     Walkable,            // any walkable terrain off road; buildings block except the goal building
+    Water,               // boats: water tiles (crossings included [ZAŁOŻENIE, L-097])
 };
 
 struct PathRequest {

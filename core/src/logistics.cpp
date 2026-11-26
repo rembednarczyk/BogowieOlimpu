@@ -45,7 +45,7 @@ bool receiver_accepts(const Building& r, const DataCatalog& catalog, const std::
 
 // The good a producer ships next: its single output, or a lodge fruit with a full load (100 units).
 std::optional<std::string> next_shipment(const Building& b, const BuildingType& type) {
-    if (b.producer->output_loads > 0 && !type.outputs.empty() && type.tends.empty()) {
+    if (b.producer->output_loads > 0 && type.outputs.size() == 1 && type.tends.empty()) {
         return type.outputs.front();
     }
     for (const auto& [fruit, units] : b.producer->units) {
@@ -93,7 +93,7 @@ void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId
         walker.job = WalkerJob::Deliver;
         walker.target = best->second;
         walker.cargo[good] = 1;  // a production deliveryman carries one load (doc 19)
-        if (type.tends.empty()) {
+        if (type.outputs.size() == 1 && type.tends.empty()) {
             b.producer->output_loads -= 1;
         } else {
             b.producer->units[good] -= 100;
@@ -302,6 +302,7 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
     LogisticsEvents ev;
     dispatch_field_workers(st, catalog, ev);
     dispatch_extractors(st, catalog, ev);
+    dispatch_hunters_and_boats(st, catalog, ev);
     std::vector<BuildingId> producers;
     std::vector<BuildingId> stalls;
     std::vector<BuildingId> storages;
@@ -339,6 +340,10 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
         if (w.job == WalkerJob::Extract) {
             if (extraction_at_target(st, catalog, w)) {
                 continue;  // still working at the rock or tree
+            }
+        } else if (w.job == WalkerJob::Hunt || w.job == WalkerJob::Fish) {
+            if (wildlife_at_target(st, catalog, w)) {
+                continue;  // still hunting or fishing
             }
         } else if (w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest) {
             field_work_at_target(st, catalog, w);
@@ -403,7 +408,9 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
         return;
     }
     Building& b = home->second;
-    if (w.job == WalkerJob::Extract && b.producer) {
+    if ((w.job == WalkerJob::Hunt || w.job == WalkerJob::Fish) && b.producer) {
+        wildlife_unload(st, catalog, w, b);
+    } else if (w.job == WalkerJob::Extract && b.producer) {
         extraction_unload(st, catalog, w, b);
     } else if ((w.job == WalkerJob::Shear || w.job == WalkerJob::Harvest || w.job == WalkerJob::Tend) && b.producer) {
         field_work_unload(st, catalog, w, b);
@@ -416,7 +423,8 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
         for (const auto& [good, loads] : w.cargo) {
             b.producer->output_loads += loads;  // undelivered load back to the producer
         }
-        if (!w.cargo.empty() && !catalog.buildings.at(b.type).tends.empty()) {
+        const auto& bt = catalog.buildings.at(b.type);
+        if (!w.cargo.empty() && (!bt.tends.empty() || bt.outputs.size() > 1)) {
             for (const auto& [good, loads] : w.cargo) {
                 b.producer->output_loads -= std::min(b.producer->output_loads, loads);
                 b.producer->units[good] += loads * 100;  // a lodge keeps fruit in units

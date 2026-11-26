@@ -93,6 +93,7 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.footprint_text = o.value("footprint", "");
         const auto& res = o.value("resource", json());
         t.resource = res.is_string() ? res.get<std::string>() : "";
+        t.prey = strings("prey");
         const auto& dp = o.value("delivery_priority", json());
         if (dp.is_object()) {
             for (const auto& [good, list] : dp.items()) {
@@ -399,6 +400,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 pp.drachmas_per_batch = p.value("drachmas_per_batch", 0);
                 pp.batch_days = p.value("batch_days", 0);
                 pp.input_capacity_units = p.value("input_capacity_units", 0);
+                pp.boat_build_days = p.value("boat_build_days", 0);
                 pp.input_capacity = p.value("input_capacity", 0);
                 pp.storage_loads = p.value("storage_loads", 0);
                 pp.animals_max = p.value("animals_max", 0);

@@ -160,13 +160,20 @@ std::optional<TilePos> home_access(const CityState& city, const Walker& w) {
 }
 
 void start_return(CityState& city, Walker& w) {
+    if (w.job == WalkerJob::Fish) {  // boats sail back to their mooring (stored in roam_target)
+        auto path = find_path(city, {w.tile, w.roam_target, PathMode::Water});
+        w.path = path ? std::move(*path) : std::vector<TilePos>{};
+        w.path_pos = 0;
+        w.phase = path ? WalkerPhase::Returning : WalkerPhase::Done;
+        return;
+    }
     const auto target = home_access(city, w);
     if (!target) {
         w.phase = WalkerPhase::Done;
         return;
     }
     const bool fields = w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest ||
-                        w.job == WalkerJob::Extract;
+                        w.job == WalkerJob::Extract || w.job == WalkerJob::Hunt;
     auto path = find_path(city, {w.tile, *target, fields ? PathMode::Walkable : PathMode::RoadNoRoadblock});
     if (!path) {
         path = find_path(city, {w.tile, *target, PathMode::Road});

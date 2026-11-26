@@ -53,6 +53,13 @@ std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std:
         for (std::size_t x = 0; x < rows[y].size(); ++x) {
             Tile& tile = map.at({static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)});
             const char c = rows[y][x];
+            const std::string_view kFeatures = "hdfu";
+            if (kFeatures.find(c) != std::string_view::npos) {
+                const auto f = kFeatures.find(c);
+                tile.terrain = f < 2 ? Terrain::Grassland : Terrain::Water;
+                tile.feature = static_cast<std::uint8_t>(f + 1);
+                continue;
+            }
             const std::string_view kRamps = "^>v<";
             if (kRamps.find(c) != std::string_view::npos) {
                 tile.terrain = Terrain::Grassland;

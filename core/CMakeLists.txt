@@ -15,6 +15,7 @@ add_library(bo_core STATIC
     src/path.cpp
     src/placement.cpp
     src/walker.cpp
+    src/wildlife.cpp
     src/serialize.cpp
     src/serialize_city.cpp
     src/serialize_economy.cpp
@@ -55,6 +56,7 @@ if(BO_BUILD_TESTS)
         tests/test_terrain.cpp
         tests/test_husbandry.cpp
         tests/test_extraction.cpp
+        tests/test_wildlife.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

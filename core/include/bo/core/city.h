@@ -164,8 +164,16 @@ struct UndoRecord {
     std::vector<BuildingId> added;           // buildings created by the action
 };
 
+// Animals at a spawn point (doc 19: a boar herd of 7, a young boar every 26 days below 7; deer one a month).
+struct SpawnState {
+    std::uint8_t animals = 0;
+    std::uint16_t timer = 0;
+    friend bool operator==(const SpawnState& a, const SpawnState& b) { return a.animals == b.animals && a.timer == b.timer; }
+};
+
 struct CityState {
     TileMap map;
+    std::map<std::uint32_t, SpawnState> spawns;  // tile index -> herd
     BuildingStore buildings;
     UndoRecord undo;
     std::uint32_t homeless = 0;          // people pushed out of houses, waiting for module C8

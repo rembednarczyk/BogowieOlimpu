@@ -39,6 +39,9 @@ bool terrain_buildable(Terrain t);
 // [ZAŁOŻENIE] beach passable, forest not).
 bool terrain_walkable(Terrain t);
 
+// Resource points set by the map: animal spawn points and fishing grounds. Stored in saves: append only.
+enum class TileFeature : std::uint8_t { None = 0, BoarSpawn, DeerSpawn, FishGround, UrchinGround };
+
 enum class Dir : std::uint8_t { North = 0, East = 1, South = 2, West = 3 };
 inline constexpr std::array<Dir, 4> kDirs = {Dir::North, Dir::East, Dir::South, Dir::West};
 constexpr Dir opposite(Dir d) { return static_cast<Dir>((static_cast<std::uint8_t>(d) + 2) % 4); }
@@ -73,11 +76,12 @@ struct Tile {
     // leads up one level in direction ramp - 1 (0 = no ramp). Any other change of level is a cliff.
     std::uint8_t elevation = 0;
     std::uint8_t ramp = 0;
+    std::uint8_t feature = 0;  // map resource point: TileFeature (scenario data, Z:46-48, P:8)
 
     friend bool operator==(const Tile& a, const Tile& b) {
         return a.terrain == b.terrain && a.road == b.road && a.roadblock == b.roadblock && a.building == b.building &&
                a.random_byte == b.random_byte && a.elevation == b.elevation &&
-               a.ramp == b.ramp;  // road_network is derived
+               a.ramp == b.ramp && a.feature == b.feature;  // road_network is derived
     }
     friend bool operator!=(const Tile& a, const Tile& b) { return !(a == b); }
 };
@@ -136,7 +140,8 @@ private:
 // Parses a text map used by tests, the golden scenario and debug tools. One character per tile:
 // '.' grassland, ',' meadow, 'T' forest, 'm' marsh, 'b' beach, '#' rock, '~' water, 'c' copper, 's' silver,
 // 'q' marble quarry, 'o' orichalc, 'k' black marble, '=' road on grassland, 'x' roadblock on grassland,
-// '^' '>' 'v' '<' grassland ramp leading up to the north, east, south, west.
+// '^' '>' 'v' '<' grassland ramp leading up to the north, east, south, west,
+// 'h' boar spawn and 'd' deer spawn on grassland, 'f' fishing ground and 'u' urchins on water.
 // Optional `elevation` rows: one hex digit (0-f) per tile. All rows must have the same length.
 // Returns nullopt with `error` on bad input.
 std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std::string& error,

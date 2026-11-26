@@ -77,6 +77,17 @@ inline constexpr std::uint32_t kBirthDays = 32;
 // Extraction stops while this many finished loads wait at the building [ZAŁOŻENIE, L-102].
 inline constexpr std::uint32_t kExtractionStock = 4;
 
+// Hunting and fishing (wildlife.cpp, L-103): boar spawn points keep a herd of 7 (a young boar every 26 days
+// below 7), deer spawn points add one deer a month; a lodge sends one hunter at a time to the nearest spawn
+// point with animals in reach. A fishery first builds its boat, then the boat sails to the nearest fishing
+// ground, fishes, sails back; an urchin quay's gatherer wades to the urchins. Each trip brings one load.
+void advance_wildlife(WorldState& state, const DataCatalog& catalog);
+void dispatch_hunters_and_boats(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
+bool wildlife_at_target(WorldState& state, const DataCatalog& catalog, Walker& w);  // true: still working
+void wildlife_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
+inline constexpr std::uint8_t kBoarHerd = 7;
+inline constexpr std::uint16_t kBoarBirthDays = 26;
+
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
 // next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d);

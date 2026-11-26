@@ -162,6 +162,7 @@ void run_production(Simulation& sim) {
     advance_production(st, sim.catalog());
     advance_husbandry(st, sim.catalog());
     advance_extraction(st, sim.catalog());
+    advance_wildlife(st, sim.catalog());
     for (const BuildingId id : herd_births(st, sim.catalog())) {
         const Building& b = st.city.buildings.items.at(id);
         sim.emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});

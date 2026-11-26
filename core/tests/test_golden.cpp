@@ -45,7 +45,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v8 (version field; terrain height per tile, L-099).
     // 2026-11-26: save format v9 (version field; herds, orchards, processors).
     // 2026-11-26: save format v10 (version field; extraction trips, Get orders).
-    const std::uint64_t kGolden = 0x1850a0a1383a945eULL;
+    // 2026-11-26: save format v11 (version field; spawn herds block).
+    const std::uint64_t kGolden = 0xca400fba195c288fULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -74,6 +75,7 @@ Simulation golden_city() {
     }
     // A one-level plateau on the two east columns, reached by a ramp at (30, 16) (L-099).
     rows[16][30] = '>';
+    rows[20][1] = 'h';  // boar spawn point
     const std::vector<std::string> heights(32, std::string(31, '0') + "1");
     Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows, false, heights});
     sim.issue(PlaceRoad{30, 16});
@@ -84,6 +86,7 @@ Simulation golden_city() {
     sim.issue(PlaceBuilding{"growers_lodge", 17, 23, 0});
     sim.issue(PlaceBuilding{"storehouse", 24, 17, 0});
     sim.issue(PlaceBuilding{"timber_mill", 17, 9, 0});
+    sim.issue(PlaceBuilding{"boar_hunters_lodge", 5, 21, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 24, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 25, 22, 0});
     sim.issue_at(2, PlaceBuilding{"olive_tree", 20, 22, 0});
@@ -120,8 +123,8 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    // 34 placed (the plot on the x = 16 road is refused) + 6 lambs: the herd of 2 grew to 8.
-    CHECK(sim.state().city.buildings.items.size() == 40);
+    // 35 placed (the plot on the x = 16 road is refused) + 6 lambs: the herd of 2 grew to 8.
+    CHECK(sim.state().city.buildings.items.size() == 41);
     CHECK(city_stock(sim.state().city, bo::test::catalog(), "fleece") > 0);
     CHECK(city_stock(sim.state().city, bo::test::catalog(), "wood") > 0);
     CHECK(sim.state().labour.workforce > 0);
@@ -159,7 +162,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: module C4 stage 2: save format v9, a carding shed with sheep, a growers' lodge with olive
     // trees and a storehouse in the scenario.
     // 2026-11-26: module C4/C5 stage 3: save format v10, herd births, a timber mill in the scenario.
-    const std::uint64_t kGolden = 0x32a5acc0587008f9ULL;
+    // 2026-11-26: hunting and fishing (L-103): save format v11, a boar spawn point and a hunters' lodge.
+    const std::uint64_t kGolden = 0xb5de1872656c3806ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

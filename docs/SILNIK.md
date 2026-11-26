@@ -102,7 +102,9 @@ Zrobione:
 
 - C4/C5 etap 3: rozkazy Get i Empty (tylko przy pełnej obsadzie, do 4 ładunków na kurs), wydobycie z kursami robotników do złoża (tartak, odlewnia, rafineria, mennica; tempo zależy od odległości, L-102), kamieniarnie przy kamieniołomie, mennica do skarbca, zbrojownia i pracownia rzeźb (4 brązy na rzeźbę), rozmnażanie stad (L-101).
 
-Zostaje: łowiectwo, rybołówstwo i łodzie, stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- Łowiectwo i rybołówstwo (L-103): punkty odradzania dzików (stado 7, młode co 26 dni) i jeleni (jedno na miesiąc), myśliwi z chat łowców, łódź przystani rybackiej budowana na start i pływająca do łowiska, nabrzeże jeżowców; łowiska i punkty jako cechy kafla mapy.
+
+Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

@@ -90,6 +90,7 @@ struct BuildingType {
     std::vector<std::string> tends;            // lodges: tree types, in the order of `outputs`
     std::string footprint_text;                // footprint from buildings.json when the stats size has none
     std::string resource;                      // extraction: terrain id of the resource (forest, copper ore...)
+    std::vector<std::string> prey;             // hunting lodges: "boar", "deer" (Z:46, P:8)
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -148,6 +149,7 @@ struct ProductionParams {
     std::int32_t drachmas_per_batch = 0;
     std::int32_t batch_days = 0;
     std::int32_t input_capacity_units = 0;
+    std::int32_t boat_build_days = 0;           // fishery: the boat is built first (Z:47)
 };
 
 struct DataCatalog {

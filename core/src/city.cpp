@@ -134,7 +134,8 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         if (rotation % 2 == 1) {
             std::swap(b.width, b.height);
         }
-        if (rule == "straight_coast") {
+        if (rule == "straight_coast" || rule == "straight_coast_same_shore_as_urchins") {
+            // Urchin quay: same coast rule; the urchins must be reachable by water [ZAŁOŻENIE, L-103].
             r = place_on_coast(city, std::move(b));  // faces the water by itself; rotation is ignored
         } else if (rule == "long_side_over_road" || rule == "road_through_center") {
             r = place_agora(city, std::move(b), rule == "road_through_center", bt.stall_slots);

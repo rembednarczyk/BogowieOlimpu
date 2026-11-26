@@ -29,7 +29,7 @@ inline constexpr std::int32_t kRoamTargetRoadRadius = 6;
 enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed, Done, AtTarget };
 
 // What a destination walker carries out (module C5). Stored in saves: append only.
-enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract };
+enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish };
 
 struct Walker {
     WalkerId id = kNoWalker;

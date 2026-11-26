@@ -16,8 +16,8 @@ inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian
 // v4: house state, homeless count. v5: labour, finance details, building workers, clerk counter.
 // v6: house mood, migration state. v7: storage, producers, stalls, walker jobs and cargo.
 // v8: terrain height and ramps per tile. v9: herds, orchards, processors, storage deliverymen.
-// v10: extraction trips, Get orders (walker fields).
-inline constexpr std::uint32_t kSaveFormatVersion = 10;
+// v10: extraction trips, Get orders (walker fields). v11: map features (spawn points, fishing grounds), herds.
+inline constexpr std::uint32_t kSaveFormatVersion = 11;
 
 class ByteWriter {
 public:
