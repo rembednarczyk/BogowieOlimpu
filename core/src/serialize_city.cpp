@@ -96,7 +96,7 @@ void write_building(ByteWriter& w, const Building& b) {
     w.u8(b.house ? 1 : 0);
     if (b.house) {
         const HouseState& h = *b.house;
-        w.u8(static_cast<std::uint8_t>((h.elite ? 1U : 0U) | (h.abandoned ? 2U : 0U)));
+        w.u8(static_cast<std::uint8_t>((h.elite ? 1U : 0U) | (h.abandoned ? 2U : 0U) | (h.established ? 4U : 0U)));
         w.u8(h.level);
         w.u32(h.population);
         for (const std::uint32_t g : h.goods) {
@@ -202,6 +202,7 @@ bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
     }
     h.elite = (flags & 1U) != 0;
     h.abandoned = (flags & 2U) != 0;
+    h.established = (flags & 4U) != 0;  // bit 2 since B-013; older saves: not yet established
     b.house = h;
     return true;
 }

@@ -59,6 +59,7 @@ std::vector<HouseChange> update_houses(CityState& city, const DataCatalog& catal
         const HouseModel& cur = levels[h.level].model[di];
         if (appeal >= cur.appeal_devolve && house_needs_met(b, catalog, levels[h.level], d, bonus)) {
             h.failed_checks = 0;
+            h.established = h.established || h.elite;
             const std::size_t next = h.level + 1U;
             if (next < levels.size() && appeal >= cur.appeal_evolve && house_needs_met(b, catalog, levels[next], d, bonus)) {
                 h.level = static_cast<std::uint8_t>(next);
@@ -76,6 +77,9 @@ std::vector<HouseChange> update_houses(CityState& city, const DataCatalog& catal
                 target = static_cast<std::uint8_t>(k);
                 break;
             }
+        }
+        if (!target && h.elite && !h.established) {
+            continue;  // B-013: a new family waits for its needs (eZeus: level 0 below Residence); it leaves on a loss
         }
         if (!target && h.elite) {
             city.homeless += h.population;  // the owners leave the city with their household [ZAŁOŻENIE]

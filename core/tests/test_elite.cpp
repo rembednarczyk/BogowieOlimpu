@@ -85,13 +85,46 @@ TEST_CASE("an elite plot sends no nobleman while its family is still on the way"
     CHECK(empty_days > 0);
 }
 
-TEST_CASE("no popularity, no immigrants: the elite do not come either (L-108, eZeus)") {
+TEST_CASE("no immigrants: the elite do not come either (L-108, eZeus)") {
+    // The popularity is recomputed by the moods before migration each day, so it cannot be forced from outside
+    // (the former version of this test passed only because the family came and left at once, B-013).
+    std::vector<std::string> rows(14, std::string(40, '.'));
+    rows[6] = std::string(40, '=');
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{2, Difficulty::Hero, 9000, rows, true});
+    elite_plot(sim);
+    sim.run_days(10);
+    CHECK(at(sim, {22, 2}).house->population == 0);
+}
+
+TEST_CASE("B-013: a new elite family waits for its needs; it leaves only when it loses them (Z:34, doc 03)") {
     auto sim = town(false);
     elite_plot(sim);
-    sim.mutable_state().migration.popularity = 0;
-    for (int d = 0; d < 10; ++d) {
-        sim.mutable_state().migration.popularity = 0;
+    for (int d = 0; d < 20 && at(sim, {22, 2}).house->population == 0; ++d) {
         sim.run_days(1);
     }
-    CHECK(at(sim, {22, 2}).house->population == 0);
+    REQUIRE(at(sim, {22, 2}).house->population > 0);
+    sim.run_days(10);  // no vendor, no culture: the needs of a Residence were never met
+    CHECK_FALSE(at(sim, {22, 2}).house->abandoned);
+    CHECK(at(sim, {22, 2}).house->population > 0);
+    at(sim, {22, 2}).house->established = true;  // as if it had been a Residence once
+    sim.run_days(5);
+    CHECK(at(sim, {22, 2}).house->abandoned);
+}
+
+TEST_CASE("B-012: an elite house gets its family while common houses still have room") {
+    auto sim = town(false);
+    elite_plot(sim);
+    for (std::int32_t x = 2; x < 38; x += 2) {  // empty common plots along the street: much room, 8 each
+        sim.issue(PlaceBuilding{"common_housing", x, 7});
+    }
+    sim.step(1);
+    for (int d = 0; d < 5 && at(sim, {22, 2}).house->population == 0; ++d) {  // ~12 a day, 144 places
+        sim.run_days(1);
+    }
+    std::uint32_t common_room = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        common_room += b.house && !b.house->elite && b.house->population < 8 ? 1 : 0;
+    }
+    CHECK(common_room > 0);  // the common houses are not full yet ...
+    CHECK(at(sim, {22, 2}).house->population > 0);  // ... and the elite family has moved in all the same
 }

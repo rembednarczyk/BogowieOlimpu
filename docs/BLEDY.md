@@ -29,13 +29,13 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 Zgłoszone przez agenta weryfikującego (2026-11-26, przebieg demo 10 lat, test walki, przygoda przykładowa); naprawa po decyzjach właściciela.
 
 ### B-002 [S3] Infirmeria w demo bez dostępu do drogi
-- Status: potwierdzone
+- Status: naprawione: nowe demo z `tools/make_demo.py`; każde postawienie z kolejności budowy sprawdza bramka `core/tests/test_demo.cpp` (odmowa = błąd testu)
 - Miejsce: `game/scenes/boot.gd`, infirmeria na (9, 9).
 - Dowód: w 7. miesiącu 1. roku się zawala (brak pracowników i utrzymania).
 - Przyczyna: błąd rozmieszczenia w skrypcie demo.
 
 ### B-003 [S2] Demo nie da się wygrać
-- Status: potwierdzone
+- Status: naprawione: demo budowane etapami przez autopilota (`scenarios/demo_build.json`), dystrybucja przed hodowlą; bramka "demo gate" wygrywa przed 7. rokiem i sprawdza każdą mechanikę
 - Miejsce: `game/scenes/boot.gd` (priorytety sektorów), `scenarios/demo.json` (cel 300 mieszkańców).
 - Dowód: przez 10 lat ludność 200 (25 chat po 8), farmy, zgrzeblarnia, stadnina, gimnazjon i wieże z obsadą 0; bez żywności domy zostają chatami; 0 kompanii; wieże nie strzelają.
 - Przyczyna: 84 pracowników idzie na dystrybucję, utrzymanie i mitologię (priorytet 5), na żywność nie zostaje nikt.
@@ -68,6 +68,21 @@ Zgłoszone przez agenta przeglądu referencji (2026-11-26, instrukcje Zeusa i Po
 - Miejsce: `core/src/scenario.cpp:64` sprawdza cel przez `god_blesses` (`core/src/gods.cpp:24-34`), więc cel przepada także, gdy kapłani nie znajdą ofiar.
 - Dowód: instrukcja nie wiąże celu z ofiarami (Z:16, Z:21); eZeus liczy cel z postępu budowy (S-008, `eepisodegoal.cpp:378-401`).
 - Przyczyna: użyto warunku błogosławieństwa w miejscu warunku "ukończone i stoi".
+
+Znalezione przy przebudowie demo (autopilot, 2026-11-26).
+
+### B-012 [S2] Rodziny elity nie dostają imigrantów, póki zwykłe domy mają miejsce
+- Status: naprawione: dom elity liczy się w pierwszej kolejce zasiedlania (rodzina do 8 osób, L-108); test "B-012" w `core/tests/test_elite.cpp` (pada bez poprawki)
+- Miejsce: `core/src/migration.cpp`, `fill_houses`.
+- Dowód: w demo 3 domy elity stały puste przez 6 lat przy 2000 mieszkańców.
+- Przyczyna: pierwsza kolejka bierze domy z co najmniej 8 wolnymi miejscami, a rezydencja ma 6; rosnące zwykłe domy zawsze mają miejsce.
+
+### B-013 [S2] Nowa rodzina elity wyprowadza się po 3 dniach, zanim dostanie towary
+- Status: naprawione: dom elity porzucany tylko po utracie spełnionych raz warunków (bit `established` w zapisie domu); test "B-013" w `core/tests/test_elite.cpp` (pada bez poprawki)
+- Miejsce: `core/src/housing.cpp`, `update_houses`.
+- Dowód: w demo rodziny wprowadzały się z towarami 0 i po 3 dniach dom był porzucony (atrakcyjność 34-67, kultura 35-60).
+- Referencja: wyprowadzka po **utracie** warunków (`docs/gameplay/03-mieszkancy.md`, Z:34); eZeus trzyma nową rodzinę na poziomie poniżej rezydencji (S-008, `eelitehousing.cpp` updateLevel).
+- Przyczyna: brak stanu "jeszcze nie rezydencja".
 
 ### B-004 [S2] Morale kompanii odbudowuje się podczas walki z potworem
 - Status: naprawione: brak odbudowy morale, póki potwór walczy w mieście (decyzja właściciela); test "B-004" w test_monsters.cpp (test walki agenta)

@@ -1,0 +1,161 @@
+#include "bo/core/build_order.h"
+
+#include "bo/core/storage.h"
+
+#include <stdexcept>
+
+#include <nlohmann/json.hpp>
+
+namespace bo::core {
+
+using json = nlohmann::json;
+
+namespace {
+
+TilePos pos_of(const json& a) { return {a.at(0).get<std::int32_t>(), a.at(1).get<std::int32_t>()}; }
+
+// Tiles of a straight road from (x1, y1) to (x2, y2): first along x, then along y (an L).
+void road_line(const json& a, std::vector<Command>& out) {
+    const std::int32_t x1 = a.at(0), y1 = a.at(1), x2 = a.at(2), y2 = a.at(3);
+    const std::int32_t sx = x2 >= x1 ? 1 : -1;
+    const std::int32_t sy = y2 >= y1 ? 1 : -1;
+    for (std::int32_t x = x1;; x += sx) {
+        out.emplace_back(PlaceRoad{x, y1});
+        if (x == x2) {
+            break;
+        }
+    }
+    for (std::int32_t y = y1 + sy; y1 != y2; y += sy) {
+        out.emplace_back(PlaceRoad{x2, y});
+        if (y == y2) {
+            break;
+        }
+    }
+}
+
+// One JSON step to one or more steps (a road line or a repeated building expands).
+void parse_step(const json& s, std::vector<BuildStep>& out) {
+    BuildStep base;
+    base.day = s.value("day", std::uint64_t{0});
+    base.retry = s.value("retry", false);
+    base.every = s.value("every", std::uint64_t{0});
+    const json when = s.value("when", json::object());  // a named copy: items() of a temporary dangles
+    for (const auto& [good, n] : when.items()) {
+        base.when[good] = n.get<std::uint32_t>();
+    }
+    auto add = [&](Command c, std::optional<TilePos> at = std::nullopt) {
+        BuildStep step = base;
+        step.command = std::move(c);
+        step.at = at;
+        out.push_back(std::move(step));
+    };
+    if (s.contains("place")) {
+        const json rep = s.contains("repeat") ? s.at("repeat") : json::array({1, 0, 0});  // count, dx, dy
+        for (std::int32_t i = 0; i < rep.at(0).get<std::int32_t>(); ++i) {
+            add(PlaceBuilding{s.at("place").get<std::string>(), s.at("x").get<std::int32_t>() + i * rep.at(1).get<std::int32_t>(),
+                              s.at("y").get<std::int32_t>() + i * rep.at(2).get<std::int32_t>(),
+                              s.value("rot", std::uint8_t{0})});
+        }
+    } else if (s.contains("road")) {
+        std::vector<Command> roads;
+        road_line(s.at("road"), roads);
+        for (auto& c : roads) {
+            add(std::move(c));
+        }
+    } else if (s.contains("roadblock")) {
+        const TilePos p = pos_of(s.at("roadblock"));
+        add(PlaceRoadblock{p.x, p.y});
+    } else if (s.contains("priority")) {
+        add(SetSectorPriority{s.at("priority").at(0).get<std::uint8_t>(), s.at("priority").at(1).get<std::uint8_t>()});
+    } else if (s.contains("tax")) {
+        add(SetTaxRate{static_cast<TaxRate>(s.at("tax").get<std::uint8_t>())});
+    } else if (s.contains("wage")) {
+        add(SetWageRate{static_cast<WageRate>(s.at("wage").get<std::uint8_t>())});
+    } else if (s.contains("trade_partner")) {
+        add(SetTradePartner{0, s.at("trade_partner").get<std::int32_t>()}, pos_of(s.at("at")));
+    } else if (s.contains("trade_order")) {
+        const auto& o = s.at("trade_order");
+        add(SetTradeOrder{0, o.at("good").get<std::string>(), o.value("import", 0U) > 0, o.value("import", 0U),
+                          o.contains("export_keep"), o.value("export_keep", 0U)},
+            pos_of(s.at("at")));
+    } else if (s.contains("summon_hero")) {
+        add(SummonHero{0}, pos_of(s.at("summon_hero")));
+    } else if (s.contains("hero_quest")) {
+        add(SendHeroOnQuest{s.at("hero_quest").get<std::uint32_t>()});
+    } else if (s.contains("pray")) {
+        add(Pray{0}, pos_of(s.at("pray")));
+    } else if (s.contains("storage_order")) {
+        const auto& o = s.at("storage_order");
+        add(SetStorageOrder{0, o.at("good").get<std::string>(), o.value("kind", std::uint8_t{0}), o.value("limit", 32U)},
+            pos_of(s.at("at")));
+    } else {
+        throw std::runtime_error("unknown build step: " + s.dump());
+    }
+}
+
+bool stands(const Simulation& sim, const PlaceBuilding& p) {
+    const auto& city = sim.state().city;
+    const TilePos t{p.x, p.y};
+    if (!city.map.in_bounds(t) || city.map.at(t).building == kNoBuilding) {
+        return false;
+    }
+    return city.buildings.items.at(city.map.at(t).building).type == p.type;
+}
+
+}  // namespace
+
+std::optional<BuildOrder> parse_build_order(const std::string& json_text, std::string& error) {
+    try {
+        const json j = json::parse(json_text);
+        BuildOrder order;
+        for (const auto& s : j.at("steps")) {
+            parse_step(s, order.steps);
+        }
+        return order;
+    } catch (const std::exception& e) {
+        error = std::string("build order: ") + e.what();
+        return std::nullopt;
+    }
+}
+
+std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim, std::uint64_t day) {
+    std::vector<Command> out;
+    for (const BuildStep& s : order.steps) {
+        const auto* place = std::get_if<PlaceBuilding>(&s.command);
+        const bool due = s.day == day || (s.retry && place != nullptr && s.day < day && !stands(sim, *place)) ||
+                         (s.every > 0 && day > s.day && (day - s.day) % s.every == 0);
+        if (!due) {
+            continue;
+        }
+        bool stocked = true;
+        for (const auto& [good, n] : s.when) {
+            stocked = stocked && city_stock(sim.state().city, sim.catalog(), good) >= n;  // without trade buildings (Z:79)
+        }
+        if (!stocked) {
+            continue;
+        }
+        Command c = s.command;
+        if (s.at) {
+            const auto& map = sim.state().city.map;
+            if (!map.in_bounds(*s.at) || map.at(*s.at).building == kNoBuilding) {
+                continue;
+            }
+            const std::uint32_t id = map.at(*s.at).building;
+            if (auto* tp = std::get_if<SetTradePartner>(&c)) {
+                tp->building = id;
+            } else if (auto* to = std::get_if<SetTradeOrder>(&c)) {
+                to->building = id;
+            } else if (auto* so = std::get_if<SetStorageOrder>(&c)) {
+                so->building = id;
+            } else if (auto* sh = std::get_if<SummonHero>(&c)) {
+                sh->hall = id;
+            } else if (auto* pr = std::get_if<Pray>(&c)) {
+                pr->building = id;
+            }
+        }
+        out.push_back(std::move(c));
+    }
+    return out;
+}
+
+}  // namespace bo::core

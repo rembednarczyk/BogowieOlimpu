@@ -32,6 +32,7 @@ struct HouseState {
     std::uint32_t food_remainder = 0;  // carried part of the population-scaled food consumption
     std::uint8_t failed_checks = 0;    // devolution after 3 failed daily checks [RODZINA]
     bool abandoned = false;            // elite house left by its owners (Z:34)
+    bool established = false;          // elite: its needs were met once; only then a loss makes them leave (B-013)
     std::uint8_t happiness = 0;        // C8: 0-100, set to the difficulty base when people move in
     std::uint8_t hungry_updates = 0;   // C8: mood updates in a row without food
     std::uint8_t days_without_road = 0;  // C8: people leave after more than 4 days (doc 24)
@@ -42,7 +43,7 @@ struct HouseState {
     friend bool operator==(const HouseState& a, const HouseState& b) {
         return a.elite == b.elite && a.level == b.level && a.population == b.population && a.goods == b.goods &&
                a.food_remainder == b.food_remainder && a.failed_checks == b.failed_checks &&
-               a.abandoned == b.abandoned && a.happiness == b.happiness && a.hungry_updates == b.hungry_updates &&
+               a.abandoned == b.abandoned && a.established == b.established && a.happiness == b.happiness && a.hungry_updates == b.hungry_updates &&
                a.days_without_road == b.days_without_road && a.quarantine_days == b.quarantine_days &&
                a.crime_level == b.crime_level && a.incoming == b.incoming;
     }

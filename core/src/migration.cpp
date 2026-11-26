@@ -83,7 +83,9 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
             if (h.elite) {
                 room = std::min(room, kEliteGroup);  // elite families come from the same pool, 8 at most (L-108)
             }
-            if (room == 0 || (big_first && room < static_cast<std::uint32_t>(p.fill_first_free_slots))) {
+            // An elite family fills its house whole (L-108): elite houses count as roomy in the first pass,
+            // or common houses that keep growing take every immigrant first (B-012).
+            if (room == 0 || (big_first && !h.elite && room < static_cast<std::uint32_t>(p.fill_first_free_slots))) {
                 continue;
             }
             const std::uint32_t n = std::min(room, people - placed);

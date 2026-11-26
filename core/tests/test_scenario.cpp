@@ -146,10 +146,10 @@ TEST_CASE("the demo adventure (scenarios/demo.json) parses and starts") {
     std::stringstream text;
     text << f.rdbuf();
     auto sim = start(text.str());
-    CHECK(sim.state().city.map.width() == 64);
-    CHECK(sim.state().trade.partners.size() == 2);
-    CHECK(sim.state().scenario.goals.size() == 2);
-    CHECK(sim.state().scenario.events.size() == 6);
+    CHECK(sim.state().city.map.width() == 80);  // tools/make_demo.py
+    CHECK(sim.state().trade.partners.size() == 3);
+    CHECK(sim.state().scenario.goals.size() == 5);
+    CHECK(sim.state().scenario.events.size() == 7);
 }
 
 TEST_CASE("a request fulfilled after its deadline costs 5 opinion (eZeus; owner, L-114)") {
