@@ -5,6 +5,7 @@
 #include <iterator>
 #include <set>
 
+#include "bo/core/sanctuary.h"
 #include "bo/core/storage.h"
 
 namespace bo::core {
@@ -70,7 +71,7 @@ bool operator==(const Building& a, const Building& b) {
            a.storage == b.storage && a.producer == b.producer && a.stall == b.stall && a.animal == b.animal &&
            a.orchard == b.orchard && a.fire_counter == b.fire_counter && a.damage_counter == b.damage_counter &&
            a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
-           a.burning_days == b.burning_days && a.trade == b.trade;
+           a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -163,8 +164,11 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
             r.reason = "build.not_rotatable";
         } else {
             const bool elite = type == "elite_housing";
+            const std::string sanctuary = sanctuary_site_check(city, catalog, type);
             if (elite && !elite_site_ok(city, catalog)) {
                 r.reason = "build.elite_needs_goods";  // 2 food, 1 fleece, 1 oil in storage (doc 18; storage: C5)
+            } else if (!sanctuary.empty()) {
+                r.reason = sanctuary;
             } else {
                 if (type == "common_housing" || elite) {
                     b.house = HouseState{};
@@ -186,6 +190,9 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         }
         if (!bt.sells.empty()) {
             placed.stall = StallState{};
+        }
+        if (catalog.sanctuaries.count(type) != 0) {
+            lay_foundation(city, catalog, placed);
         }
         if (bt.trade_building) {
             placed.trade = TradePostState{};

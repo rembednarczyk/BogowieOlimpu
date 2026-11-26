@@ -19,6 +19,7 @@ inline std::optional<std::int32_t> opt_int(const nlohmann::json& j) {
 
 void load_migration(const nlohmann::json& m, const nlohmann::json& diff, MigrationParams& p);
 void load_risks(const std::map<std::string, nlohmann::json>& docs, RiskParams& p);
+void load_sanctuaries(const std::map<std::string, nlohmann::json>& docs, DataCatalog& cat);
 void load_combat(const std::map<std::string, nlohmann::json>& docs, CombatParams& p);
 void load_production(const std::map<std::string, nlohmann::json>& docs, DataCatalog& cat);
 

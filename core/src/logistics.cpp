@@ -348,7 +348,8 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
     for (auto& [wid, w] : st.walkers.items) {
         if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish ||
             w.job == WalkerJob::Trade || w.job == WalkerJob::Settle || w.job == WalkerJob::Prowl ||
-            w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade) {
+            w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade || w.job == WalkerJob::Supply ||
+            w.job == WalkerJob::Build || w.job == WalkerJob::Sacrifice) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);
@@ -447,6 +448,10 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
             }
         }
         b.producer->deliveryman = kNoWalker;
+    } else if (w.job == WalkerJob::Supply && b.storage) {
+        for (const auto& [good, loads] : w.cargo) {
+            b.storage->loads[good] += loads;  // the sanctuary site is gone: the load goes back
+        }
     } else if (w.job == WalkerJob::Fetch && b.producer) {
         hostler_unload(catalog, w, b);
     } else if (w.job == WalkerJob::Fetch && b.stall) {

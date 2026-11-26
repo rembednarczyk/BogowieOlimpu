@@ -30,7 +30,8 @@ bool read_counts(ByteReader& r, std::map<std::string, std::uint32_t>& m) {
 // Storage, producer and stall state (v7): a flag byte, then each present block.
 void write_goods_state(ByteWriter& w, const Building& b) {
     w.u8(static_cast<std::uint8_t>((b.storage ? 1U : 0U) | (b.producer ? 2U : 0U) | (b.stall ? 4U : 0U) |
-                                   (b.animal ? 8U : 0U) | (b.orchard ? 16U : 0U) | (b.trade ? 32U : 0U)));
+                                   (b.animal ? 8U : 0U) | (b.orchard ? 16U : 0U) | (b.trade ? 32U : 0U) |
+                                   (b.sanctuary ? 64U : 0U)));
     if (b.storage) {
         write_counts(w, b.storage->loads);
         w.u32(static_cast<std::uint32_t>(b.storage->orders.size()));
@@ -78,11 +79,20 @@ void write_goods_state(ByteWriter& w, const Building& b) {
             w.u32(o.export_keep);
         }
     }
+    if (b.sanctuary) {  // since v19
+        const SanctuaryState& t = *b.sanctuary;
+        w.u8(t.complete ? 1 : 0);
+        write_counts(w, t.needed);
+        write_counts(w, t.on_site);
+        w.u32(t.days_since_sacrifice);
+        w.u32(t.priest);
+        w.u8(t.favor_lost ? 1 : 0);
+    }
 }
 
 bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
     std::uint8_t flags = 0;
-    if (!r.u8(flags) || flags > 63) {
+    if (!r.u8(flags) || flags > (version >= 19 ? 127 : 63)) {
         return false;
     }
     if ((flags & 1U) != 0) {
@@ -174,6 +184,16 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
             t.orders[good] = o;
         }
         b.trade = std::move(t);
+    }
+    if ((flags & 64U) != 0) {
+        SanctuaryState t;
+        std::uint32_t days = 0;
+        if (!read_flag(t.complete) || !read_counts(r, t.needed) || !read_counts(r, t.on_site) || !r.u32(days) ||
+            days > 0xFFFF || !r.u32(t.priest) || !read_flag(t.favor_lost)) {
+            return false;
+        }
+        t.days_since_sacrifice = static_cast<std::uint16_t>(days);
+        b.sanctuary = std::move(t);
     }
     return true;
 }

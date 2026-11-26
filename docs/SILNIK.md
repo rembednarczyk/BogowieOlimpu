@@ -133,6 +133,8 @@ Zostaje: premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, da
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|
 | D1 Bogowie | sanktuaria, budowa fazami, ofiary, modlitwy, sanktyfikacja, gniew | doc 10, 21 |
+
+Stan D1: etap 1 zrobiony (L-111, L-052). Sanktuaria 14 bogów z `data/gods.json`, najwyżej 4 w mieście, marmur startowy z magazynów, gildia rzemieślników, wozy z magazynu (marmur i drewno po 4 ładunki, rzeźby po 1), rzemieślnicy wbudowują materiał, zdarzenie ukończenia, ofiary kapłanów (owca lub koza, bez nich żywność ze spichlerza), utrata łaski po roku bez ofiary. Format zapisu v19. Zostaje: korzyści stałe, sanktyfikacja, modlitwy, wizyty boga, bogowie wrodzy i gniew, potwory, herosi, zadania.
 | D2 Potwory i herosi | | doc 10, 21 |
 | D3 Wojsko | kompanie, rozkazy, walka, morale, flota, fortyfikacje | doc 11, 22, 24 |
 

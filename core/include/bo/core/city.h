@@ -144,6 +144,21 @@ enum class RoadMode : std::uint8_t {
     OwnRoad,   // carries its own road that goes with it (water crossings and bridges, Z:101-103)
 };
 
+// A sanctuary (Z:116-118, Z:124, doc 21): loads still to build in, loads delivered and waiting on site,
+// then sacrifices once complete.
+struct SanctuaryState {
+    bool complete = false;
+    std::map<std::string, std::uint32_t> needed;   // loads still to build in
+    std::map<std::string, std::uint32_t> on_site;  // delivered, not yet built in
+    std::uint16_t days_since_sacrifice = 0;
+    WalkerId priest = kNoWalker;
+    bool favor_lost = false;  // no sacrifice for too long: the god turns away (Z:124)
+    friend bool operator==(const SanctuaryState& a, const SanctuaryState& b) {
+        return a.complete == b.complete && a.needed == b.needed && a.on_site == b.on_site &&
+               a.days_since_sacrifice == b.days_since_sacrifice && a.priest == b.priest && a.favor_lost == b.favor_lost;
+    }
+};
+
 struct Building {
     BuildingId id = kNoBuilding;
     std::string type;
@@ -164,6 +179,7 @@ struct Building {
     std::optional<AnimalState> animal;      // sheep, goats
     std::optional<OrchardState> orchard;    // olive trees, grapevines
     std::optional<TradePostState> trade;    // Trading Post, Pier
+    std::optional<SanctuaryState> sanctuary;  // sanctuaries (D1)
     // Risks (C7): counters grow by the building's risk each day; a visit of the right walker clears them.
     std::uint16_t fire_counter = 0;
     std::uint16_t damage_counter = 0;

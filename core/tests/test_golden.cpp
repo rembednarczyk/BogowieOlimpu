@@ -53,7 +53,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v16 (version field; hunting wolf per spawn point), wolves (Z:45, L-107).
     // 2026-11-26: save format v17 (version field; empty army block), module D3 stage 1.
     // 2026-11-26: save format v18 (version field; invasion block), module D3 stage 2.
-    const std::uint64_t kGolden = 0xb2a619289523a8faULL;
+    // 2026-11-26: save format v19 (version field; sanctuary state), module D1 stage 1.
+    const std::uint64_t kGolden = 0xa01c0fcfc8ce24cdULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -184,7 +185,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // sending a nobleman (Z:25, Z:88, L-108).
     // 2026-11-26: save format v17: army block (no Palace in the scenario, so no companies), module D3.
     // 2026-11-26: save format v18: hit points and cooldown per walker, invasion block (D3 stage 2, L-110).
-    const std::uint64_t kGolden = 0x711c95f656bf281cULL;
+    // 2026-11-26: save format v19 (version field only: no sanctuary in the scenario), module D1 stage 1.
+    const std::uint64_t kGolden = 0xc59e90196d085b6dULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

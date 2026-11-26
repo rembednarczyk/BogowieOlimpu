@@ -9,6 +9,7 @@
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
 #include "bo/core/risks.h"
+#include "bo/core/sanctuary.h"
 #include "bo/core/trade.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
@@ -211,6 +212,20 @@ static void run_trade(Simulation& sim) {
     }
 }
 
+// D1: sanctuary construction and sacrifices.
+static void run_mythology(Simulation& sim) {
+    const MythEvents ev = advance_sanctuaries(sim.mutable_state(), sim.catalog());
+    for (const WalkerId id : ev.spawned) {
+        sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
+    }
+    for (const BuildingId id : ev.removed) {
+        sim.emit(BuildingRemoved{id});
+    }
+    for (const BuildingId id : ev.completed) {
+        sim.emit(SanctuaryCompleted{id});
+    }
+}
+
 // D3: companies in the field settle, companies at home re-form from the houses.
 static void run_military(Simulation& sim) {
     update_companies(sim.mutable_state());
@@ -235,6 +250,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"trade", 30, &run_trade},
         {"walker_spawn", 31, &run_walker_spawn},
         {"military", 32, &run_military},
+        {"mythology", 33, &run_mythology},
         {"coverage_decay", 35, &run_coverage_decay},
     };
     return kSchedule;

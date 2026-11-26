@@ -166,4 +166,30 @@ void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
     }
 }
 
+void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat) {
+    if (docs.count("gods_rules.json") != 0) {
+        cat.max_sanctuaries = docs.at("gods_rules.json").value("max_sanctuaries_per_city", cat.max_sanctuaries);
+    }
+    if (docs.count("gods.json") == 0) {
+        return;
+    }
+    for (const auto& g : docs.at("gods.json")) {
+        const std::string god = g.at("id").get<std::string>();
+        for (const auto& [suffix, key] : {std::pair<std::string, std::string>{"", "sanctuary_data"},
+                                          std::pair<std::string, std::string>{"_citadel", "atlantean_sanctuary_data"}}) {
+            const auto& d = g.value(key, json());
+            if (!d.is_object()) {
+                continue;
+            }
+            SanctuaryParams p;
+            p.god = god;
+            p.initial_marble = opt_int(d.value("initial_marble", json())).value_or(0);
+            p.materials["marble"] = opt_int(d.value("marble", json())).value_or(0);
+            p.materials["wood"] = opt_int(d.value("wood", json())).value_or(0);
+            p.materials["sculpture"] = opt_int(d.value("sculptures", json())).value_or(0);
+            cat.sanctuaries["sanctuary_" + god + suffix] = p;
+        }
+    }
+}
+
 }  // namespace bo::core::detail

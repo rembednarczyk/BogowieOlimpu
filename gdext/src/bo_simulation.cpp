@@ -115,6 +115,10 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["soldiers"] = static_cast<int64_t>(e.soldiers);
                        d["bribe"] = static_cast<int64_t>(e.bribe);
                    },
+                   [&d](const bo::core::SanctuaryCompleted& e) {
+                       d["type"] = "sanctuary_completed";
+                       d["building"] = static_cast<int64_t>(e.building);
+                   },
                    [&d](const bo::core::InvasionEnded& e) {
                        d["type"] = "invasion_ended";
                        d["result"] = static_cast<int64_t>(e.result);
@@ -431,6 +435,21 @@ Array BoSimulation::get_buildings() const {
         d["disease_risk"] = static_cast<int64_t>(b.disease_counter);
         d["crime_risk"] = static_cast<int64_t>(b.crime_counter);
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
+        if (b.sanctuary) {  // D1: loads still to build in, delivered loads, sacrifices
+            int64_t needed = 0;
+            int64_t on_site = 0;
+            for (const auto& [g, n] : b.sanctuary->needed) {
+                needed += n;
+            }
+            for (const auto& [g, n] : b.sanctuary->on_site) {
+                on_site += n;
+            }
+            d["sanctuary_complete"] = b.sanctuary->complete;
+            d["sanctuary_loads_needed"] = needed;
+            d["sanctuary_loads_on_site"] = on_site;
+            d["days_since_sacrifice"] = static_cast<int64_t>(b.sanctuary->days_since_sacrifice);
+            d["favor_lost"] = b.sanctuary->favor_lost;
+        }
         if (b.house) {
             d["house_level"] = static_cast<int64_t>(b.house->level);
             d["population"] = static_cast<int64_t>(b.house->population);

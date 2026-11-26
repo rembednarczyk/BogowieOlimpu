@@ -22,6 +22,7 @@ add_library(bo_core STATIC
     src/wolves.cpp
     src/wildlife.cpp
     src/risks.cpp
+    src/sanctuary.cpp
     src/serialize.cpp
     src/serialize_city.cpp
     src/serialize_economy.cpp
@@ -71,6 +72,7 @@ if(BO_BUILD_TESTS)
         tests/test_extraction.cpp
         tests/test_wildlife.cpp
         tests/test_risks.cpp
+        tests/test_sanctuary.cpp
         tests/test_trade.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)

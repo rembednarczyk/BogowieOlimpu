@@ -114,10 +114,14 @@ struct InvasionEnded {
     std::uint8_t result = 0;
 };
 
+struct SanctuaryCompleted {  // D1: the artisans have built in the last load (Z:118)
+    std::uint32_t building = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
-                           InvasionEnded>;
+                           InvasionEnded, SanctuaryCompleted>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

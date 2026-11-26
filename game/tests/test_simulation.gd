@@ -149,6 +149,17 @@ func _init() -> void:
 	var ends: Array = iev.filter(func(e): return e["type"] == "invasion_ended")
 	check(ends.size() == 1 and ends[0]["result"] == 2, "surrender ends the invasion")
 
+	# Sanctuary through the binding (D1): marble in storage, foundation, materials still needed.
+	var sa := BoSimulation.new()
+	var mrows := PackedStringArray()
+	for y in 30:
+		mrows.append("=".repeat(40) if y == 20 else ".".repeat(40))
+	check(sa.start_with_map("res://data", 4, "", 9000, mrows, true) == "", "start for sanctuary")
+	sa.place_building("sanctuary_dionysus", 2, 14)
+	sa.step(1)
+	var mrej: Array = sa.drain_events().filter(func(e): return e["type"] == "command_rejected")
+	check(mrej.size() == 1 and mrej[0]["reason"] == "build.sanctuary_needs_marble", "sanctuary needs marble")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

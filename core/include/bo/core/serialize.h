@@ -20,7 +20,7 @@ inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian
 // v12: risk counters, fires, quarantine, wind, walker risk resets and outlaw variants.
 // v13: city hygiene, crime escalation per house, walkers ignoring roadblocks.
 // v14: trade partners, trade buildings and orders. v15: immigrants on the way (house reservations).
-inline constexpr std::uint32_t kSaveFormatVersion = 18;
+inline constexpr std::uint32_t kSaveFormatVersion = 19;
 
 class ByteWriter {
 public:
