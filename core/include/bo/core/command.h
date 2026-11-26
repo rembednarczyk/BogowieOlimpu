@@ -1,0 +1,35 @@
+// Module A3: commands are the only way into the simulation (docs/PRAKTYKI.md ch. 2).
+// Pattern: Command (GoF) as a closed std::variant; dispatch uses std::visit with one handler per alternative,
+// so a missing handler is a compile error ("typ wymuszający komplet"). Player input, autopilot, scenario
+// scripts and tests all issue the same commands; replay = seed + command log.
+// Append new command types at the end of the variant only (the index is stored in saves and logs).
+#pragma once
+
+#include <cstdint>
+#include <variant>
+#include <vector>
+
+#include "bo/core/types.h"
+
+namespace bo::core {
+
+struct SetTaxRate {
+    TaxRate rate = TaxRate::Normal;
+};
+
+struct SetWageRate {
+    WageRate rate = WageRate::Normal;
+};
+
+using Command = std::variant<SetTaxRate, SetWageRate>;
+
+// A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
+struct ScheduledCommand {
+    std::uint64_t tick = 0;
+    std::uint64_t sequence = 0;
+    Command command;
+};
+
+using CommandLog = std::vector<ScheduledCommand>;
+
+}  // namespace bo::core

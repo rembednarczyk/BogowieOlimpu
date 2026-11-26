@@ -1,0 +1,6 @@
+build*/
+.godot/
+*.import
+game/bin/
+__pycache__/
+*.blend1

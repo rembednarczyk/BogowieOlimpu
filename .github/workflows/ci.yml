@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+    paths-ignore: ['docs/**', '**.md']
+  pull_request:
+    paths-ignore: ['docs/**', '**.md']
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang
+      - name: Guards
+        run: python3 tools/checks/check_core.py .
+      - name: Build and test (GCC, Release)
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+      - name: Build and test (Clang, Release) - golden hash must match GCC
+        run: |
+          CXX=clang++ cmake -S . -B build-clang -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-clang
+          ctest --test-dir build-clang --output-on-failure
