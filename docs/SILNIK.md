@@ -13,7 +13,8 @@ Zakres "rozbudowy silnika" (potwierdzony przez właściciela 2026-11-26): buduje
 | Renderer Compatibility | OpenGL przez llvmpipe | działa, ale nie jest celem (R-015) |
 | Blender | 4.5.9 LTS | działa bez okna (`-b`), eksport glTF sprawdzony |
 | Łańcuch Blender → `.glb` → import Godota | | działa |
-| Kompilacja C++ | g++, cmake | dostępne; scons do doinstalowania przez pip |
+| Kompilacja C++ | g++, clang, cmake, ninja | dostępne |
+| Android | JDK 17, SDK 35, NDK 28.2.13676358, szablony eksportu 4.7.2 | APK debug arm64 budowany i podpisywany w kontenerze; na telefonie nieuruchomiony |
 | Rdzenie, pamięć | 4 rdzenie, 15 GB RAM | |
 
 Instalacja jest w `/opt/tools`. Skrypt startowy środowiska chmurowego (zapisany 2026-11-26) instaluje Godota i Blendera przy budowie nowego kontenera, tylko gdy sesja ma repo BogowieOlimpu. Działanie w świeżej sesji jeszcze niepotwierdzone.
@@ -60,7 +61,12 @@ Stan: moduły A1-A6 zaimplementowane w `core/`, 21 przypadków testowych, złoty
 | A5 Zapis | zrzut stanu + wersja danych + migracje | Memento, wersjonowanie | zapis/odczyt daje identyczny hash |
 | A6 Złoty hash | stały scenariusz, hash ustawiany ręcznie; rozszerzany o mapę 32×32 wraz z modułami B, C | testy charakteryzujące | hash zmieniany tylko ręcznie |
 
-### B. Mapa i ruch
+### B. Mapa i ruch: CZĘŚCIOWO (2026-11-26)
+
+Zrobione: B1 (siatka, 12 typów terenu zgodnych z `terrain.json`, bajt losowy kafla, parser mapy tekstowej), B2 (obrysy, kolizje, teren, łąka pod farmy, koszt według trudności, rozbiórka, wycinka lasu), B3 (drogi, Roadblock, sieci dróg, punkt wyjścia budynku od północy zgodnie z zegarem), B4 (A* z remisami po indeksie kafla, tryby: drogi, drogi bez blokad, teren), B5 (spacerujący wędrowny: algorytm rodziny silnika, budżety z `walkers.json`, obsługa 5×5 przez 96 dni, powrót ścieżką), B6 w wersji podstawowej (spacerujący celowy po drogach, przez blokady), B7 w wersji podstawowej (zapytanie o budynki w kwadracie). Systemy dzienne: wysyłanie spacerujących (opóźnienie według obsady, S-007) i zanik zasięgu. Format zapisu v2 z migracją z v1. Złoty hash miasta 32×32.
+
+Zostaje: obrót budynków, undo, brzeg i budynki na agorze lub drodze (komunikat `build.placement_not_implemented`), aleje, bulwary, mosty, wysokość terenu; mapy odległości do magazynów; wyjątek powrotu fontanny i lecznicy; przypadek szerokiej drogi w algorytmie wędrownym; konkretni spacerujący celowi (doręczyciele, wozy, pasterze, myśliwi, rybacy) przychodzą z modułami C.
+
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

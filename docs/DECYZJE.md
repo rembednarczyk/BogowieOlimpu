@@ -45,6 +45,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Technologia
 
+### 2026-11-26: Build na Androida
+- Polecenie właściciela: "Zaczynaj moduły B i przygotuj build na Androida".
+- Decyzje wykonawcze (koordynator): tylko arm64-v8a (telefon odniesienia i współczesne urządzenia); minimalne API 24 (domyślne szablonu Godota 4.7); biblioteka z wyrównaniem stron 16 KB (wymóg Google Play dla Androida 15+); eksport z gotowego szablonu APK, bez Gradle; identyfikator pakietu `pl.bogowieolimpu.game` [ZAŁOŻENIE, do potwierdzenia przed publikacją]; klucze wydania wyłącznie w zmiennych środowiskowych, nigdy w repo.
+- Sprawdzone: kompilacja NDK 28.2, APK 29,8 MB podpisany i zweryfikowany przez apksigner, zawiera `libbo_gdext.android.so` i dane JSON.
+- Nie sprawdzono: uruchomienie na urządzeniu (kontener nie ma emulatora ARM ani telefonu).
+
 ### 2026-11-26: Własna warstwa silnika, rdzeń w C++, natywny Vulkan, telefon odniesienia Xiaomi 15T Pro
 - Decyzje właściciela: zakres rozbudowy silnika zgodnie z rekomendacją (pyt. 22: własna warstwa na Godocie, bez forka); rdzeń symulacji w C++17 jako samodzielna biblioteka + GDExtension, prezentacja w GDScript (pyt. 23); telefon odniesienia **Xiaomi 15T Pro**; praca od początku na natywnych bibliotekach, bez ograniczeń poziomu WebGL.
 - Cytat właściciela: "1. zgoda 2. zgoda 3. co do telefonu to referencyjny to xiaomi 15t pro - chciałbym, żebyśmy od początku pracowali na natywnych bibliotekach, nie na ograniczeniach webgl przeglądarki".

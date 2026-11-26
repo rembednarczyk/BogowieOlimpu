@@ -95,6 +95,8 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 | L-091 | Poziom trudności | P2 | zamknięta: 5 poziomów i tabele (doc 18, 20) |
 | L-092 | Progi pomników Population, Happiness | P2 | częściowa [eZeus]: Population, doc 24 |
 | L-093 | Struktura przygód i celów | P1 | częściowa: doc 23; pełna lista typów celów L-093b otwarta |
+| L-094 | Budowa przy pustym skarbcu (czy gra blokuje budowę, gdy brakuje drachm, i czy dopuszcza dług) | P1 | otwarta; [ZAŁOŻENIE] w rdzeniu: budowa zawsze dozwolona, skarbiec może zejść poniżej zera |
+| L-095 | Przechodniość terenu poza drogą (plaża, las) dla ruchu na przełaj | P2 | otwarta; [ZAŁOŻENIE] plaża przechodnia, las nie (Z:17-18 mówi tylko o bagnie i skałach) |
 
 ## Kandydaci na kolejne źródła
 
