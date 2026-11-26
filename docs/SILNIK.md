@@ -108,7 +108,9 @@ Zrobione:
 
 - C9 handel: partnerzy handlowi w konfiguracji scenariusza (stan, trasa lądowa lub morska, oferty z ceną i rocznym limitem), faktoria lądowa i molo z dokiem na wodzie (najwyżej 10), rozkazy importu i eksportu, karawany co 4 dni (8 ładunków) i statki co 30 dni (12), maks. 1 nowy kupiec dziennie, punkty wejścia na mapę (symbole E i S), rywale nie handlują, towar w budynku handlowym poza zapasami miasta, dostawy produkcji najpierw na eksport, doręczyciele budynku handlowego rozwożą import i zbierają towar na eksport (L-105). Parametry w `data/trade.json`.
 
-Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9),  punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- Stadnina i fabryka rydwanów (L-106): stadnina 4×4 z wybiegiem 3×3, 50 jednostek pszenicy na konia, 6 koni rocznie, najwyżej 6 czeka, czekający koń zjada 10 jednostek miesięcznie, pszenica nigdy ze spichlerza; fabryka z drewna i konia, 6 rydwanów rocznie; stajenny przynosi konie (zasięg 44 kafle, S-005); trener koni i sprzedawca rydwanów biorą prosto z budynku; zbroja, konie i rydwany liczone w sztukach.
+
+Zostaje: wilki; domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

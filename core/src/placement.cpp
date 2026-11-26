@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <map>
 #include <optional>
+#include <tuple>
 
 #include "bo/core/city.h"
 
@@ -118,6 +119,40 @@ BuildResult place_pier(CityState& city, Building b, std::uint32_t max_piers) {
         return r;
     }
     r.reason = "build.needs_straight_coast";
+    return r;
+}
+
+// Horse ranch (S-004 "4x4+ 3x3"): the 4x4 ranch and a 3x3 enclosure beside it, on the side `rotation` points
+// to (0 east, 1 south, 2 west, 3 north), aligned with the ranch's first row or column [ZAŁOŻENIE, L-106].
+BuildResult place_with_enclosure(CityState& city, Building b, std::int32_t enclosure) {
+    BuildResult r;
+    TilePos e = b.origin;
+    switch (b.rotation) {
+        case 0: e.x += b.width; break;
+        case 1: e.y += b.height; break;
+        case 2: e.x -= enclosure; break;
+        default: e.y -= enclosure; break;
+    }
+    std::vector<TilePos> tiles;
+    for (const auto& [o, w, h] : {std::tuple{b.origin, b.width, b.height}, std::tuple{e, enclosure, enclosure}}) {
+        for (std::int32_t dy = 0; dy < h; ++dy) {
+            for (std::int32_t dx = 0; dx < w; ++dx) {
+                const TilePos p{o.x + dx, o.y + dy};
+                r.reason = land_check(city, p);
+                if (!r.ok()) {
+                    return r;
+                }
+                tiles.push_back(p);
+            }
+        }
+    }
+    r.reason = level_check(city, tiles);
+    if (!r.ok()) {
+        return r;
+    }
+    // The road access is searched around the ranch itself; the enclosure only occupies land.
+    b.tiles = std::move(tiles);
+    r.building = add_building(city, std::move(b));
     return r;
 }
 

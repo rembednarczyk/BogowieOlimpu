@@ -2,8 +2,14 @@
 #include <algorithm>
 #include <optional>
 
+#include <cstdlib>
+#include <map>
+
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
+#include "bo/core/path.h"
+#include "bo/core/storage.h"
+#include "bo/core/trade.h"
 #include "bo/core/walker.h"
 
 namespace bo::core {
@@ -34,6 +40,56 @@ std::optional<HouseGood> house_good_of(const DataCatalog& catalog, const std::st
 
 }  // namespace
 
+void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev) {
+    CityState& city = st.city;
+    Building& stall = city.buildings.items.at(id);
+    const BuildingType& type = catalog.buildings.at(stall.type);
+    const std::string walker_type = walker_type_from(catalog, stall.type);
+    if (walker_type.empty() || !stall.road_access) {
+        return;
+    }
+    const WalkerType& wt = catalog.walkers.at(walker_type);
+    const std::int32_t reach = wt.max_source_distance.value_or(kVendorReach);
+    const TilePos from = *stall.road_access;
+    const auto dist = road_distances(city, {from}, PathMode::Road);
+    std::optional<std::pair<std::uint32_t, BuildingId>> best;
+    for (const auto& [sid, s] : city.buildings.items) {
+        const bool listed = std::find(type.sources.begin(), type.sources.end(), s.type) != type.sources.end();
+        const bool importing = s.trade.has_value() &&
+                               std::find(type.sources.begin(), type.sources.end(), "trade_importing") != type.sources.end();
+        const bool pickup = listed && s.producer && catalog.buildings.at(s.type).pickup_only;
+        if ((!s.storage && !pickup) || !s.road_access || (!listed && !importing) || (s.trade && !importing)) {
+            continue;
+        }
+        const TilePos p = *s.road_access;
+        if (std::max(std::abs(p.x - from.x), std::abs(p.y - from.y)) > reach) {
+            continue;  // too distant (doc 06 status, doc 24: 40 tiles, Zeus measured 37)
+        }
+        bool has_goods = pickup && s.producer->output_loads > 0;  // straight from the ranch or factory (doc 06)
+        for (const auto& [good, loads] : pickup ? std::map<std::string, std::uint32_t>{} : s.storage->loads) {
+            const bool usable = !s.trade || trade_offers(s, good);  // export goods are not for the city (Z:79)
+            has_goods = has_goods || (loads > 0 && usable && good_matches(catalog, good, type.sells));
+        }
+        const std::uint32_t d = dist[city.map.index(p)];
+        if (has_goods && d != kUnreachable && (!best || d < best->first)) {
+            best = std::make_pair(d, sid);
+        }
+    }
+    if (!best) {
+        return;
+    }
+    const WalkerId w = spawn_destination_walker(city, st.walkers, catalog, walker_type, id,
+                                                *city.buildings.items.at(best->second).road_access);
+    if (w == kNoWalker) {
+        return;
+    }
+    Walker& walker = st.walkers.items.at(w);
+    walker.job = WalkerJob::Fetch;
+    walker.target = best->second;
+    stall.stall->vendor = w;
+    ev.spawned.push_back(w);
+}
+
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d) {
     const auto& levels = levels_of(catalog, h);
     const auto di = static_cast<std::size_t>(d);
@@ -48,7 +104,11 @@ std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, Hous
         const std::int32_t monthly = std::max(cur.consumption[0], next ? next->consumption[0] : 0);
         return static_cast<std::uint32_t>(2 * std::max(monthly, 1));
     }
-    return g == HouseGood::Armor || g == HouseGood::Horses ? 1U : 4U;
+    if (g == HouseGood::Horses) {  // HS: an estate keeps up to 4 horses (S-004)
+        const std::int32_t slots = std::max(cur.model[di].horse_slots, next ? next->model[di].horse_slots : 0);
+        return static_cast<std::uint32_t>(std::max(slots, 1));
+    }
+    return g == HouseGood::Armor ? 1U : 4U;
 }
 
 void peddler_sells(WorldState& st, const DataCatalog& catalog, const Walker& w) {

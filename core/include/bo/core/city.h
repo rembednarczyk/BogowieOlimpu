@@ -264,6 +264,7 @@ BuildResult place_stall(CityState& city, Building b);
 BuildResult place_over_road(CityState& city, Building b, bool both_sides);
 BuildResult place_crossing(CityState& city, Building b, bool no_adjacent_same);
 BuildResult place_pier(CityState& city, Building b, std::uint32_t max_piers);
+BuildResult place_with_enclosure(CityState& city, Building b, std::int32_t enclosure);
 // Sheep and goats: on a free meadow tile, joining the nearest shed of `shed_type` with room in its herd.
 BuildResult place_animal(CityState& city, const DataCatalog& catalog, Building b, const std::string& shed_type);
 

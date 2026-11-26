@@ -55,6 +55,7 @@ struct HouseModel {
     std::int32_t disease_risk = 0;    // DRI
     std::int32_t crime_risk = 0;      // CRI (base game)
     std::int32_t soldiers_percent = 0;  // %S
+    std::int32_t horse_slots = 0;       // HS: horses an elite house keeps
 };
 
 struct HousingLevel {
@@ -93,6 +94,9 @@ struct BuildingType {
     bool player_placeable = true;              // ruins are made by the simulation only
     bool trade_building = false;               // Trading Post, Pier: one partner city each (Z:76)
     std::vector<std::string> prey;             // hunting lodges: "boar", "deer" (Z:46, P:8)
+    std::int32_t enclosure_size = 0;           // horse ranch: the 3x3 enclosure next to the 4x4 (S-004)
+    std::vector<std::string> never_from;       // input sources refused (horse ranch: never from a Granary)
+    bool pickup_only = false;                  // output waits for a hostler or a vendor (horse ranch, doc 06)
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -155,6 +159,12 @@ struct ProductionParams {
     std::int32_t batch_days = 0;
     std::int32_t input_capacity_units = 0;
     std::int32_t boat_build_days = 0;           // fishery: the boat is built first (Z:47)
+    // Horse ranch (doc 19): wheat in units per horse, capacity, monthly upkeep of a waiting horse.
+    std::string input_units_good;
+    std::int32_t input_units_per_output = 0;
+    std::int32_t input_units_capacity = 0;
+    std::int32_t upkeep_units_per_month = 0;
+    std::map<std::string, std::int32_t> inputs_multi;  // chariot factory: wood + horses per chariot (P:18)
 };
 
 // Risk parameters (data/risks.json, module C7). Counters grow by the risk value each day.
@@ -221,6 +231,7 @@ struct DataCatalog {
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)
     std::int32_t loads_per_slot = 4;
     std::int32_t units_per_load = 100;
+    std::map<std::string, std::int32_t> good_units_per_load;  // goods.json override: pieces (armor, horses)
 };
 
 struct DataLoadResult {
@@ -237,5 +248,11 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
 
 // Parses "24×16", "3x3m", "4×4+ 3×3" (first rectangle). Returns nullopt for "m", "2xn", "–".
 std::optional<Footprint> parse_footprint(const std::string& text);
+
+// Units in one load of a good: 100 (doc 19), or 1 for pieces such as armor and horses.
+inline std::uint32_t units_per_load_of(const DataCatalog& catalog, const std::string& good) {
+    const auto it = catalog.good_units_per_load.find(good);
+    return static_cast<std::uint32_t>(it != catalog.good_units_per_load.end() ? it->second : catalog.units_per_load);
+}
 
 }  // namespace bo::core

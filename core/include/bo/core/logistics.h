@@ -52,8 +52,11 @@ void dispatch_field_workers(WorldState& state, const DataCatalog& catalog, Logis
 void field_work_at_target(WorldState& state, const DataCatalog& catalog, Walker& w);
 void field_work_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
 
-// Processors accept a delivery of their input while below the input capacity (3 loads, doc 19).
+// Processors accept a delivery of their input while below the input capacity (3 loads, doc 19); the horse
+// ranch takes wheat in units, the chariot factory wood and horses in pieces.
 bool processor_accepts(const Building& b, const DataCatalog& catalog, const std::string& good);
+std::uint32_t processor_room_loads(const Building& b, const DataCatalog& catalog, const std::string& good);
+void processor_add(Building& b, const DataCatalog& catalog, const std::string& good, std::uint32_t loads);
 
 // A pruner visit marks every tree within this radius of the visited tree as tended [ZAŁOŻENIE, L-101].
 inline constexpr std::int32_t kPrunerRadius = 2;
@@ -87,6 +90,17 @@ bool wildlife_at_target(WorldState& state, const DataCatalog& catalog, Walker& w
 void wildlife_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
 inline constexpr std::uint8_t kBoarHerd = 7;
 inline constexpr std::uint16_t kBoarBirthDays = 26;
+
+// Stalls (agora.cpp): the vendor goes to the nearest storage, trade building or pickup producer of its sources.
+void dispatch_vendor(WorldState& state, const DataCatalog& catalog, BuildingId stall, LogisticsEvents& ev);
+std::string walker_type_from(const DataCatalog& catalog, const std::string& building_type);
+
+// Horses and chariots (horses.cpp; doc 05, 06, 19; P:18): the horse ranch and the chariot factory keep their
+// output for a pickup. A chariot factory short of horses sends its hostler to the nearest ranch with a horse
+// within the hostler's reach (44 tiles, S-005); the hostler brings one horse [ZAŁOŻENIE, L-106].
+void dispatch_hostlers(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
+void fetch_from_producer(WorldState& state, const DataCatalog& catalog, Walker& w, Building& producer);
+void hostler_unload(const DataCatalog& catalog, const Walker& w, Building& home);
 
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
 // next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].

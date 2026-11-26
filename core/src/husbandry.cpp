@@ -71,10 +71,41 @@ WalkerId send(WorldState& st, const DataCatalog& catalog, BuildingId home, Build
 
 }  // namespace
 
+std::uint32_t processor_room_loads(const Building& b, const DataCatalog& catalog, const std::string& good) {
+    const auto it = catalog.production.find(b.type);
+    if (!b.producer || it == catalog.production.end() || b.staffing_percent == 0) {
+        return 0;
+    }
+    const ProductionParams& p = it->second;
+    const auto units = [&b](const std::string& g) {
+        const auto u = b.producer->units.find(g);
+        return u == b.producer->units.end() ? 0U : u->second;
+    };
+    if (!p.input_units_good.empty()) {  // horse ranch: wheat kept in units (doc 19)
+        const auto cap = static_cast<std::uint32_t>(p.input_units_capacity);
+        return good == p.input_units_good && units(good) < cap ? (cap - units(good)) / 100 : 0;
+    }
+    if (!p.inputs_multi.empty()) {  // chariot factory: wood and horses in pieces
+        const auto cap = static_cast<std::uint32_t>(p.input_capacity);
+        return p.inputs_multi.count(good) != 0 && units(good) < cap ? cap - units(good) : 0;
+    }
+    const auto cap = static_cast<std::uint32_t>(p.input_capacity);
+    return p.input_good == good && b.producer->input_loads < cap ? cap - b.producer->input_loads : 0;
+}
+
 bool processor_accepts(const Building& b, const DataCatalog& catalog, const std::string& good) {
-    const auto p = catalog.production.find(b.type);
-    return b.producer && p != catalog.production.end() && p->second.input_good == good && b.staffing_percent > 0 &&
-           b.producer->input_loads < static_cast<std::uint32_t>(p->second.input_capacity);
+    return processor_room_loads(b, catalog, good) > 0;
+}
+
+void processor_add(Building& b, const DataCatalog& catalog, const std::string& good, std::uint32_t loads) {
+    const ProductionParams& p = catalog.production.at(b.type);
+    if (!p.input_units_good.empty()) {
+        b.producer->units[good] += loads * 100;
+    } else if (!p.inputs_multi.empty()) {
+        b.producer->units[good] += loads;
+    } else {
+        b.producer->input_loads += loads;
+    }
 }
 
 void advance_husbandry(WorldState& st, const DataCatalog& catalog) {
@@ -105,7 +136,41 @@ void advance_husbandry(WorldState& st, const DataCatalog& catalog) {
             }
         }
         const auto params = catalog.production.find(b.type);
-        if (b.producer && params != catalog.production.end() && !params->second.input_good.empty()) {
+        if (b.producer && params != catalog.production.end() && !params->second.input_units_good.empty()) {
+            // Horse ranch (doc 19): 50 wheat a horse, 6 a year, at most 6 waiting, each eats 10 a month.
+            const ProductionParams& pp = params->second;
+            ProducerState& p = *b.producer;
+            auto& wheat = p.units[pp.input_units_good];
+            if (st.time.day_in_month() == 0) {
+                wheat -= std::min(wheat, static_cast<std::uint32_t>(pp.upkeep_units_per_month) * p.output_loads);
+            }
+            if (wheat >= static_cast<std::uint32_t>(pp.input_units_per_output) &&
+                p.output_loads < static_cast<std::uint32_t>(pp.storage_loads)) {
+                p.progress += static_cast<std::uint32_t>(pp.loads_per_year) * b.staffing_percent;
+                if (p.progress >= 100 * kDaysPerYear) {
+                    p.progress -= 100 * kDaysPerYear;
+                    wheat -= static_cast<std::uint32_t>(pp.input_units_per_output);
+                    ++p.output_loads;
+                }
+            }
+        } else if (b.producer && params != catalog.production.end() && !params->second.inputs_multi.empty()) {
+            // Chariot factory (P:18): one wood and one horse per chariot, 6 a year.
+            const ProductionParams& pp = params->second;
+            ProducerState& p = *b.producer;
+            const bool ready = std::all_of(pp.inputs_multi.begin(), pp.inputs_multi.end(), [&p](const auto& in) {
+                return p.units[in.first] >= static_cast<std::uint32_t>(in.second);
+            });
+            if (ready) {
+                p.progress += static_cast<std::uint32_t>(pp.loads_per_year) * b.staffing_percent;
+                if (p.progress >= 100 * kDaysPerYear) {
+                    p.progress -= 100 * kDaysPerYear;
+                    for (const auto& [g, n] : pp.inputs_multi) {
+                        p.units[g] -= static_cast<std::uint32_t>(n);
+                    }
+                    ++p.output_loads;
+                }
+            }
+        } else if (b.producer && params != catalog.production.end() && !params->second.input_good.empty()) {
             ProducerState& p = *b.producer;
             const auto per_output = static_cast<std::uint32_t>(params->second.input_per_output);
             if (p.input_loads >= per_output) {  // a sculpture studio waits for 4 bronze (doc 19)

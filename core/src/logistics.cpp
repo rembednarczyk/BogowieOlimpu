@@ -22,6 +22,8 @@ bool category_matches(const std::string& category, const std::string& type) {
     return category == type || category.rfind(type + "_", 0) == 0;
 }
 
+}  // namespace
+
 std::string walker_type_from(const DataCatalog& catalog, const std::string& building_type) {
     for (const auto& [id, w] : catalog.walkers) {
         if (std::find(w.from.begin(), w.from.end(), building_type) != w.from.end()) {
@@ -30,6 +32,8 @@ std::string walker_type_from(const DataCatalog& catalog, const std::string& buil
     }
     return {};
 }
+
+namespace {
 
 std::uint32_t stall_units(const DataCatalog& catalog, const Building& stall) {
     const auto& sells = catalog.buildings.at(stall.type).sells;
@@ -46,6 +50,9 @@ bool receiver_accepts(const Building& r, const DataCatalog& catalog, const std::
 
 // The good a producer ships next: its single output, or a lodge fruit with a full load (100 units).
 std::optional<std::string> next_shipment(const Building& b, const BuildingType& type) {
+    if (type.pickup_only) {
+        return std::nullopt;  // horses and chariots wait for the hostler or the vendor (doc 06)
+    }
     if (b.producer->output_loads > 0 && type.outputs.size() == 1 && type.tends.empty()) {
         return type.outputs.front();
     }
@@ -104,55 +111,6 @@ void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId
         ev.spawned.push_back(w);
         return;
     }
-}
-
-void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev) {
-    CityState& city = st.city;
-    Building& stall = city.buildings.items.at(id);
-    const BuildingType& type = catalog.buildings.at(stall.type);
-    const std::string walker_type = walker_type_from(catalog, stall.type);
-    if (walker_type.empty() || !stall.road_access) {
-        return;
-    }
-    const WalkerType& wt = catalog.walkers.at(walker_type);
-    const std::int32_t reach = wt.max_source_distance.value_or(kVendorReach);
-    const TilePos from = *stall.road_access;
-    const auto dist = road_distances(city, {from}, PathMode::Road);
-    std::optional<std::pair<std::uint32_t, BuildingId>> best;
-    for (const auto& [sid, s] : city.buildings.items) {
-        const bool listed = std::find(type.sources.begin(), type.sources.end(), s.type) != type.sources.end();
-        const bool importing = s.trade.has_value() &&
-                               std::find(type.sources.begin(), type.sources.end(), "trade_importing") != type.sources.end();
-        if (!s.storage || !s.road_access || (!listed && !importing) || (s.trade && !importing)) {
-            continue;
-        }
-        const TilePos p = *s.road_access;
-        if (std::max(std::abs(p.x - from.x), std::abs(p.y - from.y)) > reach) {
-            continue;  // too distant (doc 06 status, doc 24: 40 tiles, Zeus measured 37)
-        }
-        bool has_goods = false;
-        for (const auto& [good, loads] : s.storage->loads) {
-            const bool usable = !s.trade || trade_offers(s, good);  // export goods are not for the city (Z:79)
-            has_goods = has_goods || (loads > 0 && usable && good_matches(catalog, good, type.sells));
-        }
-        const std::uint32_t d = dist[city.map.index(p)];
-        if (has_goods && d != kUnreachable && (!best || d < best->first)) {
-            best = std::make_pair(d, sid);
-        }
-    }
-    if (!best) {
-        return;
-    }
-    const WalkerId w = spawn_destination_walker(city, st.walkers, catalog, walker_type, id,
-                                                *city.buildings.items.at(best->second).road_access);
-    if (w == kNoWalker) {
-        return;
-    }
-    Walker& walker = st.walkers.items.at(w);
-    walker.job = WalkerJob::Fetch;
-    walker.target = best->second;
-    stall.stall->vendor = w;
-    ev.spawned.push_back(w);
 }
 
 }  // namespace
@@ -321,8 +279,10 @@ void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingI
         std::optional<std::pair<std::uint32_t, BuildingId>> best;
         for (const auto& [pid, p] : city.buildings.items) {
             const auto params = catalog.production.find(p.type);
-            if (!p.road_access || !processor_accepts(p, catalog, good) || params == catalog.production.end()) {
-                continue;
+            const auto& never = catalog.buildings.at(p.type).never_from;
+            if (!p.road_access || !processor_accepts(p, catalog, good) || params == catalog.production.end() ||
+                std::find(never.begin(), never.end(), s.type) != never.end()) {
+                continue;  // e.g. a horse ranch never takes wheat from a Granary (Z:148)
             }
             const std::uint32_t d = dist[city.map.index(*p.road_access)];
             if (d <= static_cast<std::uint32_t>(params->second.max_storage_distance) && (!best || d < best->first)) {
@@ -333,8 +293,7 @@ void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingI
             continue;
         }
         const Building& p = city.buildings.items.at(best->second);
-        const auto cap = static_cast<std::uint32_t>(catalog.production.at(p.type).input_capacity);
-        const std::uint32_t n = std::min({loads, kVendorLoads, cap - p.producer->input_loads});
+        const std::uint32_t n = std::min({loads, kVendorLoads, processor_room_loads(p, catalog, good)});
         const WalkerId w = spawn_destination_walker(city, st.walkers, catalog, "deliveryman", id, *p.road_access);
         if (w == kNoWalker) {
             return;
@@ -355,6 +314,7 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
     LogisticsEvents ev;
     dispatch_field_workers(st, catalog, ev);
     dispatch_extractors(st, catalog, ev);
+    dispatch_hostlers(st, catalog, ev);
     dispatch_hunters_and_boats(st, catalog, ev);
     std::vector<BuildingId> producers;
     std::vector<BuildingId> stalls;
@@ -404,14 +364,15 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
         } else if (w.job == WalkerJob::Deliver && target != st.city.buildings.items.end() && target->second.producer) {
             Building& p = target->second;
             for (auto it = w.cargo.begin(); it != w.cargo.end();) {
-                const auto cap = static_cast<std::uint32_t>(catalog.production.at(p.type).input_capacity);
-                if (processor_accepts(p, catalog, it->first)) {
-                    const std::uint32_t n = std::min(it->second, cap - p.producer->input_loads);
-                    p.producer->input_loads += n;
+                const std::uint32_t n = std::min(it->second, processor_room_loads(p, catalog, it->first));
+                if (n > 0) {
+                    processor_add(p, catalog, it->first, n);
                     it->second -= n;
                 }
                 it = it->second == 0 ? w.cargo.erase(it) : std::next(it);
             }
+        } else if (w.job == WalkerJob::Fetch && target != st.city.buildings.items.end() && target->second.producer) {
+            fetch_from_producer(st, catalog, w, target->second);
         } else if (target != st.city.buildings.items.end() && target->second.storage) {
             Building& s = target->second;
             if (w.job == WalkerJob::Deliver) {
@@ -485,9 +446,11 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
             }
         }
         b.producer->deliveryman = kNoWalker;
+    } else if (w.job == WalkerJob::Fetch && b.producer) {
+        hostler_unload(catalog, w, b);
     } else if (w.job == WalkerJob::Fetch && b.stall) {
         for (const auto& [good, loads] : w.cargo) {
-            b.stall->units[good] += loads * static_cast<std::uint32_t>(catalog.units_per_load);
+            b.stall->units[good] += loads * units_per_load_of(catalog, good);  // armor, horses: one per load
         }
         b.stall->vendor = kNoWalker;
     }

@@ -4,9 +4,11 @@ add_library(bo_core STATIC
     src/appeal.cpp
     src/city.cpp
     src/data.cpp
+    src/data_economy.cpp
     src/extraction.cpp
     src/finance.cpp
     src/housing.cpp
+    src/horses.cpp
     src/husbandry.cpp
     src/labour.cpp
     src/logistics.cpp
@@ -57,6 +59,7 @@ if(BO_BUILD_TESTS)
         tests/test_migration.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp
+        tests/test_horses.cpp
         tests/test_husbandry.cpp
         tests/test_extraction.cpp
         tests/test_wildlife.cpp

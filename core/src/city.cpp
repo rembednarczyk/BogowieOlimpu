@@ -140,7 +140,10 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         if (rotation % 2 == 1) {
             std::swap(b.width, b.height);
         }
-        if (rule == "straight_coast_with_dock") {
+        if (rule == "with_enclosure") {
+            b.width = b.height = stats.footprint->width;  // the square ranch; the enclosure comes on top
+            r = place_with_enclosure(city, std::move(b), bt.enclosure_size);
+        } else if (rule == "straight_coast_with_dock") {
             b.width = b.height = 4;  // land part; size text "4x4+ 2x2w" (S-004)
             r = place_pier(city, std::move(b), catalog.trade.max_piers);
         } else if (rule == "straight_coast" || rule == "straight_coast_same_shore_as_urchins") {

@@ -1,0 +1,122 @@
+// Data loader, economy sections: migration, risks, production (data/*.json, docs/gameplay/19, 23, 24).
+#include <map>
+#include <string>
+
+#include "data_internal.h"
+
+namespace bo::core::detail {
+
+using nlohmann::json;
+
+void load_migration(const json& m, const json& diff, MigrationParams& p) {
+    for (std::size_t d = 0; d < p.base_happiness.size(); ++d) {
+        p.base_happiness[d] = m.at("base_happiness").at(std::string(difficulty_code(static_cast<Difficulty>(d))));
+    }
+    p.small_city_population = m.at("small_city_population");
+    for (const auto& row : m.at("unemployment_mood")) {
+        p.unemployment_mood.emplace_back(row.at("above_percent"), row.at("mood"));
+    }
+    constexpr const char* kWageKeys[] = {"none", "very_low", "low", "normal", "high", "very_high"};
+    for (std::size_t i = 0; i < p.wage_mood.size(); ++i) {
+        p.wage_mood[i] = m.at("wage_mood").at(kWageKeys[i]);
+    }
+    p.food_stocked = m.at("food_mood").at("stocked");
+    p.food_missing_first = m.at("food_mood").at("missing_first");
+    p.food_missing_max = m.at("food_mood").at("missing_max");
+    p.debt_mood = m.at("debt_mood");
+    for (const auto& row : m.at("migration_table")) {
+        p.migration_table.emplace_back(row.at("above"), row.at("percent"));
+    }
+    p.batch_people = m.at("batch_people");
+    p.min_batch = m.at("min_batch");
+    p.emigration_min_population = m.at("emigration_min_population");
+    p.fill_first_free_slots = m.at("fill_first_free_slots");
+    constexpr const char* kTaxKeys[] = {"none", "very_low", "low", "normal", "high", "very_high", "outrageous"};
+    for (std::size_t t = 0; t < p.tax_mood.size(); ++t) {
+        for (std::size_t d = 0; d < p.tax_mood[t].size(); ++d) {
+            p.tax_mood[t][d] = diff.at("tax_sentiment").at(kTaxKeys[t]).at(d);
+        }
+    }
+}
+
+void load_risks(const std::map<std::string, json>& docs, RiskParams& p) {
+    if (docs.count("risks.json") != 0) {
+        const auto& rk = docs.at("risks.json");
+        p.hazard_threshold = rk.value("hazard_threshold", p.hazard_threshold);
+        p.burn_days = rk.value("burn_days", p.burn_days);
+        p.spread_every_days = rk.value("spread_every_days", p.spread_every_days);
+        p.spread_chance_per_4 = rk.value("spread_chance_per_4", p.spread_chance_per_4);
+        p.disease_threshold = rk.value("disease_threshold", p.disease_threshold);
+        p.disease_hungry_multiplier = rk.value("disease_hungry_multiplier", p.disease_hungry_multiplier);
+        p.plague_death_one_in = rk.value("plague_death_one_in", p.plague_death_one_in);
+        p.quarantine_days = rk.value("quarantine_days", p.quarantine_days);
+        p.crime_threshold = rk.value("crime_threshold", p.crime_threshold);
+        p.criminal_roam_ticks = rk.value("criminal_roam_ticks", p.criminal_roam_ticks);
+        p.fire_factor_min = rk.value("fire_factor_min", p.fire_factor_min);
+        p.fire_factor_max = rk.value("fire_factor_max", p.fire_factor_max);
+        p.hygiene_gate = rk.value("hygiene_gate", p.hygiene_gate);
+        p.hygiene_start = rk.value("hygiene_start", p.hygiene_start);
+        p.hygiene_step = rk.value("hygiene_step", p.hygiene_step);
+        p.plague_spread_radius = rk.value("plague_spread_radius", p.plague_spread_radius);
+        p.plague_spread_percent = rk.value("plague_spread_percent", p.plague_spread_percent);
+        p.crime_escalation = rk.value("crime_escalation", std::vector<std::string>{});
+        p.crime_happiness_below = rk.value("crime_happiness_below", p.crime_happiness_below);
+        p.mugger_victims = rk.value("mugger_victims", p.mugger_victims);
+        p.firefighter_reach = rk.value("firefighter_reach", p.firefighter_reach);
+        p.extinguish_days = rk.value("extinguish_days", p.extinguish_days);
+    }
+}
+
+void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) {
+    if (docs.count("production.json") != 0) {
+        for (const auto& p : docs.at("production.json")) {
+            ProductionParams pp;
+            const auto& lpy = p.value("loads_per_year", json());
+            pp.loads_per_year = lpy.is_array() ? lpy.at(0).get<std::int32_t>() : opt_int(lpy).value_or(0);
+            if (const auto m = opt_int(p.value("harvest_month", json()))) {
+                pp.harvest_month = *m - 1;  // data: 1-12
+            }
+            const auto& msd = p.value("max_storage_distance", json());
+            pp.max_storage_distance =
+                msd.is_array() ? msd.at(msd.size() - 1).get<std::int32_t>() : opt_int(msd).value_or(300);
+            const auto& in = p.value("input", json());
+            if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer() &&
+                !p.contains("input_units_good")) {
+                pp.input_good = in.begin().key();
+                pp.input_per_output = in.begin().value().get<std::int32_t>();
+            }
+            pp.field_workers = p.value("field_workers", 0);
+            pp.units_per_trip = p.value("units_per_trip", 0);
+            pp.work_days_per_trip = p.value("work_days_per_trip", 0);
+            pp.source_distance = p.value("source_distance", 0);
+            pp.fixed_rate_near_resource = p.value("rate_model", "") == "fixed_rate_near_resource";
+            pp.silver_per_batch = p.value("silver_per_batch", 0);
+            pp.drachmas_per_batch = p.value("drachmas_per_batch", 0);
+            pp.batch_days = p.value("batch_days", 0);
+            pp.input_capacity_units = p.value("input_capacity_units", 0);
+            pp.boat_build_days = p.value("boat_build_days", 0);
+            pp.input_units_good = p.value("input_units_good", "");
+            pp.input_units_per_output = p.value("input_units_per_output", 0);
+            pp.input_units_capacity = p.value("input_units_capacity", 0);
+            pp.upkeep_units_per_month = p.value("upkeep_units_per_month", 0);
+            const json multi = p.value("inputs_multi", json::object());
+            for (const auto& [g, n] : multi.items()) {
+                pp.inputs_multi[g] = n.get<std::int32_t>();
+            }
+            pp.input_capacity = p.value("input_capacity", 0);
+            pp.storage_loads = p.value("storage_loads", 0);
+            pp.animals_max = p.value("animals_max", 0);
+            const auto& hm = p.value("harvest_months", json());
+            if (hm.is_object()) {
+                for (const auto& [good, months] : hm.items()) {
+                    for (const auto& m : months) {
+                        pp.harvest_months[good].push_back(m.get<std::int32_t>() - 1);
+                    }
+                }
+            }
+            cat.production[p.at("id").get<std::string>()] = pp;
+        }
+    }
+}
+
+}  // namespace bo::core::detail
