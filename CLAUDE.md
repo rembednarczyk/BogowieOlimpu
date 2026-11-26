@@ -30,6 +30,7 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 | `docs/09-ZRODLA.md`, `docs/10-REGULY.md` | rejestr źródeł S-NNN, reguły R-NNN |
 | `docs/00-PLAN.md` ... `docs/08-OPRAWA.md` | plan, wizja, oryginalność, analiza, symulacja, UX, technologia, oprawa |
 | `docs/SILNIK.md` | plan rozbudowy silnika na Godocie, moduły A-F, potok Blendera |
+| `docs/ASSETY.md` | inwentarz assetów do wyprodukowania |
 | (kod) | jeszcze nie istnieje; planowane `core/` (C++), `gdext/`, `game/` (Godot), `tools/blender/` |
 
 ## Zasady nadrzędne (skrót `docs/PRAKTYKI.md`)

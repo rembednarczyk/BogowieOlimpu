@@ -19,7 +19,7 @@ Patrz [05-przemysl-praca.md](05-przemysl-praca.md): Refinery (orichalc), Black M
 
 ## Nauka zamiast kultury (P:10-13)
 
-**Atlantydzi nie ulepszają domów, dopóki nie dostaną nauczania naukowego.** Nauka pełni w ich domach rolę, którą w Grecji pełni kultura (filozofia, dramat, atletyka). [LUKA: pełna ścieżka ewolucji domów atlantydzkich i wymagania poziomów]
+**Atlantydzi nie ulepszają domów, dopóki nie dostaną nauczania naukowego.** Nauka pełni w ich domach rolę kultury. Wymagania poziomów są takie same jak greckie (`data/housing.json`), a punkty nauki zastępują punkty kultury 1:1 (S-004, S-008; tabela punktów w doc 18). Nazwy poziomów nadamy własne (L-080, R-002).
 
 | Dziedzina | Szkolenie | Miejsce pracy | Chodzik losowy | Uwagi |
 |---|---|---|---|---|

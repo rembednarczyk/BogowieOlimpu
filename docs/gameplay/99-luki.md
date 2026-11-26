@@ -82,7 +82,7 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 
 | ID | Luka | P | Status |
 |---|---|---|---|
-| L-080 | Domy atlantydzkie | P2 | częściowa: S-004 traktuje poziomy jak greckie, z nauką w miejsce kultury i jednostkami archer/spearman/charioteer; nazw poziomów brak |
+| L-080 | Domy atlantydzkie | P2 | częściowa: wymagania jak greckie, nauka zamiast kultury 1:1 (S-004, S-008); Hut i Shack z greckimi modelami; nazw poziomów brak (nadamy własne, R-002) |
 | L-081 | Hipodrom | P2 | zamknięta: doc 18 |
 | L-082 | Piramidy | P2 | zamknięta: `monuments.json`, doc 20 |
 | L-083 | Nowe struktury estetyczne | P2 | zamknięta: 12 struktur, `buildings.json` |

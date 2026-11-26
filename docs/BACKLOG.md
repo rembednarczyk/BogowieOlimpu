@@ -8,8 +8,8 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 2. **Skrypt instalacji narzędzi** zapisany w środowisku chmurowym (Godot, Blender). Zostaje: potwierdzić w świeżej sesji; dopisać scons i szablony eksportu Android, gdy będą potrzebne.
 3. **Szkielet repo silnika**: `core/` (CMake, doctest, strażnik nagłówków), `gdext/` (godot-cpp), `game/` (projekt Godota, gdUnit4), `tools/blender/`, CI.
 4. **Prototyp tłumu E4** w Godocie: 3 000 postaci (MultiMesh + VAT) i 2 000 budynków; pomiar na telefonie odniesienia (pyt. 12, 24). Wymaga szablonów eksportu Android.
-5. **Inwentarz assetów** `docs/ASSETY.md` z analizy eZeus (agent w toku) i konwencje potoku Blendera.
-6. **Konflikty źródeł** K-003, K-004, K-005, K-009, K-021, K-022, K-023 do rozstrzygnięcia testem w oryginalnej grze, jeśli jest dostępna.
+5. **Konwencje potoku Blendera** z `docs/ASSETY.md` jako skrypty `tools/blender/` i rejestr pochodzenia assetów. Inwentarz gotowy.
+6. **Konflikty źródeł** otwarte (K-003, K-005, K-009, K-020, K-022, K-024 do K-029) do rozstrzygnięcia testem w oryginalnej grze, jeśli jest dostępna.
 
 ## Później
 

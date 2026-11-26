@@ -23,6 +23,7 @@ Faza 0: kontekst i reguły (specyfikacja gotowa). Następna: rozbudowa silnika n
 | [docs/06-MOBILE-UX.md](docs/06-MOBILE-UX.md) | Sterowanie dotykowe, HUD |
 | [docs/07-TECHNOLOGIA.md](docs/07-TECHNOLOGIA.md) | Stos (Godot 4), renderer, budżety |
 | [docs/SILNIK.md](docs/SILNIK.md) | Plan rozbudowy silnika, moduły, potok Blendera |
+| [docs/ASSETY.md](docs/ASSETY.md) | Inwentarz assetów do wyprodukowania (grafika 3D, efekty, UI, audio) |
 | [docs/08-OPRAWA.md](docs/08-OPRAWA.md) | Kierunek artystyczny i audio |
 | [docs/09-ZRODLA.md](docs/09-ZRODLA.md) | Rejestr źródeł S-NNN |
 | [docs/10-REGULY.md](docs/10-REGULY.md) | Reguły R-NNN |

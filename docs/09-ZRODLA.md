@@ -81,7 +81,7 @@ Materiały chronione prawem autorskim (instrukcje, zrzuty z gry referencyjnej) t
 - Dostarczone: 2026-11-26 (wskazane przez właściciela).
 - Zakres: z oryginału czyta scenariusze (zdarzenia, cele, dozwolone budynki, fundusze), mapy świata (towary i roczne ilości, siła militarna 1-6, bogactwo, początkowa opinia, trybut) i teksty. Reguły symulacji i stałe czasowe (`enumbers.cpp`) ustala autor; część tabel (koszty, ryzyka, pracownicy, ceny, płace, herosi) wygląda na przepisaną z oryginału.
 - Wiarygodność: wysoka dla danych scenariusza i nazw sektorów pracy; niska dla reguł symulacji (README projektu: "not an exact copy"; znalezione błędy w zaniku wody i kultury).
-- Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, inwentarz assetów, weryfikacja danych.
+- Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, `docs/ASSETY.md`, konflikty K-021, K-024 do K-030 w `docs/gameplay/98-konflikty-zrodel.md`, poprawki w `data/`.
 
 ## Kandydaci na kolejne źródła
 
