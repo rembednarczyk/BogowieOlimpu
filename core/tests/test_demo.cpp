@@ -199,6 +199,15 @@ void dump(const Simulation& sim) {
             std::printf("\n");
         }
     }
+    std::uint32_t trees = 0, ripe = 0, untended = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        if (b.type == "olive_tree") {
+            ++trees;
+            ripe += b.orchard->growth / 192;
+            untended = std::max<std::uint32_t>(untended, b.orchard->days_since_tended);
+        }
+    }
+    std::printf("  olive trees %u mean ripeness %u max untended %u\n", trees, trees ? ripe / trees : 0, untended);
     for (const auto& [t, v] : types) {
         std::printf("  %-22s n %3llu staff %3llu%% out %4llu stock %llu\n", t.c_str(), static_cast<unsigned long long>(v[0]),
                     static_cast<unsigned long long>(v[1] / v[0]), static_cast<unsigned long long>(v[2]),

@@ -164,3 +164,33 @@ TEST_CASE("herds below 8 get a young one every 32 days; the young give fleece af
     sim.run_days(16 * 12);
     CHECK(herd() == 8);  // capped at the herd size
 }
+
+TEST_CASE("B-014: grapes with nowhere to go do not hold back the olives of a Growers' Lodge") {
+    auto sim = town();
+    sim.issue(PlaceBuilding{"growers_lodge", 14, 4});
+    sim.issue(PlaceBuilding{"olive_press", 18, 4});  // in reach; no winery or storehouse for the grapes
+    sim.step(1);
+    auto& lodge = *at(sim, {14, 4}).producer;
+    lodge.units["grapes"] = 300;
+    lodge.units["olives"] = 300;
+    sim.run_days(20);
+    CHECK(at(sim, {14, 4}).producer->units.at("olives") < 300);
+    CHECK(at(sim, {14, 4}).producer->units.at("grapes") == 300);
+    CHECK(at(sim, {18, 4}).producer->input_loads + at(sim, {18, 4}).producer->output_loads > 0);
+}
+
+TEST_CASE("B-014: twenty well tended olive trees give a lodge about 20 loads a year (S-004: ~20, up to 25)") {
+    auto sim = town();
+    sim.issue(PlaceBuilding{"growers_lodge", 14, 4});
+    sim.issue(PlaceBuilding{"storehouse", 18, 3});
+    for (int i = 0; i < 20; ++i) {
+        sim.issue(PlaceBuilding{"olive_tree", i % 10, 2 + i / 10});
+    }
+    sim.step(1);
+    sim.run_days(192);
+    const std::uint32_t first = produced(sim, "olives");
+    sim.run_days(192);
+    const std::uint32_t harvest = produced(sim, "olives") - first;  // the second season, storage not yet full
+    CHECK(harvest >= 15);
+    CHECK(harvest <= 25);
+}

@@ -117,6 +117,8 @@
   {"day": 50, "at": [9, 46], "storage_order": {"good": "wine", "kind": 0, "limit": 8}},
   {"day": 50, "at": [23, 8], "storage_order": {"good": "wine", "kind": 0, "limit": 8}},
   {"day": 50, "at": [56, 8], "storage_order": {"good": "wine", "kind": 0, "limit": 8}},
+  {"day": 50, "at": [23, 36], "storage_order": {"good": "fleece", "kind": 0, "limit": 12}},
+  {"day": 50, "at": [9, 46], "storage_order": {"good": "fleece", "kind": 0, "limit": 12}},
   {"day": 224, "place": "storehouse", "x": 10, "y": 8},
   {"day": 225, "at": [10, 8], "storage_order": {"good": "fleece", "kind": 3, "limit": 0}},
   {"day": 225, "at": [10, 8], "storage_order": {"good": "marble", "kind": 0, "limit": 12}},
@@ -335,6 +337,7 @@
   {"day": 600, "place": "elite_housing", "x": 64, "y": 19, "retry": true},
   {"day": 400, "place": "podium", "x": 70, "y": 14},
   {"day": 400, "place": "podium", "x": 70, "y": 17},
+  {"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}},
   {"day": 656, "every": 48, "pray": [53, 24]},
   {"day": 256, "every": 16, "summon_hero": [64, 12]},
   {"day": 256, "every": 16, "hero_quest": 0}

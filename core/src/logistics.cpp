@@ -48,36 +48,50 @@ bool receiver_accepts(const Building& r, const DataCatalog& catalog, const std::
     return storage_accepts(r, catalog, good) || processor_accepts(r, catalog, good) || trade_accepts(r, catalog, good);
 }
 
-// The good a producer ships next: its single output, or a lodge fruit with a full load (100 units).
-std::optional<std::string> next_shipment(const Building& b, const BuildingType& type) {
+// The goods a producer could ship now: its single output, or each lodge fruit with a full load (100 units).
+// B-014: a lodge tries every fruit, so grapes with nowhere to go do not hold back the olives.
+std::vector<std::string> shipments(const Building& b, const BuildingType& type) {
+    std::vector<std::string> goods;
     if (type.pickup_only) {
-        return std::nullopt;  // horses and chariots wait for the hostler or the vendor (doc 06)
+        return goods;  // horses and chariots wait for the hostler or the vendor (doc 06)
     }
     if (b.producer->output_loads > 0 && type.outputs.size() == 1 && type.tends.empty()) {
-        return type.outputs.front();
+        goods.push_back(type.outputs.front());
+        return goods;
     }
     for (const auto& [fruit, units] : b.producer->units) {
         if (units >= 100) {
-            return fruit;
+            goods.push_back(fruit);
         }
     }
-    return std::nullopt;
+    return goods;
 }
+
+bool ship_one(WorldState& st, const DataCatalog& catalog, BuildingId id, const std::string& good, std::uint32_t reach,
+              const std::vector<std::uint32_t>& dist, LogisticsEvents& ev);
 
 void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev) {
     CityState& city = st.city;
     Building& b = city.buildings.items.at(id);
     const BuildingType& type = catalog.buildings.at(b.type);
-    const auto shipment = next_shipment(b, type);
-    if (!shipment) {
-        return;
-    }
-    const std::string good = *shipment;
-    const auto by_good = type.delivery_priority_by_good.find(good);
-    const auto& priority = by_good != type.delivery_priority_by_good.end() ? by_good->second : type.delivery_priority;
     const auto params = catalog.production.find(b.type);
     const auto reach = static_cast<std::uint32_t>(params == catalog.production.end() ? 300 : params->second.max_storage_distance);
     const auto dist = road_distances(city, {*b.road_access}, PathMode::Road);
+    for (const std::string& good : shipments(b, type)) {
+        if (ship_one(st, catalog, id, good, reach, dist, ev)) {
+            return;
+        }
+    }
+}
+
+// Sends one load of `good` to the first receiver category in reach; false when nobody takes it.
+bool ship_one(WorldState& st, const DataCatalog& catalog, BuildingId id, const std::string& good, std::uint32_t reach,
+              const std::vector<std::uint32_t>& dist, LogisticsEvents& ev) {
+    CityState& city = st.city;
+    Building& b = city.buildings.items.at(id);
+    const BuildingType& type = catalog.buildings.at(b.type);
+    const auto by_good = type.delivery_priority_by_good.find(good);
+    const auto& priority = by_good != type.delivery_priority_by_good.end() ? by_good->second : type.delivery_priority;
     for (const auto& category : priority) {
         std::optional<std::pair<std::uint32_t, BuildingId>> best;
         for (const auto& [rid, r] : city.buildings.items) {
@@ -96,7 +110,7 @@ void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId
         const TilePos to = *city.buildings.items.at(best->second).road_access;
         const WalkerId w = spawn_destination_walker(city, st.walkers, catalog, "deliveryman", id, to);
         if (w == kNoWalker) {
-            return;
+            return false;
         }
         Walker& walker = st.walkers.items.at(w);
         walker.job = WalkerJob::Deliver;
@@ -109,8 +123,9 @@ void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId
         }
         b.producer->deliveryman = w;
         ev.spawned.push_back(w);
-        return;
+        return true;
     }
+    return false;
 }
 
 }  // namespace
@@ -321,7 +336,7 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
     std::vector<BuildingId> storages;
     for (auto& [id, b] : st.city.buildings.items) {
         if (b.producer && b.road_access && !alive(st, b.producer->deliveryman) &&
-            next_shipment(b, catalog.buildings.at(b.type))) {
+            !shipments(b, catalog.buildings.at(b.type)).empty()) {
             producers.push_back(id);
         }
         if (b.storage && b.road_access && b.staffing_percent > 0 && !alive(st, b.storage->deliveryman)) {

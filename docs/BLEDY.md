@@ -84,11 +84,12 @@ Znalezione przy przebudowie demo (autopilot, 2026-11-26).
 - Referencja: wyprowadzka po **utracie** warunków (`docs/gameplay/03-mieszkancy.md`, Z:34); eZeus trzyma nową rodzinę na poziomie poniżej rezydencji (S-008, `eelitehousing.cpp` updateLevel).
 - Przyczyna: brak stanu "jeszcze nie rezydencja".
 
-### B-014 [S3] Chata ogrodników zbiera mniej oliwek, niż podają dane
-- Status: niepotwierdzone
-- Miejsce: `core/src/husbandry.cpp` (zbiór: drzewo daje tyle jednostek, ile ma procent dojrzałości, czyli najwyżej 1 ładunek rocznie).
-- Dowód: w demo 10 drzew przy chacie daje po roku 40-99 jednostek oliwek w chacie i ok. 6 ładunków oliwy rocznie z trzech tłoczni; `data/production.json` podaje 20 ładunków rocznie na chatę (S-004), obserwowane do 25.
-- Do sprawdzenia: liczba drzew na chatę w pomiarze S-004 i czy drzewo daje więcej niż 1 ładunek; test na mapie z 20 drzewami.
+### B-014 [S2] Winogrona bez odbiorcy blokują wysyłkę oliwek z chaty ogrodników
+- Status: naprawione: chata próbuje kolejnych owoców, aż któryś ma odbiorcę w zasięgu; test "B-014" w `core/tests/test_husbandry.cpp` (pada bez poprawki)
+- Miejsce: `core/src/logistics.cpp` (`next_shipment` zwracał pierwszy owoc z pełnym ładunkiem; dziś `shipments` i `ship_one`).
+- Dowód: w demo chata (6, 46) trzymała 369 jednostek oliwek i 236 winogron, a jej dwie tłocznie przez lata nie dostały oliwek; winiarnia była poza zasięgiem chaty (10 kafli).
+- Zgłoszenie pierwotne (wydajność poniżej danych) nie potwierdziło się: 20 pielęgnowanych drzew daje 17-20 ładunków w roku (S-004: ok. 20); test wydajności w tym samym pliku. Druga przyczyna w demo: tłocznie nie miały gdzie oddać oliwy, bo magazyny zapchała wełna (poprawione w `tools/make_demo.py`: limit wełny 12, eksport nadwyżki oliwy).
+- Przyczyna: jeden dostawca na budynek i wybór towaru bez sprawdzenia odbiorcy.
 
 ### B-004 [S2] Morale kompanii odbudowuje się podczas walki z potworem
 - Status: naprawione: brak odbudowy morale, póki potwór walczy w mieście (decyzja właściciela); test "B-004" w test_monsters.cpp (test walki agenta)

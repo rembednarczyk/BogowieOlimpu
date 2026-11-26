@@ -182,6 +182,8 @@ for i, stall in enumerate(["food_vendor_stall", "fleece_vendor_stall", "oil_vend
     put(stall, 44 + 2 * i, 30, day=[FLEECE + 1, CULTURE, OIL][i])
 for x, y in [(23, 36), (9, 46), (23, 8), (56, 8)]:
     steps.append({"day": FLEECE + 2, "at": [x, y], "storage_order": {"good": "wine", "kind": 0, "limit": 8}})
+for x, y in [(23, 36), (9, 46)]:  # fleece leaves room for the oil of the presses (B-014: oil stuck at the press)
+    steps.append({"day": FLEECE + 2, "at": [x, y], "storage_order": {"good": "fleece", "kind": 0, "limit": 12}})
 put("storehouse", 10, 8, day=INDUSTRY)
 for x, y in [(10, 8), (23, 8), (56, 8)]:  # the storehouses by the workshops keep room for wood, bronze, sculpture
     steps.append({"day": INDUSTRY + 1, "at": [x, y], "storage_order": {"good": "fleece", "kind": 3, "limit": 0}})
@@ -268,6 +270,9 @@ put("fountain", 61, 20, day=ELITE)
 for x, y in [(53, 19), (57, 19), (64, 19)]:
     put("elite_housing", x, y, day=ELITE + 200, retry=True)
 put("podium", 70, 14, day=ELITE); put("podium", 70, 17, day=ELITE)
+
+# Surplus oil goes to Rhodes by sea once the elite houses stand (Z:78-79).
+steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}})
 
 # Prayers (Z:124): Hermes fulfils a city's request; the god may refuse (Z:132, L-053). Gifts of goods (Athena:
 # 24 loads) would fill the storehouses that keep the sculptures for Perseus.
