@@ -29,7 +29,8 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 | `docs/BACKLOG.md`, `docs/BLEDY.md`, `docs/ODSTEPSTWA.md` | backlog, rejestr błędów, rejestr odstępstw od referencji |
 | `docs/09-ZRODLA.md`, `docs/10-REGULY.md` | rejestr źródeł S-NNN, reguły R-NNN |
 | `docs/00-PLAN.md` ... `docs/08-OPRAWA.md` | plan, wizja, oryginalność, analiza, symulacja, UX, technologia, oprawa |
-| (kod) | jeszcze nie istnieje; mapę uzupełniamy przy pierwszym commicie kodu |
+| `docs/SILNIK.md` | plan rozbudowy silnika na Godocie, moduły A-F, potok Blendera |
+| (kod) | jeszcze nie istnieje; planowane `core/` (C++), `gdext/`, `game/` (Godot), `tools/blender/` |
 
 ## Zasady nadrzędne (skrót `docs/PRAKTYKI.md`)
 
@@ -41,6 +42,12 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 6. **Zapadki**: policzalny dług ma kontrolę z bazą miejsc, która tylko spada.
 7. **Teksty dla gracza tylko w katalogach języków** (PL, EN).
 8. **Żadnych assetów, tekstów ani nazw z gry referencyjnej.** Instrukcje i zrzuty tylko do analizy, poza repo.
+
+## Narzędzia w kontenerze
+
+- Godot 4.7.2: `godot --headless --path <projekt> ...`; zrzuty: `xvfb-run -a godot --rendering-driver opengl3 ...` (tylko renderer Compatibility).
+- Blender 4.5 LTS: `blender -b --factory-startup --python <skrypt>`.
+- Jeśli narzędzi brak (nowy kontener), zainstaluj je według `docs/SILNIK.md`, sekcja "Środowisko".
 
 ## Źródła i reguły
 

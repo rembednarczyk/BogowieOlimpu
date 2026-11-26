@@ -4,7 +4,7 @@ Strategiczny citybuilder w mitologii greckiej, projektowany od początku pod tel
 
 ## Stan projektu
 
-Faza 0: kontekst i reguły. Specyfikacja rozgrywki z instrukcji gotowa, kod jeszcze nie powstał. Następne kroki: `docs/BACKLOG.md`.
+Faza 0: kontekst i reguły (specyfikacja gotowa). Następna: rozbudowa silnika na Godocie 4. Następne kroki: `docs/BACKLOG.md`.
 
 ## Mapa dokumentacji
 
@@ -21,7 +21,8 @@ Faza 0: kontekst i reguły. Specyfikacja rozgrywki z instrukcji gotowa, kod jesz
 | [docs/04-MECHANIKI.md](docs/04-MECHANIKI.md) | Przypisanie systemów do faz |
 | [docs/05-SYMULACJA.md](docs/05-SYMULACJA.md) | Architektura symulacji |
 | [docs/06-MOBILE-UX.md](docs/06-MOBILE-UX.md) | Sterowanie dotykowe, HUD |
-| [docs/07-TECHNOLOGIA.md](docs/07-TECHNOLOGIA.md) | Stos, prototyp pomiarowy, budżety |
+| [docs/07-TECHNOLOGIA.md](docs/07-TECHNOLOGIA.md) | Stos (Godot 4), renderer, budżety |
+| [docs/SILNIK.md](docs/SILNIK.md) | Plan rozbudowy silnika, moduły, potok Blendera |
 | [docs/08-OPRAWA.md](docs/08-OPRAWA.md) | Kierunek artystyczny i audio |
 | [docs/09-ZRODLA.md](docs/09-ZRODLA.md) | Rejestr źródeł S-NNN |
 | [docs/10-REGULY.md](docs/10-REGULY.md) | Reguły R-NNN |

@@ -40,7 +40,16 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Technologia
 
-### 2026-11-26: Rekomendacja stosu (do potwierdzenia przez właściciela)
+### 2026-11-26: Silnik Godot 4, assety w Blenderze w kontenerze, najpierw rozbudowa silnika
+- Decyzja: Godot 4 (4.7.2-stable). Assety tworzymy i przerabiamy w Blenderze uruchamianym w kontenerze. Przed treścią gry rozbudowujemy silnik pod założenia.
+- Cytat właściciela: "Bierzemy Godot 4. assety będziemy robić/przerabiać w blenderze tutaj na kontenerze. Zanim zaczniemy grę, rozbudujemy silnik pod założenia".
+- Interpretacja (do potwierdzenia): warstwa silnika gry na Godocie (rdzeń symulacji w C++ przez GDExtension, moduły mapy, ruchu, systemów miasta, prezentacji, narzędzi i potoku Blendera) bez forka Godota, dopóki pomiar nie wymusi zmian w samym Godocie. Plan: `docs/SILNIK.md`.
+- Sprawdzone w kontenerze: Godot bez okna (import, skrypty), zrzuty przez Xvfb i llvmpipe w rendererze Compatibility, Blender 4.5.9 LTS bez okna, eksport glTF i import w Godocie.
+- Nie sprawdzono: renderery Vulkan (Forward+, Mobile) nie działają w kontenerze; eksport na Androida (szablony eksportu, SDK) jeszcze nie instalowany; wydajność na telefonie.
+- Odrzucone: TypeScript z Babylon.js / Three.js / PixiJS (wcześniejsza rekomendacja), Unity, Unreal, własny silnik.
+
+### 2026-11-26: Rekomendacja stosu TypeScript [NIEAKTUALNE: zastąpiona decyzją o Godocie, 2026-11-26]
+
 - Rekomendacja: TypeScript, domena symulacji jako czysty pakiet testowany w Node; renderer webowy (Babylon.js albo Three.js) wybrany pomiarem prototypu; Android przez Capacitor, iOS i PC w kolejnych etapach.
 - Powód: wytyczne właściciela pochodzą z trzech gier w tym stosie (gotowe narzędzia, nawyki, potok testów i zrzutów bez GPU); sesje agentów w chmurze nie uruchamiają edytora Unity, więc testy, zrzuty i buildy w stosie webowym są w pełni dostępne dla agentów.
 - Odrzucone: Unity 6 (wcześniejsza rekomendacja robocza z `07-TECHNOLOGIA.md`; brak edytora w kontenerze), Unreal (ciężki na telefonie), własny silnik natywny (koszt).

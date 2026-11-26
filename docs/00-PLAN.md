@@ -13,10 +13,16 @@ Cel: zebrać źródła, wydestylować reguły, zamknąć kluczowe decyzje.
 - [x] Praktyki projektu z wytycznych właściciela (`docs/PRAKTYKI.md`, S-003); dziennik decyzji, backlog, ADR, rejestry błędów i odstępstw.
 - [x] Reguły R-001 do R-011.
 - [ ] Zamknięcie luk P0 (`docs/gameplay/99-luki.md`) albo zgoda na założenia robocze.
-- [ ] Decyzje blokujące: stos i silnik, telefon odniesienia, model biznesowy, platformy (`11-OTWARTE-PYTANIA.md`).
-- [ ] Prototyp pomiarowy renderera (`07-TECHNOLOGIA.md`).
+- [x] Silnik: Godot 4; narzędzia sprawdzone w kontenerze.
+- [ ] Decyzje blokujące: zakres rozbudowy silnika, język rdzenia, telefon odniesienia, model biznesowy, platformy (`11-OTWARTE-PYTANIA.md`).
 
-Kryterium wyjścia: stos wybrany na pomiarze, luki P0 zamknięte lub zastąpione jawnymi założeniami, szkielet kodu z bramkami z `PRAKTYKI.md` rozdział 20.
+Kryterium wyjścia: luki P0 zamknięte (zrobione), decyzje 22-23 podjęte.
+
+### Faza 0.5: Rozbudowa silnika (Godot 4)
+
+Cel: moduły silnika z `docs/SILNIK.md` gotowe przed treścią gry: fundament rdzenia (A), mapa i ruch (B), szkielet prezentacji (E1, E4, E5, E6), narzędzia (F1, F3, F5).
+
+Kryterium wyjścia: rdzeń w C++ z testami i złotym hashem, GDExtension działa na PC i Androidzie, prototyp tłumu zmierzony na telefonie, potok Blender → Godot ze skryptami i manifestem, CI zielone.
 
 ### Faza 1: Prototyp symulacji (bez grafiki)
 

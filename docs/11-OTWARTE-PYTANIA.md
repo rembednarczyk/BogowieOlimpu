@@ -23,7 +23,10 @@ Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzj
 
 ## Technologia
 
-11. **[B]** Silnik i stos. Rekomendacja: TypeScript + renderer webowy (Babylon.js albo Three.js) wybrany prototypem pomiarowym, Capacitor; uzasadnienie w `07-TECHNOLOGIA.md` i `DECYZJE.md`.
+11. ~~Silnik~~ Rozstrzygnięte: Godot 4 (`DECYZJE.md`).
+22. **[B]** Zakres "rozbudowy silnika". Rekomendacja: warstwa silnika gry na Godocie (moduły z `docs/SILNIK.md`), bez forka Godota, dopóki pomiar nie wymusi zmian w samym silniku.
+23. **[B]** Język rdzenia symulacji. Rekomendacja: C++17 jako samodzielna biblioteka + GDExtension; GDScript dla prezentacji i UI. Alternatywy: całość w GDScript (prostsze, ryzyko wydajności i determinizmu), C# (słabsze wsparcie mobilne).
+24. Renderer gry na telefonie: Mobile (Vulkan) czy Compatibility (OpenGL). Rekomendacja: decyzja po pomiarze prototypu tłumu na Twoim telefonie; w kontenerze testujemy w Compatibility.
 12. **[B]** Telefon odniesienia do budżetów. Rekomendacja: telefon właściciela, na którym testowane były poprzednie gry (znane wyniki pomiarów).
 13. Zapis w chmurze. Rekomendacja: najpierw lokalny zapis z eksportem pliku; usługi platform później.
 

@@ -6,6 +6,8 @@ Zasady pracy dostosowane do tego projektu na podstawie wytycznych z trzech wcze�
 - **Wytyczna**: domyślny wybór; odstępstwo wymaga zapisanego powodu (wpis w `docs/DECYZJE.md`).
 - Liczby (limity, budżety) są punktem startu. Zmieniamy je decyzją z pomiarem, mechanizm zostaje.
 
+**Narzędzia (Godot 4, decyzja 2026-11-26).** Tam, gdzie poniżej pada przykład narzędzia webowego, obowiązuje odpowiednik: testy logiki w Node → testy natywne rdzenia C++ (ctest, doctest); testy przeglądarkowe → Godot `--headless` z gdUnit4; Playwright + SwiftShader → Xvfb + llvmpipe, renderer Compatibility; dependency-cruiser → skrypt sprawdzający, że `core/` nie dołącza nagłówków Godota; linter TS → clang-tidy i gdlint; Capacitor → eksport Android z Godota.
+
 ## 1. Fundament
 
 **Zasada. Każde rozwiązanie stoi na nazwanym wzorcu albo źródle.** Brief, komentarz modułu i ADR podają wzorzec, źródło i różnice z powodem. Jeśli wzorca brak, piszą to wprost.
