@@ -13,7 +13,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 if(BO_BUILD_TESTS)
-    enable_testing()
     add_executable(bo_core_tests
         tests/main.cpp
         tests/test_time.cpp
