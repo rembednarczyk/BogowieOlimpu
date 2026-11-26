@@ -234,6 +234,11 @@ func refresh_report() -> void:
 	report_box.add_child(_label(tr("ui.goals"), 20))
 	for g in sc.get("goals", []):
 		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))
+	var monuments: Dictionary = sc.get("monuments", {})
+	if not monuments.is_empty():  # earned and not yet built (Z:155-156)
+		report_box.add_child(_label(tr("ui.monuments"), 20))
+		for m in monuments:
+			report_box.add_child(_label("  %s × %d" % [tr("monument." + m), monuments[m]]))
 	report_box.add_child(_label(tr("ui.requests"), 20))
 	var requests: Array = sc.get("requests", [])
 	if requests.is_empty():

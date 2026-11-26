@@ -402,6 +402,16 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         load_production(docs, cat);
         load_combat(docs, cat.combat);
         load_world(docs, cat.world);
+        for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
+            const std::string id = m.value("id", "");
+            if (id == "population" && m.contains("thresholds")) {
+                cat.monuments.population_thresholds = m.at("thresholds").get<std::vector<std::int64_t>>();
+            } else if (id == "happiness") {
+                cat.monuments.happiness_popularity = m.value("popularity_at_least", cat.monuments.happiness_popularity);
+            } else if (id == "victory") {
+                cat.monuments.victory_chance_percent = m.value("chance_percent", cat.monuments.victory_chance_percent);
+            }
+        }
         load_sanctuaries(docs, cat);
         const auto& logistics = docs.count("logistics.json") != 0 ? docs.at("logistics.json") : json::object();
         cat.storage_slots = logistics.value("storage_tiles", 8);

@@ -1,6 +1,7 @@
 // Module D5: gods' quests and commemorative monuments (docs/gameplay/10, 21; Z:124, Z:155-156; P:24; L-118).
 #include "bo/core/monsters.h"
 #include "bo/core/scenario.h"
+#include "bo/core/migration.h"
 #include "bo/core/simulation.h"
 #include "doctest/doctest.h"
 #include "helpers.h"
@@ -98,4 +99,22 @@ TEST_CASE("commemorative monuments are earned, never bought; each earned one can
     sim.issue(PlaceBuilding{"commemorative_monument", 30, 10});
     sim.step(1);
     CHECK(rejection(sim) == "build.no_monument_earned");
+}
+
+TEST_CASE("monuments by milestone (Z:155-156, L-092): population thresholds once each, happiness once") {
+    std::vector<std::string> rows(10, std::string(20, '.'));
+    rows[4] = std::string(20, '=');
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 1000, rows, true});
+    sim.issue(PlaceBuilding{"common_housing", 2, 2});
+    sim.run_days(1);
+    CHECK(sim.state().scenario.awarded.empty());  // nothing reached: the record stays empty
+    sim.run_days(14);
+    auto& house = *sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({2, 2}).building).house;
+    house.population = 2500;  // a stand-in for a large city, just before the month starts
+    sim.mutable_state().migration.popularity = 99;
+    sim.run_days(2);  // through the month's first day (the scenario system runs at tick 36)
+    CHECK(sim.state().scenario.monuments.at("population") == 2);  // 1 000 and 2 000
+    CHECK(sim.state().scenario.awarded.at("population") == 2);
+    sim.run_days(32);
+    CHECK(sim.state().scenario.awarded.at("population") >= 2);
 }

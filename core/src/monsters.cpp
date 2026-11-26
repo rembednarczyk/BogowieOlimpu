@@ -214,8 +214,11 @@ void advance_monsters(WorldState& st, const DataCatalog& catalog, MonsterEvents&
                 it->second.phase = WalkerPhase::Done;  // Apollo kills monsters that attack the city (Z:129)
             }
             m.slain = true;
-            const bool by_hero = std::any_of(st.walkers.items.begin(), st.walkers.items.end(),
-                                             [](const auto& kv) { return kv.second.job == WalkerJob::Hero; });
+            const auto slayer = catalog.monster_slayer.find(m.id);  // its own hero, not any hero (Z:131)
+            const bool by_hero = slayer != catalog.monster_slayer.end() &&
+                                 std::any_of(st.walkers.items.begin(), st.walkers.items.end(), [&slayer](const auto& kv) {
+                                     return kv.second.job == WalkerJob::Hero && kv.second.type == slayer->second;
+                                 });
             ev.slain.emplace_back(m.id, by_hero && !apollo);
             if (by_hero && !apollo) {
                 ++st.scenario.monuments["hero"];  // a monster slain in the city earns a Hero monument (Z:131)

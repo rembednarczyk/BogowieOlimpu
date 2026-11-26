@@ -129,11 +129,35 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
         st.scenario.quests.push_back(q);
         ev.quests_given.push_back(e.god);
     } else if (e.type == "relation" && has_city) {
-        st.trade.partners[static_cast<std::size_t>(e.city)].relation = e.relation;
+        std::string& relation = st.trade.partners[static_cast<std::size_t>(e.city)].relation;
+        if (e.relation == "ally" && relation != "ally") {
+            ++st.scenario.monuments["diplomacy"];  // a city becomes an ally (Z:156; eZeus cityBecomes ally)
+        }
+        relation = e.relation;
     }
 }
 
 }  // namespace
+
+// Population and Happiness monuments (Z:155, L-092): each population threshold once; the happiness once.
+static void award_milestones(WorldState& st, const DataCatalog& catalog) {
+    auto& given = st.scenario.awarded;  // read with find: an empty record stays empty (it is saved)
+    const auto count = [&given](const char* key) {
+        const auto it = given.find(key);
+        return it == given.end() ? 0U : it->second;
+    };
+    const auto& thresholds = catalog.monuments.population_thresholds;
+    const std::uint64_t people = city_population(st.city);
+    while (count("population") < thresholds.size() &&
+           people >= static_cast<std::uint64_t>(thresholds[count("population")])) {
+        ++given["population"];
+        ++st.scenario.monuments["population"];
+    }
+    if (count("happiness") == 0 && people > 0 && st.migration.popularity >= catalog.monuments.happiness_popularity) {
+        given["happiness"] = 1;
+        ++st.scenario.monuments["happiness"];
+    }
+}
 
 std::string send_hero_on_quest(WorldState& st, const DataCatalog&, std::uint32_t index) {
     if (index >= st.scenario.quests.size() || st.scenario.quests[index].status != QuestStatus::Open) {
@@ -226,6 +250,7 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
     const auto year = static_cast<std::uint32_t>(st.time.year());
     const auto month = static_cast<std::uint32_t>(st.time.month());
     if (st.time.day_in_month() == 0) {
+        award_milestones(st, catalog);
         for (ScenarioEvent& e : s.events) {
             const bool now = e.month == month && (e.year == year || (e.repeat && e.year < year));
             if (now && e.last_year != static_cast<std::int32_t>(year)) {

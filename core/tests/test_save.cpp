@@ -91,7 +91,9 @@ constexpr std::size_t kScenario = 17;  // v22: empty id, no goals, events or req
 
 constexpr std::size_t kMonsters = 8;  // v24: no monsters, no heroes
 
-constexpr std::size_t kQuests = 8;  // v26: no quests, no monuments earned (end of the scenario block)
+constexpr std::size_t kQuests = 8;  // v26: no quests, no monuments earned
+
+constexpr std::size_t kAwarded = 4;  // v33: no milestones rewarded (the end of the scenario block)
 
 constexpr std::size_t kDeliveries = 4;  // v27: no goods on their way (end of the world block)
 
@@ -101,8 +103,16 @@ constexpr std::size_t kGodHelp = 5;  // v31: Zeus and Ares flags, Talos days
 
 constexpr std::size_t kTradeCurses = 8;  // v32: caravan and ship curse days (the end of the world block)
 
+// The save without the v33 milestone record: the layout of v32.
+std::vector<std::uint8_t> as_v32(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kAwarded), end);
+    return bytes;
+}
+
 // The save without the v32 trade curses: the layout of v31.
 std::vector<std::uint8_t> as_v31(std::vector<std::uint8_t> bytes) {
+    bytes = as_v32(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kTradeCurses), end);
     return bytes;
@@ -189,6 +199,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v32(a.save()), 32, h);
     check_load(as_v31(a.save()), 31, h);
     check_load(as_v30(a.save()), 30, h);
     check_load(as_v30(a.save()), 29, h);

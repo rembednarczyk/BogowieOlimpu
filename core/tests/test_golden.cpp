@@ -67,7 +67,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v30 (version field; no partners here), L-121 long-term relations.
     // 2026-11-26: save format v31 (version field; help of the gods), L-112 prayers.
     // 2026-11-26: save format v32 (version field; trade curses), Z:125-127.
-    const std::uint64_t kGolden = 0x99835eb8c8950b5cULL;
+    // 2026-11-26: save format v33 (version field; empty milestone record), monuments L-092.
+    const std::uint64_t kGolden = 0x572f17c5aaaba9d5ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -212,7 +213,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v30 (three relation counters for the one partner; opinion 60 starts none), L-121.
     // 2026-11-26: save format v31 (help of the gods; no prayers here), L-112.
     // 2026-11-26: save format v32 (trade curses; no god attacks here), Z:125-127.
-    const std::uint64_t kGolden = 0x83809dcb08da543dULL;
+    // 2026-11-26: save format v33 (milestone record; Population and Happiness monuments by milestone), L-092.
+    const std::uint64_t kGolden = 0xbcd525b2274d09d8ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

@@ -46,6 +46,7 @@ void write_scenario(ByteWriter& w, const ScenarioState& s) {
         w.u32(q.days_left);
     }
     write_counts(w, s.monuments);
+    write_counts(w, s.awarded);  // since v33
 }
 
 bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
@@ -105,7 +106,7 @@ bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
         }
         q.status = static_cast<QuestStatus>(status);
     }
-    return read_counts(r, s.monuments);
+    return read_counts(r, s.monuments) && (version < 33 || read_counts(r, s.awarded));
 }
 
 // Monsters and heroes (D5 stage 3, since v24).

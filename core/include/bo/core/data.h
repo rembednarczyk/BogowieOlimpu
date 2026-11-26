@@ -223,6 +223,13 @@ struct DebtParams {
     std::uint32_t loss_days = 576;
 };
 
+// Commemorative monuments earned by milestones (data/monuments.json; Z:155-156, L-092).
+struct MonumentParams {
+    std::vector<std::int64_t> population_thresholds{1000, 2000, 5000, 10000, 15000, 20000, 25000};
+    std::int32_t happiness_popularity = 95;
+    std::int32_t victory_chance_percent = 50;
+};
+
 struct WorldParams {
     std::map<std::string, std::int32_t> attitude;  // named opinion levels -> 0-100 threshold
     std::int32_t gift_needed_x2 = 6;      // +3 opinion a unit of a needed good (doc 24), in half points
@@ -341,6 +348,7 @@ struct DataCatalog {
     CombatParams combat;
     WorldParams world;
     DebtParams debt;
+    MonumentParams monuments;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

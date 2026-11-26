@@ -86,9 +86,10 @@ struct ScenarioState {
     bool won = false;
     std::vector<Quest> quests;                         // since v26
     std::map<std::string, std::uint32_t> monuments;    // earned and not yet built: god_statue, hero, conquest
+    std::map<std::string, std::uint32_t> awarded;      // since v33: milestones already rewarded (population, happiness)
     friend bool operator==(const ScenarioState& a, const ScenarioState& b) {
         return a.id == b.id && a.goals == b.goals && a.events == b.events && a.requests == b.requests && a.won == b.won &&
-               a.quests == b.quests && a.monuments == b.monuments;
+               a.quests == b.quests && a.monuments == b.monuments && a.awarded == b.awarded;
     }
 };
 

@@ -312,6 +312,10 @@ WorldEvents advance_world(WorldState& st, const DataCatalog& catalog) {
 
 void invasion_outcome(WorldState& st, const DataCatalog& catalog, std::int32_t city, std::uint8_t result,
                       WorldEvents& ev) {
+    if (result == 0 && static_cast<std::int32_t>(st.rng.stream(RngStream::Military).next_u32() % 100U) <
+                           catalog.monuments.victory_chance_percent) {
+        ++st.scenario.monuments["victory"];  // a dangerous invader beaten off (Z:156; eZeus: one time in two)
+    }
     if (city < 0 || static_cast<std::size_t>(city) >= st.trade.partners.size()) {
         return;
     }
