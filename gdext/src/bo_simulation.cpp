@@ -69,6 +69,8 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["y"] = static_cast<int64_t>(e.y);
                        d["width"] = static_cast<int64_t>(e.width);
                        d["height"] = static_cast<int64_t>(e.height);
+                       d["rotation"] = static_cast<int64_t>(e.rotation);
+                       d["parent"] = static_cast<int64_t>(e.parent);
                    },
                    [&d](const bo::core::BuildingRemoved& e) {
                        d["type"] = "building_removed";
@@ -87,6 +89,10 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                    [&d](const bo::core::WalkerRemoved& e) {
                        d["type"] = "walker_removed";
                        d["id"] = static_cast<int64_t>(e.id);
+                   },
+                   [&d](const bo::core::UndoApplied& e) {
+                       d["type"] = "undo_applied";
+                       d["refund"] = static_cast<int64_t>(e.refund);
                    },
                },
                te.event);
@@ -165,10 +171,16 @@ namespace {
 bo::core::TilePos pos(int64_t x, int64_t y) { return {static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)}; }
 }  // namespace
 
-void BoSimulation::place_building(const String& type, int64_t x, int64_t y) {
-    if (sim_) {
+void BoSimulation::place_building(const String& type, int64_t x, int64_t y, int64_t rotation) {
+    if (sim_ && rotation >= 0 && rotation <= 3) {
         const auto p = pos(x, y);
-        sim_->issue(bo::core::PlaceBuilding{to_std(type), p.x, p.y});
+        sim_->issue(bo::core::PlaceBuilding{to_std(type), p.x, p.y, static_cast<std::uint8_t>(rotation)});
+    }
+}
+
+void BoSimulation::undo() {
+    if (sim_) {
+        sim_->issue(bo::core::Undo{});
     }
 }
 
@@ -226,6 +238,8 @@ Array BoSimulation::get_buildings() const {
         d["y"] = static_cast<int64_t>(b.origin.y);
         d["width"] = static_cast<int64_t>(b.width);
         d["height"] = static_cast<int64_t>(b.height);
+        d["rotation"] = static_cast<int64_t>(b.rotation);
+        d["parent"] = static_cast<int64_t>(b.parent);
         d["has_road_access"] = b.road_access.has_value();
         out.push_back(d);
     }
@@ -349,7 +363,9 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_wage_rate", "rate"), &BoSimulation::set_wage_rate);
     ClassDB::bind_method(D_METHOD("start_with_map", "data_dir", "seed", "difficulty_code", "initial_treasury", "rows"),
                          &BoSimulation::start_with_map);
-    ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y"), &BoSimulation::place_building);
+    ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y", "rotation"), &BoSimulation::place_building,
+                         DEFVAL(0));
+    ClassDB::bind_method(D_METHOD("undo"), &BoSimulation::undo);
     ClassDB::bind_method(D_METHOD("place_road", "x", "y"), &BoSimulation::place_road);
     ClassDB::bind_method(D_METHOD("place_roadblock", "x", "y"), &BoSimulation::place_roadblock);
     ClassDB::bind_method(D_METHOD("clear_land", "x", "y"), &BoSimulation::clear_land);

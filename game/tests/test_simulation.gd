@@ -58,6 +58,25 @@ func _init() -> void:
 	check(m.get_walkers().size() == 1, "one walker out")
 	check(m.get_treasury() == 2000 - 35 - 3, "costs on Hero (S-004)")
 
+	# Undo and agora placement through the binding.
+	var u := BoSimulation.new()
+	var urows := PackedStringArray()
+	for y in 8:
+		urows.append("....=.....")
+	u.start_with_map("res://data", 9, "", 500, urows)
+	u.place_building("common_agora", 4, 0)
+	u.step(1)
+	u.place_building("food_vendor_stall", 5, 2)
+	u.step(1)
+	check(u.get_buildings().size() == 2, "agora with a stall")
+	check(u.get_buildings()[1]["parent"] == u.get_buildings()[0]["id"], "stall parent")
+	u.undo()
+	u.step(1)
+	var uev: Array = u.drain_events()
+	check(uev.filter(func(e): return e["type"] == "undo_applied").size() == 1, "undo_applied event")
+	check(u.get_buildings().size() == 1, "undo removed the stall")
+	check(u.get_treasury() == 500 - 50, "stall refunded (Hero costs, S-004)")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

@@ -43,7 +43,8 @@ public:
     void set_wage_rate(int64_t rate);
 
     // Build commands (executed at the next tick; failures arrive as "command_rejected" events).
-    void place_building(const godot::String& type, int64_t x, int64_t y);
+    void place_building(const godot::String& type, int64_t x, int64_t y, int64_t rotation = 0);
+    void undo();
     void place_road(int64_t x, int64_t y);
     void place_roadblock(int64_t x, int64_t y);
     void clear_land(int64_t x, int64_t y);
@@ -54,7 +55,7 @@ public:
     int64_t get_map_height() const;
     // {"terrain": String, "road": bool, "roadblock": bool, "building": int}
     godot::Dictionary get_tile(int64_t x, int64_t y) const;
-    // Array of {"id", "type", "x", "y", "width", "height", "has_road_access"}
+    // Array of {"id", "type", "x", "y", "width", "height", "rotation", "parent", "has_road_access"}
     godot::Array get_buildings() const;
     // Array of {"id", "type", "x", "y", "dir", "phase", "progress"}; progress 0..1 toward the next tile.
     godot::Array get_walkers() const;

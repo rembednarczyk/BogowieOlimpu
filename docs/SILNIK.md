@@ -61,12 +61,18 @@ Stan: moduły A1-A6 zaimplementowane w `core/`, 21 przypadków testowych, złoty
 | A5 Zapis | zrzut stanu + wersja danych + migracje | Memento, wersjonowanie | zapis/odczyt daje identyczny hash |
 | A6 Złoty hash | stały scenariusz, hash ustawiany ręcznie; rozszerzany o mapę 32×32 wraz z modułami B, C | testy charakteryzujące | hash zmieniany tylko ręcznie |
 
-### B. Mapa i ruch: CZĘŚCIOWO (2026-11-26)
+### B. Mapa i ruch: ZROBIONE 2026-11-26 (bez wysokości terenu, L-099)
 
-Zrobione: B1 (siatka, 12 typów terenu zgodnych z `terrain.json`, bajt losowy kafla, parser mapy tekstowej), B2 (obrysy, kolizje, teren, łąka pod farmy, koszt według trudności, rozbiórka, wycinka lasu), B3 (drogi, Roadblock, sieci dróg, punkt wyjścia budynku od północy zgodnie z zegarem), B4 (A* z remisami po indeksie kafla, tryby: drogi, drogi bez blokad, teren), B5 (spacerujący wędrowny: algorytm rodziny silnika, budżety z `walkers.json`, obsługa 5×5 przez 96 dni, powrót ścieżką), B6 w wersji podstawowej (spacerujący celowy po drogach, przez blokady), B7 w wersji podstawowej (zapytanie o budynki w kwadracie). Systemy dzienne: wysyłanie spacerujących (opóźnienie według obsady, S-007) i zanik zasięgu. Format zapisu v2 z migracją z v1. Złoty hash miasta 32×32.
+Zrobione:
+- B1: siatka, 12 typów terenu zgodnych z `terrain.json`, bajt losowy kafla, parser mapy tekstowej.
+- B2: obrysy, kolizje, teren, łąka pod farmy, koszt według trudności, rozbiórka, wycinka lasu; obrót budynków obracalnych (Z:24-25); cofanie ostatniej akcji z pełnym zwrotem (Z:20; komendy jednego ticku to jedna akcja, okno 1 dzień, L-035); budynki przy prostym brzegu z kierunkiem wody (L-096); agory nad istniejącą drogą ze slotami 2×2 i stoiska w slotach (Z:69-71).
+- B3: drogi, Roadblock, sieci dróg, punkt wyjścia od północy zgodnie z zegarem; bulwar i aleja nad drogą, budynki za ozdobami mają dostęp do drogi (Z:154); przeprawa i most z własną drogą nad wodą, zakaz przepraw obok siebie (Z:101-103, P:19, L-097).
+- B4: A* z remisami po indeksie kafla (drogi, drogi bez blokad, teren); mapa odległości BFS po drogach od wielu źródeł.
+- B5: spacerujący wędrowny według rodziny silnika z liczbami Zeusa, reguła szerokiej drogi (S-006), powrót fontanny i lecznicy do kafla na północ (S-004, L-098).
+- B6 i B7 w wersji silnikowej: spacerujący celowy po drogach przez blokady; zapytanie o budynki w kwadracie.
+- Systemy dzienne: wysyłanie spacerujących (S-007) i zanik zasięgu. Format zapisu v3 z migracjami z v1 i v2. Złoty hash miasta 32×32 z agorą, bulwarem i cofnięciem.
 
-Zostaje: obrót budynków, undo, brzeg i budynki na agorze lub drodze (komunikat `build.placement_not_implemented`), aleje, bulwary, mosty, wysokość terenu; mapy odległości do magazynów; wyjątek powrotu fontanny i lecznicy; przypadek szerokiej drogi w algorytmie wędrownym; konkretni spacerujący celowi (doręczyciele, wozy, pasterze, myśliwi, rybacy) przychodzą z modułami C.
-
+Przeniesione do modułów, które dają im sens: konkretni spacerujący celowi (doręczyciele, wozy, pasterze, myśliwi, rybacy) i molo (obrys złożony) do C; nabrzeże jeżowców (wymaga jeżowców na mapie) do C; mury, wieże, bramy do D; kładka hipodromu do C; wariant przeprawy mała/duża (statki) do D. Otwarte: wysokość terenu (L-099, brak specyfikacji).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

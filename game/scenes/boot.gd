@@ -14,17 +14,21 @@ const ROADBLOCK_COLOR := Color(0.70, 0.30, 0.20)
 const BUILDING_COLORS := {
 	"fountain": Color(0.55, 0.75, 0.95), "maintenance_office": Color(0.85, 0.70, 0.45),
 	"watchpost": Color(0.80, 0.45, 0.40), "gymnasium": Color(0.92, 0.90, 0.85),
+	"common_agora": Color(0.80, 0.78, 0.72), "boulevard": Color(0.35, 0.60, 0.30), "avenue": Color(0.35, 0.60, 0.30),
+	"food_vendor_stall": Color(0.95, 0.80, 0.30), "oil_vendor_stall": Color(0.70, 0.75, 0.25),
+	"wine_vendor_stall": Color(0.60, 0.20, 0.45),
 }
+const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25}
 const WALKER_COLORS := {
 	"water_bearer": Color(0.25, 0.55, 1.0), "superintendent": Color(1.0, 0.75, 0.2),
-	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0),
+	"watchman": Color(0.9, 0.2, 0.2), "athlete": Color(1.0, 1.0, 1.0), "peddler": Color(0.95, 0.6, 0.1),
 }
 
 var sim := BoSimulation.new()
 var label := Label.new()
 var tick_accumulator := 0.0
 var tiles := MultiMeshInstance3D.new()
-var building_nodes := {}  # id -> MeshInstance3D
+var building_nodes := {}  # id -> Node3D
 var walker_nodes := {}  # id -> MeshInstance3D
 var cam := Camera3D.new()
 var cam_target := Vector3(16, 0, 16)
@@ -53,9 +57,13 @@ func _ready() -> void:
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
 	sim.place_roadblock(22, 16)
-	for b in [["fountain", 6, 5], ["maintenance_office", 17, 17], ["watchpost", 10, 14], ["gymnasium", 24, 13],
-			["fountain", 5, 17], ["fountain", 17, 5]]:
-		sim.place_building(b[0], b[1], b[2])
+	for b in [["fountain", 6, 5, 0], ["maintenance_office", 17, 17, 0], ["watchpost", 10, 14, 0],
+			["gymnasium", 24, 13, 0], ["fountain", 5, 17, 0], ["fountain", 17, 5, 0], ["common_agora", 26, 6, 0],
+			["boulevard", 8, 4, 1], ["boulevard", 9, 4, 1], ["boulevard", 10, 4, 1], ["avenue", 4, 22, 3]]:
+		sim.place_building(b[0], b[1], b[2], b[3])
+	sim.step(1)
+	for s in [["food_vendor_stall", 26, 6], ["oil_vendor_stall", 26, 8], ["wine_vendor_stall", 26, 10]]:
+		sim.place_building(s[0], s[1], s[2])
 	_build_environment()
 	add_child(tiles)
 	label.position = Vector2(16, 16)
@@ -142,16 +150,31 @@ func _rebuild_tiles() -> void:
 	tiles.multimesh = mm
 
 func _add_building(e: Dictionary) -> void:
-	var node := MeshInstance3D.new()
-	var box := BoxMesh.new()
+	# One box per building; boulevards and avenues get a box per ornament tile (the road between stays visible).
+	var node := Node3D.new()
 	var bw: float = e["width"]
 	var bh: float = e["height"]
-	box.size = Vector3(bw - 0.15, 0.6 + 0.3 * bw, bh - 0.15)
+	var height: float = FLAT_BUILDINGS.get(e["building_type"], 0.6 + 0.3 * bw)
+	if e["parent"] != 0:
+		height = 0.5  # stall on an agora
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.8, 0.8, 0.8))
-	box.material = mat
-	node.mesh = box
-	node.position = Vector3(e["x"] + bw / 2.0, box.size.y / 2.0, e["y"] + bh / 2.0)
+	var parts: Array = []
+	if e["building_type"] in ["boulevard", "avenue"]:
+		for y in range(e["y"], e["y"] + e["height"]):
+			for x in range(e["x"], e["x"] + e["width"]):
+				if sim.get_tile(x, y)["building"] == e["id"]:
+					parts.append(Rect2(x, y, 1, 1))
+	else:
+		parts.append(Rect2(e["x"], e["y"], bw, bh))
+	for r in parts:
+		var mesh := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(r.size.x - 0.15, height, r.size.y - 0.15)
+		box.material = mat
+		mesh.mesh = box
+		mesh.position = Vector3(r.position.x + r.size.x / 2.0, height / 2.0, r.position.y + r.size.y / 2.0)
+		node.add_child(mesh)
 	add_child(node)
 	building_nodes[e["id"]] = node
 

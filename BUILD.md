@@ -67,4 +67,4 @@ Klucze wydania nie trafiają do repo: eksport wydania czyta je ze zmiennych `GOD
 
 ## Złoty hash
 
-`core/tests/test_golden.cpp`. Dwa scenariusze: sam kalendarz i finanse oraz miasto 32×32 (drogi, blokada, las, łąka, 4 budynki usługowe, spacerujący, 2 lata). Zmieniany wyłącznie ręcznie; commit, który go zmienia, nazywa regułę, która go zmieniła (`docs/PRAKTYKI.md`, rozdz. 3).
+`core/tests/test_golden.cpp`. Dwa scenariusze: sam kalendarz i finanse oraz miasto 32×32 (drogi, blokada, las, łąka, 4 budynki usługowe, agora ze stoiskiem, bulwar, cofnięta droga, spacerujący, 2 lata). Zmieniany wyłącznie ręcznie; commit, który go zmienia, nazywa regułę, która go zmieniła (`docs/PRAKTYKI.md`, rozdz. 3).

@@ -47,7 +47,7 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ### 2026-11-26: Build na Androida
 - Polecenie właściciela: "Zaczynaj moduły B i przygotuj build na Androida".
-- Decyzje wykonawcze (koordynator): tylko arm64-v8a (telefon odniesienia i współczesne urządzenia); minimalne API 24 (domyślne szablonu Godota 4.7); biblioteka z wyrównaniem stron 16 KB (wymóg Google Play dla Androida 15+); eksport z gotowego szablonu APK, bez Gradle; identyfikator pakietu `pl.bogowieolimpu.game` [ZAŁOŻENIE, do potwierdzenia przed publikacją]; klucze wydania wyłącznie w zmiennych środowiskowych, nigdy w repo.
+- Decyzje wykonawcze (koordynator): tylko arm64-v8a (telefon odniesienia i współczesne urządzenia); minimalne API 24 (domyślne szablonu Godota 4.7); biblioteka z wyrównaniem stron 16 KB (wymóg Google Play dla Androida 15+); eksport z gotowego szablonu APK, bez Gradle; identyfikator pakietu `pl.bogowieolimpu.game` (zatwierdzony przez właściciela: "Zgoda na identyfikator"); klucze wydania wyłącznie w zmiennych środowiskowych, nigdy w repo.
 - Sprawdzone: kompilacja NDK 28.2, APK 29,8 MB podpisany i zweryfikowany przez apksigner, zawiera `libbo_gdext.android.so` i dane JSON.
 - Nie sprawdzono: uruchomienie na urządzeniu (kontener nie ma emulatora ARM ani telefonu).
 
