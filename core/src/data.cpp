@@ -228,6 +228,68 @@ void load_migration(const json& m, const json& diff, MigrationParams& p) {
     }
 }
 
+void load_risks(const std::map<std::string, json>& docs, RiskParams& p) {
+    if (docs.count("risks.json") != 0) {
+        const auto& rk = docs.at("risks.json");
+        p.hazard_threshold = rk.value("hazard_threshold", p.hazard_threshold);
+        p.burn_days = rk.value("burn_days", p.burn_days);
+        p.spread_every_days = rk.value("spread_every_days", p.spread_every_days);
+        p.spread_chance_per_4 = rk.value("spread_chance_per_4", p.spread_chance_per_4);
+        p.disease_threshold = rk.value("disease_threshold", p.disease_threshold);
+        p.disease_hungry_multiplier = rk.value("disease_hungry_multiplier", p.disease_hungry_multiplier);
+        p.plague_death_percent = rk.value("plague_death_percent", p.plague_death_percent);
+        p.quarantine_days = rk.value("quarantine_days", p.quarantine_days);
+        p.crime_threshold = rk.value("crime_threshold", p.crime_threshold);
+        for (const auto& row : rk.at("criminal_by_happiness")) {
+            p.criminal_by_happiness.emplace_back(row.at("below"), row.at("walker"));
+        }
+        p.criminal_roam_ticks = rk.value("criminal_roam_ticks", p.criminal_roam_ticks);
+    }
+}
+
+void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) {
+    if (docs.count("production.json") != 0) {
+        for (const auto& p : docs.at("production.json")) {
+            ProductionParams pp;
+            const auto& lpy = p.value("loads_per_year", json());
+            pp.loads_per_year = lpy.is_array() ? lpy.at(0).get<std::int32_t>() : opt_int(lpy).value_or(0);
+            if (const auto m = opt_int(p.value("harvest_month", json()))) {
+                pp.harvest_month = *m - 1;  // data: 1-12
+            }
+            const auto& msd = p.value("max_storage_distance", json());
+            pp.max_storage_distance =
+                msd.is_array() ? msd.at(msd.size() - 1).get<std::int32_t>() : opt_int(msd).value_or(300);
+            const auto& in = p.value("input", json());
+            if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer()) {
+                pp.input_good = in.begin().key();
+                pp.input_per_output = in.begin().value().get<std::int32_t>();
+            }
+            pp.field_workers = p.value("field_workers", 0);
+            pp.units_per_trip = p.value("units_per_trip", 0);
+            pp.work_days_per_trip = p.value("work_days_per_trip", 0);
+            pp.source_distance = p.value("source_distance", 0);
+            pp.fixed_rate_near_resource = p.value("rate_model", "") == "fixed_rate_near_resource";
+            pp.silver_per_batch = p.value("silver_per_batch", 0);
+            pp.drachmas_per_batch = p.value("drachmas_per_batch", 0);
+            pp.batch_days = p.value("batch_days", 0);
+            pp.input_capacity_units = p.value("input_capacity_units", 0);
+            pp.boat_build_days = p.value("boat_build_days", 0);
+            pp.input_capacity = p.value("input_capacity", 0);
+            pp.storage_loads = p.value("storage_loads", 0);
+            pp.animals_max = p.value("animals_max", 0);
+            const auto& hm = p.value("harvest_months", json());
+            if (hm.is_object()) {
+                for (const auto& [good, months] : hm.items()) {
+                    for (const auto& m : months) {
+                        pp.harvest_months[good].push_back(m.get<std::int32_t>() - 1);
+                    }
+                }
+            }
+            cat.production[p.at("id").get<std::string>()] = pp;
+        }
+    }
+}
+
 void validate(const std::map<std::string, json>& docs, std::vector<std::string>& errors) {
     const auto& buildings = docs.at("buildings.json");
     const auto& housing = docs.at("housing.json");
@@ -378,66 +440,11 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 std::llround(diff.at("wage_drachmas_per_worker_year").at(kWageKeys[i]).get<double>() * 1000.0));
         }
         load_migration(docs.at("migration.json"), diff, cat.migration);
-        if (docs.count("risks.json") != 0) {
-            const auto& rk = docs.at("risks.json");
-            RiskParams& p = cat.risks;
-            p.hazard_threshold = rk.value("hazard_threshold", p.hazard_threshold);
-            p.burn_days = rk.value("burn_days", p.burn_days);
-            p.spread_every_days = rk.value("spread_every_days", p.spread_every_days);
-            p.spread_chance_per_4 = rk.value("spread_chance_per_4", p.spread_chance_per_4);
-            p.disease_threshold = rk.value("disease_threshold", p.disease_threshold);
-            p.disease_hungry_multiplier = rk.value("disease_hungry_multiplier", p.disease_hungry_multiplier);
-            p.plague_death_percent = rk.value("plague_death_percent", p.plague_death_percent);
-            p.quarantine_days = rk.value("quarantine_days", p.quarantine_days);
-            p.crime_threshold = rk.value("crime_threshold", p.crime_threshold);
-            for (const auto& row : rk.at("criminal_by_happiness")) {
-                p.criminal_by_happiness.emplace_back(row.at("below"), row.at("walker"));
-            }
-            p.criminal_roam_ticks = rk.value("criminal_roam_ticks", p.criminal_roam_ticks);
-        }
+        load_risks(docs, cat.risks);
         for (const auto& g : docs.at("goods.json")) {
             cat.goods[g.at("id").get<std::string>()] = g.value("class", "");
         }
-        if (docs.count("production.json") != 0) {
-            for (const auto& p : docs.at("production.json")) {
-                ProductionParams pp;
-                const auto& lpy = p.value("loads_per_year", json());
-                pp.loads_per_year = lpy.is_array() ? lpy.at(0).get<std::int32_t>() : opt_int(lpy).value_or(0);
-                if (const auto m = opt_int(p.value("harvest_month", json()))) {
-                    pp.harvest_month = *m - 1;  // data: 1-12
-                }
-                const auto& msd = p.value("max_storage_distance", json());
-                pp.max_storage_distance =
-                    msd.is_array() ? msd.at(msd.size() - 1).get<std::int32_t>() : opt_int(msd).value_or(300);
-                const auto& in = p.value("input", json());
-                if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer()) {
-                    pp.input_good = in.begin().key();
-                    pp.input_per_output = in.begin().value().get<std::int32_t>();
-                }
-                pp.field_workers = p.value("field_workers", 0);
-                pp.units_per_trip = p.value("units_per_trip", 0);
-                pp.work_days_per_trip = p.value("work_days_per_trip", 0);
-                pp.source_distance = p.value("source_distance", 0);
-                pp.fixed_rate_near_resource = p.value("rate_model", "") == "fixed_rate_near_resource";
-                pp.silver_per_batch = p.value("silver_per_batch", 0);
-                pp.drachmas_per_batch = p.value("drachmas_per_batch", 0);
-                pp.batch_days = p.value("batch_days", 0);
-                pp.input_capacity_units = p.value("input_capacity_units", 0);
-                pp.boat_build_days = p.value("boat_build_days", 0);
-                pp.input_capacity = p.value("input_capacity", 0);
-                pp.storage_loads = p.value("storage_loads", 0);
-                pp.animals_max = p.value("animals_max", 0);
-                const auto& hm = p.value("harvest_months", json());
-                if (hm.is_object()) {
-                    for (const auto& [good, months] : hm.items()) {
-                        for (const auto& m : months) {
-                            pp.harvest_months[good].push_back(m.get<std::int32_t>() - 1);
-                        }
-                    }
-                }
-                cat.production[p.at("id").get<std::string>()] = pp;
-            }
-        }
+        load_production(docs, cat);
         const auto& logistics = docs.count("logistics.json") != 0 ? docs.at("logistics.json") : json::object();
         cat.storage_slots = logistics.value("storage_tiles", 8);
         cat.loads_per_slot = logistics.value("loads_per_storage_tile", 4);
