@@ -109,6 +109,16 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["kind"] = kKinds[static_cast<int>(e.kind)];
                        d["building"] = static_cast<int64_t>(e.building);
                    },
+                   [&d](const bo::core::InvasionStarted& e) {
+                       d["type"] = "invasion_started";
+                       d["nation"] = String(e.nation.c_str());
+                       d["soldiers"] = static_cast<int64_t>(e.soldiers);
+                       d["bribe"] = static_cast<int64_t>(e.bribe);
+                   },
+                   [&d](const bo::core::InvasionEnded& e) {
+                       d["type"] = "invasion_ended";
+                       d["result"] = static_cast<int64_t>(e.result);
+                   },
                    [&d](const bo::core::TradeDone& e) {
                        d["type"] = "trade_done";
                        d["building"] = static_cast<int64_t>(e.building);
@@ -276,6 +286,26 @@ void BoSimulation::move_company(int64_t company, int64_t x, int64_t y) {
                                           static_cast<std::int32_t>(y)});
     }
 }
+
+void BoSimulation::start_invasion(const String& nation, int64_t soldiers) {
+    if (sim_ && soldiers > 0) {
+        sim_->issue(bo::core::StartInvasion{to_std(nation), static_cast<std::uint32_t>(soldiers)});
+    }
+}
+
+void BoSimulation::bribe_invaders() {
+    if (sim_) {
+        sim_->issue(bo::core::BribeInvaders{});
+    }
+}
+
+void BoSimulation::surrender() {
+    if (sim_) {
+        sim_->issue(bo::core::Surrender{});
+    }
+}
+
+int64_t BoSimulation::get_bribe_cost() const { return sim_ ? bo::core::bribe_cost(sim_->state(), *catalog_) : 0; }
 
 void BoSimulation::send_company_home(int64_t company) {
     if (sim_ && company >= 0) {
@@ -561,6 +591,10 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("move_company", "company", "x", "y"), &BoSimulation::move_company);
     ClassDB::bind_method(D_METHOD("send_company_home", "company"), &BoSimulation::send_company_home);
     ClassDB::bind_method(D_METHOD("get_companies"), &BoSimulation::get_companies);
+    ClassDB::bind_method(D_METHOD("start_invasion", "nation", "soldiers"), &BoSimulation::start_invasion);
+    ClassDB::bind_method(D_METHOD("bribe_invaders"), &BoSimulation::bribe_invaders);
+    ClassDB::bind_method(D_METHOD("surrender"), &BoSimulation::surrender);
+    ClassDB::bind_method(D_METHOD("get_bribe_cost"), &BoSimulation::get_bribe_cost);
     ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",
                                   "export_keep"),
                          &BoSimulation::set_trade_order);

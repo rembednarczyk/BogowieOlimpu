@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ namespace bo::core {
 struct WorldState;
 
 // Stored in saves: append only.
-enum class CompanyStatus : std::uint8_t { AtHome = 0, Marching, Still, GoingHome };
+enum class CompanyStatus : std::uint8_t { AtHome = 0, Marching, Still, GoingHome, Fighting, Fleeing };
 
 struct CompanyMember {
     BuildingId house = kNoBuilding;
@@ -33,15 +34,30 @@ struct Company {
     CompanyStatus status = CompanyStatus::AtHome;
     std::uint8_t morale = 100;
     std::vector<WalkerId> soldiers;  // soldiers in the field
+    bool fled = false;               // fled in this battle: cannot be mustered until it ends (Z:140)
     friend bool operator==(const Company& a, const Company& b) {
         return a.unit == b.unit && a.members == b.members && a.standard == b.standard && a.status == b.status &&
-               a.morale == b.morale && a.soldiers == b.soldiers;
+               a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled;
+    }
+};
+
+// An invasion of the city (Z:137, Z:144). Started by the scenario or the world (D4/D5); for now by command.
+struct Invasion {
+    bool active = false;
+    std::string nation;
+    std::vector<WalkerId> invaders;
+    TilePos origin{0, 0};  // where they came in and where they leave
+    friend bool operator==(const Invasion& a, const Invasion& b) {
+        return a.active == b.active && a.nation == b.nation && a.invaders == b.invaders && a.origin == b.origin;
     }
 };
 
 struct MilitaryState {
     std::vector<Company> companies;
-    friend bool operator==(const MilitaryState& a, const MilitaryState& b) { return a.companies == b.companies; }
+    Invasion invasion;  // since v18
+    friend bool operator==(const MilitaryState& a, const MilitaryState& b) {
+        return a.companies == b.companies && a.invasion == b.invasion;
+    }
 };
 
 // Soldiers a house gives (doc 22): round(population x %S / 100) of the unit of its level; hoplites need one
@@ -61,8 +77,34 @@ std::string muster_company(WorldState& state, const DataCatalog& catalog, std::u
 std::string move_company(WorldState& state, std::uint32_t company, TilePos to);
 std::string send_company_home(WorldState& state, std::uint32_t company);
 
-// Common-house soldiers in the field per house: they do not work meanwhile [ZAŁOŻENIE, L-109].
-std::uint32_t soldiers_in_field_from_common_houses(const WorldState& state);
+// Workers missing while rabble is in the field: 6 per soldier (S-004 rabble_workers_per_soldier, doc 22).
+std::uint32_t workers_in_the_field(const WorldState& state, const DataCatalog& catalog);
+
+// Stage 2 (combat.cpp; doc 22, 24; Z:137-144; assumptions L-110).
+struct CombatEvents {
+    std::vector<WalkerId> spawned;
+    std::optional<std::uint8_t> ended;  // InvasionEnded::result
+};
+
+// Invaders of `nation` enter at the invasion point (map symbol 'i'; else the land entry): `soldiers` split by
+// the nation's composition, rounded down (doc 22), at most 256. They march on the Palace.
+std::string start_invasion(WorldState& state, const DataCatalog& catalog, const std::string& nation,
+                           std::uint32_t soldiers, CombatEvents& ev);
+// Bribe (doc 22): 100 dr a foot soldier, 200 a mounted one, x the difficulty percent; they walk away.
+std::int64_t bribe_cost(const WorldState& state, const DataCatalog& catalog);
+std::string bribe_invaders(WorldState& state, const DataCatalog& catalog, CombatEvents& ev);
+// Surrender (Z:137): they walk away; the tribute belongs to the world module (D4).
+std::string surrender(WorldState& state, CombatEvents& ev);
+// Every tick during an invasion: blows and shots (hit = max(0, attack - armor), doc 24), chases, deaths,
+// morale, the Palace taken.
+void combat_tick(WorldState& state, const DataCatalog& catalog, CombatEvents& ev);
+// Daily without an invasion: morale recovers (Z:140).
+void recover_morale(WorldState& state);
+
+inline constexpr std::int32_t kEngageTiles = 6;      // [ZAŁOŻENIE, L-110] soldiers turn on enemies this near
+inline constexpr std::uint8_t kMoraleLossPerDeath = 10;  // doc 24: 5-20 [ZAŁOŻENIE, L-062]
+inline constexpr std::uint8_t kFleeMorale = 20;          // doc 24: flees at 20 or less
+inline constexpr std::uint8_t kMoraleRecoveryPerDay = 5;  // [ZAŁOŻENIE, L-062]
 
 inline constexpr std::size_t kCompanySize = 8;
 inline constexpr std::size_t kMaxCompanies = 20;

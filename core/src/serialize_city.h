@@ -19,6 +19,6 @@ void write_goods_state(ByteWriter& w, const Building& b);
 bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version);
 bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version);
 void write_military(ByteWriter& w, const MilitaryState& m);
-bool read_military(ByteReader& r, MilitaryState& m);
+bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version);
 
 }  // namespace bo::core

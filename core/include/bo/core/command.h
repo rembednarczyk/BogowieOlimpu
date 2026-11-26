@@ -102,9 +102,20 @@ struct SendCompanyHome {
     std::uint32_t company = 0;
 };
 
+// An invasion (Z:137). Issued by the scenario or the world module (D4/D5); for now also by tests and tools.
+struct StartInvasion {
+    std::string nation;  // data/enemies.json
+    std::uint32_t soldiers = 0;
+};
+
+// The player's answer to an invasion (Z:137): buy them off or give in. Fighting needs no command.
+struct BribeInvaders {};
+struct Surrender {};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
-                             SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome>;
+                             SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
+                             StartInvasion, BribeInvaders, Surrender>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

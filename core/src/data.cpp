@@ -16,6 +16,7 @@ namespace {
 
 using nlohmann::json;
 using detail::load_migration;
+using detail::load_combat;
 using detail::load_production;
 using detail::load_risks;
 using detail::opt_int;
@@ -387,6 +388,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
             }
         }
         load_production(docs, cat);
+        load_combat(docs, cat.combat);
         const auto& logistics = docs.count("logistics.json") != 0 ? docs.at("logistics.json") : json::object();
         cat.storage_slots = logistics.value("storage_tiles", 8);
         cat.loads_per_slot = logistics.value("loads_per_storage_tile", 4);

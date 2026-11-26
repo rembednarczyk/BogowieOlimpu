@@ -70,7 +70,8 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.i32(cmd.x);
                 w.i32(cmd.y);
                 w.u8(cmd.rotation);  // since v3
-            } else if constexpr (std::is_same_v<T, Undo>) {
+            } else if constexpr (std::is_same_v<T, Undo> || std::is_same_v<T, BribeInvaders> ||
+                                 std::is_same_v<T, Surrender>) {
                 // no payload
             } else if constexpr (std::is_same_v<T, SetSectorPriority>) {
                 w.u8(cmd.sector);
@@ -87,6 +88,9 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u8(static_cast<std::uint8_t>((cmd.import_on ? 1U : 0U) | (cmd.export_on ? 2U : 0U)));
                 w.u32(cmd.import_limit);
                 w.u32(cmd.export_keep);
+            } else if constexpr (std::is_same_v<T, StartInvasion>) {
+                w.str(cmd.nation);
+                w.u32(cmd.soldiers);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -216,6 +220,20 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
             out = c;
             return true;
         }
+        case 16: {
+            StartInvasion c;
+            if (!r.str(c.nation) || !r.u32(c.soldiers)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 17:
+            out = BribeInvaders{};
+            return true;
+        case 18:
+            out = Surrender{};
+            return true;
         default:
             return false;
     }
@@ -309,7 +327,7 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
     if (out.format_version >= 2 &&
         (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s, out.format_version)) ||
          !read_walkers(r, s.walkers, out.format_version) ||
-         (out.format_version >= 17 && !read_military(r, s.military)))) {
+         (out.format_version >= 17 && !read_military(r, s.military, out.format_version)))) {
         error = "save.corrupt";
         return std::nullopt;
     }

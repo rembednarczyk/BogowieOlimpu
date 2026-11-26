@@ -61,6 +61,11 @@ public:
     void send_company_home(int64_t company);
     // Array of {"unit", "soldiers", "status" (0 home, 1 marching, 2 still, 3 going home), "morale", "x", "y"}
     godot::Array get_companies() const;
+    // Invasions (D3 stage 2): started by the scenario later; the player bribes, surrenders or fights.
+    void start_invasion(const godot::String& nation, int64_t soldiers);
+    void bribe_invaders();
+    void surrender();
+    int64_t get_bribe_cost() const;
     int64_t get_workforce() const;
     int64_t get_employed() const;
     int64_t get_appeal(int64_t x, int64_t y) const;

@@ -65,6 +65,11 @@
     20,
     20
    ],
+   "composition_units": [
+    "hoplite",
+    "rabble",
+    "horseman"
+   ],
    "units": {
     "hoplite": {
      "hp": 150,
@@ -128,6 +133,11 @@
     50,
     20,
     30
+   ],
+   "composition_units": [
+    "swordsman",
+    "javelineer",
+    "horseman"
    ],
    "units": {
     "swordsman": {
@@ -193,6 +203,11 @@
     40,
     30
    ],
+   "composition_units": [
+    "spearman",
+    "archer",
+    "horseman"
+   ],
    "units": {
     "spearman": {
      "hp": 150,
@@ -256,6 +271,10 @@
     50,
     50
    ],
+   "composition_units": [
+    "swordsman",
+    "archer"
+   ],
    "units": {
     "swordsman": {
      "hp": 150,
@@ -307,6 +326,10 @@
    "composition": [
     75,
     25
+   ],
+   "composition_units": [
+    "warrior",
+    "archer"
    ],
    "units": {
     "warrior": {
@@ -360,6 +383,11 @@
     50,
     30,
     20
+   ],
+   "composition_units": [
+    "swordsman",
+    "archer",
+    "charioteer"
    ],
    "expansion": true,
    "units": {
@@ -425,6 +453,10 @@
     25,
     75
    ],
+   "composition_units": [
+    "swordsman",
+    "archer"
+   ],
    "expansion": true,
    "units": {
     "archer": {
@@ -478,6 +510,10 @@
     70,
     30
    ],
+   "composition_units": [
+    "javelineer",
+    "horseman"
+   ],
    "expansion": true,
    "units": {
     "javelineer": {
@@ -530,6 +566,10 @@
    "composition": [
     50,
     50
+   ],
+   "composition_units": [
+    "spearman",
+    "archer"
    ],
    "expansion": true,
    "underwater": true,
@@ -585,6 +625,11 @@
     40,
     30,
     30
+   ],
+   "composition_units": [
+    "spearman",
+    "archer",
+    "charioteer"
    ],
    "expansion": true,
    "units": {

@@ -94,6 +94,9 @@ std::uint32_t house_soldiers(const DataCatalog& catalog, const HouseState& h, Di
 
 void form_companies(WorldState& st, const DataCatalog& catalog) {
     MilitaryState& m = st.military;
+    if (m.invasion.active) {
+        return;  // no new companies and no new soldiers during a battle (Z:140)
+    }
     if (std::any_of(m.companies.begin(), m.companies.end(),
                     [](const Company& c) { return c.status != CompanyStatus::AtHome; })) {
         return;  // companies in the field keep their soldiers (Z:140)
@@ -148,7 +151,10 @@ void update_companies(WorldState& st) {
             std::all_of(s.begin(), s.end(), [&st](WalkerId w) { return st.walkers.items.at(w).phase == WalkerPhase::AtTarget; })) {
             c.status = CompanyStatus::Still;
         }
-        if (c.status == CompanyStatus::GoingHome && s.empty()) {
+        if (c.status == CompanyStatus::Fighting && !st.military.invasion.active) {
+            c.status = CompanyStatus::Marching;
+        }
+        if ((c.status == CompanyStatus::GoingHome || c.status == CompanyStatus::Fleeing) && s.empty()) {
             c.status = CompanyStatus::AtHome;
         }
     }
@@ -163,6 +169,9 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
         return "military.bad_company";
     }
     Company& c = st.military.companies[index];
+    if (c.fled && st.military.invasion.active) {
+        return "military.company_fled";  // not again in this battle (Z:140)
+    }
     const auto type = catalog.walkers.find(c.unit);
     if (type == catalog.walkers.end()) {
         return "military.bad_company";
@@ -185,6 +194,10 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
             w.job = WalkerJob::Soldier;
             w.target = index;
             w.want_loads = static_cast<std::uint32_t>(k);  // place in the formation
+            const auto stats = catalog.combat.nations.find("player_greek");
+            if (stats != catalog.combat.nations.end() && stats->second.units.count(c.unit) != 0) {
+                w.hp = stats->second.units.at(c.unit).hp;
+            }
             if (!route(st.city, w, slot(st.city, c.standard, k))) {
                 continue;
             }
@@ -208,7 +221,7 @@ std::string move_company(WorldState& st, std::uint32_t index, TilePos to) {
     }
     Company& c = st.military.companies[index];
     c.standard = to;
-    if (c.status == CompanyStatus::Marching || c.status == CompanyStatus::Still) {
+    if (c.status == CompanyStatus::Marching || c.status == CompanyStatus::Still || c.status == CompanyStatus::Fighting) {
         for (const WalkerId id : c.soldiers) {
             Walker& w = st.walkers.items.at(id);
             route(st.city, w, slot(st.city, to, w.want_loads));
@@ -221,7 +234,8 @@ std::string move_company(WorldState& st, std::uint32_t index, TilePos to) {
 std::string send_company_home(WorldState& st, std::uint32_t index) {
     if (index >= st.military.companies.size() ||
         (st.military.companies[index].status != CompanyStatus::Marching &&
-         st.military.companies[index].status != CompanyStatus::Still)) {
+         st.military.companies[index].status != CompanyStatus::Still &&
+         st.military.companies[index].status != CompanyStatus::Fighting)) {
         return "military.bad_company";
     }
     Company& c = st.military.companies[index];
@@ -239,14 +253,14 @@ std::string send_company_home(WorldState& st, std::uint32_t index) {
     return {};
 }
 
-std::uint32_t soldiers_in_field_from_common_houses(const WorldState& st) {
+std::uint32_t workers_in_the_field(const WorldState& st, const DataCatalog& catalog) {
     std::uint32_t n = 0;
     for (const Company& c : st.military.companies) {
         if (c.unit == "rabble" && c.status != CompanyStatus::AtHome) {
             n += static_cast<std::uint32_t>(c.soldiers.size());
         }
     }
-    return n;
+    return n * static_cast<std::uint32_t>(catalog.combat.rabble_workers_per_soldier);  // 6 each (S-004, doc 22)
 }
 
 }  // namespace bo::core

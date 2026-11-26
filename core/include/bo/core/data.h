@@ -126,6 +126,7 @@ struct MigrationParams {
     std::int32_t food_missing_first = -1;
     std::int32_t food_missing_max = -3;
     std::int32_t debt_mood = -2;
+    std::int32_t idle_army_mood = -2;  // companies in the field while nobody attacks (Z:159)
     std::vector<std::pair<std::int32_t, std::int32_t>> migration_table;  // (popularity above, percent)
     std::int32_t batch_people = 12;
     std::int32_t min_batch = 4;
@@ -195,6 +196,42 @@ struct RiskParams {
 };
 
 // Trade parameters (data/trade.json, module C9).
+// Combat stats of one unit (data/enemies.json, doc 22): hit = max(0, attack - armor), rates in ticks.
+struct UnitStats {
+    std::int32_t hp = 0;
+    std::int32_t attack = 0;
+    std::int32_t armor = 0;
+    std::int32_t armor_vs_missiles = 0;
+    std::int32_t missile_attack = 0;  // 0: no missiles
+    std::int32_t missile_range = 0;
+    std::int32_t missile_rate = 0;
+    std::int32_t melee_rate = 0;
+    std::int64_t speed_raw = 0;  // Q.16 steps per tick
+    bool mounted = false;        // cavalry and chariots: bribe price of a mounted soldier (doc 22)
+};
+
+struct NationParams {
+    std::vector<std::int32_t> composition;     // percent per unit, heavy infantry, missiles, cavalry (doc 22)
+    std::vector<std::string> composition_units;
+    std::map<std::string, UnitStats> units;
+};
+
+struct CombatParams {
+    std::map<std::string, NationParams> nations;  // "player_greek" holds the player's units
+    std::int32_t max_invasion = 256;
+    std::array<std::int32_t, static_cast<std::size_t>(Difficulty::Count)> bribe_percent{};
+    std::int32_t bribe_foot = 100;
+    std::int32_t bribe_mounted = 200;
+    std::int32_t rabble_workers_per_soldier = 6;
+    std::int32_t rabble_population_loss_per_death = 6;
+};
+
+// Speed in tiles a month (S-004 units) as Q.16 steps per tick: 15 steps a tile, 816 ticks a month.
+inline std::int64_t speed_raw_from_tiles_per_month(double tiles) {
+    const auto milli = static_cast<std::int64_t>(tiles * 1000.0 + 0.5);
+    return (milli * 15 * 65536) / (816 * 1000);
+}
+
 // Wolves (Z:45, P:7; numbers L-107): pack at a spawn point, a hunt on average once in `hunt_one_in_days`,
 // prey within `reach_tiles`; a shepherd of the same shed within `guard_tiles` scares the wolf off.
 struct WolfParams {
@@ -239,6 +276,7 @@ struct DataCatalog {
     RiskParams risks;
     TradeParams trade;
     WolfParams wolves;
+    CombatParams combat;
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

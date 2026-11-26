@@ -24,6 +24,7 @@ void load_migration(const json& m, const json& diff, MigrationParams& p) {
     p.food_missing_first = m.at("food_mood").at("missing_first");
     p.food_missing_max = m.at("food_mood").at("missing_max");
     p.debt_mood = m.at("debt_mood");
+    p.idle_army_mood = m.value("idle_army_mood", p.idle_army_mood);
     for (const auto& row : m.at("migration_table")) {
         p.migration_table.emplace_back(row.at("above"), row.at("percent"));
     }
@@ -116,6 +117,52 @@ void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) 
             }
             cat.production[p.at("id").get<std::string>()] = pp;
         }
+    }
+}
+
+void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
+    if (docs.count("enemies.json") == 0) {
+        return;
+    }
+    const auto& e = docs.at("enemies.json");
+    p.max_invasion = e.value("max_invasion_soldiers", p.max_invasion);
+    const auto& rules = e.value("player_rules", json::object());
+    p.rabble_workers_per_soldier = rules.value("rabble_workers_per_soldier", p.rabble_workers_per_soldier);
+    p.rabble_population_loss_per_death = rules.value("rabble_population_loss_per_death", p.rabble_population_loss_per_death);
+    for (const auto& [id, n] : e.at("nations").items()) {
+        NationParams np;
+        np.composition = n.value("composition", std::vector<std::int32_t>{});
+        np.composition_units = n.value("composition_units", std::vector<std::string>{});
+        const json& units = n.contains("units") ? n.at("units") : n;  // player_greek lists its units directly
+        for (const auto& [uid, u] : units.items()) {
+            if (!u.is_object() || !u.contains("hp")) {
+                continue;
+            }
+            UnitStats s;
+            s.hp = opt_int(u.value("hp", json())).value_or(0);
+            s.attack = opt_int(u.value("attack", json())).value_or(0);
+            s.armor = opt_int(u.value("armor", json())).value_or(0);
+            s.armor_vs_missiles = opt_int(u.value("armor_vs_missiles", json())).value_or(0);
+            s.missile_attack = opt_int(u.value("missile_attack", json())).value_or(0);
+            s.missile_range = opt_int(u.value("missile_range", json())).value_or(0);
+            s.missile_rate = opt_int(u.value("missile_rate", json())).value_or(0);
+            s.melee_rate = opt_int(u.value("melee_rate", json())).value_or(0);
+            const double speed = u.value("speed", json()).is_number() ? u.at("speed").get<double>() : 54.4;
+            s.speed_raw = speed_raw_from_tiles_per_month(speed);
+            s.mounted = s.missile_attack == 0 && speed >= 90.0;  // same split as composition_units
+            np.units[uid] = s;
+        }
+        p.nations[id] = np;
+    }
+    if (docs.count("difficulty.json") != 0) {
+        const auto& d = docs.at("difficulty.json");
+        const auto& pct = d.value("bribe_percent_of_hero", json::object());
+        for (std::size_t i = 0; i < p.bribe_percent.size(); ++i) {
+            p.bribe_percent[i] = pct.value(std::string(difficulty_code(static_cast<Difficulty>(i))), 100);
+        }
+        const auto& price = d.value("bribe_hero_drachmas", json::object());
+        p.bribe_foot = price.value("foot_soldier", p.bribe_foot);
+        p.bribe_mounted = price.value("mounted", p.bribe_mounted);
     }
 }
 

@@ -138,6 +138,17 @@ func _init() -> void:
 	var mev: Array = t.drain_events().filter(func(e): return e["type"] == "command_rejected")
 	check(mev.size() == 1 and mev[0]["reason"] == "military.no_palace", "muster rejected without a Palace")
 
+	# Invasion through the binding: enter at the land entry, surrender ends it.
+	t.start_invasion("greek", 5)
+	t.step(1)
+	check(t.get_bribe_cost() == 4 * 100 + 1 * 200, "bribe cost: 3 hoplites, 1 rabble, 1 horseman")
+	t.surrender()
+	t.step(1)
+	var iev: Array = t.drain_events()
+	check(iev.filter(func(e): return e["type"] == "invasion_started").size() == 1, "invasion_started event")
+	var ends: Array = iev.filter(func(e): return e["type"] == "invasion_ended")
+	check(ends.size() == 1 and ends[0]["result"] == 2, "surrender ends the invasion")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

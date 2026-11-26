@@ -103,9 +103,21 @@ struct TradeDone {  // C9: a trader finished at a trade building
     std::int64_t money = 0;          // + earned, - paid
 };
 
+struct InvasionStarted {  // D3: an army enters the city (Z:137)
+    std::string nation;
+    std::uint32_t soldiers = 0;
+    std::int64_t bribe = 0;  // drachmas to buy them off (doc 22)
+};
+
+// Stored in no save; values for presentation. 0: invaders defeated, 1: bribed, 2: surrendered, 3: Palace taken.
+struct InvasionEnded {
+    std::uint8_t result = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
-                           HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone>;
+                           HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
+                           InvasionEnded>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

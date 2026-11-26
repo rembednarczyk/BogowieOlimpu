@@ -108,7 +108,7 @@ TEST_CASE("no Palace, no army (Z:135); with one, companies of 8 form with standa
     }
 }
 
-TEST_CASE("muster: soldiers march to the standard and leave work; move; send home (Z:137-139, L-109)") {
+TEST_CASE("muster: soldiers march to the standard, 6 workers each leave work; move; send home (Z:137-139)") {
     auto sim = army_town(true);
     const std::uint32_t workforce = sim.state().labour.workforce;
     REQUIRE(workforce > 0);
@@ -118,7 +118,7 @@ TEST_CASE("muster: soldiers march to the standard and leave work; move; send hom
     CHECK(sim.state().military.companies[0].soldiers.size() == 8);
     run(sim, 6);
     CHECK(sim.state().military.companies[0].status == CompanyStatus::Still);
-    CHECK(sim.state().labour.workforce == workforce - std::min<std::uint32_t>(workforce, 8));
+    CHECK(sim.state().labour.workforce == workforce - std::min<std::uint32_t>(workforce, 8 * 6));  // doc 22
     sim.issue(MusterCompany{0});
     sim.step(1);
     CHECK(rejected(sim, "military.bad_company"));

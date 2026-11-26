@@ -161,6 +161,9 @@ void Simulation::step_walkers() {
         }
     }
     emit_risks(*this, crimes);
+    CombatEvents combat;
+    combat_tick(state_, catalog_, combat);
+    emit_combat(combat);
     catch_outlaws(state_, catalog_);
     muggings(state_, catalog_);
     handle_arrivals(state_, catalog_);
@@ -290,6 +293,9 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                            emit(CommandRejected{index, err});
                        }
                    },
+                   [&](const StartInvasion&) { apply_combat_command(command, index); },
+                   [&](const BribeInvaders&) { apply_combat_command(command, index); },
+                   [&](const Surrender&) { apply_combat_command(command, index); },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});
@@ -301,6 +307,35 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    },
                },
                command);
+}
+
+// Invasion commands (D3 stage 2): start, bribe, surrender.
+void Simulation::apply_combat_command(const Command& command, std::uint32_t index) {
+    CombatEvents ev;
+    std::string err;
+    if (const auto* c = std::get_if<StartInvasion>(&command)) {
+        err = start_invasion(state_, catalog_, c->nation, c->soldiers, ev);
+        if (err.empty()) {
+            emit(InvasionStarted{c->nation, static_cast<std::uint32_t>(ev.spawned.size()), bribe_cost(state_, catalog_)});
+        }
+    } else if (std::holds_alternative<BribeInvaders>(command)) {
+        err = bribe_invaders(state_, catalog_, ev);
+    } else {
+        err = surrender(state_, ev);
+    }
+    if (!err.empty()) {
+        emit(CommandRejected{index, err});
+    }
+    emit_combat(ev);
+}
+
+void Simulation::emit_combat(const CombatEvents& ev) {
+    for (const WalkerId id : ev.spawned) {
+        emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
+    }
+    if (ev.ended) {
+        emit(InvasionEnded{*ev.ended});
+    }
 }
 
 void Simulation::emit(Event event) { events_.push_back(TimedEvent{state_.time.tick(), std::move(event)}); }

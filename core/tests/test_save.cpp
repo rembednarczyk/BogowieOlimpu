@@ -83,7 +83,8 @@ constexpr std::size_t kHygiene = 1;
 constexpr std::size_t kTrade = 16;
 constexpr std::size_t kUndo = 29;
 constexpr std::size_t kCityBase = 16;
-constexpr std::size_t kMilitary = 4;  // v17: company count, after the walkers
+constexpr std::size_t kInvasion = 17;  // v18: no invasion (flag, empty nation, no invaders, origin)
+constexpr std::size_t kMilitary = 4 + kInvasion;  // v17: company count, after the walkers
 
 // The save without the v17 army block (no companies): the layout of v16 and older.
 std::vector<std::uint8_t> without_military(std::vector<std::uint8_t> bytes) {
@@ -111,8 +112,11 @@ void check_load(std::vector<std::uint8_t> bytes, std::uint8_t version, std::uint
 TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
-    const auto current = without_military(a.save());
     const std::uint64_t h = a.state_hash();
+    auto v17 = a.save();
+    v17.resize(v17.size() - kInvasion);
+    check_load(v17, 17, h);
+    const auto current = without_military(a.save());
     check_load(current, 16, h);
     check_load(current, 14, h);  // v15 adds only a house field, v16 only a spawn field
     auto v13 = current;

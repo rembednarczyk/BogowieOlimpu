@@ -146,10 +146,20 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
         for (const WalkerId id : c.soldiers) {
             w.u32(id);
         }
+        w.u8(c.fled ? 1 : 0);  // since v18
     }
+    const Invasion& inv = m.invasion;  // since v18
+    w.u8(inv.active ? 1 : 0);
+    w.str(inv.nation);
+    w.u32(static_cast<std::uint32_t>(inv.invaders.size()));
+    for (const WalkerId id : inv.invaders) {
+        w.u32(id);
+    }
+    w.i32(inv.origin.x);
+    w.i32(inv.origin.y);
 }
 
-bool read_military(ByteReader& r, MilitaryState& m) {
+bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
     std::uint32_t count = 0;
     if (!r.u32(count) || count > kMaxCompanies) {
         return false;
@@ -168,7 +178,7 @@ bool read_military(ByteReader& r, MilitaryState& m) {
                 return false;
             }
         }
-        if (!r.i32(c.standard.x) || !r.i32(c.standard.y) || !r.u8(status) || status > 3 || !r.u8(c.morale) ||
+        if (!r.i32(c.standard.x) || !r.i32(c.standard.y) || !r.u8(status) || status > 5 || !r.u8(c.morale) ||
             !r.u32(soldiers) || soldiers > 64) {
             return false;
         }
@@ -179,8 +189,29 @@ bool read_military(ByteReader& r, MilitaryState& m) {
                 return false;
             }
         }
+        std::uint8_t fled = 0;
+        if (version >= 18 && !r.u8(fled)) {
+            return false;
+        }
+        c.fled = fled != 0;
     }
-    return true;
+    if (version < 18) {
+        return true;
+    }
+    Invasion& inv = m.invasion;
+    std::uint8_t active = 0;
+    std::uint32_t invaders = 0;
+    if (!r.u8(active) || !r.str(inv.nation) || !r.u32(invaders) || invaders > 4096) {
+        return false;
+    }
+    inv.active = active != 0;
+    inv.invaders.resize(invaders);
+    for (WalkerId& id : inv.invaders) {
+        if (!r.u32(id)) {
+            return false;
+        }
+    }
+    return r.i32(inv.origin.x) && r.i32(inv.origin.y);
 }
 
 }  // namespace bo::core

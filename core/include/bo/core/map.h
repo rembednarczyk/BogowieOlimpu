@@ -44,7 +44,8 @@ enum class TileFeature : std::uint8_t {
     None = 0, BoarSpawn, DeerSpawn, FishGround, UrchinGround,
     LandEntry,  // where the road to the rest of Greece meets the map edge (Z:17): caravans, immigrants
     SeaEntry,   // where ships enter the map
-    WolfSpawn   // a wolf pack's den (Z:45, doc 23)
+    WolfSpawn,  // a wolf pack's den (Z:45, doc 23)
+    InvasionPoint  // where invading armies enter (doc 23)
 };
 
 enum class Dir : std::uint8_t { North = 0, East = 1, South = 2, West = 3 };

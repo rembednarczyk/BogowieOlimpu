@@ -118,7 +118,7 @@ static void run_house_evolution(Simulation& sim) {
 static void run_labour(Simulation& sim) {
     WorldState& st = sim.mutable_state();
     allocate_labour(st.city, sim.catalog(), st.difficulty, st.finance.wage_rate, st.labour,
-                    soldiers_in_field_from_common_houses(st));
+                    workers_in_the_field(st, sim.catalog()));
 }
 
 // C6: taxes and wages at the start of each month; the yearly record rolls over at the year start.
@@ -214,6 +214,7 @@ static void run_trade(Simulation& sim) {
 // D3: companies in the field settle, companies at home re-form from the houses.
 static void run_military(Simulation& sim) {
     update_companies(sim.mutable_state());
+    recover_morale(sim.mutable_state());
     form_companies(sim.mutable_state(), sim.catalog());
 }
 

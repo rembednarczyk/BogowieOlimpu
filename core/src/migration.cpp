@@ -173,6 +173,13 @@ std::uint32_t empty_houses(WorldState& st, const DataCatalog& catalog, std::uint
     return removed;
 }
 
+// Companies in the field while no enemy is in the city (Z:159).
+bool idle_army(const MilitaryState& m) {
+    return !m.invasion.active && std::any_of(m.companies.begin(), m.companies.end(), [](const Company& c) {
+        return c.status == CompanyStatus::Marching || c.status == CompanyStatus::Still;
+    });
+}
+
 }  // namespace
 
 std::uint32_t city_population(const CityState& city) {
@@ -192,7 +199,8 @@ void update_moods(WorldState& st, const DataCatalog& catalog) {
     const bool small = static_cast<std::int32_t>(city_population(st.city)) < p.small_city_population;
     const std::int32_t city_terms = p.tax_mood[static_cast<std::size_t>(st.finance.tax_rate)][di] +
                                     p.wage_mood[static_cast<std::size_t>(st.finance.wage_rate)] +
-                                    unemployment_mood(p, st.labour) + (st.finance.treasury < 0 ? p.debt_mood : 0);
+                                    unemployment_mood(p, st.labour) + (st.finance.treasury < 0 ? p.debt_mood : 0) +
+                                    (idle_army(st.military) ? p.idle_army_mood : 0);
     std::int64_t sum = 0;
     std::int64_t houses = 0;
     for (auto& [id, b] : st.city.buildings.items) {

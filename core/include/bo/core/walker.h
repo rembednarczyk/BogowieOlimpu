@@ -33,7 +33,7 @@ enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed
 
 // What a destination walker carries out (module C5). Stored in saves: append only.
 enum class WalkerJob : std::uint8_t {
-    None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle, Prowl, Soldier
+    None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle, Prowl, Soldier, Invade
 };
 
 struct Walker {
@@ -69,6 +69,9 @@ struct Walker {
     std::uint8_t resets = 0;        // C7: risk counters this walker clears (WalkerType::resets)
     std::string variant;            // outlaws: "mugger", "thief", "vandal" (Z:87-88)
     bool ignores_roadblocks = false;  // disgruntled citizens (S-010)
+    // Combat (D3 stage 2): soldiers and invaders; an invader's nation is in `variant`, its unit in `type`.
+    std::int32_t hp = 0;
+    std::uint16_t cooldown = 0;  // ticks until the next blow or shot
 };
 
 struct WalkerStore {

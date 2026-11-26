@@ -5,6 +5,7 @@ add_library(bo_core STATIC
     src/city.cpp
     src/data.cpp
     src/data_economy.cpp
+    src/combat.cpp
     src/extraction.cpp
     src/finance.cpp
     src/housing.cpp
@@ -60,6 +61,7 @@ if(BO_BUILD_TESTS)
         tests/test_labour.cpp
         tests/test_migration.cpp
         tests/test_military.cpp
+        tests/test_combat.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp
         tests/test_elite.cpp

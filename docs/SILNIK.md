@@ -136,7 +136,9 @@ Zostaje: premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, da
 | D2 Potwory i herosi | | doc 10, 21 |
 | D3 Wojsko | kompanie, rozkazy, walka, morale, flota, fortyfikacje | doc 11, 22, 24 |
 
-Stan D3: etap 1 zrobiony (L-109). Bez pałacu nie ma armii; kompanie po 8 żołnierzy formują się codziennie z domów (rabble z domów ludu od Hovel: round(Pop × %S); hoplici z Mansion i Manor po jednej zbroi, jeźdźcy z Estate po zbroi i koniu), najwyżej 20; sztandary wokół pałacu; komendy MusterCompany, MoveCompany, SendCompanyHome; żołnierze idą pieszo do szyku przy sztandarze i wracają do domów; rabble w polu nie pracuje. Format zapisu v17. Zostaje: walka (statystyki z doc 22), morale, najeźdźcy, okup i kapitulacja, flota, fortyfikacje, popularność po mobilizacji.
+Stan D3: etap 1 zrobiony (L-109). Bez pałacu nie ma armii; kompanie po 8 żołnierzy formują się codziennie z domów (rabble z domów ludu od Hovel: round(Pop × %S); hoplici z Mansion i Manor po jednej zbroi, jeźdźcy z Estate po zbroi i koniu), najwyżej 20; sztandary wokół pałacu; komendy MusterCompany, MoveCompany, SendCompanyHome; żołnierze idą pieszo do szyku przy sztandarze i wracają do domów; rabble w polu nie pracuje. Format zapisu v17.
+
+Etap 2 zrobiony (L-110): statystyki jednostek z `data/enemies.json`, inwazja komendą StartInvasion (docelowo z modułu świata) w punkcie `i` mapy, skład według procentów nacji zaokrąglany w dół, okup 100/200 dr × procent trudności, kapitulacja, walka co tick (wręcz i pociski, trafienie atak − pancerz), śmierć żołnierza zabiera domowi 6 mieszkańców (rabble) albo zbroję i konia (elita), morale z ucieczką do pałacu i zakazem ponownej mobilizacji w tej bitwie, zdobycie pałacu, kara −2 do zadowolenia za armię w polu bez wroga; rabble w polu to 6 pracowników mniej. Format zapisu v18. Zostaje: flota i triery, mury, wieże i brama, taktyki, generałowie (Auto-Defend), trybut i niszczenie budynków (D4).
 | D4 Świat | miasta, relacje, opinie, prośby, handel, trybut, bitwy za granicą | doc 14, 24 |
 | D5 Scenariusz | format przygody, cele, zdarzenia, kolonie | doc 23 |
 
