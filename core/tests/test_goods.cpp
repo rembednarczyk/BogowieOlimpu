@@ -198,3 +198,46 @@ TEST_CASE("storage orders: Don't Accept stops deliveries; Get and Empty wait for
     CHECK_FALSE(storage_accepts(sim.state().city.buildings.items.at(g), bo::test::catalog(), "carrots"));
     CHECK(storage_accepts(sim.state().city.buildings.items.at(g), bo::test::catalog(), "fish"));
 }
+
+TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)") {
+    std::vector<std::string> r(18, std::string(48, '.'));
+    for (std::size_t y = 0; y < 6; ++y) {
+        for (std::size_t x = 0; x < 12; ++x) {
+            r[y][x] = ',';
+        }
+    }
+    r[6] = std::string(48, '=');
+    Simulation sim(bo::test::catalog(), SimulationConfig{9, Difficulty::Hero, 20000, r});
+    sim.issue(PlaceBuilding{"carrot_farm", 0, 3});
+    sim.issue(PlaceBuilding{"onion_farm", 3, 3});
+    sim.issue(PlaceBuilding{"carding_shed", 9, 4});
+    sim.issue(PlaceBuilding{"granary", 42, 2});
+    sim.issue(PlaceBuilding{"storehouse", 38, 3});
+    sim.issue(PlaceBuilding{"common_agora", 20, 4, 1});
+    sim.issue(PlaceBuilding{"fountain", 18, 7});
+    sim.issue(PlaceBuilding{"gymnasium", 27, 7});
+    for (int x = 12; x < 18; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 4});
+        sim.issue(PlaceBuilding{"common_housing", x, 7});
+        sim.issue(PlaceBuilding{"flower_garden", x, 9});
+    }
+    for (int x = 30; x < 38; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 4});
+        sim.issue(PlaceBuilding{"common_housing", x, 7});
+        sim.issue(PlaceBuilding{"flower_garden", x, 9});
+    }
+    sim.step(1);
+    for (int i = 0; i < 8; ++i) {
+        sim.issue(PlaceBuilding{"sheep", 6 + (i % 3), 1});
+    }
+    const auto& agora = sim.state().city.buildings.items.at(sim.state().city.map.at({20, 4}).building);
+    sim.issue(PlaceBuilding{"food_vendor_stall", agora.slot_origins[0].x, agora.slot_origins[0].y});
+    sim.issue(PlaceBuilding{"fleece_vendor_stall", agora.slot_origins[1].x, agora.slot_origins[1].y});
+    sim.issue(SetSectorPriority{static_cast<std::uint8_t>(Sector::Distribution), 5});
+    sim.run_days(16 * 12 * 3);
+    int homesteads = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        homesteads += b.house && b.house->level >= 3 ? 1 : 0;
+    }
+    CHECK(homesteads > 0);
+}

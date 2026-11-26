@@ -88,6 +88,17 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.delivery_priority = strings("delivery_priority");
         t.sells = strings("sells");
         t.sources = strings("sources");
+        t.tends = strings("tends");
+        t.requires_building = o.value("requires_building", "");
+        t.footprint_text = o.value("footprint", "");
+        const auto& dp = o.value("delivery_priority", json());
+        if (dp.is_object()) {
+            for (const auto& [good, list] : dp.items()) {
+                for (const auto& e : list) {
+                    t.delivery_priority_by_good[good].push_back(e.get<std::string>());
+                }
+            }
+        }
         t.accepts_only_when_fully_staffed = o.value("accepts_only_when_fully_staffed", false);
         const auto& order = o.value("default_order", json());
         t.storage_wheat_only_for_horses = order.is_object() && order.value("wheat", "") == "dont_accept";
@@ -369,7 +380,24 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 if (const auto m = opt_int(p.value("harvest_month", json()))) {
                     pp.harvest_month = *m - 1;  // data: 1-12
                 }
-                pp.max_storage_distance = opt_int(p.value("max_storage_distance", json())).value_or(300);
+                const auto& msd = p.value("max_storage_distance", json());
+                pp.max_storage_distance =
+                    msd.is_array() ? msd.at(msd.size() - 1).get<std::int32_t>() : opt_int(msd).value_or(300);
+                const auto& in = p.value("input", json());
+                if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer()) {
+                    pp.input_good = in.begin().key();
+                }
+                pp.input_capacity = p.value("input_capacity", 0);
+                pp.storage_loads = p.value("storage_loads", 0);
+                pp.animals_max = p.value("animals_max", 0);
+                const auto& hm = p.value("harvest_months", json());
+                if (hm.is_object()) {
+                    for (const auto& [good, months] : hm.items()) {
+                        for (const auto& m : months) {
+                            pp.harvest_months[good].push_back(m.get<std::int32_t>() - 1);
+                        }
+                    }
+                }
                 cat.production[p.at("id").get<std::string>()] = pp;
             }
         }

@@ -16,6 +16,7 @@
 #include "bo/core/city.h"
 #include "bo/core/data.h"
 #include "bo/core/map.h"
+#include "bo/core/path.h"
 
 namespace bo::core {
 
@@ -28,7 +29,7 @@ inline constexpr std::int32_t kRoamTargetRoadRadius = 6;
 enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed, Done, AtTarget };
 
 // What a destination walker carries out (module C5). Stored in saves: append only.
-enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch };
+enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch, Shear, Tend, Harvest };
 
 struct Walker {
     WalkerId id = kNoWalker;
@@ -67,9 +68,11 @@ struct WalkerStore {
 WalkerId spawn_roaming_walker(CityState& city, WalkerStore& walkers, const DataCatalog& catalog,
                               const std::string& type, BuildingId home, Dir start_dir);
 
-// Spawns a destination walker from `home` to tile `to` along roads (roadblocks allowed, Z:19-20).
+// Spawns a destination walker from `home` to tile `to` along roads (roadblocks allowed, Z:19-20), or across
+// open land in PathMode::Walkable (shepherds, growers; `goal` is the target building whose tiles are passable).
 WalkerId spawn_destination_walker(CityState& city, WalkerStore& walkers, const DataCatalog& catalog,
-                                  const std::string& type, BuildingId home, TilePos to);
+                                  const std::string& type, BuildingId home, TilePos to,
+                                  PathMode mode = PathMode::Road, BuildingId goal = kNoBuilding);
 
 // Advances one walker by one tick. Sets phase Done when the walker should be removed.
 void step_walker(CityState& city, Walker& w);

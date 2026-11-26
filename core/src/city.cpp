@@ -67,7 +67,8 @@ bool operator==(const Building& a, const Building& b) {
            a.road_access == b.road_access && a.staffing_percent == b.staffing_percent && a.workers == b.workers &&
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
            a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house &&
-           a.storage == b.storage && a.producer == b.producer && a.stall == b.stall;
+           a.storage == b.storage && a.producer == b.producer && a.stall == b.stall && a.animal == b.animal &&
+           a.orchard == b.orchard;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -117,6 +118,12 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     b.rotation = rotation;
     if (rule == "over_road_both_sides_clear" || rule == "over_road_one_side") {
         r = place_over_road(city, std::move(b), rule == "over_road_both_sides_clear");
+    } else if (!bt.requires_building.empty() && !stats.footprint) {
+        r = place_animal(city, catalog, std::move(b), bt.requires_building);  // herds: size "m" (S-004)
+    } else if (!bt.requires_building.empty() &&
+               std::none_of(city.buildings.items.begin(), city.buildings.items.end(),
+                            [&bt](const auto& kv) { return kv.second.type == bt.requires_building; })) {
+        r.reason = "build.needs_building";  // e.g. Tax Office and Trireme Wharf need a Palace (Z:96, Z:141)
     } else if (rule == "straight_coast_both_sides") {
         r = place_crossing(city, std::move(b), bt.no_adjacent_same);
     } else if (!stats.footprint) {
@@ -166,6 +173,12 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         }
         if (!bt.sells.empty()) {
             placed.stall = StallState{};
+        }
+        for (const auto& [lodge_id, lodge] : catalog.buildings) {
+            if (std::find(lodge.tends.begin(), lodge.tends.end(), type) != lodge.tends.end()) {
+                placed.orchard = OrchardState{};  // tended by a Growers' Lodge (Z:41-43)
+                break;
+            }
         }
     }
     return r;

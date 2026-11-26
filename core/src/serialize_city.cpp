@@ -61,8 +61,6 @@ bool read_tile(ByteReader& r, Tile& t, std::uint32_t version) {
     return true;
 }
 
-void write_goods_state(ByteWriter& w, const Building& b);
-
 void write_building(ByteWriter& w, const Building& b) {
     w.u32(b.id);
     w.str(b.type);
@@ -108,93 +106,6 @@ void write_building(ByteWriter& w, const Building& b) {
     }
     w.u32(b.workers);  // since v5
     write_goods_state(w, b);  // since v7
-}
-
-void write_counts(ByteWriter& w, const std::map<std::string, std::uint32_t>& m) {
-    w.u32(static_cast<std::uint32_t>(m.size()));
-    for (const auto& [k, v] : m) {
-        w.str(k);
-        w.u32(v);
-    }
-}
-
-bool read_counts(ByteReader& r, std::map<std::string, std::uint32_t>& m) {
-    std::uint32_t n = 0;
-    if (!r.u32(n) || n > 4096) {
-        return false;
-    }
-    for (std::uint32_t i = 0; i < n; ++i) {
-        std::string k;
-        std::uint32_t v = 0;
-        if (!r.str(k) || !r.u32(v)) {
-            return false;
-        }
-        m[k] = v;
-    }
-    return true;
-}
-
-// Storage, producer and stall state (v7): a flag byte, then each present block.
-void write_goods_state(ByteWriter& w, const Building& b) {
-    w.u8(static_cast<std::uint8_t>((b.storage ? 1U : 0U) | (b.producer ? 2U : 0U) | (b.stall ? 4U : 0U)));
-    if (b.storage) {
-        write_counts(w, b.storage->loads);
-        w.u32(static_cast<std::uint32_t>(b.storage->orders.size()));
-        for (const auto& [good, o] : b.storage->orders) {
-            w.str(good);
-            w.u8(static_cast<std::uint8_t>(o.kind));
-            w.u32(o.limit);
-        }
-    }
-    if (b.producer) {
-        w.u32(b.producer->progress);
-        w.u32(b.producer->output_loads);
-        w.u32(b.producer->deliveryman);
-    }
-    if (b.stall) {
-        write_counts(w, b.stall->units);
-        w.u32(b.stall->vendor);
-    }
-}
-
-bool read_goods_state(ByteReader& r, Building& b) {
-    std::uint8_t flags = 0;
-    if (!r.u8(flags) || flags > 7) {
-        return false;
-    }
-    if ((flags & 1U) != 0) {
-        StorageState s;
-        std::uint32_t n = 0;
-        if (!read_counts(r, s.loads) || !r.u32(n) || n > 4096) {
-            return false;
-        }
-        for (std::uint32_t i = 0; i < n; ++i) {
-            std::string good;
-            std::uint8_t kind = 0;
-            StorageOrder o;
-            if (!r.str(good) || !r.u8(kind) || kind > 3 || !r.u32(o.limit)) {
-                return false;
-            }
-            o.kind = static_cast<StorageOrderKind>(kind);
-            s.orders[good] = o;
-        }
-        b.storage = std::move(s);
-    }
-    if ((flags & 2U) != 0) {
-        ProducerState p;
-        if (!r.u32(p.progress) || !r.u32(p.output_loads) || !r.u32(p.deliveryman)) {
-            return false;
-        }
-        b.producer = p;
-    }
-    if ((flags & 4U) != 0) {
-        StallState s;
-        if (!read_counts(r, s.units) || !r.u32(s.vendor)) {
-            return false;
-        }
-        b.stall = std::move(s);
-    }
-    return true;
 }
 
 bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
@@ -269,7 +180,7 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
     }
     if (version >= 3) {
         return read_building_v3(r, b) && (version < 4 || read_house(r, b, version)) && (version < 5 || r.u32(b.workers)) &&
-               (version < 7 || read_goods_state(r, b));
+               (version < 7 || read_goods_state(r, b, version));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -434,7 +345,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 2 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 5 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         k.job = static_cast<WalkerJob>(job);

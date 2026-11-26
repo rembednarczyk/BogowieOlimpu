@@ -165,7 +165,8 @@ void start_return(CityState& city, Walker& w) {
         w.phase = WalkerPhase::Done;
         return;
     }
-    auto path = find_path(city, {w.tile, *target, PathMode::RoadNoRoadblock});
+    const bool fields = w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest;
+    auto path = find_path(city, {w.tile, *target, fields ? PathMode::Walkable : PathMode::RoadNoRoadblock});
     if (!path) {
         path = find_path(city, {w.tile, *target, PathMode::Road});
     }
@@ -246,13 +247,16 @@ WalkerId spawn_roaming_walker(CityState& city, WalkerStore& walkers, const DataC
 }
 
 WalkerId spawn_destination_walker(CityState& city, WalkerStore& walkers, const DataCatalog& catalog,
-                                  const std::string& type, BuildingId home, TilePos to) {
+                                  const std::string& type, BuildingId home, TilePos to, PathMode mode,
+                                  BuildingId goal) {
     const auto b = city.buildings.items.find(home);
     const auto t = catalog.walkers.find(type);
     if (b == city.buildings.items.end() || t == catalog.walkers.end() || !b->second.road_access) {
         return kNoWalker;
     }
-    auto path = find_path(city, {*b->second.road_access, to, PathMode::Road});
+    PathRequest req{*b->second.road_access, to, mode};
+    req.goal_building = goal;
+    auto path = find_path(city, req);
     if (!path) {
         return kNoWalker;
     }

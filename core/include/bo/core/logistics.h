@@ -40,6 +40,26 @@ void unload_at_home(WorldState& state, const DataCatalog& catalog, const Walker&
 // needs from the stalls of the peddler's agora, up to the house target (L-100).
 void peddler_sells(WorldState& state, const DataCatalog& catalog, const Walker& w);
 
+// Stage 2 (husbandry.cpp): animals ready for shearing or milking, orchards ripening from pruner visits and
+// losing unpicked fruit after the harvest season, processors turning input loads into output loads.
+void advance_husbandry(WorldState& state, const DataCatalog& catalog);
+
+// Stage 2: sends shepherds and goatherds to ready animals, a pruner once a month, and up to 3 harvesters in
+// the harvest months (doc 19). Field workers walk across open land.
+void dispatch_field_workers(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
+
+// Stage 2: what a field worker does at its target and brings home.
+void field_work_at_target(WorldState& state, const DataCatalog& catalog, Walker& w);
+void field_work_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
+
+// Processors accept a delivery of their input while below the input capacity (3 loads, doc 19).
+bool processor_accepts(const Building& b, const DataCatalog& catalog, const std::string& good);
+
+// A pruner visit marks every tree within this radius of the visited tree as tended [ZAŁOŻENIE, L-101].
+inline constexpr std::int32_t kPrunerRadius = 2;
+// Harvesters out at once per lodge (doc 19: 3 harvesters in the harvest season).
+inline constexpr std::size_t kHarvesters = 3;
+
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
 // next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d);

@@ -5,6 +5,7 @@
 #include "bo/core/hash.h"
 #include "bo/core/serialize.h"
 #include "bo/core/simulation.h"
+#include "bo/core/storage.h"
 #include "doctest/doctest.h"
 #include "helpers.h"
 
@@ -42,7 +43,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v6 adds the migration state; popularity starts at the base (module C8).
     // 2026-11-26: save format v7 (version field; empty city has no new blocks), modules C4-C5 stage 1.
     // 2026-11-26: save format v8 (version field; terrain height per tile, L-099).
-    const std::uint64_t kGolden = 0x30739a17bb562238ULL;
+    // 2026-11-26: save format v9 (version field; herds, orchards, processors).
+    const std::uint64_t kGolden = 0x37cbb4f55efaa199ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -77,6 +79,13 @@ Simulation golden_city() {
     sim.issue(PlaceRoad{31, 16});
     sim.issue(PlaceRoad{31, 15});
     sim.issue(PlaceBuilding{"carrot_farm", 20, 25, 0});
+    sim.issue(PlaceBuilding{"carding_shed", 17, 20, 0});
+    sim.issue(PlaceBuilding{"growers_lodge", 17, 23, 0});
+    sim.issue(PlaceBuilding{"storehouse", 24, 17, 0});
+    sim.issue_at(2, PlaceBuilding{"sheep", 24, 22, 0});
+    sim.issue_at(2, PlaceBuilding{"sheep", 25, 22, 0});
+    sim.issue_at(2, PlaceBuilding{"olive_tree", 20, 22, 0});
+    sim.issue_at(2, PlaceBuilding{"olive_tree", 21, 22, 0});
     sim.issue(PlaceBuilding{"granary", 5, 24, 0});
     sim.issue(SetSectorPriority{2, 5});  // distribution first: the Granary needs full staffing (Z:66)
     for (int x = 6; x < 28; x += 2) {
@@ -109,7 +118,8 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 26);  // the plot on the x = 16 road is refused
+    CHECK(sim.state().city.buildings.items.size() == 33);  // the plot on the x = 16 road is refused
+    CHECK(city_stock(sim.state().city, bo::test::catalog(), "fleece") > 0);
     CHECK(sim.state().labour.workforce > 0);
     CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
     const auto& granary = sim.state().city.buildings.items.at(sim.state().city.map.at({5, 24}).building);
@@ -142,7 +152,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: modules C4-C5 stage 1: save format v7 (storage, producers, stalls, cargo), scenario extended
     // with a farm, a granary and eleven more house plots; the agora stall now fetches food.
     // 2026-11-26: terrain height (L-099): save format v8, a plateau with a ramp and a road over it.
-    const std::uint64_t kGolden = 0xbcd5c8d244a62950ULL;
+    // 2026-11-26: module C4 stage 2: save format v9, a carding shed with sheep, a growers' lodge with olive
+    // trees and a storehouse in the scenario.
+    const std::uint64_t kGolden = 0x3fc9a4d1e143d639ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

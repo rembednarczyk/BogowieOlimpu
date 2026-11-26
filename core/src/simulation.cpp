@@ -157,7 +157,10 @@ void run_migration(Simulation& sim) {
 }
 
 // C4/C5: daily production and dispatch of deliverymen and vendors.
-void run_production(Simulation& sim) { advance_production(sim.mutable_state(), sim.catalog()); }
+void run_production(Simulation& sim) {
+    advance_production(sim.mutable_state(), sim.catalog());
+    advance_husbandry(sim.mutable_state(), sim.catalog());
+}
 
 void run_logistics(Simulation& sim) {
     const auto ev = dispatch_workers(sim.mutable_state(), sim.catalog());

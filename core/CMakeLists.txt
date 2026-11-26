@@ -5,6 +5,7 @@ add_library(bo_core STATIC
     src/data.cpp
     src/finance.cpp
     src/housing.cpp
+    src/husbandry.cpp
     src/labour.cpp
     src/logistics.cpp
     src/map.cpp
@@ -15,6 +16,7 @@ add_library(bo_core STATIC
     src/serialize.cpp
     src/serialize_city.cpp
     src/serialize_economy.cpp
+    src/serialize_goods.cpp
     src/simulation.cpp
     src/storage.cpp
     src/undo.cpp
@@ -49,6 +51,7 @@ if(BO_BUILD_TESTS)
         tests/test_migration.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp
+        tests/test_husbandry.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

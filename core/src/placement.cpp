@@ -3,6 +3,8 @@
 // avenue), Z:101-103 and P:19 (water crossings, bridges). Assumptions are marked and listed in 99-luki.md.
 #include <algorithm>
 #include <cstdlib>
+#include <map>
+#include <optional>
 
 #include "bo/core/city.h"
 
@@ -258,6 +260,48 @@ BuildResult place_crossing(CityState& city, Building b, bool no_adjacent_same) {
     b.height = std::abs(last.y - first.y) + 1;
     b.road_mode = RoadMode::OwnRoad;
     r.building = add_building(city, std::move(b));
+    return r;
+}
+
+// Animals (Z:44-45): a meadow tile without a building; any number may share it (S-004 trivia). The herd of a
+// shed holds at most animals_max (8, doc 19); the animal joins the nearest shed with room (ties: lower id).
+BuildResult place_animal(CityState& city, const DataCatalog& catalog, Building b, const std::string& shed_type) {
+    BuildResult r;
+    const TilePos p = b.origin;
+    if (!city.map.in_bounds(p)) {
+        r.reason = "build.out_of_bounds";
+        return r;
+    }
+    const Tile& t = city.map.at(p);
+    if (t.terrain != Terrain::Meadow || t.building != kNoBuilding || t.road) {
+        r.reason = "build.needs_meadow";
+        return r;
+    }
+    const auto params = catalog.production.find(shed_type);
+    const std::int32_t herd_max = params == catalog.production.end() ? 8 : params->second.animals_max;
+    std::map<BuildingId, std::int32_t> herd;
+    for (const auto& [id, a] : city.buildings.items) {
+        if (a.animal) {
+            ++herd[a.animal->shed];
+        }
+    }
+    std::optional<std::pair<std::int32_t, BuildingId>> best;
+    for (const auto& [id, s] : city.buildings.items) {
+        if (s.type != shed_type || herd[id] >= herd_max) {
+            continue;
+        }
+        const std::int32_t d = std::max(std::abs(s.origin.x - p.x), std::abs(s.origin.y - p.y));
+        if (!best || d < best->first) {
+            best = std::make_pair(d, id);
+        }
+    }
+    if (!best) {
+        r.reason = "build.needs_building";  // build the shed first (Z:44-45); a full herd needs another shed
+        return r;
+    }
+    b.animal = AnimalState{};
+    b.animal->shed = best->second;
+    r.building = add_building(city, std::move(b));  // no tiles: grazing animals do not block the meadow
     return r;
 }
 

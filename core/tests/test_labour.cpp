@@ -44,13 +44,13 @@ TEST_CASE("shortage: sectors are served in priority order (Z:62, K-031)") {
     Town t;
     t.sim.issue(PlaceBuilding{"fountain", 4, 2});             // hygiene and safety, 4 workers
     t.sim.issue(PlaceBuilding{"maintenance_office", 6, 2});   // hygiene and safety, 5 workers
-    t.sim.issue(PlaceBuilding{"tax_office", 8, 5});           // administration
+    t.sim.issue(PlaceBuilding{"gymnasium", 8, 5});            // culture, 7 workers
     t.house({0, 2}, 10);                                      // 4 workers
-    t.sim.issue(SetSectorPriority{static_cast<std::uint8_t>(Sector::Administration), 5});
+    t.sim.issue(SetSectorPriority{static_cast<std::uint8_t>(Sector::Culture), 5});
     t.sim.run_days(1);
     const auto& l = t.sim.state().labour;
     CHECK(l.workforce == 4);
-    CHECK(l.sector_employed[static_cast<std::size_t>(Sector::Administration)] == 4);
+    CHECK(l.sector_employed[static_cast<std::size_t>(Sector::Culture)] == 4);
     CHECK(l.sector_employed[static_cast<std::size_t>(Sector::HygieneSafety)] == 0);
     CHECK(t.b({4, 2}).staffing_percent == 0);
 }

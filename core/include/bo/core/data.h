@@ -85,6 +85,10 @@ struct BuildingType {
     std::vector<std::string> delivery_priority;  // destination categories, first match wins (doc 04/05)
     std::vector<std::string> sells;            // agora stall: goods (or class "food") it sells
     std::vector<std::string> sources;          // agora stall: building types its vendor fetches from
+    std::map<std::string, std::vector<std::string>> delivery_priority_by_good;  // lodges: per fruit
+    std::string requires_building;             // animals: their shed type (Z:44-45)
+    std::vector<std::string> tends;            // lodges: tree types, in the order of `outputs`
+    std::string footprint_text;                // footprint from buildings.json when the stats size has none
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -126,6 +130,11 @@ struct ProductionParams {
     std::int32_t loads_per_year = 0;       // at full staffing (lower bound when the source gives a range)
     std::optional<std::int32_t> harvest_month;  // farms: 0-based month of the yearly harvest
     std::int32_t max_storage_distance = 300;    // tiles a deliveryman may walk to a receiver
+    std::string input_good;                     // processors: one input load per output load (olive press, winery)
+    std::int32_t input_capacity = 0;            // processors: input loads held (3, doc 19)
+    std::int32_t storage_loads = 0;             // sheds and lodges: finished loads held (5, doc 19)
+    std::int32_t animals_max = 0;               // sheds: herd size (8, doc 19)
+    std::map<std::string, std::vector<std::int32_t>> harvest_months;  // lodges: fruit -> 0-based months
 };
 
 struct DataCatalog {

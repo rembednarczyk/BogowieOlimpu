@@ -15,8 +15,8 @@ inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian
 // v2: city map, buildings, walkers. v3: rotation, building tiles, agora slots, undo record, Undo command.
 // v4: house state, homeless count. v5: labour, finance details, building workers, clerk counter.
 // v6: house mood, migration state. v7: storage, producers, stalls, walker jobs and cargo.
-// v8: terrain height and ramps per tile.
-inline constexpr std::uint32_t kSaveFormatVersion = 8;
+// v8: terrain height and ramps per tile. v9: herds, orchards, processors, storage deliverymen.
+inline constexpr std::uint32_t kSaveFormatVersion = 9;
 
 class ByteWriter {
 public:

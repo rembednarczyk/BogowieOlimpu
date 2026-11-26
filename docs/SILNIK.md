@@ -98,7 +98,9 @@ Zrobione:
 
 - C4/C5 etap 1: spichlerz i magazyn (8 pól po 4 ładunki, rozkazy Accept i Don't Accept z limitem, spichlerz przyjmuje tylko przy pełnej obsadzie), farmy z żniwami (8 ładunków/rok przy pełnej obsadzie przez rok), doręczyciel z 1 ładunkiem do najbliższego odbiorcy według `delivery_priority`, vendor stoiska (do 4 ładunków, zasięg 37 kafli), peddler sprzedający domom (L-100), działka elity sprawdza zapasy miasta. Test łańcucha: farmy, spichlerz, agora, fontanna i gimnazjum dają lepianki w 2 lata.
 
-Zostaje: C4/C5 etap 2 (hodowla, sady, tłocznia, winiarnia, wydobycie, warsztaty, rozkazy Get i Empty, dostawy do przetwórni), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- C4 etap 2: owce i kozy bez własnych kafli (dowolnie wiele na łące), stado do 8 na budynek, strzyża i dojenie po 6 miesiącach i potem co rok, pasterz chodzi przez teren; drzewa oliwne i winorośl dojrzewają od wizyt ogrodnika (połowa tempa po 6 miesiącach bez wizyty, zero po 10), zbieracze (do 3) w miesiącach żniw, niezebrane przepada; chata ogrodników trzyma 5 ładunków każdego owocu; tłocznia i winiarnia (6 ładunków/rok, wejście do 3 ładunków); magazyn odsyła surowiec do przetwórni (L-101). Test: domy dochodzą do Homestead w 3 lata.
+
+Zostaje: C4/C5 etap 3 (wydobycie, tartak, kamieniarnia, odlewnia, mennica, warsztaty z brązu, łowiectwo, rybołówstwo, stadnina, rozkazy Get i Empty, rozmnażanie stad), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

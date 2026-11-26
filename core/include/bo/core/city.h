@@ -59,18 +59,43 @@ struct StorageOrder {
 struct StorageState {
     std::map<std::string, std::uint32_t> loads;
     std::map<std::string, StorageOrder> orders;
+    WalkerId deliveryman = kNoWalker;  // storage deliveryman (up to 4 loads, doc 19)
     friend bool operator==(const StorageState& a, const StorageState& b) {
-        return a.loads == b.loads && a.orders == b.orders;
+        return a.loads == b.loads && a.orders == b.orders && a.deliveryman == b.deliveryman;
     }
 };
 
 // Producer (module C4): yearly progress, finished loads waiting for the deliveryman.
 struct ProducerState {
-    std::uint32_t progress = 0;      // farms: 8 x staffing percent per day, harvest at the harvest month
+    std::uint32_t progress = 0;      // farms and processors: loads_per_year x staffing percent per day
     std::uint32_t output_loads = 0;  // finished loads at the building
     WalkerId deliveryman = kNoWalker;
+    std::uint32_t input_loads = 0;                // processors: raw loads waiting (olive press, winery)
+    std::map<std::string, std::uint32_t> units;   // lodges: fruit in units (100 = one load)
+    std::vector<WalkerId> field_workers;          // shepherds, pruners, harvesters out in the fields
     friend bool operator==(const ProducerState& a, const ProducerState& b) {
-        return a.progress == b.progress && a.output_loads == b.output_loads && a.deliveryman == b.deliveryman;
+        return a.progress == b.progress && a.output_loads == b.output_loads && a.deliveryman == b.deliveryman &&
+               a.input_loads == b.input_loads && a.units == b.units && a.field_workers == b.field_workers;
+    }
+};
+
+// Sheep and goats (Z:44-45): no tiles of their own (any number fit on one meadow tile, S-004 trivia).
+struct AnimalState {
+    BuildingId shed = kNoBuilding;
+    std::uint16_t days_to_ready = 96;  // first shearing or milking after 6 months, then yearly (doc 19)
+    bool worker_coming = false;
+    friend bool operator==(const AnimalState& a, const AnimalState& b) {
+        return a.shed == b.shed && a.days_to_ready == b.days_to_ready && a.worker_coming == b.worker_coming;
+    }
+};
+
+// Olive trees and grapevines (Z:41-43, doc 19): ripeness grows from pruner visits; percent = units to pick.
+struct OrchardState {
+    std::uint32_t growth = 0;            // ripeness x 192 (100 % after a year of full growth)
+    std::uint16_t days_since_tended = 0;
+    bool worker_coming = false;
+    friend bool operator==(const OrchardState& a, const OrchardState& b) {
+        return a.growth == b.growth && a.days_since_tended == b.days_since_tended && a.worker_coming == b.worker_coming;
     }
 };
 
@@ -107,6 +132,8 @@ struct Building {
     std::optional<StorageState> storage;    // Granary, Storehouse
     std::optional<ProducerState> producer;  // buildings with outputs
     std::optional<StallState> stall;        // agora stalls
+    std::optional<AnimalState> animal;      // sheep, goats
+    std::optional<OrchardState> orchard;    // olive trees, grapevines
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)
@@ -190,6 +217,8 @@ BuildResult place_agora(CityState& city, Building b, bool road_in_center, std::i
 BuildResult place_stall(CityState& city, Building b);
 BuildResult place_over_road(CityState& city, Building b, bool both_sides);
 BuildResult place_crossing(CityState& city, Building b, bool no_adjacent_same);
+// Sheep and goats: on a free meadow tile, joining the nearest shed of `shed_type` with room in its herd.
+BuildResult place_animal(CityState& city, const DataCatalog& catalog, Building b, const std::string& shed_type);
 
 // Undo (undo.cpp). `before` is the city as it was before the tick's build commands.
 void record_undo(CityState& city, const CityState& before, std::uint64_t tick, std::int64_t cost);
