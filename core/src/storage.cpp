@@ -63,7 +63,8 @@ bool storage_accepts(const Building& b, const DataCatalog& catalog, const std::s
     const auto it = b.storage->loads.find(good);
     const std::uint32_t have = it == b.storage->loads.end() ? 0 : it->second;
     const bool staffed = type.accepts_only_when_fully_staffed ? b.staffing_percent >= 100 : b.staffing_percent > 0;
-    return staffed && o.kind == StorageOrderKind::Accept && have < o.limit && storage_room(b, catalog, good) > 0;
+    const bool open = o.kind == StorageOrderKind::Accept || o.kind == StorageOrderKind::Get;  // Get also receives
+    return staffed && open && have < o.limit && storage_room(b, catalog, good) > 0;
 }
 
 std::uint32_t city_stock(const CityState& city, const DataCatalog& catalog, const std::string& good_or_class) {

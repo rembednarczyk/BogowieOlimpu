@@ -14,29 +14,6 @@ namespace {
 
 constexpr std::uint32_t kDaysPerYear = 192;
 
-std::optional<HouseGood> house_good_of(const DataCatalog& catalog, const std::string& good) {
-    const auto cls = catalog.goods.find(good);
-    if (cls != catalog.goods.end() && cls->second == "food") {
-        return HouseGood::Food;
-    }
-    if (good == "fleece") {
-        return HouseGood::Fleece;
-    }
-    if (good == "olive_oil") {
-        return HouseGood::OliveOil;
-    }
-    if (good == "wine") {
-        return HouseGood::Wine;
-    }
-    if (good == "armor") {
-        return HouseGood::Armor;
-    }
-    if (good == "horses") {
-        return HouseGood::Horses;
-    }
-    return std::nullopt;
-}
-
 bool alive(const WorldState& st, WalkerId id) { return id != kNoWalker && st.walkers.items.count(id) != 0; }
 
 // "granary" matches Granary; "storehouse_accepting_wheat" matches Storehouse (acceptance is checked apart).
@@ -175,23 +152,6 @@ void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, 
 
 }  // namespace
 
-std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d) {
-    const auto& levels = levels_of(catalog, h);
-    const auto di = static_cast<std::size_t>(d);
-    const auto gi = static_cast<std::size_t>(g);
-    const HousingLevel& cur = levels[h.level];
-    const HousingLevel* next = h.level + 1U < levels.size() ? &levels[h.level + 1U] : nullptr;
-    const bool needed = cur.model[di].needs[gi] || (next && next->model[di].needs[gi]);
-    if (!needed) {
-        return 0;
-    }
-    if (g == HouseGood::Food) {
-        const std::int32_t monthly = std::max(cur.consumption[0], next ? next->consumption[0] : 0);
-        return static_cast<std::uint32_t>(2 * std::max(monthly, 1));
-    }
-    return g == HouseGood::Armor || g == HouseGood::Horses ? 1U : 4U;
-}
-
 void advance_production(WorldState& st, const DataCatalog& catalog) {
     const std::uint32_t month = st.time.month();
     const bool month_start = st.time.day_in_month() == 0;
@@ -212,10 +172,95 @@ void advance_production(WorldState& st, const DataCatalog& catalog) {
 
 // Storage deliveryman (up to 4 loads, doc 19) takes goods a processor needs to the nearest one in reach
 // [ZAŁOŻENIE, L-101: the processor's delivery reach].
+WalkerId send_storage_walker(WorldState& st, const DataCatalog& catalog, BuildingId from, BuildingId to,
+                             WalkerJob job, LogisticsEvents& ev) {
+    CityState& city = st.city;
+    const WalkerId w =
+        spawn_destination_walker(city, st.walkers, catalog, "deliveryman", from, *city.buildings.items.at(to).road_access);
+    if (w != kNoWalker) {
+        Walker& walker = st.walkers.items.at(w);
+        walker.job = job;
+        walker.target = to;
+        city.buildings.items.at(from).storage->deliveryman = w;
+        ev.spawned.push_back(w);
+    }
+    return w;
+}
+
+// Nearest other storage by road for which `ok` holds (ties: lower id).
+template <class Pred>
+std::optional<BuildingId> nearest_storage(const CityState& city, BuildingId self, const std::vector<std::uint32_t>& dist,
+                                          Pred ok) {
+    std::optional<std::pair<std::uint32_t, BuildingId>> best;
+    for (const auto& [rid, r] : city.buildings.items) {
+        if (rid == self || !r.storage || !r.road_access || !ok(r)) {
+            continue;
+        }
+        const std::uint32_t d = dist[city.map.index(*r.road_access)];
+        if (d != kUnreachable && (!best || d < best->first)) {
+            best = std::make_pair(d, rid);
+        }
+    }
+    return best ? std::optional<BuildingId>(best->second) : std::nullopt;
+}
+
+// Empty and Get orders (Z:66-68): only at full staffing; Empty first, then processors, then Get.
+bool dispatch_orders(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev,
+                     const std::vector<std::uint32_t>& dist, bool empty_pass) {
+    CityState& city = st.city;
+    Building& s = city.buildings.items.at(id);
+    const BuildingType& type = catalog.buildings.at(s.type);
+    if (s.staffing_percent < 100) {
+        return false;
+    }
+    for (const auto& [good_key, order] : s.storage->orders) {
+        const std::string& good = good_key;  // named copy: lambdas cannot capture structured bindings in C++17
+        const auto have_it = s.storage->loads.find(good);
+        const std::uint32_t have = have_it == s.storage->loads.end() ? 0 : have_it->second;
+        if (empty_pass && order.kind == StorageOrderKind::Empty && have > 0) {
+            const auto to = nearest_storage(city, id, dist, [&](const Building& r) {
+                return storage_accepts(r, catalog, good) &&
+                       storage_order(r, catalog.buildings.at(r.type), good).kind != StorageOrderKind::Empty;
+            });
+            if (!to) {
+                continue;
+            }
+            const std::uint32_t n = std::min(have, kVendorLoads);
+            if (send_storage_walker(st, catalog, id, *to, WalkerJob::Deliver, ev) != kNoWalker) {
+                st.walkers.items.at(s.storage->deliveryman).cargo[good] = n;
+                s.storage->loads[good] -= n;
+                return true;
+            }
+        }
+        if (!empty_pass && order.kind == StorageOrderKind::Get && have < order.limit &&
+            storage_room(s, catalog, good) > 0) {
+            const auto from = nearest_storage(city, id, dist, [&](const Building& r) {
+                const auto it = r.storage->loads.find(good);
+                return it != r.storage->loads.end() && it->second > 0 &&
+                       storage_order(r, catalog.buildings.at(r.type), good).kind != StorageOrderKind::Get;
+            });
+            if (!from) {
+                continue;
+            }
+            if (send_storage_walker(st, catalog, id, *from, WalkerJob::Fetch, ev) != kNoWalker) {
+                Walker& w = st.walkers.items.at(s.storage->deliveryman);
+                w.want_good = good;
+                w.want_loads = std::min({kVendorLoads, order.limit - have, storage_room(s, catalog, good)});
+                return true;
+            }
+        }
+    }
+    (void)type;
+    return false;
+}
+
 void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev) {
     CityState& city = st.city;
     Building& s = city.buildings.items.at(id);
     const auto dist = road_distances(city, {*s.road_access}, PathMode::Road);
+    if (dispatch_orders(st, catalog, id, ev, dist, true)) {
+        return;
+    }
     for (const auto& [good, loads] : s.storage->loads) {
         if (loads == 0) {
             continue;
@@ -250,11 +295,13 @@ void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingI
         ev.spawned.push_back(w);
         return;
     }
+    dispatch_orders(st, catalog, id, ev, dist, false);
 }
 
 LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
     LogisticsEvents ev;
     dispatch_field_workers(st, catalog, ev);
+    dispatch_extractors(st, catalog, ev);
     std::vector<BuildingId> producers;
     std::vector<BuildingId> stalls;
     std::vector<BuildingId> storages;
@@ -289,7 +336,11 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);
-        if (w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest) {
+        if (w.job == WalkerJob::Extract) {
+            if (extraction_at_target(st, catalog, w)) {
+                continue;  // still working at the rock or tree
+            }
+        } else if (w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest) {
             field_work_at_target(st, catalog, w);
         } else if (w.job == WalkerJob::Deliver && target != st.city.buildings.items.end() && target->second.producer) {
             Building& p = target->second;
@@ -312,6 +363,13 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
                     } else {
                         ++it;  // no longer accepted: the load goes back home
                     }
+                }
+            } else if (w.job == WalkerJob::Fetch && !w.want_good.empty()) {
+                auto& loads = s.storage->loads[w.want_good];  // Get order: take what was asked for
+                const std::uint32_t n = std::min(loads, w.want_loads);
+                loads -= n;
+                if (n > 0) {
+                    w.cargo[w.want_good] += n;
                 }
             } else if (w.job == WalkerJob::Fetch) {
                 const auto home = st.city.buildings.items.find(w.home);
@@ -345,11 +403,13 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
         return;
     }
     Building& b = home->second;
-    if ((w.job == WalkerJob::Shear || w.job == WalkerJob::Harvest || w.job == WalkerJob::Tend) && b.producer) {
+    if (w.job == WalkerJob::Extract && b.producer) {
+        extraction_unload(st, catalog, w, b);
+    } else if ((w.job == WalkerJob::Shear || w.job == WalkerJob::Harvest || w.job == WalkerJob::Tend) && b.producer) {
         field_work_unload(st, catalog, w, b);
-    } else if (w.job == WalkerJob::Deliver && b.storage) {
+    } else if ((w.job == WalkerJob::Deliver || w.job == WalkerJob::Fetch) && b.storage) {
         for (const auto& [good, loads] : w.cargo) {
-            b.storage->loads[good] += loads;  // undelivered goods back into the storage
+            b.storage->loads[good] += loads;  // goods fetched for a Get order, or not delivered
         }
         b.storage->deliveryman = kNoWalker;
     } else if (w.job == WalkerJob::Deliver && b.producer) {
@@ -368,39 +428,6 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
             b.stall->units[good] += loads * static_cast<std::uint32_t>(catalog.units_per_load);
         }
         b.stall->vendor = kNoWalker;
-    }
-}
-
-void peddler_sells(WorldState& st, const DataCatalog& catalog, const Walker& w) {
-    auto& items = st.city.buildings.items;
-    const auto agora = items.find(w.home);
-    if (agora == items.end() || agora->second.slots.empty()) {
-        return;
-    }
-    const std::vector<BuildingId> stalls = agora->second.slots;
-    for (const BuildingId hid : buildings_in_square(st.city, w.tile, kServiceRadius)) {
-        Building& hb = items.at(hid);
-        if (!hb.house || hb.house->population == 0 || hb.house->abandoned) {
-            continue;
-        }
-        HouseState& h = *hb.house;
-        for (std::size_t gi = 0; gi < kHouseGoods; ++gi) {
-            const auto g = static_cast<HouseGood>(gi);
-            const std::uint32_t target = house_target(catalog, h, g, st.difficulty);
-            for (const BuildingId sid : stalls) {
-                if (sid == kNoBuilding || h.goods[gi] >= target || !items.at(sid).stall) {
-                    continue;
-                }
-                for (auto& [good, units] : items.at(sid).stall->units) {
-                    if (house_good_of(catalog, good) != g || h.goods[gi] >= target) {
-                        continue;
-                    }
-                    const std::uint32_t n = std::min(units, target - h.goods[gi]);
-                    units -= n;
-                    h.goods[gi] += n;
-                }
-            }
-        }
     }
 }
 

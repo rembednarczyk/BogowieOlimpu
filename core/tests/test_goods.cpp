@@ -187,16 +187,39 @@ TEST_CASE("save v7: storage, stalls and walkers with cargo survive a round trip"
     CHECK(a.state_hash() == b->state_hash());
 }
 
-TEST_CASE("storage orders: Don't Accept stops deliveries; Get and Empty wait for stage 2") {
+TEST_CASE("storage orders: Don't Accept and Empty refuse deliveries, Get receives (Z:66-68)") {
     Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 10, 2});
     sim.step(52);
     const BuildingId g = sim.state().city.map.at({10, 2}).building;
     sim.issue(SetStorageOrder{g, "carrots", 3, 0});
     sim.issue(SetStorageOrder{g, "fish", 2, 0});
+    sim.issue(SetStorageOrder{g, "onions", 1, 16});
     sim.step(1);
-    CHECK_FALSE(storage_accepts(sim.state().city.buildings.items.at(g), bo::test::catalog(), "carrots"));
-    CHECK(storage_accepts(sim.state().city.buildings.items.at(g), bo::test::catalog(), "fish"));
+    const auto& cat = bo::test::catalog();
+    CHECK_FALSE(storage_accepts(sim.state().city.buildings.items.at(g), cat, "carrots"));
+    CHECK_FALSE(storage_accepts(sim.state().city.buildings.items.at(g), cat, "fish"));
+    CHECK(storage_accepts(sim.state().city.buildings.items.at(g), cat, "onions"));
+}
+
+TEST_CASE("Empty sends goods to another storage; Get fetches from one up to the limit (4 loads a trip)") {
+    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    sim.issue(PlaceBuilding{"granary", 10, 2});
+    sim.issue(PlaceBuilding{"granary", 24, 2});
+    sim.step(52);
+    const BuildingId a = sim.state().city.map.at({10, 2}).building;
+    const BuildingId b = sim.state().city.map.at({24, 2}).building;
+    auto& items = sim.mutable_state().city.buildings.items;
+    items.at(a).storage->loads["fish"] = 6;
+    sim.issue(SetStorageOrder{a, "fish", 2, 0});
+    sim.run_days(25);  // two trips of 4 and 2 loads, 14 tiles each way
+    CHECK(items.at(a).storage->loads["fish"] == 0);
+    CHECK(items.at(b).storage->loads["fish"] == 6);
+    sim.issue(SetStorageOrder{a, "fish", 1, 5});
+    sim.issue(SetStorageOrder{b, "fish", 0, 32});
+    sim.run_days(25);
+    CHECK(items.at(a).storage->loads["fish"] == 5);
+    CHECK(items.at(b).storage->loads["fish"] == 1);
 }
 
 TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)") {

@@ -60,6 +60,23 @@ inline constexpr std::int32_t kPrunerRadius = 2;
 // Harvesters out at once per lodge (doc 19: 3 harvesters in the harvest season).
 inline constexpr std::size_t kHarvesters = 3;
 
+// Stage 3 (extraction.cpp, L-102): timber mill, foundry, refinery and mint send up to 3 workers (scaled by
+// staffing) to the nearest free resource tile in reach; each works work_days_per_trip and brings
+// units_per_trip back; every 100 units make a load (Foundry: tin is built in). The Mint turns 200 silver into
+// 100 drachmas for the treasury. Masonry and black marble workshops make loads_per_year while a quarry is in
+// reach. Sculpture studios need 4 bronze per sculpture.
+void dispatch_extractors(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
+// Returns true while the worker is still working at the resource.
+bool extraction_at_target(WorldState& state, const DataCatalog& catalog, Walker& w);
+void extraction_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
+// Daily: mint batches, quarry workshops. Returns drachmas minted today.
+std::int64_t advance_extraction(WorldState& state, const DataCatalog& catalog);
+// Herd births (L-101): a herd of 2 to 7 animals gets a young one every kBirthDays; returns new animal ids.
+std::vector<BuildingId> herd_births(WorldState& state, const DataCatalog& catalog);
+inline constexpr std::uint32_t kBirthDays = 32;
+// Extraction stops while this many finished loads wait at the building [ZAŁOŻENIE, L-102].
+inline constexpr std::uint32_t kExtractionStock = 4;
+
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
 // next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d);

@@ -100,7 +100,9 @@ Zrobione:
 
 - C4 etap 2: owce i kozy bez własnych kafli (dowolnie wiele na łące), stado do 8 na budynek, strzyża i dojenie po 6 miesiącach i potem co rok, pasterz chodzi przez teren; drzewa oliwne i winorośl dojrzewają od wizyt ogrodnika (połowa tempa po 6 miesiącach bez wizyty, zero po 10), zbieracze (do 3) w miesiącach żniw, niezebrane przepada; chata ogrodników trzyma 5 ładunków każdego owocu; tłocznia i winiarnia (6 ładunków/rok, wejście do 3 ładunków); magazyn odsyła surowiec do przetwórni (L-101). Test: domy dochodzą do Homestead w 3 lata.
 
-Zostaje: C4/C5 etap 3 (wydobycie, tartak, kamieniarnia, odlewnia, mennica, warsztaty z brązu, łowiectwo, rybołówstwo, stadnina, rozkazy Get i Empty, rozmnażanie stad), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- C4/C5 etap 3: rozkazy Get i Empty (tylko przy pełnej obsadzie, do 4 ładunków na kurs), wydobycie z kursami robotników do złoża (tartak, odlewnia, rafineria, mennica; tempo zależy od odległości, L-102), kamieniarnie przy kamieniołomie, mennica do skarbca, zbrojownia i pracownia rzeźb (4 brązy na rzeźbę), rozmnażanie stad (L-101).
+
+Zostaje: łowiectwo, rybołówstwo i łodzie, stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

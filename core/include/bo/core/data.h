@@ -89,6 +89,7 @@ struct BuildingType {
     std::string requires_building;             // animals: their shed type (Z:44-45)
     std::vector<std::string> tends;            // lodges: tree types, in the order of `outputs`
     std::string footprint_text;                // footprint from buildings.json when the stats size has none
+    std::string resource;                      // extraction: terrain id of the resource (forest, copper ore...)
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -135,6 +136,18 @@ struct ProductionParams {
     std::int32_t storage_loads = 0;             // sheds and lodges: finished loads held (5, doc 19)
     std::int32_t animals_max = 0;               // sheds: herd size (8, doc 19)
     std::map<std::string, std::vector<std::int32_t>> harvest_months;  // lodges: fruit -> 0-based months
+    std::int32_t input_per_output = 1;          // sculpture studio: 4 bronze per sculpture (doc 19)
+    // Extraction (L-102): workers walk to the resource, work, bring units_per_trip back.
+    std::int32_t field_workers = 0;
+    std::int32_t units_per_trip = 0;
+    std::int32_t work_days_per_trip = 0;
+    std::int32_t source_distance = 0;           // tiles to the resource
+    bool fixed_rate_near_resource = false;      // masonry: loads_per_year while a quarry is in reach
+    // Mint (doc 19): silver_per_batch silver -> drachmas_per_batch drachmas in batch_days; holds input_units.
+    std::int32_t silver_per_batch = 0;
+    std::int32_t drachmas_per_batch = 0;
+    std::int32_t batch_days = 0;
+    std::int32_t input_capacity_units = 0;
 };
 
 struct DataCatalog {

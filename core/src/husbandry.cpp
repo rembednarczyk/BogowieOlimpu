@@ -107,11 +107,12 @@ void advance_husbandry(WorldState& st, const DataCatalog& catalog) {
         const auto params = catalog.production.find(b.type);
         if (b.producer && params != catalog.production.end() && !params->second.input_good.empty()) {
             ProducerState& p = *b.producer;
-            if (p.input_loads > 0) {
+            const auto per_output = static_cast<std::uint32_t>(params->second.input_per_output);
+            if (p.input_loads >= per_output) {  // a sculpture studio waits for 4 bronze (doc 19)
                 p.progress += static_cast<std::uint32_t>(params->second.loads_per_year) * b.staffing_percent;
                 if (p.progress >= 100 * kDaysPerYear) {  // 6 loads a year at full staffing (doc 19)
                     p.progress -= 100 * kDaysPerYear;
-                    --p.input_loads;
+                    p.input_loads -= per_output;
                     ++p.output_loads;
                 }
             }

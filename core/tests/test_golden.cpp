@@ -44,7 +44,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v7 (version field; empty city has no new blocks), modules C4-C5 stage 1.
     // 2026-11-26: save format v8 (version field; terrain height per tile, L-099).
     // 2026-11-26: save format v9 (version field; herds, orchards, processors).
-    const std::uint64_t kGolden = 0x37cbb4f55efaa199ULL;
+    // 2026-11-26: save format v10 (version field; extraction trips, Get orders).
+    const std::uint64_t kGolden = 0x1850a0a1383a945eULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -82,6 +83,7 @@ Simulation golden_city() {
     sim.issue(PlaceBuilding{"carding_shed", 17, 20, 0});
     sim.issue(PlaceBuilding{"growers_lodge", 17, 23, 0});
     sim.issue(PlaceBuilding{"storehouse", 24, 17, 0});
+    sim.issue(PlaceBuilding{"timber_mill", 17, 9, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 24, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 25, 22, 0});
     sim.issue_at(2, PlaceBuilding{"olive_tree", 20, 22, 0});
@@ -118,8 +120,10 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 33);  // the plot on the x = 16 road is refused
+    // 34 placed (the plot on the x = 16 road is refused) + 6 lambs: the herd of 2 grew to 8.
+    CHECK(sim.state().city.buildings.items.size() == 40);
     CHECK(city_stock(sim.state().city, bo::test::catalog(), "fleece") > 0);
+    CHECK(city_stock(sim.state().city, bo::test::catalog(), "wood") > 0);
     CHECK(sim.state().labour.workforce > 0);
     CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
     const auto& granary = sim.state().city.buildings.items.at(sim.state().city.map.at({5, 24}).building);
@@ -154,7 +158,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: terrain height (L-099): save format v8, a plateau with a ramp and a road over it.
     // 2026-11-26: module C4 stage 2: save format v9, a carding shed with sheep, a growers' lodge with olive
     // trees and a storehouse in the scenario.
-    const std::uint64_t kGolden = 0x3fc9a4d1e143d639ULL;
+    // 2026-11-26: module C4/C5 stage 3: save format v10, herd births, a timber mill in the scenario.
+    const std::uint64_t kGolden = 0x32a5acc0587008f9ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

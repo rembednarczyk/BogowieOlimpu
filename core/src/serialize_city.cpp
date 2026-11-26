@@ -321,6 +321,10 @@ void write_walkers(ByteWriter& w, const WalkerStore& s) {
         w.u8(static_cast<std::uint8_t>(k.job));  // since v7
         w.u32(k.target);
         write_counts(w, k.cargo);
+        w.str(k.want_good);  // since v10
+        w.u32(k.want_loads);
+        write_pos(w, k.resource);
+        w.u32(k.work_ticks);
     }
 }
 
@@ -345,7 +349,11 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 5 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 6 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+            return false;
+        }
+        if (ok && version >= 10 &&
+            (!r.str(k.want_good) || !r.u32(k.want_loads) || !read_pos(r, k.resource) || !r.u32(k.work_ticks))) {
             return false;
         }
         k.job = static_cast<WalkerJob>(job);

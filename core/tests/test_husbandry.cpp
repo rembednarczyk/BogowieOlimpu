@@ -79,18 +79,18 @@ TEST_CASE("shepherds shear ready sheep (first after 6 months, then yearly); flee
     sim.issue(PlaceBuilding{"carding_shed", 14, 4});
     sim.issue(PlaceBuilding{"storehouse", 20, 3});
     sim.step(1);
-    for (int i = 0; i < 4; ++i) {
-        sim.issue(PlaceBuilding{"sheep", 3 + i, 2});
+    for (int i = 0; i < 8; ++i) {  // a full herd: no births
+        sim.issue(PlaceBuilding{"sheep", 3 + i % 4, 2});
     }
     sim.run_days(90);
     CHECK(produced(sim, "fleece") == 0);
-    sim.run_days(40);
-    CHECK(produced(sim, "fleece") == 4);  // one load per sheep (doc 19)
-    sim.run_days(150);
-    CHECK(produced(sim, "fleece") == 4);  // next shearing a year after the first
-    CHECK(stock(sim, "fleece") == 4);
-    sim.run_days(60);
-    CHECK(produced(sim, "fleece") == 8);
+    sim.run_days(80);  // one shepherd at a time walks to each sheep and back
+    CHECK(produced(sim, "fleece") == 8);  // one load per sheep (doc 19)
+    sim.run_days(110);
+    CHECK(produced(sim, "fleece") == 8);  // next shearing a year after the first
+    CHECK(stock(sim, "fleece") == 8);
+    sim.run_days(100);
+    CHECK(produced(sim, "fleece") == 16);
 }
 
 TEST_CASE("orchards ripen, harvesters pick in the season, the lodge ships olives to the press, oil to storage") {
@@ -143,4 +143,24 @@ TEST_CASE("a storehouse sends its olives to a press that needs them (storage del
     sim.run_days(3);
     CHECK(at(sim, {20, 4}).producer->input_loads == 3);
     CHECK(at(sim, {14, 3}).storage->loads["olives"] == 2);
+}
+
+TEST_CASE("herds below 8 get a young one every 32 days; the young give fleece after 12 months (L-101)") {
+    auto sim = town();
+    sim.issue(PlaceBuilding{"carding_shed", 14, 4});
+    sim.step(1);
+    sim.issue(PlaceBuilding{"sheep", 3, 2});
+    sim.issue(PlaceBuilding{"sheep", 4, 2});
+    sim.step(1);
+    auto herd = [&sim] {
+        int n = 0;
+        for (const auto& [id, b] : sim.state().city.buildings.items) {
+            n += b.animal ? 1 : 0;
+        }
+        return n;
+    };
+    sim.run_days(33);
+    CHECK(herd() == 3);
+    sim.run_days(16 * 12);
+    CHECK(herd() == 8);  // capped at the herd size
 }

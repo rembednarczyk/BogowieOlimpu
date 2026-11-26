@@ -91,6 +91,8 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.tends = strings("tends");
         t.requires_building = o.value("requires_building", "");
         t.footprint_text = o.value("footprint", "");
+        const auto& res = o.value("resource", json());
+        t.resource = res.is_string() ? res.get<std::string>() : "";
         const auto& dp = o.value("delivery_priority", json());
         if (dp.is_object()) {
             for (const auto& [good, list] : dp.items()) {
@@ -386,7 +388,17 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 const auto& in = p.value("input", json());
                 if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer()) {
                     pp.input_good = in.begin().key();
+                    pp.input_per_output = in.begin().value().get<std::int32_t>();
                 }
+                pp.field_workers = p.value("field_workers", 0);
+                pp.units_per_trip = p.value("units_per_trip", 0);
+                pp.work_days_per_trip = p.value("work_days_per_trip", 0);
+                pp.source_distance = p.value("source_distance", 0);
+                pp.fixed_rate_near_resource = p.value("rate_model", "") == "fixed_rate_near_resource";
+                pp.silver_per_batch = p.value("silver_per_batch", 0);
+                pp.drachmas_per_batch = p.value("drachmas_per_batch", 0);
+                pp.batch_days = p.value("batch_days", 0);
+                pp.input_capacity_units = p.value("input_capacity_units", 0);
                 pp.input_capacity = p.value("input_capacity", 0);
                 pp.storage_loads = p.value("storage_loads", 0);
                 pp.animals_max = p.value("animals_max", 0);

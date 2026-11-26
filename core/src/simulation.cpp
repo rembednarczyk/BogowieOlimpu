@@ -158,8 +158,14 @@ void run_migration(Simulation& sim) {
 
 // C4/C5: daily production and dispatch of deliverymen and vendors.
 void run_production(Simulation& sim) {
-    advance_production(sim.mutable_state(), sim.catalog());
-    advance_husbandry(sim.mutable_state(), sim.catalog());
+    WorldState& st = sim.mutable_state();
+    advance_production(st, sim.catalog());
+    advance_husbandry(st, sim.catalog());
+    advance_extraction(st, sim.catalog());
+    for (const BuildingId id : herd_births(st, sim.catalog())) {
+        const Building& b = st.city.buildings.items.at(id);
+        sim.emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});
+    }
 }
 
 void run_logistics(Simulation& sim) {
@@ -385,8 +391,6 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                        if (b == city.buildings.items.end() || !b->second.storage ||
                            catalog_.goods.count(c.good) == 0 || c.kind > 3) {
                            emit(CommandRejected{index, "storage.bad_order"});
-                       } else if (c.kind == 1 || c.kind == 2) {
-                           emit(CommandRejected{index, "storage.order_not_implemented"});  // Get, Empty: stage 2
                        } else {
                            b->second.storage->orders[c.good] =
                                StorageOrder{static_cast<StorageOrderKind>(c.kind), c.limit};

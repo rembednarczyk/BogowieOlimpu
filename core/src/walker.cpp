@@ -165,7 +165,8 @@ void start_return(CityState& city, Walker& w) {
         w.phase = WalkerPhase::Done;
         return;
     }
-    const bool fields = w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest;
+    const bool fields = w.job == WalkerJob::Shear || w.job == WalkerJob::Tend || w.job == WalkerJob::Harvest ||
+                        w.job == WalkerJob::Extract;
     auto path = find_path(city, {w.tile, *target, fields ? PathMode::Walkable : PathMode::RoadNoRoadblock});
     if (!path) {
         path = find_path(city, {w.tile, *target, PathMode::Road});
