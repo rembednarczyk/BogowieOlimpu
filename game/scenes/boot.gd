@@ -68,6 +68,16 @@ func _ready() -> void:
 		sim.place_building("common_housing", x, 2)
 	for x in range(30, 40, 2):
 		sim.place_building("common_housing", x, 17)
+	# More hands for the east (guild, storehouse, sanctuary): plots by the Palace, the south road and the
+	# north-east road, each row with a fountain (Z:91).
+	for x in range(41, 49, 2):
+		sim.place_building("common_housing", x, 14)
+	for x in range(30, 38, 2):
+		sim.place_building("common_housing", x, 29)
+	for x in range(54, 60, 2):
+		sim.place_building("common_housing", x, 2)
+	for f in [[49, 14], [38, 29], [60, 2], [36, 14]]:
+		sim.place_building("fountain", f[0], f[1])
 	# Food and fleece chains (C4, C5): farms and a carding shed on the meadow, granary and storehouse by the road.
 	for b in [["carrot_farm", 6, 25], ["onion_farm", 9, 25], ["carding_shed", 12, 26], ["granary", 17, 24],
 			["storehouse", 21, 25], ["trading_post", 24, 24], ["horse_ranch", 42, 29],
