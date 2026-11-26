@@ -108,7 +108,23 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
     }
 }
 
-void build(WorldState& st, BuildingId site_id, MythEvents& ev) {
+// Phases (S-005 Vriesea, doc 21): 1 tiles, marble only; 2 construction, god statues and altar: 2 marble a
+// wood, 4 marble for the altar, one artisan at a time; 3 sculptures. The data fit: Artemis 63 marble - 2 x 20
+// - 4 = 19 slabs = 38 tiles, Zeus 145 - 56 - 4 = 85 slabs = 170 tiles.
+int phase_of(const DataCatalog& catalog, const Building& site) {
+    const SanctuaryState& s = *site.sanctuary;
+    const auto wood = static_cast<std::uint32_t>(catalog.sanctuaries.at(site.type).materials.at("wood"));
+    const auto left = [&s](const char* g) {
+        const auto it = s.needed.find(g);
+        return it == s.needed.end() ? 0U : it->second;
+    };
+    if (left("marble") > 2 * wood + kAltarMarble) {
+        return 1;
+    }
+    return left("marble") + left("wood") > 0 ? 2 : 3;
+}
+
+void build(WorldState& st, const DataCatalog& catalog, BuildingId site_id, MythEvents& ev) {
     Building& site = st.city.buildings.items.at(site_id);
     SanctuaryState& s = *site.sanctuary;
     for (const WalkerId id : walkers_for(st, WalkerJob::Supply, site_id)) {
@@ -122,14 +138,25 @@ void build(WorldState& st, BuildingId site_id, MythEvents& ev) {
         }
     }
     const auto artisans = walkers_for(st, WalkerJob::Build, site_id);
+    bool one_at_work = false;
     for (const WalkerId id : artisans) {
-        if (st.walkers.items.at(id).phase != WalkerPhase::AtTarget) {
-            continue;
+        Walker& w = st.walkers.items.at(id);
+        const int phase = phase_of(catalog, site);
+        if (w.phase != WalkerPhase::AtTarget || (phase == 2 && one_at_work)) {
+            continue;  // phase 2: one artisan only (S-005)
         }
-        for (const char* good : kMaterials) {
+        one_at_work = true;
+        const std::vector<const char*> goods = phase == 1   ? std::vector<const char*>{"marble"}
+                                               : phase == 2 ? std::vector<const char*>{"marble", "wood"}
+                                                            : std::vector<const char*>{"sculpture"};
+        for (const char* good : goods) {
             if (s.needed[good] > 0 && s.on_site[good] > 0) {
                 --s.needed[good];
                 --s.on_site[good];
+                if (phase == 1 && ++w.work_ticks >= kSlabsPerShift) {
+                    w.job = WalkerJob::None;  // after 8 tiles back to the guild; it sends him again (S-005)
+                    send_home(st.city, w);
+                }
                 break;
             }
         }
@@ -276,7 +303,7 @@ MythEvents advance_sanctuaries(WorldState& st, const DataCatalog& catalog) {
         }
         const Building& b = st.city.buildings.items.at(id);
         if (!b.sanctuary->complete && b.road_access) {
-            build(st, id, ev);
+            build(st, catalog, id, ev);
             dispatch_supplies(st, catalog, id, ev);
         } else if (b.sanctuary->complete) {
             sacrifice(st, catalog, id, ev);

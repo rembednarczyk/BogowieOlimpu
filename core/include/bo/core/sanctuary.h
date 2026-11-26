@@ -25,11 +25,13 @@ struct MythEvents {
 
 // Daily: guilds send an artisan to the nearest unfinished sanctuary; storehouses send carts with 4 loads of
 // marble or wood (Z:117) or 1 sculpture; each artisan on site builds in one delivered load a day
-// [ZAŁOŻENIE, L-111]; finished sanctuaries send a priest for a sheep or goat, else food from a Granary
+// [ZAŁOŻENIE, L-111] in three phases (tiles, construction with one artisan, sculptures; S-005); finished sanctuaries send a priest for a sheep or goat, else food from a Granary
 // (Z:124), and lose the god's favor after a year without a sacrifice [ZAŁOŻENIE, L-052].
 MythEvents advance_sanctuaries(WorldState& state, const DataCatalog& catalog);
 
-inline constexpr std::uint32_t kBulkLoads = 4;             // marble and wood only in large deliveries (Z:117)
+inline constexpr std::uint32_t kBulkLoads = 4;
+inline constexpr std::uint32_t kAltarMarble = 4;     // doc 21
+inline constexpr std::uint32_t kSlabsPerShift = 4;   // 8 tiles of half a slab, then back to the guild (S-005)             // marble and wood only in large deliveries (Z:117)
 inline constexpr std::uint16_t kSacrificeEveryDays = 32;   // [ZAŁOŻENIE, L-052]
 inline constexpr std::uint16_t kFavorLostAfterDays = 192;  // [ZAŁOŻENIE, L-052]
 

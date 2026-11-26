@@ -175,3 +175,37 @@ TEST_CASE("save v19: a sanctuary under construction survives a round trip with t
     b->run_days(10);
     CHECK(a.state_hash() == b->state_hash());
 }
+
+namespace {
+
+// Days to finish a sanctuary with three guilds and full stock, or 0 if not within two years.
+int days_to_build(const char* type, int y) {
+    auto sim = town();
+    stock(sim, 200, 60, 30);
+    sim.issue(PlaceBuilding{type, 2, y});  // touching the main street
+    for (int x = 34; x < 46; x += 4) {
+        sim.issue(PlaceBuilding{"artisans_guild", x, 18});
+    }
+    sim.step(1);
+    REQUIRE(sim.state().city.map.at({2, y}).building != kNoBuilding);
+    for (int d = 1; d <= 2 * 192; ++d) {
+        stock(sim, 200, 60, 30);
+        sim.run_days(1);
+        if (at(sim, {2, y}).sanctuary->complete) {
+            return d;
+        }
+    }
+    return 0;
+}
+
+}  // namespace
+
+TEST_CASE("well organized building: Artemis in about 5 months, Zeus in about a year (S-005 Vriesea, L-111)") {
+    const int artemis = days_to_build("sanctuary_artemis", 10);
+    const int zeus = days_to_build("sanctuary_zeus", 4);
+    MESSAGE("days: artemis " << artemis << ", zeus " << zeus);
+    CHECK(artemis >= 4 * 16);  // S-005: 5 months; within 4-7
+    CHECK(artemis <= 7 * 16);
+    CHECK(zeus >= 9 * 16);  // S-005: 12 months; within 9-15
+    CHECK(zeus <= 15 * 16);
+}
