@@ -10,6 +10,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
+#include <godot_cpp/variant/packed_vector2_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 #include "bo/core/data.h"
@@ -83,6 +84,8 @@ public:
     // Monsters and heroes (D5): calls the hero to a Hero's Hall; [{"monster", "slain", "resting", "hero"}]
     void summon_hero(int64_t hall);
     void send_hero_on_quest(int64_t quest);
+    // Placement preview (E7): {"ok", "reason" (i18n key), "cost", "tiles": PackedVector2Array}; nothing changes.
+    godot::Dictionary check_placement(const godot::String& type, int64_t x, int64_t y, int64_t rotation) const;
     godot::Array get_monsters() const;
     // World (D4): `city` indexes the partners given to start_with_map; "drachmas" is money.
     void give_gift(int64_t city, const godot::String& good, int64_t amount);

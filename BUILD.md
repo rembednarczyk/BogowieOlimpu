@@ -28,11 +28,12 @@ cmake -S . -B build-gd -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBO_BUILD_GDEXT=ON -DB
 ```
 
 ```bash
-python3 tools/sync_game_data.py . && godot --headless --path game --import
+python3 tools/sync_game_data.py . && godot --headless --path game --import  # dane, przygody i katalogi tekstów (game/i18n)
 ```
 
 ```bash
 godot --headless --path game --script res://tests/test_simulation.gd
+godot --headless --path game --script res://tests/test_ui.gd
 ```
 
 ## Zrzut ekranu (renderer Mobile, Vulkan programowy)

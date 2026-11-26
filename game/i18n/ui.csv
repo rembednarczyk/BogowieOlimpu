@@ -1,0 +1,66 @@
+keys,pl,en
+tab.population,Ludność,Housing
+tab.husbandry,Rolnictwo,Farming
+tab.industry,Przemysł,Industry
+tab.distribution,Handel i magazyny,Distribution
+tab.hygiene_safety,Higiena i bezpieczeństwo,Health and safety
+tab.administration,Administracja,Administration
+tab.culture,Kultura,Culture
+tab.mythology,Mitologia,Mythology
+tab.military,Wojsko,Military
+tab.aesthetics,Ozdoby,Beautification
+tab.general,Drogi,Roads
+ui.road,Droga,Road
+ui.roadblock,Zapora,Roadblock
+ui.demolish,Burzenie,Demolish
+ui.confirm,Zatwierdź,Confirm
+ui.cancel,Anuluj,Cancel
+ui.rotate,Obróć,Rotate
+ui.undo,Cofnij,Undo
+ui.pause,Pauza,Pause
+ui.cost,Koszt: %d dr,Cost: %d dr
+ui.close,Zamknij,Close
+ui.workers,Pracownicy: %d (%d %%),Workers: %d (%d %%)
+ui.residents,Mieszkańcy: %d,Residents: %d
+ui.level,Poziom domu: %d,House level: %d
+ui.stock,Zapas: %s,Stock: %s
+ui.fire_risk,Ryzyko pożaru: %d,Fire risk: %d
+ui.collapse_risk,Ryzyko zawalenia: %d,Collapse risk: %d
+ui.status,rok %d  miesiąc %d   skarbiec %d dr   ludność %d   pracownicy %d/%d   popularność %d,year %d  month %d   treasury %d dr   population %d   workers %d/%d   popularity %d
+ui.tap_to_place,"Dotknij mapy, aby wskazać miejsce",Tap the map to choose a place
+ui.drag_road,Przeciągnij palcem drogę,Drag the road with your finger
+ui.tap_to_demolish,Dotknij budynku do zburzenia,Tap a building to demolish
+ui.place_ok,Można budować,You can build here
+build.occupied,Miejsce zajęte,The place is taken
+build.needs_road,Potrzebna droga obok,A road is needed next to it
+build.needs_road_under,Potrzebna droga pod spodem,A road is needed underneath
+build.needs_meadow,Potrzebna łąka,Needs meadow
+build.needs_straight_coast,Potrzebny prosty brzeg,Needs a straight shore
+build.out_of_bounds,Poza mapą,Outside the map
+build.not_buildable,Na tym terenie nie można budować,Cannot build on this ground
+build.unknown_type,Nieznany budynek,Unknown building
+build.not_rotatable,Tego budynku nie można obracać,This building cannot be rotated
+build.needs_building,Najpierw potrzebny inny budynek (np. pałac),Another building is needed first (e.g. the Palace)
+build.elite_needs_goods,"Elita wymaga żywności, wełny i oliwy w magazynach","The elite want food, fleece and oil in storage"
+build.sanctuary_needs_marble,Za mało marmuru w magazynach,Not enough marble in storage
+build.too_many_sanctuaries,Najwyżej 4 sanktuaria,At most 4 sanctuaries
+build.no_hero_needed,Herosa nie trzeba wzywać,No hero is needed now
+build.no_monument_earned,Nie zdobyto pomnika,No monument has been earned
+build.tower_needs_thick_wall,Wieża wymaga muru podwójnej grubości,A tower needs a wall two thick
+build.tower_needs_road_to_palace,Wieża wymaga drogi do pałacu,A tower needs a road to the Palace
+build.gate_needs_road,Brama musi stać na drodze,A gate must stand on a road
+build.gate_needs_walls,Brama wymaga murów po obu stronach,A gate needs walls on both sides
+build.uneven_ground,Nierówny teren,Uneven ground
+build.placement_not_implemented,Jeszcze niedostępne,Not available yet
+build.unsupported_footprint,Jeszcze niedostępne,Not available yet
+build.already_road,Tu już jest droga,There is a road here already
+build.bad_agora_data,Błąd danych agory,Agora data error
+build.bad_rotation,Zły obrót,Bad rotation
+build.bad_terrain,Nieodpowiedni teren,Unsuitable ground
+build.crossing_adjacent,Przeprawy nie mogą stykać się ze sobą,Crossings cannot touch each other
+build.crossing_too_long,Przeprawa za długa,The crossing is too long
+build.needs_agora_slot,Stoisko stawia się na wolnym miejscu agory,A stall goes on a free agora place
+build.needs_coast,Potrzebny brzeg,Needs a shore
+build.nothing_to_clear,Nie ma czego oczyścić,Nothing to clear
+build.nothing_to_demolish,Nie ma czego burzyć,Nothing to demolish
+build.too_many_piers,Za dużo przystani,Too many piers

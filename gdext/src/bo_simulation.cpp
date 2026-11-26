@@ -542,6 +542,48 @@ Array BoSimulation::get_cities() const {
     return out;
 }
 
+Dictionary BoSimulation::check_placement(const String& type, int64_t x, int64_t y, int64_t rotation) const {
+    Dictionary d;
+    if (!sim_) {
+        return d;
+    }
+    // A trial on a copy of the city: the same rules as the command, nothing changes (E7 ghost preview).
+    bo::core::CityState copy = sim_->state().city;
+    const auto r = bo::core::place_building(copy, *catalog_, sim_->state().difficulty, to_std(type),
+                                            {static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)},
+                                            static_cast<std::uint8_t>(rotation & 3));
+    d["ok"] = r.ok();
+    d["reason"] = String(r.reason.c_str());
+    d["cost"] = r.cost;
+    PackedVector2Array tiles;
+    if (r.ok()) {
+        const auto& b = copy.buildings.items.at(r.building);
+        for (const auto& t : b.tiles) {
+            tiles.append(Vector2(static_cast<float>(t.x), static_cast<float>(t.y)));
+        }
+    } else {
+        const auto bt = catalog_->buildings.find(to_std(type));
+        const auto st = bt == catalog_->buildings.end() ? catalog_->building_stats.end()
+                                                         : catalog_->building_stats.find(bt->second.stats_id);
+        std::int32_t w = 1;
+        std::int32_t h = 1;
+        if (st != catalog_->building_stats.end() && st->second.footprint) {
+            w = st->second.footprint->width;
+            h = st->second.footprint->height;
+            if (rotation % 2 == 1) {
+                std::swap(w, h);
+            }
+        }
+        for (std::int32_t dy = 0; dy < h; ++dy) {
+            for (std::int32_t dx = 0; dx < w; ++dx) {
+                tiles.append(Vector2(static_cast<float>(x + dx), static_cast<float>(y + dy)));
+            }
+        }
+    }
+    d["tiles"] = tiles;
+    return d;
+}
+
 void BoSimulation::send_hero_on_quest(int64_t quest) {
     if (sim_ && quest >= 0) {
         sim_->issue(bo::core::SendHeroOnQuest{static_cast<std::uint32_t>(quest)});
@@ -900,6 +942,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("pray", "sanctuary"), &BoSimulation::pray);
     ClassDB::bind_method(D_METHOD("summon_hero", "hall"), &BoSimulation::summon_hero);
     ClassDB::bind_method(D_METHOD("send_hero_on_quest", "quest"), &BoSimulation::send_hero_on_quest);
+    ClassDB::bind_method(D_METHOD("check_placement", "type", "x", "y", "rotation"), &BoSimulation::check_placement);
     ClassDB::bind_method(D_METHOD("get_monsters"), &BoSimulation::get_monsters);
     ClassDB::bind_method(D_METHOD("give_gift", "city", "good", "amount"), &BoSimulation::give_gift);
     ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);

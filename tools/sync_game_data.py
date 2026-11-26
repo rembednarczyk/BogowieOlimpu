@@ -15,6 +15,22 @@ for f in sorted(src.glob('*.json')):
     shutil.copy2(f, dst / f.name)
     n += 1
 print(f"sync_game_data: {n} files -> {dst}")
+# Building names for the language catalogs (E8): game/i18n/buildings.csv from our names in data/buildings.json
+# (Polish) and the ids (working English names until a translator writes them; R-002: never reference names).
+import csv
+import json
+with open(root / 'data' / 'buildings.json', encoding='utf-8') as fh:
+    buildings = json.load(fh)
+(root / 'game' / 'i18n').mkdir(exist_ok=True)
+with open(root / 'game' / 'i18n' / 'buildings.csv', 'w', encoding='utf-8', newline='') as fh:
+    w = csv.writer(fh, lineterminator='\n')
+    w.writerow(['keys', 'pl', 'en'])
+    for b in buildings:
+        pl = b.get('name_pl', b['id'])
+        en = b['id'].replace('_', ' ')
+        if b.get('god'):
+            pl = f"{pl} ({b['god']})"
+        w.writerow([f"building.{b['id']}", pl, en])
 # Adventures (our content, scenarios/*.json) -> game/scenarios/ (res://scenarios).
 sdst = root / 'game' / 'scenarios'
 if sdst.exists():

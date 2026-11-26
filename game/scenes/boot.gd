@@ -39,7 +39,10 @@ const WALKER_COLORS := {
 }
 
 var sim := BoSimulation.new()
-var label := Label.new()
+var label := Label.new()  # developer overlay (hash, demo script); player texts are in build_ui.gd
+var ui: CanvasLayer
+var ghost := Node3D.new()
+var touches := {}  # finger index -> position, for the pinch zoom
 var tick_accumulator := 0.0
 var tiles := MultiMeshInstance3D.new()
 var building_nodes := {}  # id -> Node3D
@@ -109,9 +112,14 @@ func _ready() -> void:
 	sim.place_building("tower", 58, 5)
 	_build_environment()
 	add_child(tiles)
-	label.position = Vector2(16, 16)
-	label.add_theme_font_size_override("font_size", 22)
+	label.position = Vector2(16, 44)
+	label.add_theme_font_size_override("font_size", 14)
 	add_child(label)
+	ui = preload("res://scenes/ui/build_ui.gd").new()
+	add_child(ui)
+	ui.setup(self)
+	ghost.name = "Ghost"
+	add_child(ghost)
 	sim.step(1)
 	_handle_events(sim.drain_events())
 	_rebuild_tiles()
@@ -159,11 +167,35 @@ func _process(delta: float) -> void:
 		if sim.get_day_in_month() != day_before:
 			_demo_day()
 		_update_label()
+		ui.update_status()
 	_sync_walkers()
 
 func _unhandled_input(event: InputEvent) -> void:
-	# One-finger or mouse drag pans the camera (touch is emulated from mouse on PC).
-	if event is InputEventScreenDrag or (event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+	# Two fingers: pinch zoom (06-MOBILE-UX). The mouse wheel zooms on PC.
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			touches[event.index] = event.position
+		else:
+			touches.erase(event.index)
+		return
+	if event is InputEventScreenDrag:
+		if touches.size() >= 2 and touches.has(event.index):
+			var other: Vector2 = touches[touches.keys()[0] if touches.keys()[0] != event.index else touches.keys()[1]]
+			var before: float = (touches[event.index] as Vector2).distance_to(other)
+			touches[event.index] = event.position
+			var after: float = event.position.distance_to(other)
+			if before > 1.0 and after > 1.0:
+				_zoom(before / after)
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_zoom(0.9 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.1)
+		return
+	if touches.size() >= 2:
+		return  # the second finger zooms; the mouse events emulated from the first do not pan meanwhile
+	if ui != null and ui.map_input(event):
+		return
+	# One finger (mouse events emulated from touch) pans the camera.
+	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
 		var rel: Vector2 = event.relative
 		var k := cam.size / float(get_viewport().get_visible_rect().size.y)
 		var right := cam.global_transform.basis.x
@@ -171,12 +203,43 @@ func _unhandled_input(event: InputEvent) -> void:
 		cam_target -= (right * rel.x + fwd * rel.y * 1.4) * k
 		_place_camera()
 
+func _zoom(factor: float) -> void:
+	cam.size = clampf(cam.size * factor, 12.0, 80.0)
+
+# The tile under a screen point: the camera ray meets the ground plane (y = 0).
+func screen_to_tile(pos: Vector2) -> Vector2i:
+	var origin := cam.project_ray_origin(pos)
+	var dir := cam.project_ray_normal(pos)
+	if absf(dir.y) < 0.0001:
+		return Vector2i(-1, -1)
+	var p := origin + dir * (-origin.y / dir.y)
+	var t := Vector2i(int(floor(p.x)), int(floor(p.z)))
+	if t.x < 0 or t.y < 0 or t.x >= sim.get_map_width() or t.y >= sim.get_map_height():
+		return Vector2i(-1, -1)
+	return t
+
+# The placement ghost (E7): one translucent box a tile, green where it may stand, red where not.
+func show_ghost(tile_list: PackedVector2Array, ok: bool) -> void:
+	clear_ghost()
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(0.2, 0.9, 0.3, 0.55) if ok else Color(0.95, 0.2, 0.2, 0.55)
+	var box := BoxMesh.new()
+	box.size = Vector3(0.95, 0.4, 0.95)
+	box.material = mat
+	for t in tile_list:
+		var m := MeshInstance3D.new()
+		m.mesh = box
+		m.position = Vector3(t.x + 0.5, 0.2, t.y + 0.5)
+		ghost.add_child(m)
+
+func clear_ghost() -> void:
+	for c in ghost.get_children():
+		c.queue_free()
+
 func _update_label() -> void:
 	# Player-facing text will come from translation catalogs (docs/PRAKTYKI.md ch. 12); this is a debug overlay.
-	label.text = "rok %d  miesiąc %d  dzień %d   skarbiec %d\nludność %d   pracownicy %d/%d   popularność %d\nspacerujący %d   hash %s\n%s" % [
-		sim.get_year() + 1, sim.get_month() + 1, sim.get_day_in_month() + 1, sim.get_treasury(),
-		sim.get_population(), sim.get_employed(), sim.get_workforce(), sim.get_popularity(),
-		walker_nodes.size(), sim.get_state_hash(), demo_status]
+	label.text = "walkers %d   hash %s\n%s" % [walker_nodes.size(), sim.get_state_hash(), demo_status]
 
 func _handle_events(events: Array) -> void:
 	var tiles_dirty := false

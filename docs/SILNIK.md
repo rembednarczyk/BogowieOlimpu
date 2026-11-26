@@ -169,6 +169,8 @@ Stan: E1 w wersji minimalnej (klasa `BoSimulation` w `gdext/`, scena `game/scene
 | E5 Kamera | izometryczna, zoom, obrót (pyt. 7), zakładki lokalizacji | `06-MOBILE-UX.md` |
 | E6 Nakładki | widoki "See ..." z danych rdzenia (kolumny, kolory kafli) | jedno źródło prawdy |
 | E7 Budowanie dotykiem | podgląd ducha, przeciąganie dróg, precyzyjny kursor | `06-MOBILE-UX.md` |
+
+Stan E7/E8 (krok 1): `game/scenes/ui/build_ui.gd`: pasek kategorii i budynków (2 dotknięcia do budynku), duch budynku z przyczyną odmowy i kosztem (`BoSimulation.check_placement` sprawdza na kopii miasta), zatwierdzenie, obrót i anulowanie, droga przeciągnięciem w kształcie L, burzenie z potwierdzeniem, cofanie, karta budynku po dotknięciu, prędkości 0-4x, zoom szczypnięciem i kółkiem; przyciski co najmniej 44 pt; skalowanie `canvas_items`. Teksty w katalogach `game/i18n` (ręczny `ui.csv`, nazwy budynków generowane z `data/buildings.json`; angielskie nazwy budynków robocze z identyfikatorów). Test bez okna `game/tests/test_ui.gd`. Zostaje: precyzyjny kursor (lupa), nakładki, raport miasta i prośby, wojsko, mapa świata, zapis gry, ikony i oprawa.
 | E8 UI | jedna skala, katalogi języków PL/EN, panele budynków, raport miasta | |
 | E9 Audio | zdarzenia → dźwięki jako dane, muzyka adaptacyjna | |
 

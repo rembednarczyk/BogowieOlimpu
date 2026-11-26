@@ -6,3 +6,6 @@ __pycache__/
 *.blend1
 game/data/
 game/scenarios/
+game/i18n/*.translation
+game/i18n/buildings.csv
+game/i18n/buildings.csv.import

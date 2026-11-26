@@ -10,6 +10,12 @@ config/features=PackedStringArray("4.7", "Mobile")
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/handheld/orientation=0
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[internationalization]
+locale/translations=PackedStringArray("res://i18n/ui.pl.translation", "res://i18n/ui.en.translation", "res://i18n/buildings.pl.translation", "res://i18n/buildings.en.translation")
+locale/fallback="pl"
 
 [rendering]
 renderer/rendering_method="mobile"
