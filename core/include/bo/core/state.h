@@ -9,6 +9,7 @@
 #include "bo/core/city.h"
 #include "bo/core/command.h"
 #include "bo/core/labour.h"
+#include "bo/core/military.h"
 #include "bo/core/rng.h"
 #include "bo/core/time.h"
 #include "bo/core/types.h"
@@ -71,6 +72,7 @@ struct WorldState {
     MigrationState migration;
     TradeWorld trade;
     WalkerStore walkers;
+    MilitaryState military;  // since v17 (module D3)
     std::uint64_t next_command_sequence = 0;
     CommandLog pending_commands;  // sorted by (tick, sequence)
 };

@@ -117,7 +117,8 @@ static void run_house_evolution(Simulation& sim) {
 // C3: daily labour allocation, before walkers are sent (tick 31).
 static void run_labour(Simulation& sim) {
     WorldState& st = sim.mutable_state();
-    allocate_labour(st.city, sim.catalog(), st.difficulty, st.finance.wage_rate, st.labour);
+    allocate_labour(st.city, sim.catalog(), st.difficulty, st.finance.wage_rate, st.labour,
+                    soldiers_in_field_from_common_houses(st));
 }
 
 // C6: taxes and wages at the start of each month; the yearly record rolls over at the year start.
@@ -210,6 +211,12 @@ static void run_trade(Simulation& sim) {
     }
 }
 
+// D3: companies in the field settle, companies at home re-form from the houses.
+static void run_military(Simulation& sim) {
+    update_companies(sim.mutable_state());
+    form_companies(sim.mutable_state(), sim.catalog());
+}
+
 const std::vector<DailySystem>& daily_schedule() {
     // Ticks of the day follow the engine family layout; new systems get their own slot (docs/05-SYMULACJA.md).
     static const std::vector<DailySystem> kSchedule = {
@@ -226,6 +233,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"risks", 29, &run_risks},
         {"trade", 30, &run_trade},
         {"walker_spawn", 31, &run_walker_spawn},
+        {"military", 32, &run_military},
         {"coverage_decay", 35, &run_coverage_decay},
     };
     return kSchedule;

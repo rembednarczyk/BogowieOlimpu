@@ -112,7 +112,7 @@ struct WolfEvents {
 WolfEvents advance_wolves(WorldState& state, const DataCatalog& catalog);
 
 // Units a house wants to hold of each house good [ZAŁOŻENIE, L-100: two months of the food of its current or
-// next level, whichever is more; 4 units (two months) of fleece, oil, wine; 1 armor, 1 horse when needed].
+// next level, whichever is more; 4 units (two months) of fleece, oil, wine; armor for each soldier of the level (doc 22), horses up to HS].
 std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, HouseGood g, Difficulty d);
 
 }  // namespace bo::core

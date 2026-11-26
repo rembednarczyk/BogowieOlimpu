@@ -428,7 +428,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 13 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 14 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&

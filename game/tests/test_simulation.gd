@@ -131,6 +131,13 @@ func _init() -> void:
 	var tev: Array = t.drain_events()
 	check(tev.filter(func(e): return e["type"] == "trade_done").size() >= 1, "trade_done event")
 
+	# Army through the binding (D3): no Palace, no companies; mustering is rejected.
+	check(t.get_companies().size() == 0, "no companies without a Palace")
+	t.muster_company(0)
+	t.step(1)
+	var mev: Array = t.drain_events().filter(func(e): return e["type"] == "command_rejected")
+	check(mev.size() == 1 and mev[0]["reason"] == "military.no_palace", "muster rejected without a Palace")
+
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:
 		print("TESTS PASSED")

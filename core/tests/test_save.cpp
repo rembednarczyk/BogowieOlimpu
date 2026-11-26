@@ -83,6 +83,13 @@ constexpr std::size_t kHygiene = 1;
 constexpr std::size_t kTrade = 16;
 constexpr std::size_t kUndo = 29;
 constexpr std::size_t kCityBase = 16;
+constexpr std::size_t kMilitary = 4;  // v17: company count, after the walkers
+
+// The save without the v17 army block (no companies): the layout of v16 and older.
+std::vector<std::uint8_t> without_military(std::vector<std::uint8_t> bytes) {
+    bytes.resize(bytes.size() - kMilitary);
+    return bytes;
+}
 
 // Removes `len` bytes that end `from_end` bytes before the end of the save.
 void cut(std::vector<std::uint8_t>& bytes, std::size_t from_end, std::size_t len) {
@@ -104,9 +111,10 @@ void check_load(std::vector<std::uint8_t> bytes, std::uint8_t version, std::uint
 TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
-    const auto current = a.save();
+    const auto current = without_military(a.save());
     const std::uint64_t h = a.state_hash();
-    check_load(current, 14, h);  // v15 adds only a house field
+    check_load(current, 16, h);
+    check_load(current, 14, h);  // v15 adds only a house field, v16 only a spawn field
     auto v13 = current;
     cut(v13, kWalkersBlock + kFinance, kTrade);
     check_load(v13, 13, h);
@@ -144,7 +152,7 @@ TEST_CASE("save v15: spawn points load without the hunting wolf field (v16)") {
     a.run_days(2);  // the den gets its pack; no prey, so no wolf is out
     REQUIRE(a.state().city.spawns.size() == 1);
     REQUIRE(a.state().walkers.items.empty());
-    auto v15 = a.save();
+    auto v15 = without_military(a.save());
     cut(v15, kWalkersBlock + kFinance + kTrade + kMigration + kLabour, 4);  // the hunter id of the one den
     check_load(v15, 15, a.state_hash());
 }

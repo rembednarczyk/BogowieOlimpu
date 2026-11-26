@@ -86,9 +86,25 @@ struct SetTradeOrder {
     std::uint32_t export_keep = 0;
 };
 
+// Army (Z:137-139): muster a company, move its standard, send its soldiers home. `company` indexes the
+// companies in MilitaryState.
+struct MusterCompany {
+    std::uint32_t company = 0;
+};
+
+struct MoveCompany {
+    std::uint32_t company = 0;
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+};
+
+struct SendCompanyHome {
+    std::uint32_t company = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
-                             SetTradeOrder>;
+                             SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

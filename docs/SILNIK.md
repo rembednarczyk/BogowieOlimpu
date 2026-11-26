@@ -135,6 +135,8 @@ Zostaje: premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, da
 | D1 Bogowie | sanktuaria, budowa fazami, ofiary, modlitwy, sanktyfikacja, gniew | doc 10, 21 |
 | D2 Potwory i herosi | | doc 10, 21 |
 | D3 Wojsko | kompanie, rozkazy, walka, morale, flota, fortyfikacje | doc 11, 22, 24 |
+
+Stan D3: etap 1 zrobiony (L-109). Bez pałacu nie ma armii; kompanie po 8 żołnierzy formują się codziennie z domów (rabble z domów ludu od Hovel: round(Pop × %S); hoplici z Mansion i Manor po jednej zbroi, jeźdźcy z Estate po zbroi i koniu), najwyżej 20; sztandary wokół pałacu; komendy MusterCompany, MoveCompany, SendCompanyHome; żołnierze idą pieszo do szyku przy sztandarze i wracają do domów; rabble w polu nie pracuje. Format zapisu v17. Zostaje: walka (statystyki z doc 22), morale, najeźdźcy, okup i kapitulacja, flota, fortyfikacje, popularność po mobilizacji.
 | D4 Świat | miasta, relacje, opinie, prośby, handel, trybut, bitwy za granicą | doc 14, 24 |
 | D5 Scenariusz | format przygody, cele, zdarzenia, kolonie | doc 23 |
 

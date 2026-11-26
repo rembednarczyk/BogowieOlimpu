@@ -108,7 +108,13 @@ std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, Hous
         const std::int32_t slots = std::max(cur.model[di].horse_slots, next ? next->model[di].horse_slots : 0);
         return static_cast<std::uint32_t>(std::max(slots, 1));
     }
-    return g == HouseGood::Armor ? 1U : 4U;
+    if (g == HouseGood::Armor) {  // one armor per hoplite or horseman: round(Pop x %S) of the level (doc 22)
+        const auto soldiers = [di](const HousingLevel& lv) {
+            return (lv.model[di].population * lv.model[di].soldiers_percent + 50) / 100;
+        };
+        return static_cast<std::uint32_t>(std::max({soldiers(cur), next ? soldiers(*next) : 0, 1}));
+    }
+    return 4U;
 }
 
 void peddler_sells(WorldState& st, const DataCatalog& catalog, const Walker& w) {

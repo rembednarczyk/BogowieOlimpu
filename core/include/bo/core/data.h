@@ -62,6 +62,7 @@ struct HousingLevel {
     std::string id;
     bool elite = false;
     std::int32_t level = 1;  // 1-based within its class
+    std::string military;    // unit its residents serve as: rabble, hoplite, horseman (empty: none), Z:136
     std::array<std::int32_t, kHouseGoods> consumption{};  // units per month for a full house (doc 18)
     std::array<HouseModel, static_cast<std::size_t>(Difficulty::Count)> model{};
 };

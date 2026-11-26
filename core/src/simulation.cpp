@@ -268,6 +268,28 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                            b->second.trade->orders[c.good] = TradeOrder{c.import_on, c.import_limit, c.export_on, c.export_keep};
                        }
                    },
+                   [&](const MusterCompany& c) {
+                       std::vector<WalkerId> spawned;
+                       const std::string err = muster_company(state_, catalog_, c.company, spawned);
+                       if (!err.empty()) {
+                           emit(CommandRejected{index, err});
+                       }
+                       for (const WalkerId id : spawned) {
+                           emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
+                       }
+                   },
+                   [&](const MoveCompany& c) {
+                       const std::string err = move_company(state_, c.company, {c.x, c.y});
+                       if (!err.empty()) {
+                           emit(CommandRejected{index, err});
+                       }
+                   },
+                   [&](const SendCompanyHome& c) {
+                       const std::string err = send_company_home(state_, c.company);
+                       if (!err.empty()) {
+                           emit(CommandRejected{index, err});
+                       }
+                   },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});

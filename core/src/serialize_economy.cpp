@@ -128,4 +128,59 @@ bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version) {
     return true;
 }
 
+// Army (D3): companies with members, standard, status, morale and soldiers in the field.
+void write_military(ByteWriter& w, const MilitaryState& m) {
+    w.u32(static_cast<std::uint32_t>(m.companies.size()));
+    for (const Company& c : m.companies) {
+        w.str(c.unit);
+        w.u32(static_cast<std::uint32_t>(c.members.size()));
+        for (const CompanyMember& mb : c.members) {
+            w.u32(mb.house);
+            w.u8(mb.soldiers);
+        }
+        w.i32(c.standard.x);
+        w.i32(c.standard.y);
+        w.u8(static_cast<std::uint8_t>(c.status));
+        w.u8(c.morale);
+        w.u32(static_cast<std::uint32_t>(c.soldiers.size()));
+        for (const WalkerId id : c.soldiers) {
+            w.u32(id);
+        }
+    }
+}
+
+bool read_military(ByteReader& r, MilitaryState& m) {
+    std::uint32_t count = 0;
+    if (!r.u32(count) || count > kMaxCompanies) {
+        return false;
+    }
+    m.companies.resize(count);
+    for (Company& c : m.companies) {
+        std::uint32_t members = 0;
+        std::uint8_t status = 0;
+        std::uint32_t soldiers = 0;
+        if (!r.str(c.unit) || !r.u32(members) || members > 64) {
+            return false;
+        }
+        c.members.resize(members);
+        for (CompanyMember& mb : c.members) {
+            if (!r.u32(mb.house) || !r.u8(mb.soldiers)) {
+                return false;
+            }
+        }
+        if (!r.i32(c.standard.x) || !r.i32(c.standard.y) || !r.u8(status) || status > 3 || !r.u8(c.morale) ||
+            !r.u32(soldiers) || soldiers > 64) {
+            return false;
+        }
+        c.status = static_cast<CompanyStatus>(status);
+        c.soldiers.resize(soldiers);
+        for (WalkerId& id : c.soldiers) {
+            if (!r.u32(id)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 }  // namespace bo::core

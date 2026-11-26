@@ -55,6 +55,12 @@ public:
     void set_trade_partner(int64_t building, int64_t partner);
     void set_trade_order(int64_t building, const godot::String& good, bool import_on, int64_t import_limit,
                          bool export_on, int64_t export_keep);
+    // Army (D3): companies are indexed as in get_companies().
+    void muster_company(int64_t company);
+    void move_company(int64_t company, int64_t x, int64_t y);
+    void send_company_home(int64_t company);
+    // Array of {"unit", "soldiers", "status" (0 home, 1 marching, 2 still, 3 going home), "morale", "x", "y"}
+    godot::Array get_companies() const;
     int64_t get_workforce() const;
     int64_t get_employed() const;
     int64_t get_appeal(int64_t x, int64_t y) const;

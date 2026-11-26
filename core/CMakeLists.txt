@@ -14,6 +14,7 @@ add_library(bo_core STATIC
     src/logistics.cpp
     src/map.cpp
     src/migration.cpp
+    src/military.cpp
     src/path.cpp
     src/placement.cpp
     src/walker.cpp
@@ -58,6 +59,7 @@ if(BO_BUILD_TESTS)
         tests/test_housing.cpp
         tests/test_labour.cpp
         tests/test_migration.cpp
+        tests/test_military.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp
         tests/test_elite.cpp

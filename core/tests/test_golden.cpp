@@ -51,7 +51,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v14 (version field; empty trade block), module C9.
     // 2026-11-26: save format v15 (version field; immigrants on the way).
     // 2026-11-26: save format v16 (version field; hunting wolf per spawn point), wolves (Z:45, L-107).
-    const std::uint64_t kGolden = 0x3d3291c634ab2518ULL;
+    // 2026-11-26: save format v17 (version field; empty army block), module D3 stage 1.
+    const std::uint64_t kGolden = 0x80e1f80a38957c31ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -180,7 +181,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v16: the boar spawn point stores a (no) hunting wolf field (L-107).
     // 2026-11-26: houses no longer count days toward a roaming walker unless they are inhabited elite houses
     // sending a nobleman (Z:25, Z:88, L-108).
-    const std::uint64_t kGolden = 0x39be37345ff4a4eaULL;
+    // 2026-11-26: save format v17: army block (no Palace in the scenario, so no companies), module D3.
+    const std::uint64_t kGolden = 0xa05d57ab61264bddULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

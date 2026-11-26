@@ -187,6 +187,7 @@ void load_housing(const json& housing, DataCatalog& cat) {
         lv.id = h.at("id").get<std::string>();
         lv.elite = h.value("class", "common") == "elite";
         lv.level = h.value("level", 1);
+        lv.military = h.value("military", json()).is_string() ? h.at("military").get<std::string>() : "";
         cat.housing_levels.push_back(lv.id);
         const auto& use = h.at("consumption_units_per_month_full");
         constexpr const char* kUseKeys[] = {"food", "fleece", "olive_oil", "wine"};

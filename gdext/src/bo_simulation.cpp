@@ -264,6 +264,47 @@ void BoSimulation::set_storage_order(int64_t building, const String& good, int64
     }
 }
 
+void BoSimulation::muster_company(int64_t company) {
+    if (sim_ && company >= 0) {
+        sim_->issue(bo::core::MusterCompany{static_cast<std::uint32_t>(company)});
+    }
+}
+
+void BoSimulation::move_company(int64_t company, int64_t x, int64_t y) {
+    if (sim_ && company >= 0) {
+        sim_->issue(bo::core::MoveCompany{static_cast<std::uint32_t>(company), static_cast<std::int32_t>(x),
+                                          static_cast<std::int32_t>(y)});
+    }
+}
+
+void BoSimulation::send_company_home(int64_t company) {
+    if (sim_ && company >= 0) {
+        sim_->issue(bo::core::SendCompanyHome{static_cast<std::uint32_t>(company)});
+    }
+}
+
+Array BoSimulation::get_companies() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    for (const auto& c : sim_->state().military.companies) {
+        int64_t soldiers = 0;
+        for (const auto& m : c.members) {
+            soldiers += m.soldiers;
+        }
+        Dictionary d;
+        d["unit"] = String(c.unit.c_str());
+        d["soldiers"] = soldiers;
+        d["status"] = static_cast<int64_t>(c.status);
+        d["morale"] = static_cast<int64_t>(c.morale);
+        d["x"] = c.standard.x;
+        d["y"] = c.standard.y;
+        out.append(d);
+    }
+    return out;
+}
+
 void BoSimulation::set_trade_partner(int64_t building, int64_t partner) {
     if (sim_ && building > 0) {
         sim_->issue(bo::core::SetTradePartner{static_cast<std::uint32_t>(building), static_cast<std::int32_t>(partner)});
@@ -516,6 +557,10 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_industry_enabled", "type", "enabled"), &BoSimulation::set_industry_enabled);
     ClassDB::bind_method(D_METHOD("get_workforce"), &BoSimulation::get_workforce);
     ClassDB::bind_method(D_METHOD("set_trade_partner", "building", "partner"), &BoSimulation::set_trade_partner);
+    ClassDB::bind_method(D_METHOD("muster_company", "company"), &BoSimulation::muster_company);
+    ClassDB::bind_method(D_METHOD("move_company", "company", "x", "y"), &BoSimulation::move_company);
+    ClassDB::bind_method(D_METHOD("send_company_home", "company"), &BoSimulation::send_company_home);
+    ClassDB::bind_method(D_METHOD("get_companies"), &BoSimulation::get_companies);
     ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",
                                   "export_keep"),
                          &BoSimulation::set_trade_order);

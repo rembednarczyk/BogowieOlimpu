@@ -52,6 +52,8 @@ std::uint32_t workers_needed(const Building& b, const DataCatalog& catalog, cons
 
 // Daily allocation: workforce from common houses, then sectors in priority order, then buildings inside each
 // sector by equal staffing fraction. Sets Building::workers and Building::staffing_percent.
-void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage, LabourState& labour);
+// `absent`: common-house residents in the field as soldiers (D3), not available for work.
+void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage, LabourState& labour,
+                     std::uint32_t absent = 0);
 
 }  // namespace bo::core
