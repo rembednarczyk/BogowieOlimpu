@@ -43,6 +43,7 @@ Kryterium wyjścia: autopilot buduje miasto na 2000 mieszkańców ze scenariusza
 Cel: jeden pełny scenariusz w docelowej jakości na telefonie.
 
 - Docelowa kamera i rendering, pierwsze modele budynków i postaci.
+- Wizualne fazy budowy i stany uszkodzenia budynków (O-005) dla budynków vertical slice.
 - Pełny HUD dotykowy, nakładki informacyjne (woda, ryzyko pożaru, atrakcyjność).
 - Jeden bóg z sanktuarium, błogosławieństwem i gniewem, jeden heros, jeden potwór.
 - Podstawowa armia i jedna inwazja.

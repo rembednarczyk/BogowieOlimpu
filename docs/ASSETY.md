@@ -75,7 +75,12 @@ Wariant awaryjny (gdyby 3D w czasie rzeczywistym było za drogie na telefonie): 
 | Hero's Hall | grecki, atlantydzki + 8 posągów herosów |
 | Piramidy | elementy ścian, szczytów, płytek w białym i czarnym marmurze na każdy poziom; świątynia, ołtarz, obserwatorium, muzeum; 1-3 fazy budowy |
 
-Zwykłe budynki nie mają faz budowy ani stanów uszkodzenia; zawalony budynek to gruz z ogólnych elementów. Pożar to efekt nakładany na budynek. **W naszej wersji "AAA" możemy dodać fazy budowy i uszkodzenia jako rozbudowę oprawy**; mechaniki to nie zmienia (odstępstwo wizualne do `ODSTEPSTWA.md`).
+W oryginale zwykłe budynki nie mają faz budowy ani stanów uszkodzenia; zawalony budynek to ogólny gruz. **U nas (O-005, decyzja właściciela):**
+- każdy budynek ma wizualną fazę budowy (rusztowanie, mury, dach), odtwarzaną bez wpływu na symulację;
+- 3 stany uszkodzenia sterowane licznikiem ryzyka zawalenia, pożar w 2-3 fazach;
+- własna ruina dla każdej kategorii budynku.
+
+Konsekwencja dla produkcji: na każdy model budynku dochodzą warianty "budowa" (3 etapy, najlepiej generowane proceduralnie z modelu gotowego), "uszkodzenie" (3 stopnie, przez materiał i deformację) i "ruina".
 
 ## 2. Postacie
 

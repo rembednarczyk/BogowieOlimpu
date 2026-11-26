@@ -102,7 +102,7 @@ Moduły C i D powstają w fazie 1 ("Prototyp symulacji") jako część silnika; 
 |---|---|---|
 | E1 Wiązanie z rdzeniem | interpolacja pozycji między tickami, mapowanie zdarzeń na efekty | GDExtension |
 | E2 Teren | siatka terenu z kafli, woda animowana, łąka, skały, las | Blender + shader |
-| E3 Budynki | instancing (MultiMesh), stany: budowa, praca, ogień, ruina, sanktyfikacja | |
+| E3 Budynki | instancing (MultiMesh), stany: wizualna faza budowy, praca, 3 stopnie uszkodzenia z licznika ryzyka, ogień w fazach, ruina per kategoria, sanktyfikacja | O-005: oprawa tylko czyta stan rdzenia |
 | E4 Tłum | tysiące postaci: MultiMesh + animacja w teksturach (VAT), LOD | kluczowe ryzyko wydajności |
 | E5 Kamera | izometryczna, zoom, obrót (pyt. 7), zakładki lokalizacji | `06-MOBILE-UX.md` |
 | E6 Nakładki | widoki "See ..." z danych rdzenia (kolumny, kolory kafli) | jedno źródło prawdy |
