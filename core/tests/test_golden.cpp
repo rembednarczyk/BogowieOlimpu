@@ -47,7 +47,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v10 (version field; extraction trips, Get orders).
     // 2026-11-26: save format v11 (version field; spawn herds block).
     // 2026-11-26: save format v12 (version field; wind byte), module C7 risks in the daily schedule.
-    const std::uint64_t kGolden = 0xe0d4158129cb874cULL;
+    // 2026-11-26: save format v13 (version field; city hygiene byte), L-104 revised from S-010 and S-007.
+    const std::uint64_t kGolden = 0x7bd2ffc6fd8ac9d9ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -131,8 +132,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
     // The economy is covered by dedicated tests (test_goods, test_husbandry, test_risks); here: structure only.
-    // 39 placed (the plot on the x = 16 road is refused) + 6 lambs; two buildings burned down into ruins.
-    CHECK(sim.state().city.buildings.items.size() == 44);
+    // 39 placed (the plot on the x = 16 road is refused) + 6 lambs, with ruins replacing lost buildings.
+    CHECK(sim.state().city.buildings.items.size() == 45);
     CHECK(sim.state().labour.workforce > 0);
     CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
@@ -155,7 +156,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: hunting and fishing (L-103): save format v11, a boar spawn point and a hunters' lodge.
     // 2026-11-26: module C7 (fire, collapse, disease, crime): save format v12, maintenance offices and an
     // infirmary in the scenario, maintenance sector first; two buildings burn down.
-    const std::uint64_t kGolden = 0x79f42efbd921719fULL;
+    // 2026-11-26: L-104 revised (S-010, S-007 OG fire model, family hygiene, plague 1 in 3, crime escalation,
+    // firefighters sent to fires, Hygiene & Safety first at equal priority): save format v13.
+    const std::uint64_t kGolden = 0x58f36f6c12a8b47eULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

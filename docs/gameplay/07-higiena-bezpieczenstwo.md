@@ -14,7 +14,8 @@
 ### Zaraza (Z:85)
 
 - Uderza szybko, może objąć kilka miejsc naraz. **Gracz nie może jej zatrzymać**, tylko przeczekać.
-- W zarażonym domu część mieszkańców umiera.
+- W zarażonym domu część mieszkańców umiera: **jeden na trzech** (S-010).
+- Zaraza nie przechodzi z domu na dom, ale gdy jest w mieście, inne domy w okolicy (niekoniecznie sąsiednie) mają dużą szansę zarażenia. Chorzy wychodzą na ulicę i zarażają domy na trasie; healer, watchman i szlachcic usuwają chorych z ulic (S-010).
 - Dom trafia na **kwarantannę na kilka miesięcy**: nikt się nie wprowadza; obecni mieszkańcy dalej dostają usługi.
 - Apollo zapobiega zarazie i leczy ją w odpowiedzi na modlitwę (Z:121). Apollo w gniewie wywołuje zarazę (Z:126).
 
@@ -36,12 +37,14 @@ Te same co spadku popularności: brak dobrego domu, jedzenia, pracy; niskie pła
 
 | Postać | Działanie | Sygnał |
 |---|---|---|
-| Disgruntled citizen | głośny, nieszkodliwy | ostrzeżenie |
+| Disgruntled citizen | głośny, nieszkodliwy; **ignoruje blokady dróg** (S-010) | ostrzeżenie |
 | Mugger (outlaw) | napada przechodniów, może zabić | wysoki niepokój w dzielnicy |
 | Thief (outlaw) | **kradnie żywność i dobra z domu elity**; dom może się cofnąć, jeśli peddler nie uzupełni | |
 | Vandal (outlaw) | **całkowicie burzy dom elity**; mieszkańcy emigrują lub szukają innego lokum | najgroźniejszy |
 
 Przestępcę na ulicy może powstrzymać tylko **szlachcic z domu elity** lub **watchman** z Watchpost.
+
+Eskalacja (S-010): niezadowolony obywatel pozostawiony sam sobie staje się rozbójnikiem, rozbójnik złodziejem, a złodziej przy dalszym niezadowoleniu wandalem.
 
 ### Watchpost
 
@@ -59,6 +62,7 @@ Kolumna przed domem = szansa na spisek przestępczy. Przejście watchmana obniż
 - **Pożar**: superintendent biegnie gasić. Jeśli zdąży przed pełnym objęciem budynku ogniem, budynek ocalał; jeśli nie, budynek przepada.
 - **Zawalenie**: natychmiastowe zniszczenie, bez ratunku.
 - Hephaestus zapobiega pożarom w mieście (Z:121); w gniewie podpala budynki (Z:126).
+- Poradnik (S-010): higiena i bezpieczeństwo zawsze na najwyższym priorytecie, bo "pilna potrzeba to nie dopuścić, by budynki się waliły"; przy równych priorytetach ten sektor napełnia się pracownikami szybciej niż inne. Infirmary, fontanna i Maintenance Office podnoszą ocenę higieny.
 - Widok See Hazards: kolumna ryzyka przed każdym budynkiem.
 
 ## Woda (Z:91-92)

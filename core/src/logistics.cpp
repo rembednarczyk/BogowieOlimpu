@@ -333,7 +333,7 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
 
 void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
     for (auto& [wid, w] : st.walkers.items) {
-        if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime) {
+        if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);

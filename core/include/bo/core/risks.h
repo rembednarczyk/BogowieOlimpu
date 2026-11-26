@@ -31,6 +31,14 @@ std::vector<WalkerId> catch_outlaws(WorldState& state, const DataCatalog& catalo
 // A thief empties an elite house's stores; a vandal destroys the house (Z:87-88). The criminal then vanishes.
 void crime_at_target(WorldState& state, const DataCatalog& catalog, Walker& w, RiskEvents& ev);
 
+// A superintendent sent to a fire puts it out if it burns no longer than extinguish_days, then goes home.
+void extinguish_at_target(WorldState& state, const DataCatalog& catalog, Walker& w);
+
+// Every tick: a mugger on the same tile as a passer-by kills them; the nearest household loses
+// mugger_victims residents [eZeus, Z:87]. A mugger stops after kMuggerVictims attacks [ZAŁOŻENIE, L-104].
+inline constexpr std::uint32_t kMuggerVictims = 3;
+std::vector<WalkerId> muggings(WorldState& state, const DataCatalog& catalog);
+
 // Replaces a building with ruins on its own tiles (roads under it stay); residents become homeless.
 void ruin_building(WorldState& state, const DataCatalog& catalog, BuildingId id, RiskEvents& ev);
 

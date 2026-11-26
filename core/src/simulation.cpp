@@ -337,10 +337,13 @@ void Simulation::step_walkers() {
     for (auto& [id, w] : walkers) {
         if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Crime) {
             crime_at_target(state_, catalog_, w, crimes);
+        } else if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Extinguish) {
+            extinguish_at_target(state_, catalog_, w);
         }
     }
     emit_risks(*this, crimes);
     catch_outlaws(state_, catalog_);
+    muggings(state_, catalog_);
     handle_arrivals(state_, catalog_);
     for (auto it = walkers.begin(); it != walkers.end();) {
         if (it->second.phase != WalkerPhase::Done) {

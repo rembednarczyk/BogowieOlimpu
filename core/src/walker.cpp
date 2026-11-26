@@ -100,7 +100,9 @@ bool roam_decide(const CityState& city, Walker& w) {
     RoadMask mask{};
     int roads = 0;
     for (const Dir d : kDirs) {
-        mask[static_cast<std::size_t>(d)] = city.map.is_roam_road(step(w.tile, d)) && city.map.can_step(w.tile, d);
+        const TilePos n = step(w.tile, d);
+        const bool road = w.ignores_roadblocks ? city.map.is_road(n) : city.map.is_roam_road(n);
+        mask[static_cast<std::size_t>(d)] = road && city.map.can_step(w.tile, d);
         roads += roam_ok(mask, d) ? 1 : 0;
     }
     apply_wide_road(city, w, mask, roads);
@@ -246,6 +248,7 @@ WalkerId spawn_roaming_walker(CityState& city, WalkerStore& walkers, const DataC
     w.max_roam_ticks = *t->second.roam_ticks;
     w.coverage_days = t->second.coverage_days;
     w.resets = t->second.resets;
+    w.ignores_roadblocks = t->second.ignores_roadblocks;
     const auto bt = catalog.buildings.find(b->second.type);
     w.return_north = bt != catalog.buildings.end() && bt->second.return_north;
     constexpr std::int32_t kDx[] = {0, 1, 0, -1};

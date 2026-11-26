@@ -2,47 +2,46 @@
  "src": "docs/gameplay/07-higiena-bezpieczenstwo.md (Z:84-90), 20 i 24 (S-004, rodzina S-006/S-007)",
  "hazard_threshold": 960,
  "hazard_threshold_src": "S-004 legenda: zawalenie po 60/damage_risk miesiącach bez wizyty; licznik += ryzyko co dzień, próg 60 x 16 dni",
- "fire_uses_same_threshold": true,
- "fire_src": "[ZAŁOŻENIE] doc 24: pożar w tej samej postaci i z tym samym progiem co zawalenie",
  "burn_days": 32,
  "burn_src": "[RODZINA] S-006: płonąca ruina płonie ok. 32 dni",
  "spread_every_days": 8,
  "spread_chance_per_4": 1,
  "spread_src": "[RODZINA] S-006: co 8 dni szansa 1/4 na podpalenie sąsiada w kierunku wiatru losowanego co rok",
- "extinguish_src": "[ZAŁOŻENIE L-104] Z:90: superintendent ratuje budynek, jeśli zdąży przed pełnym objęciem ogniem; 8 dni (stała kExtinguishWindowDays w core/include/bo/core/walker.h)",
- "disease_threshold": 3840,
+ "extinguish_src": "[ZAŁOŻENIE L-104] Z:90: ratunek, jeśli zdąży przed pełnym objęciem ogniem; 12 dni",
+ "disease_threshold": 960,
  "disease_hungry_multiplier": 2,
- "disease_src": "[ZAŁOŻENIE L-104] licznik += DRI co dzień (podwójnie bez żywności, gdy poziom je, Z:84), próg 4 x próg zawalenia: chata bez healera i jedzenia choruje po ok. 6 miesiącach; L-021b",
- "plague_death_percent": 50,
- "quarantine_days": 96,
- "plague_src": "[ZAŁOŻENIE L-104] Z:85: umiera część mieszkańców, kwarantanna na kilka miesięcy",
+ "disease_src": "[ZAŁOŻENIE L-104] licznik domu += DRI co dzień (podwójnie bez żywności, gdy poziom je, Z:84); zaraza tylko przy higienie miasta < 40",
+ "quarantine_days": 48,
+ "plague_src": "S-010 (Prima): umiera jeden na trzech mieszkańców zarażonego domu; Z:85: część mieszkańców umiera",
  "crime_threshold": 960,
  "crime_src": "[ZAŁOŻENIE L-104] licznik += CRI co dzień, próg jak zawalenie; L-022b",
- "criminal_by_happiness": [
-  {
-   "below": 11,
-   "walker": "vandal"
-  },
-  {
-   "below": 30,
-   "walker": "thief"
-  },
-  {
-   "below": 50,
-   "walker": "mugger"
-  },
-  {
-   "below": 101,
-   "walker": "disgruntled_citizen"
-  }
- ],
- "criminal_src": "[RODZINA] progi < 50, < 30, <= 10 (doc 24); kolejność postaci Z:87-88",
  "criminal_roam_ticks": 512,
  "criminal_roam_src": "[ZAŁOŻENIE L-104] zasięg jak spacerujący kultury",
- "daily_spread": [
-  0,
-  1,
-  2
+ "fire_model_src": "[RODZINA] S-007 (Akhenaten, oznaczone OG): ryzyko pożaru rośnie tylko w 1 dniu na 8 (maska budynku zgodna z losowym bajtem dnia), o fire_risk x losowy czynnik 1-5; S-007 podaje pomiar oryginału: dom zapala się po ok. 10 miesiącach na normalnym poziomie. U nas chata (Hero, fire_risk 15) średnio po ok. 10,7 miesiąca. Zastępuje założenie 'jak zawalenie'.",
+ "fire_factor_min": 1,
+ "fire_factor_max": 5,
+ "collapse_src": "S-004 legenda: zawalenie po 60/damage_risk miesiącach bez wizyty, bez losowości; S-010: 'pilna potrzeba to nie dopuścić, by budynki się waliły' (Hygiene & Safety zawsze na najwyższym priorytecie)",
+ "hygiene_gate": 40,
+ "hygiene_start": 50,
+ "hygiene_step": 2,
+ "hygiene_src": "[RODZINA] S-006: zdrowie miasta zmierza o 2/mies. do udziału mieszkańców z lekarzem i żywnością (pełny), z jednym z nich (1/4), bez obu (0); zaraza możliwa poniżej 40; małe miasto stałe 50. Z:84: higiena liczona dla całego miasta; S-010: brak higieny = zaraza na pewno",
+ "quarantine_src": "[ZAŁOŻENIE L-104] Z:85 'na kilka miesięcy', S-010 'kilka miesięcy' / 'parę miesięcy rekonwalescencji': 3 miesiące",
+ "plague_spread_radius": 5,
+ "plague_spread_percent": 50,
+ "plague_spread_src": "S-010: inne domy w okolicy (niekoniecznie sąsiednie) mają dużą szansę zarażenia; [eZeus] S-008: każdy dom w promieniu 5 z szansą 50 %",
+ "crime_escalation": [
+  "disgruntled_citizen",
+  "mugger",
+  "thief",
+  "vandal"
  ],
- "daily_spread_src": "[RODZINA] doc 24: rodzina dodaje ryzyko z losowym mnożnikiem; u nas mnożnik 0, 1 albo 2 co dzień (średnio 1), strumień Hazards"
+ "crime_escalation_src": "S-010: niezadowolony obywatel może stać się rozbójnikiem, ten złodziejem, a ten wandalem (dalsze niezadowolenie)",
+ "crime_happiness_below": 50,
+ "crime_happiness_src": "[RODZINA] S-006: przestępcy tylko z domów o zadowoleniu < 50",
+ "mugger_victims": 5,
+ "mugger_src": "[eZeus] S-008: zabicie spacerującego zabiera 5 mieszkańców; Z:87 rozbójnicy napadają przechodniów i mogą zabić",
+ "firefighter_reach": 25,
+ "firefighter_src": "[RODZINA] S-007 fire_detection_distance 25; Z:90 'superintendent przybiegnie do płonącego budynku'",
+ "extinguish_days": 12,
+ "plague_death_one_in": 3
 }

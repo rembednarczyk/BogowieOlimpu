@@ -115,7 +115,7 @@ eZeus (S-008) używa innego modelu (grupy do 8 osadników, wygładzone zadowolen
 ## Ryzyka budowlane (częściowo zamyka L-020b) [RODZINA + S-004]
 
 - **Zawalenie**: ryzyko rośnie miesięcznie o `damage_risk` z `data/building_stats.json`; budynek zawala się po `60 / damage_risk` miesiącach bez wizyty (S-004). Implementacja: licznik += damage_risk/16 dziennie, próg 60.
-- **Pożar**: analogicznie z `fire_risk` [ZAŁOŻENIE: ta sama postać i próg 60; rodzina dodaje ryzyko w 1 dniu na 8 z losowym mnożnikiem, co daje rozrzut czasu zapłonu].
+- **Pożar** (K-033): struktura oryginału z S-007: ryzyko rośnie tylko w 1 dniu na 8 (maska budynku), o `fire_risk × losowy czynnik 1-5`, próg jak zawalenie; S-007 notuje pomiar oryginału: dom zapala się po ok. 10 miesiącach. U nas chata na Hero średnio po ok. 10,7 miesiąca. eZeus (S-008) ma inny model (spadek utrzymania do 0 w 1,6 roku).
 - Wizyta superintendenta zeruje oba liczniki w kwadracie 5×5.
 - Płonąca ruina płonie ok. 32 dni; co 8 dni może podpalić sąsiada (szansa 1/4) w kierunku zależnym od losowanego co rok wiatru (S-006). Superintendent gasi pożar, jeśli zdąży (Z:90).
 

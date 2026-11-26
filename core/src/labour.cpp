@@ -108,6 +108,17 @@ void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, 
                 group_need.push_back(labour.sector_need[s]);
             }
         }
+        // At equal priority Hygiene & Safety fills first (S-010: "will automatically fill at a much quicker
+        // rate than the others"), then the rest of the group splits what is left.
+        const auto hs = std::find(group.begin(), group.end(), static_cast<std::size_t>(Sector::HygieneSafety));
+        if (hs != group.end()) {
+            const auto k = static_cast<std::size_t>(hs - group.begin());
+            const std::uint32_t n = std::min(available, group_need[k]);
+            labour.sector_employed[group[k]] = n;
+            available -= n;
+            group.erase(group.begin() + static_cast<std::ptrdiff_t>(k));
+            group_need.erase(group_need.begin() + static_cast<std::ptrdiff_t>(k));
+        }
         const auto given = split(available, group_need);
         for (std::size_t k = 0; k < group.size(); ++k) {
             labour.sector_employed[group[k]] = given[k];

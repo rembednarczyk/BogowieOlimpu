@@ -107,6 +107,7 @@ struct WalkerType {
     std::optional<std::int32_t> max_source_distance;  // vendors: tiles to a storage (doc 24: 37 measured)
     std::uint8_t resets = 0;      // risk counters a visit clears: 1 fire, 2 collapse, 4 disease, 8 crime (C7)
     bool stops_outlaws = false;   // watchman, nobleman (Z:88)
+    bool ignores_roadblocks = false;  // disgruntled citizens (S-010)
 };
 
 // Mood and migration parameters (data/migration.json, doc 24).
@@ -163,11 +164,22 @@ struct RiskParams {
     std::int32_t spread_chance_per_4 = 1;
     std::int32_t disease_threshold = 960;
     std::int32_t disease_hungry_multiplier = 2;
-    std::int32_t plague_death_percent = 50;
+    std::int32_t plague_death_one_in = 3;  // S-010: one in three residents of an infected house dies
     std::int32_t quarantine_days = 96;
     std::int32_t crime_threshold = 960;
-    std::vector<std::pair<std::int32_t, std::string>> criminal_by_happiness;  // (below, walker), first match
     std::uint32_t criminal_roam_ticks = 512;
+    std::int32_t fire_factor_min = 1;      // fire grows on 1 day in 8 by risk x factor (family, S-007)
+    std::int32_t fire_factor_max = 5;
+    std::int32_t hygiene_gate = 40;        // plague only below this city hygiene
+    std::int32_t hygiene_start = 50;
+    std::int32_t hygiene_step = 2;         // monthly move toward the target
+    std::int32_t plague_spread_radius = 5;
+    std::int32_t plague_spread_percent = 50;
+    std::vector<std::string> crime_escalation;  // disgruntled -> mugger -> thief -> vandal (S-010)
+    std::int32_t crime_happiness_below = 50;
+    std::uint32_t mugger_victims = 5;
+    std::int32_t firefighter_reach = 25;
+    std::int32_t extinguish_days = 12;
 };
 
 struct DataCatalog {

@@ -159,6 +159,7 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
             w.resets |= static_cast<std::uint8_t>(v == "fire" ? 1 : v == "collapse" ? 2 : v == "disease" ? 4 : v == "crime" ? 8 : 0);
         }
         w.stops_outlaws = o.value("stops_outlaws", false);
+        w.ignores_roadblocks = o.value("ignores_roadblocks", false);
         cat.walkers.emplace(w.id, w);
     }
 }
@@ -237,13 +238,22 @@ void load_risks(const std::map<std::string, json>& docs, RiskParams& p) {
         p.spread_chance_per_4 = rk.value("spread_chance_per_4", p.spread_chance_per_4);
         p.disease_threshold = rk.value("disease_threshold", p.disease_threshold);
         p.disease_hungry_multiplier = rk.value("disease_hungry_multiplier", p.disease_hungry_multiplier);
-        p.plague_death_percent = rk.value("plague_death_percent", p.plague_death_percent);
+        p.plague_death_one_in = rk.value("plague_death_one_in", p.plague_death_one_in);
         p.quarantine_days = rk.value("quarantine_days", p.quarantine_days);
         p.crime_threshold = rk.value("crime_threshold", p.crime_threshold);
-        for (const auto& row : rk.at("criminal_by_happiness")) {
-            p.criminal_by_happiness.emplace_back(row.at("below"), row.at("walker"));
-        }
         p.criminal_roam_ticks = rk.value("criminal_roam_ticks", p.criminal_roam_ticks);
+        p.fire_factor_min = rk.value("fire_factor_min", p.fire_factor_min);
+        p.fire_factor_max = rk.value("fire_factor_max", p.fire_factor_max);
+        p.hygiene_gate = rk.value("hygiene_gate", p.hygiene_gate);
+        p.hygiene_start = rk.value("hygiene_start", p.hygiene_start);
+        p.hygiene_step = rk.value("hygiene_step", p.hygiene_step);
+        p.plague_spread_radius = rk.value("plague_spread_radius", p.plague_spread_radius);
+        p.plague_spread_percent = rk.value("plague_spread_percent", p.plague_spread_percent);
+        p.crime_escalation = rk.value("crime_escalation", std::vector<std::string>{});
+        p.crime_happiness_below = rk.value("crime_happiness_below", p.crime_happiness_below);
+        p.mugger_victims = rk.value("mugger_victims", p.mugger_victims);
+        p.firefighter_reach = rk.value("firefighter_reach", p.firefighter_reach);
+        p.extinguish_days = rk.value("extinguish_days", p.extinguish_days);
     }
 }
 
