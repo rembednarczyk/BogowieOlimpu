@@ -42,7 +42,7 @@ Simulation city_sim() {
     rows[5] = std::string(16, '=');
     rows[5][9] = 'x';
     rows[2][3] = 'T';
-    Simulation sim(bo::test::catalog(), SimulationConfig{7, Difficulty::Hero, 2000, rows});
+    Simulation sim(bo::test::catalog(), SimulationConfig{7, Difficulty::Hero, 2000, rows, true});
     sim.issue(PlaceBuilding{"fountain", 2, 3});
     sim.issue(PlaceBuilding{"maintenance_office", 6, 6});
     sim.issue(ClearLand{3, 2});
@@ -66,39 +66,40 @@ TEST_CASE("save v2: map, buildings, coverage and walkers mid-route survive a rou
     CHECK(b->state().city.buildings.items.size() == 3);
 }
 
-TEST_CASE("save v1 migrates to v2 with an empty city") {
-    Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
-    a.step(10);
-    auto bytes = a.save();
-    // A v1 save is the current layout without the city and walker blocks: for an empty city 16 bytes of map
-    // and buildings, 29 bytes of the undo record (v3), 4 bytes of homeless (v4) and 8 bytes of walkers.
-    bytes.resize(bytes.size() - 57);
-    bytes[4] = 1;
+// Tail of a save with an empty city, in order: map size 8, buildings 8, undo record 29 (v3), homeless 4 (v4),
+// labour and finance 149 (v5), walkers 8. Older versions lack the blocks added later.
+namespace {
+
+constexpr std::size_t kWalkersBlock = 8;
+constexpr std::size_t kEconomy = 149;
+constexpr std::size_t kHomeless = 4;
+constexpr std::size_t kUndo = 29;
+constexpr std::size_t kCityBase = 16;
+
+void check_migration(std::uint8_t version, std::vector<std::uint8_t> bytes, std::size_t erase_before_walkers,
+                     bool drop_city_and_walkers, std::uint64_t expected_hash) {
+    if (drop_city_and_walkers) {
+        bytes.resize(bytes.size() - (kCityBase + kUndo + kHomeless + kEconomy + kWalkersBlock));
+    } else {
+        const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kWalkersBlock);
+        bytes.erase(end - static_cast<std::ptrdiff_t>(erase_before_walkers), end);
+    }
+    bytes[4] = version;
     std::string error;
     auto b = Simulation::load(bo::test::catalog(), bytes, error);
     REQUIRE(b.has_value());
     CHECK(error.empty());
-    CHECK(a.state_hash() == b->state_hash());
+    CHECK(b->state_hash() == expected_hash);
 }
 
-TEST_CASE("save v2 and v3 migrate to the current format") {
+}  // namespace
+
+TEST_CASE("older saves (v1-v4) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const auto current = a.save();
-    // Empty city: v3 lacks the 4-byte homeless count, v2 also the 29-byte undo record; both precede the
-    // 8-byte walker block.
-    auto v3 = current;
-    v3.erase(v3.end() - 8 - 4, v3.end() - 8);
-    v3[4] = 3;
-    std::string error3;
-    auto c = Simulation::load(bo::test::catalog(), v3, error3);
-    REQUIRE(c.has_value());
-    CHECK(a.state_hash() == c->state_hash());
-    auto bytes = current;
-    bytes.erase(bytes.end() - 8 - 33, bytes.end() - 8);
-    bytes[4] = 2;
-    std::string error;
-    auto b = Simulation::load(bo::test::catalog(), bytes, error);
-    REQUIRE(b.has_value());
-    CHECK(a.state_hash() == b->state_hash());
+    check_migration(4, current, kEconomy, false, a.state_hash());
+    check_migration(3, current, kEconomy + kHomeless, false, a.state_hash());
+    check_migration(2, current, kEconomy + kHomeless + kUndo, false, a.state_hash());
+    check_migration(1, current, 0, true, a.state_hash());
 }

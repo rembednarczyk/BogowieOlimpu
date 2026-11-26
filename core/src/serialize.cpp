@@ -72,6 +72,12 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u8(cmd.rotation);  // since v3
             } else if constexpr (std::is_same_v<T, Undo>) {
                 // no payload
+            } else if constexpr (std::is_same_v<T, SetSectorPriority>) {
+                w.u8(cmd.sector);
+                w.u8(cmd.priority);
+            } else if constexpr (std::is_same_v<T, SetIndustryEnabled>) {
+                w.str(cmd.type);
+                w.u8(cmd.enabled ? 1 : 0);
             } else {
                 w.i32(cmd.x);
                 w.i32(cmd.y);
@@ -128,6 +134,24 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
         case 7:
             out = Undo{};
             return true;
+        case 8: {
+            SetSectorPriority c;
+            if (!r.u8(c.sector) || !r.u8(c.priority)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 9: {
+            SetIndustryEnabled c;
+            std::uint8_t on = 0;
+            if (!r.str(c.type) || !r.u8(on)) {
+                return false;
+            }
+            c.enabled = on != 0;
+            out = c;
+            return true;
+        }
         default:
             return false;
     }
@@ -160,6 +184,7 @@ std::vector<std::uint8_t> serialize_state(const WorldState& s, std::uint64_t dat
         write_command(w, sc.command);
     }
     write_city(w, s.city);        // since v2 (v3: building geometry, undo record)
+    write_economy(w, s);          // since v5: labour and finance details
     write_walkers(w, s.walkers);  // since v2 (v3: return_north)
     return w.bytes();
 }
@@ -217,7 +242,8 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
     }
     // Migration v1 -> v2: v1 saves have no city and no walkers (empty map).
     if (out.format_version >= 2 &&
-        (!read_city(r, s.city, out.format_version) || !read_walkers(r, s.walkers, out.format_version))) {
+        (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s)) ||
+         !read_walkers(r, s.walkers, out.format_version))) {
         error = "save.corrupt";
         return std::nullopt;
     }

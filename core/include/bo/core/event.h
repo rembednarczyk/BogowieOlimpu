@@ -78,9 +78,14 @@ struct HouseChanged {  // level change or abandonment (C2)
     bool abandoned = false;
 };
 
+struct MonthlyFinance {  // C6: taxes collected and wages paid at the start of a month
+    std::int64_t taxes = 0;
+    std::int64_t wages = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
-                           HouseChanged>;
+                           HouseChanged, MonthlyFinance>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

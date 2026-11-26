@@ -43,7 +43,7 @@ func _init() -> void:
 	for y in 12:
 		rows.append("================" if y == 5 else "................")
 	var m := BoSimulation.new()
-	check(m.start_with_map("res://data", 7, "", 2000, rows) == "", "start_with_map")
+	check(m.start_with_map("res://data", 7, "", 2000, rows, true) == "", "start_with_map (full staffing: no people)")
 	check(m.get_map_width() == 16 and m.get_map_height() == 12, "map size")
 	m.place_building("fountain", 2, 3)
 	m.place_building("fountain", 2, 3)
@@ -76,6 +76,22 @@ func _init() -> void:
 	check(uev.filter(func(e): return e["type"] == "undo_applied").size() == 1, "undo_applied event")
 	check(u.get_buildings().size() == 1, "undo removed the stall")
 	check(u.get_treasury() == 500 - 50, "stall refunded (Hero costs, S-004)")
+
+	# Labour and finance through the binding.
+	var w := BoSimulation.new()
+	var wrows := PackedStringArray()
+	for y in 8:
+		wrows.append("==========" if y == 4 else "..........")
+	w.start_with_map("res://data", 5, "", 1000, wrows)
+	w.place_building("common_housing", 0, 2)
+	w.place_building("fountain", 4, 2)
+	w.step(1)
+	check(w.get_buildings()[0].has("population"), "house fields")
+	w.run_days(1)
+	check(w.get_workforce() == 0 and w.get_buildings()[1]["staffing"] == 0, "no people, no workers")
+	w.run_days(16)
+	var fev: Array = w.drain_events()
+	check(fev.filter(func(e): return e["type"] == "monthly_finance").size() == 2, "monthly_finance on day 0 of months 1 and 2")
 
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:

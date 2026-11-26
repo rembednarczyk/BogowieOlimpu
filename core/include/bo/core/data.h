@@ -88,6 +88,7 @@ struct WalkerType {
     std::optional<std::uint32_t> roam_ticks;    // roaming budget (doc 24)
     std::int64_t speed_raw = 0;                 // steps per tick as Fixed raw value (54.4 tiles/month = 1.0)
     std::int32_t culture_points = 0;            // points a visit gives a house (doc 18)
+    std::uint8_t coverage_days = 96;            // service counter set by a visit (doc 24; clerk 50)
 };
 
 struct DataCatalog {
@@ -101,6 +102,12 @@ struct DataCatalog {
     std::vector<HousingLevel> elite_levels;         // residence .. estate
     Difficulty default_difficulty = Difficulty::Hero;
     std::array<std::int32_t, static_cast<std::size_t>(TaxRate::Count)> tax_rate_per_mille{};
+    // Share of common-house residents who work, percent [difficulty][wage rate] (S-004, doc 18).
+    std::array<std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)>,
+               static_cast<std::size_t>(Difficulty::Count)>
+        worker_percent{};
+    // Yearly wage per worker in thousandths of a drachma, per wage rate (doc 18).
+    std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_per_mille{};
 };
 
 struct DataLoadResult {

@@ -198,7 +198,7 @@ void follow_path(CityState& city, Walker& w) {
 
 void provide_coverage(CityState& city, const Walker& w) {
     for (const BuildingId id : buildings_in_square(city, w.tile, kServiceRadius)) {
-        city.buildings.items.at(id).coverage[w.type] = kServiceCoverageDays;
+        city.buildings.items.at(id).coverage[w.type] = w.coverage_days;
     }
 }
 
@@ -219,6 +219,7 @@ WalkerId spawn_roaming_walker(CityState& city, WalkerStore& walkers, const DataC
     w.dir = start_dir;
     w.speed_raw = t->second.speed_raw;
     w.max_roam_ticks = *t->second.roam_ticks;
+    w.coverage_days = t->second.coverage_days;
     const auto bt = catalog.buildings.find(b->second.type);
     w.return_north = bt != catalog.buildings.end() && bt->second.return_north;
     constexpr std::int32_t kDx[] = {0, 1, 0, -1};

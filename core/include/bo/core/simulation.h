@@ -19,6 +19,7 @@ struct SimulationConfig {
     std::optional<Difficulty> difficulty;  // default: catalog default (R-013: Hero)
     std::int64_t initial_treasury = 0;     // from the scenario
     std::vector<std::string> text_map;     // optional map in the parse_text_map format (tests, golden scenario)
+    bool full_staffing = false;            // development switch (LabourState::full_staffing)
 };
 
 class Simulation;

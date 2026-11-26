@@ -55,7 +55,7 @@ bool operator==(const Building& a, const Building& b) {
     return a.id == b.id && a.type == b.type && a.origin == b.origin && a.width == b.width && a.height == b.height &&
            a.rotation == b.rotation && a.tiles == b.tiles && a.road_mode == b.road_mode && a.road_tile == b.road_tile &&
            a.parent == b.parent && a.slot_origins == b.slot_origins && a.slots == b.slots &&
-           a.road_access == b.road_access && a.staffing_percent == b.staffing_percent &&
+           a.road_access == b.road_access && a.staffing_percent == b.staffing_percent && a.workers == b.workers &&
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
            a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house;
 }

@@ -13,8 +13,8 @@ namespace bo::core {
 
 inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian bytes: B S O V
 // v2: city map, buildings, walkers. v3: rotation, building tiles, agora slots, undo record, Undo command.
-// v4: house state, homeless count.
-inline constexpr std::uint32_t kSaveFormatVersion = 4;
+// v4: house state, homeless count. v5: labour, finance details, building workers, clerk counter.
+inline constexpr std::uint32_t kSaveFormatVersion = 5;
 
 class ByteWriter {
 public:

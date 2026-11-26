@@ -117,6 +117,7 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
         const auto milli = static_cast<std::int64_t>(std::llround(o.value("speed_tiles_per_month", 54.4) * 1000.0));
         w.speed_raw = (milli * 15 * 65536) / (816 * 1000);
         w.culture_points = o.value("culture_points", 0);
+        w.coverage_days = o.value("coverage_days", static_cast<std::uint8_t>(96));
         cat.walkers.emplace(w.id, w);
     }
 }
@@ -297,6 +298,17 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
             // Parsing a decimal literal is exact and platform independent; rounding to per mille happens once at load.
             cat.tax_rate_per_mille[i] =
                 static_cast<std::int32_t>(std::llround(diff.at("tax_rates").at(kTaxKeys[i]).get<double>() * 1000.0));
+        }
+        constexpr const char* kWageKeys[] = {"none", "very_low", "low", "normal", "high", "very_high"};
+        for (std::size_t i = 0; i < cat.wage_per_mille.size(); ++i) {
+            cat.wage_per_mille[i] = static_cast<std::int32_t>(
+                std::llround(diff.at("wage_drachmas_per_worker_year").at(kWageKeys[i]).get<double>() * 1000.0));
+        }
+        for (std::size_t d = 0; d < cat.worker_percent.size(); ++d) {
+            const auto& row = diff.at("worker_percentage").at(std::string(difficulty_code(static_cast<Difficulty>(d))));
+            for (std::size_t w = 0; w < cat.worker_percent[d].size(); ++w) {
+                cat.worker_percent[d][w] = row.at(w).get<std::int32_t>();
+            }
         }
     } catch (const json::exception& e) {
         result.errors.push_back(std::string("schema error: ") + e.what());

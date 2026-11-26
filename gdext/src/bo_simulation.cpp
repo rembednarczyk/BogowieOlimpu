@@ -94,6 +94,18 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["type"] = "undo_applied";
                        d["refund"] = static_cast<int64_t>(e.refund);
                    },
+                   [&d](const bo::core::HouseChanged& e) {
+                       d["type"] = "house_changed";
+                       d["id"] = static_cast<int64_t>(e.id);
+                       d["level"] = static_cast<int64_t>(e.level);
+                       d["elite"] = e.elite;
+                       d["abandoned"] = e.abandoned;
+                   },
+                   [&d](const bo::core::MonthlyFinance& e) {
+                       d["type"] = "monthly_finance";
+                       d["taxes"] = static_cast<int64_t>(e.taxes);
+                       d["wages"] = static_cast<int64_t>(e.wages);
+                   },
                },
                te.event);
     return d;
@@ -146,7 +158,7 @@ String BoSimulation::start(const String& data_dir, int64_t seed, const String& d
 }
 
 String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const String& difficulty_code,
-                                    int64_t initial_treasury, const PackedStringArray& rows) {
+                                    int64_t initial_treasury, const PackedStringArray& rows, bool full_staffing) {
     const String err = start(data_dir, seed, difficulty_code, initial_treasury);
     if (!err.is_empty()) {
         return err;
@@ -155,6 +167,7 @@ String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const 
     cfg.seed = static_cast<std::uint64_t>(seed);
     cfg.initial_treasury = initial_treasury;
     cfg.difficulty = sim_->state().difficulty;
+    cfg.full_staffing = full_staffing;
     for (int64_t i = 0; i < rows.size(); ++i) {
         cfg.text_map.push_back(to_std(rows[i]));
     }
@@ -182,6 +195,33 @@ void BoSimulation::undo() {
     if (sim_) {
         sim_->issue(bo::core::Undo{});
     }
+}
+
+void BoSimulation::set_sector_priority(int64_t sector, int64_t priority) {
+    if (sim_ && sector >= 0 && sector < 256 && priority >= 0 && priority < 256) {
+        sim_->issue(bo::core::SetSectorPriority{static_cast<std::uint8_t>(sector), static_cast<std::uint8_t>(priority)});
+    }
+}
+
+void BoSimulation::set_industry_enabled(const String& type, bool enabled) {
+    if (sim_) {
+        sim_->issue(bo::core::SetIndustryEnabled{to_std(type), enabled});
+    }
+}
+
+int64_t BoSimulation::get_workforce() const { return sim_ ? sim_->state().labour.workforce : 0; }
+int64_t BoSimulation::get_employed() const { return sim_ ? sim_->state().labour.employed : 0; }
+
+int64_t BoSimulation::get_appeal(int64_t x, int64_t y) const {
+    if (!sim_) {
+        return 0;
+    }
+    const auto& city = sim_->state().city;
+    const auto p = pos(x, y);
+    if (!city.map.in_bounds(p) || city.appeal.empty()) {
+        return 0;
+    }
+    return city.appeal[city.map.index(p)];
 }
 
 void BoSimulation::place_road(int64_t x, int64_t y) {
@@ -241,6 +281,13 @@ Array BoSimulation::get_buildings() const {
         d["rotation"] = static_cast<int64_t>(b.rotation);
         d["parent"] = static_cast<int64_t>(b.parent);
         d["has_road_access"] = b.road_access.has_value();
+        d["workers"] = static_cast<int64_t>(b.workers);
+        d["staffing"] = static_cast<int64_t>(b.staffing_percent);
+        if (b.house) {
+            d["house_level"] = static_cast<int64_t>(b.house->level);
+            d["population"] = static_cast<int64_t>(b.house->population);
+            d["elite"] = b.house->elite;
+        }
         out.push_back(d);
     }
     return out;
@@ -361,8 +408,14 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_data_version"), &BoSimulation::get_data_version);
     ClassDB::bind_method(D_METHOD("set_tax_rate", "rate"), &BoSimulation::set_tax_rate);
     ClassDB::bind_method(D_METHOD("set_wage_rate", "rate"), &BoSimulation::set_wage_rate);
-    ClassDB::bind_method(D_METHOD("start_with_map", "data_dir", "seed", "difficulty_code", "initial_treasury", "rows"),
-                         &BoSimulation::start_with_map);
+    ClassDB::bind_method(
+        D_METHOD("start_with_map", "data_dir", "seed", "difficulty_code", "initial_treasury", "rows", "full_staffing"),
+        &BoSimulation::start_with_map, DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("set_sector_priority", "sector", "priority"), &BoSimulation::set_sector_priority);
+    ClassDB::bind_method(D_METHOD("set_industry_enabled", "type", "enabled"), &BoSimulation::set_industry_enabled);
+    ClassDB::bind_method(D_METHOD("get_workforce"), &BoSimulation::get_workforce);
+    ClassDB::bind_method(D_METHOD("get_employed"), &BoSimulation::get_employed);
+    ClassDB::bind_method(D_METHOD("get_appeal", "x", "y"), &BoSimulation::get_appeal);
     ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y", "rotation"), &BoSimulation::place_building,
                          DEFVAL(0));
     ClassDB::bind_method(D_METHOD("undo"), &BoSimulation::undo);

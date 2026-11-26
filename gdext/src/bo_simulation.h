@@ -25,7 +25,8 @@ public:
                         int64_t initial_treasury);
     // Same as start, with a map in the text format of bo::core::parse_text_map (one String per row).
     godot::String start_with_map(const godot::String& data_dir, int64_t seed, const godot::String& difficulty_code,
-                                 int64_t initial_treasury, const godot::PackedStringArray& rows);
+                                 int64_t initial_treasury, const godot::PackedStringArray& rows,
+                                 bool full_staffing = false);
     void step(int64_t ticks);
     void run_days(int64_t days);
 
@@ -45,6 +46,11 @@ public:
     // Build commands (executed at the next tick; failures arrive as "command_rejected" events).
     void place_building(const godot::String& type, int64_t x, int64_t y, int64_t rotation = 0);
     void undo();
+    void set_sector_priority(int64_t sector, int64_t priority);
+    void set_industry_enabled(const godot::String& type, bool enabled);
+    int64_t get_workforce() const;
+    int64_t get_employed() const;
+    int64_t get_appeal(int64_t x, int64_t y) const;
     void place_road(int64_t x, int64_t y);
     void place_roadblock(int64_t x, int64_t y);
     void clear_land(int64_t x, int64_t y);
@@ -55,7 +61,8 @@ public:
     int64_t get_map_height() const;
     // {"terrain": String, "road": bool, "roadblock": bool, "building": int}
     godot::Dictionary get_tile(int64_t x, int64_t y) const;
-    // Array of {"id", "type", "x", "y", "width", "height", "rotation", "parent", "has_road_access"}
+    // Array of {"id", "type", "x", "y", "width", "height", "rotation", "parent", "has_road_access", "workers",
+    // "staffing"} plus for houses {"house_level", "population", "elite"}
     godot::Array get_buildings() const;
     // Array of {"id", "type", "x", "y", "dir", "phase", "progress"}; progress 0..1 toward the next tile.
     godot::Array get_walkers() const;

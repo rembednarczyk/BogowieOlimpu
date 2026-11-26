@@ -24,7 +24,7 @@ std::vector<std::string> ring_map() {
 }
 
 Simulation ring_sim() {
-    SimulationConfig cfg{42, Difficulty::Hero, 1000, ring_map()};
+    SimulationConfig cfg{42, Difficulty::Hero, 1000, ring_map(), true};  // full staffing: no houses here
     Simulation sim(bo::test::catalog(), cfg);
     REQUIRE(sim.setup_error().empty());
     sim.issue(PlaceBuilding{"fountain", 5, 2});
@@ -88,17 +88,24 @@ TEST_CASE("coverage decays by one per day") {
     auto& b = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({5, 2}).building);
     sim.mutable_state().walkers.items.clear();  // isolate decay from new visits
     b.roaming_walker = kNoWalker;
-    b.staffing_percent = 0;  // no new walker
+    sim.mutable_state().labour.disabled_types.insert("fountain");  // industry off: no new walker (Z:62-63)
     const auto before = b.coverage.at("water_bearer");
     sim.run_days(10);
     CHECK(b.coverage.at("water_bearer") == before - 10);
 }
 
 TEST_CASE("spawn delay follows staffing: 100% -> 0 days, 50% -> 3 days (S-007)") {
-    auto sim = ring_sim();
-    auto& b = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({5, 2}).building);
-    b.staffing_percent = 50;
+    // Real labour: one house with 5 people gives floor(5 x 42%) = 2 workers on Hero at normal wages; the
+    // fountain needs 4 (S-004), so it runs at 50%. The second fountain has no road and gets nobody.
+    SimulationConfig cfg{42, Difficulty::Hero, 1000, ring_map()};
+    Simulation sim(bo::test::catalog(), cfg);
+    sim.issue(PlaceBuilding{"fountain", 5, 2});
+    sim.issue(PlaceBuilding{"common_housing", 10, 2});
+    sim.step(1);
+    sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({10, 2}).building).house->population = 5;
     sim.run_days(3);
+    CHECK(sim.state().labour.workforce == 2);
+    CHECK(sim.state().city.buildings.items.at(sim.state().city.map.at({5, 2}).building).staffing_percent == 50);
     CHECK(sim.state().walkers.items.empty());
     sim.run_days(1);
     CHECK(sim.state().walkers.items.size() == 1);

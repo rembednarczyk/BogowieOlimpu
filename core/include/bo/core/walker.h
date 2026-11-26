@@ -47,6 +47,7 @@ struct Walker {
     std::int32_t ticks_until_next_turn = -1;  // failed-pick budget before re-aiming; -1 = never aimed
     std::uint32_t random_counter = 0;
     bool return_north = false;  // S-004: Fountain, Infirmary
+    std::uint8_t coverage_days = kServiceCoverageDays;  // counter a visit sets (clerk: 50, doc 24)
 };
 
 struct WalkerStore {

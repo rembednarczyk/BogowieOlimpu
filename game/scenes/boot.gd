@@ -52,7 +52,7 @@ static func demo_map() -> PackedStringArray:
 	return rows
 
 func _ready() -> void:
-	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map())
+	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), true)  # full staffing until immigration (C8)
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below

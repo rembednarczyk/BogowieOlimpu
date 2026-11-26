@@ -52,8 +52,19 @@ struct Demolish {
 // Reverts the build commands of the last tick that had any (Z:20), within kUndoWindowTicks.
 struct Undo {};
 
-using Command =
-    std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish, Undo>;
+// Labour panel (Z:62-63).
+struct SetSectorPriority {
+    std::uint8_t sector = 0;    // bo::core::Sector
+    std::uint8_t priority = 3;  // 0 none .. 5 very high
+};
+
+struct SetIndustryEnabled {
+    std::string type;  // building type
+    bool enabled = true;
+};
+
+using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
+                             Undo, SetSectorPriority, SetIndustryEnabled>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

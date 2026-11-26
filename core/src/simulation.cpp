@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "bo/core/appeal.h"
+#include "bo/core/finance.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
 #include "bo/core/serialize.h"
@@ -114,6 +115,25 @@ void run_house_evolution(Simulation& sim) {
     }
 }
 
+// C3: daily labour allocation, before walkers are sent (tick 31).
+void run_labour(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    allocate_labour(st.city, sim.catalog(), st.difficulty, st.finance.wage_rate, st.labour);
+}
+
+// C6: taxes and wages at the start of each month; the yearly record rolls over at the year start.
+void run_finance(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    if (st.time.day_in_month() != 0) {
+        return;
+    }
+    if (st.time.month() == 0) {
+        close_year(st.finance);
+    }
+    const auto r = settle_month(st, sim.catalog());
+    sim.emit(MonthlyFinance{r.taxes, r.wages});
+}
+
 bool is_build_command(const Command& c) {
     return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
            std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
@@ -133,6 +153,8 @@ const std::vector<DailySystem>& daily_schedule() {
         {"appeal", 20, &run_appeal},
         {"house_consumption", 21, &run_house_consumption},
         {"house_evolution", 22, &run_house_evolution},
+        {"labour", 23, &run_labour},
+        {"finance", 24, &run_finance},
         {"walker_spawn", 31, &run_walker_spawn},
         {"coverage_decay", 35, &run_coverage_decay},
     };
@@ -143,6 +165,7 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.rng.reseed(config.seed);
     state_.difficulty = config.difficulty.value_or(catalog.default_difficulty);
     state_.finance.treasury = config.initial_treasury;
+    state_.labour.full_staffing = config.full_staffing;
     if (!config.text_map.empty()) {
         auto map = parse_text_map(config.text_map, setup_error_);
         if (map) {
@@ -218,6 +241,7 @@ void Simulation::apply_undo_command(std::uint32_t index) {
     }
     const auto refund = apply_undo(city);
     state_.finance.treasury += *refund;
+    state_.finance.this_year.construction -= *refund;
     for (const Building& b : rec.buildings_before) {
         Building& restored = city.buildings.items.at(b.id);
         if (state_.walkers.items.count(restored.roaming_walker) == 0) {
@@ -255,7 +279,8 @@ void Simulation::apply_build(const BuildResult& r, std::uint32_t index, TilePos 
         emit(CommandRejected{index, r.reason});
         return;
     }
-    state_.finance.treasury -= r.cost;  // debt allowed [ZAŁOŻENIE, L-094]
+    state_.finance.treasury -= r.cost;  // treasury may go below zero (doc 08); building in debt: L-094
+    state_.finance.this_year.construction += r.cost;
     tick_build_cost_ += r.cost;
     if (tile_changed) {
         emit(TileChanged{tile.x, tile.y});
@@ -301,6 +326,22 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                        apply_build(r, index, {c.x, c.y}, true);
                    },
                    [&](const Undo&) { apply_undo_command(index); },
+                   [&](const SetSectorPriority& c) {
+                       if (c.sector >= kSectors || c.priority >= kPriorityLevels) {
+                           emit(CommandRejected{index, "labour.bad_priority"});
+                           return;
+                       }
+                       state_.labour.priority[c.sector] = c.priority;
+                   },
+                   [&](const SetIndustryEnabled& c) {
+                       if (catalog_.buildings.count(c.type) == 0) {
+                           emit(CommandRejected{index, "labour.unknown_industry"});
+                       } else if (c.enabled) {
+                           state_.labour.disabled_types.erase(c.type);
+                       } else {
+                           state_.labour.disabled_types.insert(c.type);
+                       }
+                   },
                },
                command);
 }

@@ -92,6 +92,7 @@ void write_building(ByteWriter& w, const Building& b) {
         w.u32(h.food_remainder);
         w.u8(h.failed_checks);
     }
+    w.u32(b.workers);  // since v5
 }
 
 bool read_house(ByteReader& r, Building& b) {
@@ -162,7 +163,7 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
         b.coverage[service] = days;
     }
     if (version >= 3) {
-        return read_building_v3(r, b) && (version < 4 || read_house(r, b));
+        return read_building_v3(r, b) && (version < 4 || read_house(r, b)) && (version < 5 || r.u32(b.workers));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -299,6 +300,7 @@ void write_walkers(ByteWriter& w, const WalkerStore& s) {
         w.i32(k.ticks_until_next_turn);
         w.u32(k.random_counter);
         w.u8(k.return_north ? 1 : 0);  // since v3
+        w.u8(k.coverage_days);         // since v5
     }
 }
 
@@ -320,7 +322,8 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.i64(k.speed_raw) && r.i64(k.step_accum_raw) && read_positions(r, k.path) &&
                         r.u32(k.path_pos) && r.u32(k.roam_ticks) && r.u32(k.max_roam_ticks) &&
                         read_pos(r, k.roam_target) && r.u8(turn) && r.i32(k.ticks_until_next_turn) &&
-                        r.u32(k.random_counter) && (version < 3 || r.u8(north));
+                        r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
+                        (version < 5 || r.u8(k.coverage_days));
         if (!ok) {
             return false;
         }
@@ -333,6 +336,77 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
         k.turn = static_cast<std::int8_t>(turn);
         k.return_north = north != 0;
         s.items.emplace(k.id, std::move(k));
+    }
+    return true;
+}
+
+}  // namespace bo::core
+
+namespace bo::core {
+
+// Labour and finance details (v5). Written after the city block, before the walkers.
+void write_economy(ByteWriter& w, const WorldState& s) {
+    const LabourState& l = s.labour;
+    for (const std::uint8_t p : l.priority) {
+        w.u8(p);
+    }
+    w.u32(static_cast<std::uint32_t>(l.disabled_types.size()));
+    for (const auto& t : l.disabled_types) {
+        w.str(t);
+    }
+    w.u8(l.full_staffing ? 1 : 0);
+    w.u32(l.workforce);
+    w.u32(l.employed);
+    for (std::size_t i = 0; i < kSectors; ++i) {
+        w.u32(l.sector_need[i]);
+        w.u32(l.sector_employed[i]);
+    }
+    const FinanceState& f = s.finance;
+    w.i64(f.tax_remainder);
+    w.i64(f.wage_remainder);
+    for (const FinanceYear* y : {&f.this_year, &f.last_year}) {
+        w.i64(y->taxes);
+        w.i64(y->wages);
+        w.i64(y->construction);
+    }
+}
+
+bool read_economy(ByteReader& r, WorldState& s) {
+    LabourState& l = s.labour;
+    for (auto& p : l.priority) {
+        if (!r.u8(p) || p >= kPriorityLevels) {
+            return false;
+        }
+    }
+    std::uint32_t n = 0;
+    if (!r.u32(n) || n > 4096) {
+        return false;
+    }
+    for (std::uint32_t i = 0; i < n; ++i) {
+        std::string t;
+        if (!r.str(t)) {
+            return false;
+        }
+        l.disabled_types.insert(t);
+    }
+    std::uint8_t full = 0;
+    if (!r.u8(full) || !r.u32(l.workforce) || !r.u32(l.employed)) {
+        return false;
+    }
+    l.full_staffing = full != 0;
+    for (std::size_t i = 0; i < kSectors; ++i) {
+        if (!r.u32(l.sector_need[i]) || !r.u32(l.sector_employed[i])) {
+            return false;
+        }
+    }
+    FinanceState& f = s.finance;
+    if (!r.i64(f.tax_remainder) || !r.i64(f.wage_remainder)) {
+        return false;
+    }
+    for (FinanceYear* y : {&f.this_year, &f.last_year}) {
+        if (!r.i64(y->taxes) || !r.i64(y->wages) || !r.i64(y->construction)) {
+            return false;
+        }
     }
     return true;
 }

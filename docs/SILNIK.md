@@ -84,7 +84,16 @@ Przeniesione do modułów, które dają im sens: konkretni spacerujący celowi (
 | B6 Spacerujący celowi | doręczyciele, vendorzy, wozy, pasterze, myśliwi, rybacy | doc 02, 19 |
 | B7 Indeks przestrzenny | obsługa w kwadracie 5×5, zapytania o budynki w promieniu | doc 24 |
 
-### C. Systemy miasta
+### C. Systemy miasta: W TOKU (2026-11-26)
+
+Zrobione:
+- C1: pole atrakcyjności według wzoru S-004 (pierścienie od krawędzi obrysu, sumowanie wkładów, bulwar i aleja emitują z każdego kafla), liczone codziennie; dom widzi najwyższą wartość ze swoich kafli [RODZINA].
+- C2: działki domów przy drodze (koszt Hut), ewolucja z histerezą AppE/AppD i wymaganiami z `housing.json` (woda, dobra, punkty kultury z `walkers.json`), awans o jeden poziom dziennie, regres po 3 nieudanych sprawdzeniach do najwyższego spełnionego poziomu, porzucenie domu elity, zużycie dóbr w dniach 0 i 8, nadmiar mieszkańców do licznika bezdomnych. Działka elity odrzucana do czasu magazynów (C5), bo wymaga zapasów miasta.
+- C3: pula pracowników z domów ludu według tabeli S-004 (trudność × płace), 8 sektorów, priorytety 6-stopniowe, przydział kolejno od najwyższego priorytetu (K-031), równy ułamek obsady w sektorze, wyłączanie branż, obsada wpływa na wysyłanie spacerujących.
+- C6: podatek miesięczny `TRM × mieszkańcy × stawka` tylko dla domów zarejestrowanych przez poborcę (licznik 50 dni), płace roczne wypłacane co miesiąc, ułamki przenoszone w tysięcznych, bilans roku bieżącego i poprzedniego.
+- Przełącznik deweloperski `full_staffing` (pełna obsada bez mieszkańców) dla testów spacerujących, złotego miasta i sceny demo do czasu imigracji (C8). Nie jest regułą gry.
+
+Zostaje: C4 produkcja, C5 magazyny i dystrybucja (dostawy dóbr do domów, zapasy miasta dla działek elity), C7 ryzyka, C8 nastroje, migracja i bezdomni, C9 handel; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

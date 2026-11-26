@@ -38,7 +38,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v2 appends the (empty) city and walker blocks (module B, serialize.cpp).
     // 2026-11-26: save format v3 appends the (empty) undo record (Z:20, serialize_city.cpp).
     // 2026-11-26: save format v4 appends the homeless count (module C2, serialize_city.cpp).
-    const std::uint64_t kGolden = 0x78d7def5911d51d8ULL;
+    // 2026-11-26: save format v5 adds labour and finance blocks (modules C3, C6).
+    const std::uint64_t kGolden = 0x6f5e4e8f131f6c29ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -64,7 +65,8 @@ Simulation golden_city() {
         rows[8][i] = 'T';
         rows[22][i] = ',';
     }
-    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows});
+    // Full staffing until immigration (C8) fills houses with workers.
+    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows, true});
     sim.issue(PlaceBuilding{"fountain", 6, 5});
     sim.issue(PlaceBuilding{"maintenance_office", 17, 17});
     sim.issue(PlaceBuilding{"watchpost", 10, 14});
@@ -100,7 +102,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: module B completed: save format v3, scenario extended with an agora, a stall, a boulevard and
     // an undo; wide-road rule (S-006) and Fountain return tile (S-004) change walker routes.
     // 2026-11-26: modules C1-C2: save format v4 (house state), scenario extended with a house plot and a garden.
-    const std::uint64_t kGolden = 0x78835f62665f7823ULL;
+    // 2026-11-26: modules C3, C6: save format v5, full staffing switch, monthly finance, clerk counter 50 days.
+    const std::uint64_t kGolden = 0x5f40be787f94d37aULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

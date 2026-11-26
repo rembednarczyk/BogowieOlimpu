@@ -62,7 +62,8 @@ struct Building {
     std::vector<BuildingId> slots;      // agora: stall per slot (kNoBuilding = free)
     std::optional<HouseState> house;    // houses only
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
-    std::uint8_t staffing_percent = 100;  // set by the labour module (C3); 100 until it exists
+    std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
+    std::uint32_t workers = 0;            // assigned by the labour module (C3)
     std::uint32_t days_since_spawn = 0;
     Dir next_roam_dir = Dir::North;       // rotates 90 degrees clockwise per roaming walker (doc 24)
     WalkerId roaming_walker = kNoWalker;  // at most one roaming walker alive per building (doc 24)
