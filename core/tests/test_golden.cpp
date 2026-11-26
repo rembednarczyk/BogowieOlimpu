@@ -39,7 +39,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v3 appends the (empty) undo record (Z:20, serialize_city.cpp).
     // 2026-11-26: save format v4 appends the homeless count (module C2, serialize_city.cpp).
     // 2026-11-26: save format v5 adds labour and finance blocks (modules C3, C6).
-    const std::uint64_t kGolden = 0x6f5e4e8f131f6c29ULL;
+    // 2026-11-26: save format v6 adds the migration state; popularity starts at the base (module C8).
+    const std::uint64_t kGolden = 0x9d37fb261d5fb002ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -49,7 +50,7 @@ TEST_CASE("golden hash") {
 namespace {
 
 // 32x32 city: a road grid with a roadblock, forest, meadow, four service buildings, an agora with a stall,
-// a boulevard, an undone road, two years of play.
+// a boulevard, an undone road, six house plots filled by immigrants, two years of play.
 Simulation golden_city() {
     std::vector<std::string> rows(32, std::string(32, '.'));
     for (std::size_t i = 2; i < 30; ++i) {
@@ -65,8 +66,10 @@ Simulation golden_city() {
         rows[8][i] = 'T';
         rows[22][i] = ',';
     }
-    // Full staffing until immigration (C8) fills houses with workers.
-    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows, true});
+    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows});
+    for (int x = 5; x < 15; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 17, 0});  // immigrants bring the workers (C8, C3)
+    }
     sim.issue(PlaceBuilding{"fountain", 6, 5});
     sim.issue(PlaceBuilding{"maintenance_office", 17, 17});
     sim.issue(PlaceBuilding{"watchpost", 10, 14});
@@ -91,7 +94,8 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 9);
+    CHECK(sim.state().city.buildings.items.size() == 14);
+    CHECK(sim.state().labour.workforce > 0);
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
     CHECK(sim.state().city.map.at({4, 10}).roadblock);
     CHECK_FALSE(sim.state().city.map.at({16, 10}).road);
@@ -103,7 +107,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // an undo; wide-road rule (S-006) and Fountain return tile (S-004) change walker routes.
     // 2026-11-26: modules C1-C2: save format v4 (house state), scenario extended with a house plot and a garden.
     // 2026-11-26: modules C3, C6: save format v5, full staffing switch, monthly finance, clerk counter 50 days.
-    const std::uint64_t kGolden = 0x5f40be787f94d37aULL;
+    // 2026-11-26: module C8: save format v6, immigration fills six house plots, real labour replaces full staffing.
+    const std::uint64_t kGolden = 0xe4679bab920eb90aULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

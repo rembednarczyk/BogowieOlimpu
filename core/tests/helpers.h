@@ -18,4 +18,14 @@ inline const bo::core::DataCatalog& catalog() {
     return kCatalog;
 }
 
+// The real data with migration switched off (batch size 0): for tests that set populations by hand.
+inline const bo::core::DataCatalog& catalog_no_migration() {
+    static const bo::core::DataCatalog kCatalog = [] {
+        bo::core::DataCatalog c = catalog();
+        c.migration.batch_people = 0;
+        return c;
+    }();
+    return kCatalog;
+}
+
 }  // namespace bo::test

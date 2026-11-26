@@ -7,6 +7,7 @@ add_library(bo_core STATIC
     src/housing.cpp
     src/labour.cpp
     src/map.cpp
+    src/migration.cpp
     src/path.cpp
     src/placement.cpp
     src/walker.cpp
@@ -42,6 +43,7 @@ if(BO_BUILD_TESTS)
         tests/test_appeal.cpp
         tests/test_housing.cpp
         tests/test_labour.cpp
+        tests/test_migration.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

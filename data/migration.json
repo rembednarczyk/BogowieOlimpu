@@ -1,0 +1,32 @@
+{
+ "src": "docs/gameplay/24-algorytmy-silnika.md, sekcja Nastroje i migracja [RODZINA + S-004]",
+ "base_happiness": {"B": 80, "M": 70, "H": 60, "T": 50, "O": 40, "src": "[RODZINA] S-006/S-007: wartość bazowa trudności"},
+ "small_city_population": 300,
+ "update_days": [0, 8],
+ "unemployment_mood": [
+  {"above_percent": 25, "mood": -3},
+  {"above_percent": 17, "mood": -2},
+  {"above_percent": 10, "mood": -1},
+  {"above_percent": 4, "mood": 0},
+  {"above_percent": -1, "mood": 1}
+ ],
+ "unemployment_mood_src": "S-006, S-007",
+ "wage_mood": {"none": -3, "very_low": -2, "low": -1, "normal": 0, "high": 2, "very_high": 4, "src": "[ZAŁOŻENIE] skala S-006 +1..+4, ujemne połową"},
+ "food_mood": {"stocked": 1, "missing_first": -1, "missing_max": -3, "src": "[ZAŁOŻENIE] jeden rodzaj żywności w Zeusie: +1 przy zapasie, kara rosnąca do -3 (S-006)"},
+ "debt_mood": -2,
+ "debt_mood_src": "[ZAŁOŻENIE] Z:159-160, do strojenia audytem",
+ "migration_table": [
+  {"above": 70, "percent": 100},
+  {"above": 60, "percent": 75},
+  {"above": 49, "percent": 50},
+  {"above": 40, "percent": 0},
+  {"above": 30, "percent": -10},
+  {"above": 20, "percent": -25},
+  {"above": -1, "percent": -50}
+ ],
+ "migration_table_note": "pierwszy wiersz, którego próg popularność przekracza (>); 'above 49' oznacza >= 50",
+ "batch_people": 12,
+ "min_batch": 4,
+ "emigration_min_population": 100,
+ "fill_first_free_slots": 8
+}

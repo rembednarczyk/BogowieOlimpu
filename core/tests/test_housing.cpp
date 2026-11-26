@@ -16,7 +16,7 @@ struct Fixture {
     Simulation sim;
     BuildingId house = kNoBuilding;
 
-    Fixture() : sim(bo::test::catalog(), SimulationConfig{11, Difficulty::Hero, 1000, rows()}) {
+    Fixture() : sim(bo::test::catalog_no_migration(), SimulationConfig{11, Difficulty::Hero, 1000, rows()}) {
         sim.issue(PlaceBuilding{"common_housing", 2, 1});
         sim.step(1);
         house = sim.state().city.map.at({2, 1}).building;

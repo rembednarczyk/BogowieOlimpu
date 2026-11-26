@@ -16,7 +16,7 @@ const BUILDING_COLORS := {
 	"watchpost": Color(0.80, 0.45, 0.40), "gymnasium": Color(0.92, 0.90, 0.85),
 	"common_agora": Color(0.80, 0.78, 0.72), "boulevard": Color(0.35, 0.60, 0.30), "avenue": Color(0.35, 0.60, 0.30),
 	"food_vendor_stall": Color(0.95, 0.80, 0.30), "oil_vendor_stall": Color(0.70, 0.75, 0.25),
-	"wine_vendor_stall": Color(0.60, 0.20, 0.45),
+	"wine_vendor_stall": Color(0.60, 0.20, 0.45), "common_housing": Color(0.85, 0.72, 0.55),
 }
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25}
 const WALKER_COLORS := {
@@ -52,7 +52,7 @@ static func demo_map() -> PackedStringArray:
 	return rows
 
 func _ready() -> void:
-	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map(), true)  # full staffing until immigration (C8)
+	var err: String = sim.start_with_map("res://data", 20261126, "", 3000, demo_map())
 	if err != "":
 		push_error(err)
 	sim.place_road(22, 16)  # demo roadblock below
@@ -61,6 +61,10 @@ func _ready() -> void:
 			["gymnasium", 24, 13, 0], ["fountain", 5, 17, 0], ["fountain", 17, 5, 0], ["common_agora", 26, 6, 0],
 			["boulevard", 8, 4, 1], ["boulevard", 9, 4, 1], ["boulevard", 10, 4, 1], ["avenue", 4, 22, 3]]:
 		sim.place_building(b[0], b[1], b[2], b[3])
+	for x in range(7, 17, 2):  # house plots; immigrants arrive daily and become the workforce
+		sim.place_building("common_housing", x, 17)
+	for x in range(18, 28, 2):
+		sim.place_building("common_housing", x, 2)
 	sim.step(1)
 	for s in [["food_vendor_stall", 26, 6], ["oil_vendor_stall", 26, 8], ["wine_vendor_stall", 26, 10]]:
 		sim.place_building(s[0], s[1], s[2])
@@ -96,8 +100,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_label() -> void:
 	# Player-facing text will come from translation catalogs (docs/PRAKTYKI.md ch. 12); this is a debug overlay.
-	label.text = "rok %d  miesiąc %d  dzień %d   skarbiec %d\nspacerujący %d   hash %s" % [
+	label.text = "rok %d  miesiąc %d  dzień %d   skarbiec %d\nludność %d   pracownicy %d/%d   popularność %d\nspacerujący %d   hash %s" % [
 		sim.get_year() + 1, sim.get_month() + 1, sim.get_day_in_month() + 1, sim.get_treasury(),
+		sim.get_population(), sim.get_employed(), sim.get_workforce(), sim.get_popularity(),
 		walker_nodes.size(), sim.get_state_hash()]
 
 func _handle_events(events: Array) -> void:

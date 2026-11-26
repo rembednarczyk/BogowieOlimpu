@@ -10,6 +10,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
+#include "bo/core/migration.h"
+
 using namespace godot;
 using bo::core::Difficulty;
 using bo::core::TaxRate;
@@ -100,6 +102,11 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["level"] = static_cast<int64_t>(e.level);
                        d["elite"] = e.elite;
                        d["abandoned"] = e.abandoned;
+                   },
+                   [&d](const bo::core::PeopleMoved& e) {
+                       d["type"] = "people_moved";
+                       d["arrived"] = static_cast<int64_t>(e.arrived);
+                       d["left"] = static_cast<int64_t>(e.left);
                    },
                    [&d](const bo::core::MonthlyFinance& e) {
                        d["type"] = "monthly_finance";
@@ -208,6 +215,12 @@ void BoSimulation::set_industry_enabled(const String& type, bool enabled) {
         sim_->issue(bo::core::SetIndustryEnabled{to_std(type), enabled});
     }
 }
+
+int64_t BoSimulation::get_population() const {
+    return sim_ ? static_cast<int64_t>(bo::core::city_population(sim_->state().city)) : 0;
+}
+int64_t BoSimulation::get_popularity() const { return sim_ ? sim_->state().migration.popularity : 0; }
+int64_t BoSimulation::get_homeless() const { return sim_ ? sim_->state().city.homeless : 0; }
 
 int64_t BoSimulation::get_workforce() const { return sim_ ? sim_->state().labour.workforce : 0; }
 int64_t BoSimulation::get_employed() const { return sim_ ? sim_->state().labour.employed : 0; }
@@ -414,6 +427,9 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_sector_priority", "sector", "priority"), &BoSimulation::set_sector_priority);
     ClassDB::bind_method(D_METHOD("set_industry_enabled", "type", "enabled"), &BoSimulation::set_industry_enabled);
     ClassDB::bind_method(D_METHOD("get_workforce"), &BoSimulation::get_workforce);
+    ClassDB::bind_method(D_METHOD("get_population"), &BoSimulation::get_population);
+    ClassDB::bind_method(D_METHOD("get_popularity"), &BoSimulation::get_popularity);
+    ClassDB::bind_method(D_METHOD("get_homeless"), &BoSimulation::get_homeless);
     ClassDB::bind_method(D_METHOD("get_employed"), &BoSimulation::get_employed);
     ClassDB::bind_method(D_METHOD("get_appeal", "x", "y"), &BoSimulation::get_appeal);
     ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y", "rotation"), &BoSimulation::place_building,

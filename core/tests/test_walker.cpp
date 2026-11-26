@@ -98,7 +98,7 @@ TEST_CASE("spawn delay follows staffing: 100% -> 0 days, 50% -> 3 days (S-007)")
     // Real labour: one house with 5 people gives floor(5 x 42%) = 2 workers on Hero at normal wages; the
     // fountain needs 4 (S-004), so it runs at 50%. The second fountain has no road and gets nobody.
     SimulationConfig cfg{42, Difficulty::Hero, 1000, ring_map()};
-    Simulation sim(bo::test::catalog(), cfg);
+    Simulation sim(bo::test::catalog_no_migration(), cfg);
     sim.issue(PlaceBuilding{"fountain", 5, 2});
     sim.issue(PlaceBuilding{"common_housing", 10, 2});
     sim.step(1);

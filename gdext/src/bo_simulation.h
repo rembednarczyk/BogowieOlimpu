@@ -51,6 +51,9 @@ public:
     int64_t get_workforce() const;
     int64_t get_employed() const;
     int64_t get_appeal(int64_t x, int64_t y) const;
+    int64_t get_population() const;
+    int64_t get_popularity() const;
+    int64_t get_homeless() const;
     void place_road(int64_t x, int64_t y);
     void place_roadblock(int64_t x, int64_t y);
     void clear_land(int64_t x, int64_t y);

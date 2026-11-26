@@ -83,9 +83,14 @@ struct MonthlyFinance {  // C6: taxes collected and wages paid at the start of a
     std::int64_t wages = 0;
 };
 
+struct PeopleMoved {  // C8: daily migration result
+    std::uint32_t arrived = 0;
+    std::uint32_t left = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
-                           HouseChanged, MonthlyFinance>;
+                           HouseChanged, MonthlyFinance, PeopleMoved>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

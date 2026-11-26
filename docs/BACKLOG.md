@@ -5,7 +5,7 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 ## Następne
 
 1. **Test APK na Xiaomi 15T Pro** przez właściciela: start, renderer Mobile, przewijanie palcem, spacerujący w ruchu. Wynik decyduje o prototypie E4.
-2. **Moduły C dalej**: C8 (migracja, popularność; pozwoli zdjąć przełącznik pełnej obsady), C5 i C4 (dobra), C7, C9. Zrobione C1, C2, C3, C6.
+2. **Moduły C dalej**: C5 i C4 (dobra: bez nich domy zostają chatami), C7, C9, punkt wejścia na mapę (O-006). Zrobione C1, C2, C3, C6, C8.
 3. **Wysokość terenu (L-099)**: dane częściowe z S-009 wystarczają na poziomy, rampy i klify w ruchu; brakuje reguł budowy na granicy poziomów.
 4. **Skrypt instalacji narzędzi** w środowisku chmurowym (Godot, Blender, Vulkan lavapipe, Xvfb, Android SDK i NDK, szablony eksportu). Zostaje: potwierdzić w świeżej sesji.
 5. **Uzupełnienia szkieletu**: deterministyczny zrzut (zamrożona symulacja zamiast czasu klatki), gdUnit4 dla testów GDScript, clang-tidy w CI, zadanie CI budujące APK.

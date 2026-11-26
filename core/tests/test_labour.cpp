@@ -11,7 +11,7 @@ namespace {
 
 struct Town {
     Simulation sim;
-    Town() : sim(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 5000, rows()}) {}
+    Town() : sim(bo::test::catalog_no_migration(), SimulationConfig{3, Difficulty::Hero, 5000, rows()}) {}
     static std::vector<std::string> rows() {
         std::vector<std::string> r(14, std::string(20, '.'));
         r[4] = std::string(20, '=');

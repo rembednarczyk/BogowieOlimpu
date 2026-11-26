@@ -7,6 +7,7 @@
 #include "bo/core/finance.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
+#include "bo/core/migration.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
 
@@ -134,6 +135,26 @@ void run_finance(Simulation& sim) {
     sim.emit(MonthlyFinance{r.taxes, r.wages});
 }
 
+// C8: moods twice a month (days 0 and 8), migration daily.
+void run_moods(Simulation& sim) {
+    WorldState& st = sim.mutable_state();
+    const std::uint32_t day = st.time.day_in_month();
+    if (day == 0) {
+        st.migration.arrived_this_month = 0;
+        st.migration.left_this_month = 0;
+    }
+    if (day == 0 || day == 8) {
+        update_moods(st, sim.catalog());
+    }
+}
+
+void run_migration(Simulation& sim) {
+    const auto r = migrate(sim.mutable_state(), sim.catalog());
+    if (r.arrived > 0 || r.left > 0) {
+        sim.emit(PeopleMoved{r.arrived, r.left});
+    }
+}
+
 bool is_build_command(const Command& c) {
     return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
            std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
@@ -155,6 +176,8 @@ const std::vector<DailySystem>& daily_schedule() {
         {"house_evolution", 22, &run_house_evolution},
         {"labour", 23, &run_labour},
         {"finance", 24, &run_finance},
+        {"moods", 25, &run_moods},
+        {"migration", 26, &run_migration},
         {"walker_spawn", 31, &run_walker_spawn},
         {"coverage_decay", 35, &run_coverage_decay},
     };
@@ -166,6 +189,8 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.difficulty = config.difficulty.value_or(catalog.default_difficulty);
     state_.finance.treasury = config.initial_treasury;
     state_.labour.full_staffing = config.full_staffing;
+    state_.migration.popularity =
+        static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(state_.difficulty)]);
     if (!config.text_map.empty()) {
         auto map = parse_text_map(config.text_map, setup_error_);
         if (map) {
@@ -372,6 +397,12 @@ std::optional<Simulation> Simulation::load(const DataCatalog& catalog, const std
     if (loaded->data_version != catalog.version) {
         // Data changed since the save: allowed, but the caller must know (balance may differ).
         error = "save.data_version_mismatch";
+    }
+    if (loaded->format_version < 6) {
+        // Migration v5 -> v6: saves before module C8 start at the base mood of their difficulty.
+        WorldState& st = loaded->state;
+        st.migration.popularity =
+            static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(st.difficulty)]);
     }
     return Simulation(catalog, std::move(loaded->state));
 }

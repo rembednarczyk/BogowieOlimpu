@@ -91,11 +91,14 @@ void write_building(ByteWriter& w, const Building& b) {
         }
         w.u32(h.food_remainder);
         w.u8(h.failed_checks);
+        w.u8(h.happiness);          // since v6
+        w.u8(h.hungry_updates);     // since v6
+        w.u8(h.days_without_road);  // since v6
     }
     w.u32(b.workers);  // since v5
 }
 
-bool read_house(ByteReader& r, Building& b) {
+bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
     std::uint8_t has = 0;
     if (!r.u8(has)) {
         return false;
@@ -114,6 +117,9 @@ bool read_house(ByteReader& r, Building& b) {
         }
     }
     if (!r.u32(h.food_remainder) || !r.u8(h.failed_checks)) {
+        return false;
+    }
+    if (version >= 6 && (!r.u8(h.happiness) || !r.u8(h.hungry_updates) || !r.u8(h.days_without_road))) {
         return false;
     }
     h.elite = (flags & 1U) != 0;
@@ -163,7 +169,7 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
         b.coverage[service] = days;
     }
     if (version >= 3) {
-        return read_building_v3(r, b) && (version < 4 || read_house(r, b)) && (version < 5 || r.u32(b.workers));
+        return read_building_v3(r, b) && (version < 4 || read_house(r, b, version)) && (version < 5 || r.u32(b.workers));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -361,6 +367,11 @@ void write_economy(ByteWriter& w, const WorldState& s) {
         w.u32(l.sector_need[i]);
         w.u32(l.sector_employed[i]);
     }
+    const MigrationState& m = s.migration;  // since v6
+    w.u8(m.popularity);
+    w.i32(m.pool);
+    w.u32(m.arrived_this_month);
+    w.u32(m.left_this_month);
     const FinanceState& f = s.finance;
     w.i64(f.tax_remainder);
     w.i64(f.wage_remainder);
@@ -371,7 +382,7 @@ void write_economy(ByteWriter& w, const WorldState& s) {
     }
 }
 
-bool read_economy(ByteReader& r, WorldState& s) {
+bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version) {
     LabourState& l = s.labour;
     for (auto& p : l.priority) {
         if (!r.u8(p) || p >= kPriorityLevels) {
@@ -398,6 +409,11 @@ bool read_economy(ByteReader& r, WorldState& s) {
         if (!r.u32(l.sector_need[i]) || !r.u32(l.sector_employed[i])) {
             return false;
         }
+    }
+    MigrationState& m = s.migration;
+    if (version >= 6 &&
+        (!r.u8(m.popularity) || !r.i32(m.pool) || !r.u32(m.arrived_this_month) || !r.u32(m.left_this_month))) {
+        return false;
     }
     FinanceState& f = s.finance;
     if (!r.i64(f.tax_remainder) || !r.i64(f.wage_remainder)) {

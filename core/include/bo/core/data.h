@@ -91,6 +91,27 @@ struct WalkerType {
     std::uint8_t coverage_days = 96;            // service counter set by a visit (doc 24; clerk 50)
 };
 
+// Mood and migration parameters (data/migration.json, doc 24).
+struct MigrationParams {
+    std::array<std::int32_t, static_cast<std::size_t>(Difficulty::Count)> base_happiness{};
+    std::int32_t small_city_population = 300;
+    std::vector<std::pair<std::int32_t, std::int32_t>> unemployment_mood;  // (above percent, mood), first match
+    std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_mood{};
+    std::int32_t food_stocked = 1;
+    std::int32_t food_missing_first = -1;
+    std::int32_t food_missing_max = -3;
+    std::int32_t debt_mood = -2;
+    std::vector<std::pair<std::int32_t, std::int32_t>> migration_table;  // (popularity above, percent)
+    std::int32_t batch_people = 12;
+    std::int32_t min_batch = 4;
+    std::int32_t emigration_min_population = 100;
+    std::int32_t fill_first_free_slots = 8;
+    // Tax sentiment per tax rate and difficulty (data/difficulty.json, S-004).
+    std::array<std::array<std::int32_t, static_cast<std::size_t>(Difficulty::Count)>,
+               static_cast<std::size_t>(TaxRate::Count)>
+        tax_mood{};
+};
+
 struct DataCatalog {
     std::uint64_t version = 0;                      // FNV-1a 64 over file names and bytes, sorted by name
     std::vector<std::string> files;                 // loaded file names, sorted
@@ -108,6 +129,7 @@ struct DataCatalog {
         worker_percent{};
     // Yearly wage per worker in thousandths of a drachma, per wage rate (doc 18).
     std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_per_mille{};
+    MigrationParams migration;
 };
 
 struct DataLoadResult {

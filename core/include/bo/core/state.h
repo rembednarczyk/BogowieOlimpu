@@ -29,6 +29,14 @@ struct FinanceState {
     FinanceYear last_year;
 };
 
+// Module C8 (doc 24): city mood and the migration pool.
+struct MigrationState {
+    std::uint8_t popularity = 0;  // mean happiness of inhabited houses (set to the base at start)
+    std::int32_t pool = 0;        // people waiting to arrive (+) or leave (-), applied in batches of >= 4
+    std::uint32_t arrived_this_month = 0;
+    std::uint32_t left_this_month = 0;
+};
+
 struct WorldState {
     GameTime time;
     RngSet rng;
@@ -36,6 +44,7 @@ struct WorldState {
     FinanceState finance;
     CityState city;
     LabourState labour;
+    MigrationState migration;
     WalkerStore walkers;
     std::uint64_t next_command_sequence = 0;
     CommandLog pending_commands;  // sorted by (tick, sequence)

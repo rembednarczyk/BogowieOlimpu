@@ -156,6 +156,37 @@ void load_housing(const json& housing, DataCatalog& cat) {
     }
 }
 
+void load_migration(const json& m, const json& diff, MigrationParams& p) {
+    for (std::size_t d = 0; d < p.base_happiness.size(); ++d) {
+        p.base_happiness[d] = m.at("base_happiness").at(std::string(difficulty_code(static_cast<Difficulty>(d))));
+    }
+    p.small_city_population = m.at("small_city_population");
+    for (const auto& row : m.at("unemployment_mood")) {
+        p.unemployment_mood.emplace_back(row.at("above_percent"), row.at("mood"));
+    }
+    constexpr const char* kWageKeys[] = {"none", "very_low", "low", "normal", "high", "very_high"};
+    for (std::size_t i = 0; i < p.wage_mood.size(); ++i) {
+        p.wage_mood[i] = m.at("wage_mood").at(kWageKeys[i]);
+    }
+    p.food_stocked = m.at("food_mood").at("stocked");
+    p.food_missing_first = m.at("food_mood").at("missing_first");
+    p.food_missing_max = m.at("food_mood").at("missing_max");
+    p.debt_mood = m.at("debt_mood");
+    for (const auto& row : m.at("migration_table")) {
+        p.migration_table.emplace_back(row.at("above"), row.at("percent"));
+    }
+    p.batch_people = m.at("batch_people");
+    p.min_batch = m.at("min_batch");
+    p.emigration_min_population = m.at("emigration_min_population");
+    p.fill_first_free_slots = m.at("fill_first_free_slots");
+    constexpr const char* kTaxKeys[] = {"none", "very_low", "low", "normal", "high", "very_high", "outrageous"};
+    for (std::size_t t = 0; t < p.tax_mood.size(); ++t) {
+        for (std::size_t d = 0; d < p.tax_mood[t].size(); ++d) {
+            p.tax_mood[t][d] = diff.at("tax_sentiment").at(kTaxKeys[t]).at(d);
+        }
+    }
+}
+
 void validate(const std::map<std::string, json>& docs, std::vector<std::string>& errors) {
     const auto& buildings = docs.at("buildings.json");
     const auto& housing = docs.at("housing.json");
@@ -273,7 +304,8 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
     }
     cat.version = version.value();
     for (const auto* required : {"buildings.json", "building_stats.json", "housing.json", "gods.json", "monsters.json",
-                                 "heroes.json", "quests.json", "walkers.json", "goods.json", "difficulty.json"}) {
+                                 "heroes.json", "quests.json", "walkers.json", "goods.json", "difficulty.json",
+                                 "migration.json"}) {
         if (docs.count(required) == 0) {
             result.errors.push_back(std::string("missing required file: ") + required);
         }
@@ -304,6 +336,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
             cat.wage_per_mille[i] = static_cast<std::int32_t>(
                 std::llround(diff.at("wage_drachmas_per_worker_year").at(kWageKeys[i]).get<double>() * 1000.0));
         }
+        load_migration(docs.at("migration.json"), diff, cat.migration);
         for (std::size_t d = 0; d < cat.worker_percent.size(); ++d) {
             const auto& row = diff.at("worker_percentage").at(std::string(difficulty_code(static_cast<Difficulty>(d))));
             for (std::size_t w = 0; w < cat.worker_percent[d].size(); ++w) {

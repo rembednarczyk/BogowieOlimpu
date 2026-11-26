@@ -242,7 +242,7 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
     }
     // Migration v1 -> v2: v1 saves have no city and no walkers (empty map).
     if (out.format_version >= 2 &&
-        (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s)) ||
+        (!read_city(r, s.city, out.format_version) || (out.format_version >= 5 && !read_economy(r, s, out.format_version)) ||
          !read_walkers(r, s.walkers, out.format_version))) {
         error = "save.corrupt";
         return std::nullopt;

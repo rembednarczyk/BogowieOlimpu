@@ -12,6 +12,6 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version);
 void write_walkers(ByteWriter& w, const WalkerStore& s);
 bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version);
 void write_economy(ByteWriter& w, const WorldState& s);
-bool read_economy(ByteReader& r, WorldState& s);
+bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version);
 
 }  // namespace bo::core

@@ -67,23 +67,24 @@ TEST_CASE("save v2: map, buildings, coverage and walkers mid-route survive a rou
 }
 
 // Tail of a save with an empty city, in order: map size 8, buildings 8, undo record 29 (v3), homeless 4 (v4),
-// labour and finance 149 (v5), walkers 8. Older versions lack the blocks added later.
+// labour 85 (v5), migration 13 (v6), finance 64 (v5), walkers 8. Older versions lack the blocks added later.
 namespace {
 
 constexpr std::size_t kWalkersBlock = 8;
-constexpr std::size_t kEconomy = 149;
+constexpr std::size_t kFinance = 64;
+constexpr std::size_t kMigration = 13;
+constexpr std::size_t kLabour = 85;
 constexpr std::size_t kHomeless = 4;
 constexpr std::size_t kUndo = 29;
 constexpr std::size_t kCityBase = 16;
 
-void check_migration(std::uint8_t version, std::vector<std::uint8_t> bytes, std::size_t erase_before_walkers,
-                     bool drop_city_and_walkers, std::uint64_t expected_hash) {
-    if (drop_city_and_walkers) {
-        bytes.resize(bytes.size() - (kCityBase + kUndo + kHomeless + kEconomy + kWalkersBlock));
-    } else {
-        const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kWalkersBlock);
-        bytes.erase(end - static_cast<std::ptrdiff_t>(erase_before_walkers), end);
-    }
+// Removes `len` bytes that end `from_end` bytes before the end of the save.
+void cut(std::vector<std::uint8_t>& bytes, std::size_t from_end, std::size_t len) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(from_end);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(len), end);
+}
+
+void check_load(std::vector<std::uint8_t> bytes, std::uint8_t version, std::uint64_t expected_hash) {
     bytes[4] = version;
     std::string error;
     auto b = Simulation::load(bo::test::catalog(), bytes, error);
@@ -94,12 +95,24 @@ void check_migration(std::uint8_t version, std::vector<std::uint8_t> bytes, std:
 
 }  // namespace
 
-TEST_CASE("older saves (v1-v4) migrate to the current format") {
+TEST_CASE("older saves (v1-v5) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const auto current = a.save();
-    check_migration(4, current, kEconomy, false, a.state_hash());
-    check_migration(3, current, kEconomy + kHomeless, false, a.state_hash());
-    check_migration(2, current, kEconomy + kHomeless + kUndo, false, a.state_hash());
-    check_migration(1, current, 0, true, a.state_hash());
+    const std::uint64_t h = a.state_hash();
+    auto v5 = current;
+    cut(v5, kWalkersBlock + kFinance, kMigration);
+    check_load(v5, 5, h);
+    auto v4 = v5;
+    cut(v4, kWalkersBlock, kLabour + kFinance);
+    check_load(v4, 4, h);
+    auto v3 = v4;
+    cut(v3, kWalkersBlock, kHomeless);
+    check_load(v3, 3, h);
+    auto v2 = v3;
+    cut(v2, kWalkersBlock, kUndo);
+    check_load(v2, 2, h);
+    auto v1 = v2;
+    v1.resize(v1.size() - kCityBase - kWalkersBlock);
+    check_load(v1, 1, h);
 }

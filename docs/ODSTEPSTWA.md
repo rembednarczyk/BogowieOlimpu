@@ -52,3 +52,10 @@ Każda różnica między grą a specyfikacją `docs/gameplay/` (referencja 1:1) 
 - Status: celowe.
 - Powód: decyzja właściciela 2026-11-26 ("zgoda, dodaj do planu"); rozbudowa oprawy bez zmiany mechaniki. Test: złoty hash i testy zgodności nie mogą się zmienić po włączeniu tej oprawy (oprawa tylko czyta stan).
 
+
+### O-006: Imigranci i emigranci bez spacerujących (tymczasowe)
+- Miejsce: `core/src/migration.cpp` (moduł C8).
+- Referencja: imigranci wchodzą na mapę punktem wejścia i idą do wolnego domu; emigranci i bezdomni wychodzą pieszo; dom musi być osiągalny z wejścia (doc 24, S-006).
+- W grze: ludzie pojawiają się w domach i znikają z nich od razu; osiągalność z wejścia zastępuje dostęp domu do drogi; bezdomni czekają na wolne miejsce zamiast odchodzić.
+- Status: tymczasowe, do usunięcia z modułem punktu wejścia na mapę i spacerującymi imigrantów.
+- Powód: mapa nie ma jeszcze punktu wejścia (droga do Grecji, Z:17).

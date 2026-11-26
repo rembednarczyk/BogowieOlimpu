@@ -91,9 +91,10 @@ Zrobione:
 - C2: działki domów przy drodze (koszt Hut), ewolucja z histerezą AppE/AppD i wymaganiami z `housing.json` (woda, dobra, punkty kultury z `walkers.json`), awans o jeden poziom dziennie, regres po 3 nieudanych sprawdzeniach do najwyższego spełnionego poziomu, porzucenie domu elity, zużycie dóbr w dniach 0 i 8, nadmiar mieszkańców do licznika bezdomnych. Działka elity odrzucana do czasu magazynów (C5), bo wymaga zapasów miasta.
 - C3: pula pracowników z domów ludu według tabeli S-004 (trudność × płace), 8 sektorów, priorytety 6-stopniowe, przydział kolejno od najwyższego priorytetu (K-031), równy ułamek obsady w sektorze, wyłączanie branż, obsada wpływa na wysyłanie spacerujących.
 - C6: podatek miesięczny `TRM × mieszkańcy × stawka` tylko dla domów zarejestrowanych przez poborcę (licznik 50 dni), płace roczne wypłacane co miesiąc, ułamki przenoszone w tysięcznych, bilans roku bieżącego i poprzedniego.
-- Przełącznik deweloperski `full_staffing` (pełna obsada bez mieszkańców) dla testów spacerujących, złotego miasta i sceny demo do czasu imigracji (C8). Nie jest regułą gry.
+- C8: zadowolenie domów dwa razy w miesiącu (podatki S-004, płace, bezrobocie, dług, żywność), miasto poniżej 300 mieszkańców na wartości bazowej, popularność jako średnia, migracja dzienna według tabeli (partie od 4 osób), zasiedlanie najpierw domów z ≥ 8 wolnymi miejscami, emigracja z najniższych poziomów powyżej 100 mieszkańców, bezdomni po regresie i po > 4 dniach bez drogi. Parametry w `data/migration.json`. Imigranci bez spacerujących i bez punktu wejścia (O-006).
+- Przełącznik deweloperski `full_staffing` (pełna obsada bez mieszkańców) zostaje dla testów spacerujących; złote miasto i scena demo działają już na prawdziwej migracji i pracy. Nie jest regułą gry.
 
-Zostaje: C4 produkcja, C5 magazyny i dystrybucja (dostawy dóbr do domów, zapasy miasta dla działek elity), C7 ryzyka, C8 nastroje, migracja i bezdomni, C9 handel; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+Zostaje: C4 produkcja, C5 magazyny i dystrybucja (dostawy dóbr do domów, zapasy miasta dla działek elity), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|
