@@ -136,6 +136,15 @@ struct ExpeditionReturned {  // D4: an army back from abroad
 
 struct EpisodeLost {};  // D4: taken twice by the same rival (Z:172), or years of debt (L-034)
 
+struct CityRebelled {  // L-121: a vassal or colony rises after a year of bad opinion (Z:169, Z:178)
+    std::uint32_t city = 0;
+};
+
+struct CityGift {  // L-121: a friendly city's goodwill gift or debt aid, in drachmas (Z:100, Z:178-179)
+    std::uint32_t city = 0;
+    std::int64_t amount = 0;
+};
+
 struct DebtNotice {  // L-034: another year of continuous debt (eZeus debtAnniversary); immigration stops
     std::uint32_t years = 0;
 };
@@ -184,7 +193,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
-                           TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice,
+                           TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, CityRebelled, CityGift,
                            CityRequestReceived, RequestClosed, EpisodeWon,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
 

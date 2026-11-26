@@ -253,6 +253,11 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.u32(d.days_left);
     }
     w.u32(s.debt_days);  // since v29
+    for (const auto& p : s.trade.partners) {  // since v30: long-term relations (L-121)
+        w.u8(p.diplomacy.months_bad);
+        w.u8(p.diplomacy.months_good);
+        w.u8(p.diplomacy.aid_cooldown);
+    }
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -314,7 +319,19 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
             return false;
         }
     }
-    return version < 29 || r.u32(s.debt_days);
+    if (version < 29) {
+        return true;
+    }
+    if (!r.u32(s.debt_days)) {
+        return false;
+    }
+    for (auto& p : s.trade.partners) {
+        if (version >= 30 &&
+            (!r.u8(p.diplomacy.months_bad) || !r.u8(p.diplomacy.months_good) || !r.u8(p.diplomacy.aid_cooldown))) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }  // namespace bo::core

@@ -61,11 +61,16 @@ struct CityDiplomacy {
     std::uint8_t player_defeats = 0;  // times this rival took the player's city (two: the episode is lost)
     std::map<std::string, std::uint32_t> gift_units_this_year;
     std::uint16_t request_cooldown = 0;  // days until a new request is heard
+    // Long-term relations (L-121, since v30): months in a row of a bad or a good opinion, months until debt aid.
+    std::uint8_t months_bad = 0;
+    std::uint8_t months_good = 0;
+    std::uint8_t aid_cooldown = 0;
     friend bool operator==(const CityDiplomacy& a, const CityDiplomacy& b) {
         return a.opinion == b.opinion && a.military == b.military && a.economy == b.economy &&
                a.tribute == b.tribute && a.tribute_demand == b.tribute_demand && a.rebelling == b.rebelling &&
                a.player_defeats == b.player_defeats && a.gift_units_this_year == b.gift_units_this_year &&
-               a.request_cooldown == b.request_cooldown;
+               a.request_cooldown == b.request_cooldown && a.months_bad == b.months_bad &&
+               a.months_good == b.months_good && a.aid_cooldown == b.aid_cooldown;
     }
 };
 

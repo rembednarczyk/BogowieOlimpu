@@ -13,6 +13,7 @@ add_library(bo_core STATIC
     src/gods.cpp
     src/build_order.cpp
     src/culture.cpp
+    src/relations.cpp
     src/housing.cpp
     src/horses.cpp
     src/husbandry.cpp
@@ -73,6 +74,7 @@ if(BO_BUILD_TESTS)
         tests/test_appeal.cpp
         tests/test_culture.cpp
         tests/test_debt.cpp
+        tests/test_relations.cpp
         tests/test_demo.cpp
         tests/test_housing.cpp
         tests/test_labour.cpp

@@ -18,7 +18,15 @@ struct WorldEvents {
     std::vector<Expedition> returned;                             // expeditions back today
     std::vector<std::uint32_t> delivered;                         // requested goods arrived (city)
     bool episode_lost = false;
+    std::vector<std::uint32_t> rebellions;                              // vassals or colonies that rose (L-121)
+    std::vector<std::uint32_t> rival_attacks;                           // rivals that march on the city
+    std::vector<std::pair<std::uint32_t, std::int64_t>> gifts;          // goodwill or debt aid, drachmas
 };
+
+// Monthly (L-121; Z:169, Z:172, Z:178, Z:100, Z:179): a vassal or colony with a bad opinion for a year rises
+// (no trade, no tribute until put down); a rival that hates the player for a year attacks; a friendly city
+// gives a gift after two good years, and helps a city long in debt once a year.
+void advance_relations(WorldState& state, const DataCatalog& catalog, WorldEvents& ev);
 
 // Gift (Z:176-177; doc 24): loads of a good from storage, or drachmas from the treasury (500 dr a unit,
 // [ZAŁOŻENIE, L-113]); +3 opinion a unit of a good the city needs (buys), +1.5 otherwise, at most 3 units of

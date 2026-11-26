@@ -253,7 +253,26 @@ static void run_mythology(Simulation& sim) {
 
 // D4: expeditions, request cooldowns, yearly tribute.
 static void run_world(Simulation& sim) {
-    const WorldEvents ev = advance_world(sim.mutable_state(), sim.catalog());
+    WorldEvents ev = advance_world(sim.mutable_state(), sim.catalog());
+    advance_relations(sim.mutable_state(), sim.catalog(), ev);
+    for (const std::uint32_t city : ev.rebellions) {
+        sim.emit(CityRebelled{city});
+    }
+    for (const auto& [city, amount] : ev.gifts) {
+        sim.emit(CityGift{city, amount});
+    }
+    for (const std::uint32_t city : ev.rival_attacks) {  // the rival's army: ten soldiers a shield (L-063)
+        WorldState& st = sim.mutable_state();
+        const auto& d = st.trade.partners[city].diplomacy;
+        CombatEvents combat;
+        const auto soldiers = static_cast<std::uint32_t>(d.military * sim.catalog().world.city_strength_per_shield);
+        if (start_invasion(st, sim.catalog(), sim.catalog().world.rival_attack_nation, soldiers, combat,
+                           static_cast<std::int32_t>(city)).empty()) {
+            sim.emit(InvasionStarted{sim.catalog().world.rival_attack_nation,
+                                     static_cast<std::uint32_t>(combat.spawned.size()), bribe_cost(st, sim.catalog())});
+            sim.emit_combat(combat);
+        }
+    }
     for (const auto& [city, amount] : ev.tribute) {
         sim.emit(TributePaid{city, amount});
     }

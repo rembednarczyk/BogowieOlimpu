@@ -277,6 +277,10 @@ func _handle_events(events: Array) -> void:
 			"request_closed", "city_request", "episode_won", "episode_lost", "debt_notice":
 				if ui != null and ui.report.visible:
 					ui.refresh_report()
+			"city_rebelled":
+				demo_note = "bunt: %s" % sim.get_cities()[e["city"]]["id"]
+			"city_gift":
+				demo_note = "dar od %s: %d dr" % [sim.get_cities()[e["city"]]["id"], e["amount"]]
 			"god_attacked":
 				demo_note = "gniew boga: %s%s" % [e["god"], " (odparty)" if e["repelled"] else ""]
 			"disaster":

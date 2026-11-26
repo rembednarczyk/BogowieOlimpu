@@ -67,9 +67,13 @@ world = [
                "wine": [120, 24], "armor": [150, 12]},
      "buys": {"bronze": [110, 16], "wood": [70, 16], "drachmas_note": [0, 0]}},
     {"id": "sparta", "relation": "rival", "opinion": 20, "military": 3, "economy": 2, "sells": {}, "buys": {}},
-    {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 50, "military": 2, "economy": 3,
+    {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 85, "military": 2, "economy": 3,
      "sells": {"wine": [110, 24], "fish": [40, 24]}, "buys": {"olive_oil": [160, 12], "sculpture": [260, 8]}},
 ]
+# Argos: a vassal that dislikes the player and rises after a year (L-121); Rhodes above is fond of the player
+# and sends a goodwill gift after two years.
+world.append({"id": "argos", "relation": "vassal", "opinion": 25, "military": 1, "economy": 2, "tribute": 300,
+              "sells": {}, "buys": {}})
 for c in world:
     c["buys"].pop("drachmas_note", None)
 

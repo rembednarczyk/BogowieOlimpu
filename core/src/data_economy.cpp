@@ -257,6 +257,17 @@ void load_world(const std::map<std::string, json>& docs, WorldParams& p) {
     p.city_strength_per_shield = w.value("city_strength_per_shield", p.city_strength_per_shield);
     p.tribute_per_coin = w.value("tribute_per_coin", p.tribute_per_coin);
     p.stops_tribute_below = w.value("stops_tribute_below", p.stops_tribute_below);
+    p.rebel_after_months = w.value("rebel_after_months", p.rebel_after_months);
+    p.hate_below = w.value("hate_below", p.hate_below);
+    p.rival_attack_after_months = w.value("rival_attack_after_months", p.rival_attack_after_months);
+    p.rival_attack_nation = w.value("rival_attack_nation", p.rival_attack_nation);
+    p.goodwill_above = w.value("goodwill_above", p.goodwill_above);
+    p.goodwill_after_months = w.value("goodwill_after_months", p.goodwill_after_months);
+    p.goodwill_gift = w.value("goodwill_gift", p.goodwill_gift);
+    p.debt_aid_after_days = w.value("debt_aid_after_days", p.debt_aid_after_days);
+    p.debt_aid = w.value("debt_aid", p.debt_aid);
+    p.debt_aid_every_months = w.value("debt_aid_every_months", p.debt_aid_every_months);
+    p.debt_aid_min_opinion = w.value("debt_aid_min_opinion", p.debt_aid_min_opinion);
     p.refused_tribute_opinion = w.value("refused_tribute_opinion", p.refused_tribute_opinion);
     p.attacked_ally_opinion = w.value("attacked_ally_opinion", p.attacked_ally_opinion);
     p.attacked_rival_respect = w.value("attacked_rival_respect", p.attacked_rival_respect);

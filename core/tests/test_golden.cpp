@@ -64,7 +64,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v27 (version field; requested goods on their way), owner's decisions L-108..L-118.
     // 2026-11-26: save format v28 (version field; performances and schools per building), B-008 culture.
     // 2026-11-26: save format v29 (version field; days of debt), L-034 debt.
-    const std::uint64_t kGolden = 0x587cf7fcfdc9501bULL;
+    // 2026-11-26: save format v30 (version field; no partners here), L-121 long-term relations.
+    const std::uint64_t kGolden = 0x2bb5380fe316e7aULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -206,7 +207,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v27 (version field; requested goods on their way), owner's decisions L-108..L-118.
     // 2026-11-26: save format v28 (two culture fields per building; no school with a venue here), B-008.
     // 2026-11-26: save format v29 (days of debt; the treasury here never goes below zero), L-034.
-    const std::uint64_t kGolden = 0x7982483973d27dc4ULL;
+    // 2026-11-26: save format v30 (three relation counters for the one partner; opinion 60 starts none), L-121.
+    const std::uint64_t kGolden = 0x57ca4986aa855b55ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

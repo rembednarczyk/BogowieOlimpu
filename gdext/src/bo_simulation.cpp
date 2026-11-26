@@ -169,6 +169,15 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["loot"] = static_cast<int64_t>(e.loot);
                    },
                    [&d](const bo::core::EpisodeLost&) { d["type"] = "episode_lost"; },
+                   [&d](const bo::core::CityRebelled& e) {
+                       d["type"] = "city_rebelled";
+                       d["city"] = static_cast<int64_t>(e.city);
+                   },
+                   [&d](const bo::core::CityGift& e) {
+                       d["type"] = "city_gift";
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["amount"] = e.amount;
+                   },
                    [&d](const bo::core::DebtNotice& e) {
                        d["type"] = "debt_notice";
                        d["years"] = static_cast<int64_t>(e.years);

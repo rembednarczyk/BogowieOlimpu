@@ -238,6 +238,18 @@ struct WorldParams {
     std::int32_t city_strength_per_shield = 10;
     std::int32_t tribute_per_coin = 200;
     std::int32_t stops_tribute_below = 30;
+    // Long-term relations (Z:169, Z:172, Z:178; Z:100, Z:179) [ZAŁOŻENIE, L-121]: months of a bad or good opinion.
+    std::int32_t rebel_after_months = 12;
+    std::int32_t hate_below = 10;
+    std::int32_t rival_attack_after_months = 12;
+    std::string rival_attack_nation = "greek";
+    std::int32_t goodwill_above = 80;
+    std::int32_t goodwill_after_months = 24;
+    std::int64_t goodwill_gift = 500;
+    std::uint32_t debt_aid_after_days = 96;
+    std::int64_t debt_aid = 1000;
+    std::int32_t debt_aid_every_months = 12;
+    std::int32_t debt_aid_min_opinion = 50;
     std::int32_t refused_tribute_opinion = -20;
     std::int32_t attacked_ally_opinion = -30;
     std::int32_t attacked_rival_respect = 10;

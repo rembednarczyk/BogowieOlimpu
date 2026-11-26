@@ -56,6 +56,8 @@ void count_events(const std::vector<TimedEvent>& events, std::map<std::string, s
                                : std::is_same_v<T, CityRequestReceived> ? "request"
                                : std::is_same_v<T, TradeDone>          ? "trade"
                                : std::is_same_v<T, EpisodeWon>         ? "won"
+                               : std::is_same_v<T, CityRebelled>       ? "rebellion"
+                               : std::is_same_v<T, CityGift>           ? "city_gift"
                                                                        : nullptr;
             if (name != nullptr) {
                 ++seen[name];
@@ -284,7 +286,7 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(run.won_day < 7 * kDaysPerMonth * kMonthsPerYear);
     CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);  // the earthquake of year 3 (demo.json) cracked the land
     for (const char* m : {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
-                          "sanctuary", "request", "trade", "won"}) {
+                          "sanctuary", "request", "trade", "won", "rebellion", "city_gift"}) {
         CHECK_MESSAGE(run.seen.count(m) > 0, "the demo never showed: " << std::string(m));
     }
 }
