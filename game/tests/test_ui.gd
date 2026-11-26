@@ -38,75 +38,75 @@ func _process(_d: float) -> bool:
 	ui._select("fountain")
 	check(not ui.flyout.visible, "the column closes on a choice")
 	check(ui.confirm_btn.disabled, "nothing to confirm yet")
-	ui.tap(Vector2i(44, 26))
+	ui.tap(Vector2i(60, 38))
 	check(game.ghost.get_child_count() == 4 and not ui.confirm_btn.disabled, "a 2x2 ghost and Confirm")
 	ui._confirm()
 	game.sim.step(1)
-	check(building(44, 26) != 0, "the fountain was built")
+	check(building(60, 38) != 0, "the fountain was built")
 
 	# Demolishing clears the other choice.
 	ui._set_mode("demolish")
 	check(ui.selected == "" and not ui.flyout.visible, "demolish deselects")
-	ui.begin_drag(Vector2i(44, 26))
-	ui.drag_to(Vector2i(45, 27))
+	ui.begin_drag(Vector2i(60, 38))
+	ui.drag_to(Vector2i(61, 39))
 	ui._confirm()
 	game.sim.step(1)
-	check(building(44, 26) == 0, "the area was demolished")
+	check(building(60, 38) == 0, "the area was demolished")
 
 	# Roads as a line.
 	ui._show_tab("general")
 	ui._select("road")
-	ui.begin_drag(Vector2i(30, 36))
-	ui.drag_to(Vector2i(34, 38))
+	ui.begin_drag(Vector2i(56, 40))
+	ui.drag_to(Vector2i(60, 42))
 	check(ui._line_tiles().size() == 7, "an L of 7 tiles")
 	ui.end_drag()
 	ui._confirm()
 	game.sim.step(1)
-	check(game.sim.get_tile(34, 38)["road"], "the road was built")
+	check(game.sim.get_tile(60, 42)["road"], "the road was built")
 
-	# Houses as a rectangle of 2x2 plots: an 8x2 strip over the new road (x 30-34); the fourth plot has no road.
+	# Houses as a rectangle of 2x2 plots: an 8x2 strip over the new road (x 56-60); the fourth plot has no road.
 	ui._show_tab("population")
 	ui._select("common_housing")
-	ui.begin_drag(Vector2i(30, 34))
-	ui.drag_to(Vector2i(37, 35))
+	ui.begin_drag(Vector2i(56, 38))
+	ui.drag_to(Vector2i(63, 39))
 	check(ui.preview.size() == 3, "three plots by the road: %d" % ui.preview.size())
 	ui._confirm()
 	game.sim.step(1)
-	check(building(30, 34) != 0 and building(34, 34) != 0 and building(36, 34) == 0, "the plots were built")
+	check(building(56, 38) != 0 and building(60, 38) != 0 and building(62, 38) == 0, "the plots were built")
 
 	# Build at once: the drag builds when the finger lifts.
 	ui.instant = true
 	ui._show_tab("general")
 	ui._select("road")
-	ui.begin_drag(Vector2i(30, 40))
-	ui.drag_to(Vector2i(33, 40))
+	ui.begin_drag(Vector2i(56, 44))
+	ui.drag_to(Vector2i(59, 44))
 	ui.end_drag()
 	game.sim.step(1)
-	check(game.sim.get_tile(33, 40)["road"], "instant road")
+	check(game.sim.get_tile(59, 44)["road"], "instant road")
 	ui.instant = false
 
 	# Cancel clears everything; a tap with no mode opens the card.
 	ui.cancel()
 	check(ui.mode == "" and ui.mode_group.get_pressed_button() == null, "cancel")
-	ui.tap(Vector2i(43, 6))
+	ui.tap(Vector2i(55, 14))
 	check(ui.card.visible and ui.card_text.text != "", "the card of the Palace")
 	check(game.screen_to_tile(Vector2(500, 360)).x >= 0, "screen to tile")
 	# City report: goals of the episode, requests with a Send button that needs the goods in storage.
 	ui.toggle_report()
 	check(ui.report.visible, "the report opens")
 	var sc: Dictionary = game.sim.get_scenario()
-	check(sc["goals"].size() == 2, "two goals in the demo")
+	check(sc["goals"].size() == 5, "five goals in the demo")
 	check(ui._goal_text(sc["goals"][0]).length() > 0, "a goal line")
-	game.sim.run_days(16 * 3 + 1)  # Corinth asks for fleece in month 4
+	for d in 16 * 5 + 1:  # Corinth asks for fleece in month 6; the autopilot builds on meanwhile
+		game.sim.apply_build_order()
+		game.sim.run_days(1)
 	ui.refresh_report()
 	check(game.sim.get_scenario()["requests"].size() == 1, "the request of Corinth is open")
-	# The demo's carding shed has no workers yet: the fleece comes by trade into a new storehouse.
-	game.sim.place_building("storehouse", 44, 25)
-	game.sim.set_trade_order(game.sim.get_tile(24, 24)["building"], "fleece", true, 4, false, 0)
-	game.sim.step(1)
-	for d in 120:
+	# The carding sheds of the FLEECE stage (day 48) shear their first fleece about half a year later.
+	for d in 200:
 		if ui.city_stock("fleece") >= 2:
 			break
+		game.sim.apply_build_order()
 		game.sim.run_days(1)
 	ui.refresh_report()
 	check(ui.city_stock("fleece") >= 2, "fleece in storage for Corinth: %d" % ui.city_stock("fleece"))

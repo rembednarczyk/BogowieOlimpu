@@ -274,6 +274,38 @@ String BoSimulation::start_scenario(const String& data_dir, const String& scenar
     return String();
 }
 
+String BoSimulation::load_build_order(const String& path) {
+    std::string error;
+    auto order = bo::core::parse_build_order(to_std(FileAccess::get_file_as_string(path)), error);
+    if (!order) {
+        return String(error.c_str());
+    }
+    build_order_ = std::move(*order);
+    build_order_day_.reset();
+    if (sim_ && sim_->state().time.tick() > 0) {
+        build_order_day_ = sim_->state().time.total_days();  // a loaded game: only the days still to come
+    }
+    return String();
+}
+
+// Issues the commands due on every day since the last call, up to today. Returns how many.
+int64_t BoSimulation::apply_build_order() {
+    if (!sim_ || !build_order_) {
+        return 0;
+    }
+    const std::uint64_t today = sim_->state().time.total_days();
+    std::uint64_t day = build_order_day_ ? *build_order_day_ + 1 : 0;
+    int64_t n = 0;
+    for (; day <= today; ++day) {
+        for (auto& c : bo::core::due_commands(*build_order_, *sim_, day)) {
+            sim_->issue(std::move(c));
+            ++n;
+        }
+    }
+    build_order_day_ = today;
+    return n;
+}
+
 String BoSimulation::start_adventure(const String& data_dir, const String& path) {
     sim_.reset();
     adventure_.reset();
@@ -968,6 +1000,8 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("start_scenario", "data_dir", "scenario_path", "full_staffing"),
                          &BoSimulation::start_scenario, DEFVAL(false));
     ClassDB::bind_method(D_METHOD("fulfill_request", "request"), &BoSimulation::fulfill_request);
+    ClassDB::bind_method(D_METHOD("load_build_order", "path"), &BoSimulation::load_build_order);
+    ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);
     ClassDB::bind_method(D_METHOD("start_adventure", "data_dir", "path"), &BoSimulation::start_adventure);
     ClassDB::bind_method(D_METHOD("continue_adventure"), &BoSimulation::continue_adventure);
     ClassDB::bind_method(D_METHOD("found_colony", "colony"), &BoSimulation::found_colony);

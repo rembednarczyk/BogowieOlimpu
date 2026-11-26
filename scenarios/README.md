@@ -16,3 +16,23 @@ Pliki JSON czytane przez `bo::core::parse_scenario` (`core/src/scenario.cpp`). S
 Pole `steps` zamienia plik w przygodę: lista kroków `{"type": "parent", "goals", "events"}` (kolejny epizod w tym samym mieście macierzystym; zadania, prośby i pomniki przechodzą dalej), `{"type": "colony", "colonies": [...]}` (gracz wybiera jedną z nieużytych kolonii; każda to pełny plik epizodu z własną mapą, a jej `id` to miasto z listy `cities` miasta macierzystego, które po epizodzie dostaje stan `colony`) i `{"type": "victory"}` na końcu. Pierwszy krok musi być `parent`. Plik bez `steps` to przygoda z jednym epizodem. Przykład: `example_adventure.json`.
 
 Plik `demo.json` to scena demo z `game/scenes/boot.gd`; narzędzie `tools/sync_game_data.py` kopiuje katalog do `game/scenarios/`.
+
+## Kolejność budowy (autopilot, `demo_build.json`)
+
+Plik czytany przez `bo::core::parse_build_order` (`core/src/build_order.cpp`): skrypt burmistrza dla demo i dla bramki całej rozgrywki (`core/tests/test_demo.cpp`, `docs/PRAKTYKI.md` rozdz. 4). Plik generuje `tools/make_demo.py` razem z `demo.json`; ręcznie go nie edytujemy.
+
+Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
+
+| Pole | Znaczenie |
+|---|---|
+| `place`, `x`, `y`, `rot` | postaw budynek; `repeat: [n, dx, dy]` stawia n sztuk co (dx, dy) |
+| `road: [x1, y1, x2, y2]` | droga w linii L: najpierw wzdłuż x, potem y |
+| `roadblock: [x, y]` | zapora |
+| `priority: [sektor, poziom]` | priorytet sektora pracy (0 hodowla ... 7 wojsko; poziom 0-5) |
+| `tax`, `wage` | stawka podatku i płac (indeks jak w `TaxRate`, `WageRate`) |
+| `trade_partner`, `trade_order`, `storage_order` z `at: [x, y]` | rozkazy budynku stojącego na kaflu `at` |
+| `summon_hero: [x, y]`, `hero_quest: n`, `pray: [x, y]` | mitologia: przyzwij herosa z Sali, wyślij na zadanie n, módl się w sanktuarium |
+
+Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`).
+
+Kroki są bezstanowe: krok wykonuje się w swoim dniu, więc wczytana gra prowadzi demo dalej od bieżącego dnia (`BoSimulation.load_build_order` po wczytaniu zapisu).

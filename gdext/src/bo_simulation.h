@@ -15,6 +15,7 @@
 
 #include "bo/core/data.h"
 #include "bo/core/adventure.h"
+#include "bo/core/build_order.h"
 #include "bo/core/simulation.h"
 
 class BoSimulation : public godot::RefCounted {
@@ -32,6 +33,9 @@ public:
                                  const godot::PackedStringArray& elevation = godot::PackedStringArray(),
                                  const godot::Array& trade_partners = godot::Array());
     // Starts an adventure file (scenarios/*.json, res://scenarios): map, cities, events, goals (D5).
+    // Autopilot (docs/PRAKTYKI.md ch. 4): the demo's build order, run day by day like the player's commands.
+    godot::String load_build_order(const godot::String& path);
+    int64_t apply_build_order();
     godot::String start_scenario(const godot::String& data_dir, const godot::String& scenario_path,
                                  bool full_staffing = false);
     void fulfill_request(int64_t request);
@@ -134,4 +138,6 @@ private:
     std::optional<bo::core::AdventureData> adventure_;
     bo::core::AdventureRun run_;
     std::string adventure_text_;
+    std::optional<bo::core::BuildOrder> build_order_;
+    std::optional<std::uint64_t> build_order_day_;  // last day applied; not saved (a loaded game goes on)
 };

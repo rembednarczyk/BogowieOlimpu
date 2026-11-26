@@ -173,10 +173,17 @@ func _init() -> void:
 	# Adventure through the binding (D5): the demo file, its goals and a yearly request.
 	var sc := BoSimulation.new()
 	check(sc.start_scenario("res://data", "res://scenarios/demo.json") == "", "start the demo adventure")
-	check(sc.get_map_width() == 64 and sc.get_cities().size() == 2, "adventure map and cities")
-	check(sc.get_scenario()["goals"].size() == 2, "adventure goals")
-	sc.run_days(16 * 3 + 1)
-	check(sc.get_scenario()["requests"].size() == 1, "the request of month 4 is open")
+	check(sc.get_map_width() == 80 and sc.get_cities().size() == 3, "adventure map and cities")
+	check(sc.get_scenario()["goals"].size() == 5, "adventure goals")
+	sc.run_days(16 * 5 + 1)
+	check(sc.get_scenario()["requests"].size() == 1, "the request of month 6 is open")
+	# The autopilot (tools/make_demo.py): the build order runs through the binding, day 0 builds the first town.
+	var auto := BoSimulation.new()
+	auto.start_scenario("res://data", "res://scenarios/demo.json")
+	check(auto.load_build_order("res://scenarios/demo_build.json") == "", "load the build order")
+	check(auto.apply_build_order() > 100 and auto.apply_build_order() == 0, "day 0 once, nothing again the same day")
+	auto.step(1)
+	check(auto.get_buildings().size() > 100, "the first town stands: %d" % auto.get_buildings().size())
 
 	# Adventure of several episodes (doc 23): example file, parent, then a colony of the player's choice.
 	var ad := BoSimulation.new()
