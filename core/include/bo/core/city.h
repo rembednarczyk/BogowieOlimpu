@@ -35,12 +35,13 @@ struct HouseState {
     std::uint8_t happiness = 0;        // C8: 0-100, set to the difficulty base when people move in
     std::uint8_t hungry_updates = 0;   // C8: mood updates in a row without food
     std::uint8_t days_without_road = 0;  // C8: people leave after more than 4 days (doc 24)
+    std::uint16_t quarantine_days = 0;   // C7: after a plague nobody moves in (Z:85)
 
     friend bool operator==(const HouseState& a, const HouseState& b) {
         return a.elite == b.elite && a.level == b.level && a.population == b.population && a.goods == b.goods &&
                a.food_remainder == b.food_remainder && a.failed_checks == b.failed_checks &&
                a.abandoned == b.abandoned && a.happiness == b.happiness && a.hungry_updates == b.hungry_updates &&
-               a.days_without_road == b.days_without_road;
+               a.days_without_road == b.days_without_road && a.quarantine_days == b.quarantine_days;
     }
 };
 
@@ -134,6 +135,12 @@ struct Building {
     std::optional<StallState> stall;        // agora stalls
     std::optional<AnimalState> animal;      // sheep, goats
     std::optional<OrchardState> orchard;    // olive trees, grapevines
+    // Risks (C7): counters grow by the building's risk each day; a visit of the right walker clears them.
+    std::uint16_t fire_counter = 0;
+    std::uint16_t damage_counter = 0;
+    std::uint16_t disease_counter = 0;
+    std::uint16_t crime_counter = 0;
+    std::uint8_t burning_days = 0;  // 0: not burning
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)
@@ -174,6 +181,7 @@ struct SpawnState {
 struct CityState {
     TileMap map;
     std::map<std::uint32_t, SpawnState> spawns;  // tile index -> herd
+    std::uint8_t wind = 0;                       // C7: direction fire spreads, drawn each year (S-006)
     BuildingStore buildings;
     UndoRecord undo;
     std::uint32_t homeless = 0;          // people pushed out of houses, waiting for module C8

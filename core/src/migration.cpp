@@ -33,7 +33,7 @@ std::uint32_t fill_houses(WorldState& st, const DataCatalog& catalog, std::uint3
             if (placed == people) {
                 return placed;
             }
-            if (!b.house || b.house->elite || b.house->abandoned || !b.road_access) {
+            if (!b.house || b.house->elite || b.house->abandoned || !b.road_access || b.house->quarantine_days > 0) {
                 continue;  // elite households arrive with module C5 (their plots need city stock)
             }
             HouseState& h = *b.house;

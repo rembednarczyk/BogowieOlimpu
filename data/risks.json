@@ -1,0 +1,48 @@
+{
+ "src": "docs/gameplay/07-higiena-bezpieczenstwo.md (Z:84-90), 20 i 24 (S-004, rodzina S-006/S-007)",
+ "hazard_threshold": 960,
+ "hazard_threshold_src": "S-004 legenda: zawalenie po 60/damage_risk miesiącach bez wizyty; licznik += ryzyko co dzień, próg 60 x 16 dni",
+ "fire_uses_same_threshold": true,
+ "fire_src": "[ZAŁOŻENIE] doc 24: pożar w tej samej postaci i z tym samym progiem co zawalenie",
+ "burn_days": 32,
+ "burn_src": "[RODZINA] S-006: płonąca ruina płonie ok. 32 dni",
+ "spread_every_days": 8,
+ "spread_chance_per_4": 1,
+ "spread_src": "[RODZINA] S-006: co 8 dni szansa 1/4 na podpalenie sąsiada w kierunku wiatru losowanego co rok",
+ "extinguish_src": "[ZAŁOŻENIE L-104] Z:90: superintendent ratuje budynek, jeśli zdąży przed pełnym objęciem ogniem; 8 dni (stała kExtinguishWindowDays w core/include/bo/core/walker.h)",
+ "disease_threshold": 3840,
+ "disease_hungry_multiplier": 2,
+ "disease_src": "[ZAŁOŻENIE L-104] licznik += DRI co dzień (podwójnie bez żywności, gdy poziom je, Z:84), próg 4 x próg zawalenia: chata bez healera i jedzenia choruje po ok. 6 miesiącach; L-021b",
+ "plague_death_percent": 50,
+ "quarantine_days": 96,
+ "plague_src": "[ZAŁOŻENIE L-104] Z:85: umiera część mieszkańców, kwarantanna na kilka miesięcy",
+ "crime_threshold": 960,
+ "crime_src": "[ZAŁOŻENIE L-104] licznik += CRI co dzień, próg jak zawalenie; L-022b",
+ "criminal_by_happiness": [
+  {
+   "below": 11,
+   "walker": "vandal"
+  },
+  {
+   "below": 30,
+   "walker": "thief"
+  },
+  {
+   "below": 50,
+   "walker": "mugger"
+  },
+  {
+   "below": 101,
+   "walker": "disgruntled_citizen"
+  }
+ ],
+ "criminal_src": "[RODZINA] progi < 50, < 30, <= 10 (doc 24); kolejność postaci Z:87-88",
+ "criminal_roam_ticks": 512,
+ "criminal_roam_src": "[ZAŁOŻENIE L-104] zasięg jak spacerujący kultury",
+ "daily_spread": [
+  0,
+  1,
+  2
+ ],
+ "daily_spread_src": "[RODZINA] doc 24: rodzina dodaje ryzyko z losowym mnożnikiem; u nas mnożnik 0, 1 albo 2 co dzień (średnio 1), strumień Hazards"
+}

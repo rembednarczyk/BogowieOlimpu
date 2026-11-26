@@ -18,11 +18,15 @@ inline const bo::core::DataCatalog& catalog() {
     return kCatalog;
 }
 
-// The real data with migration switched off (batch size 0): for tests that set populations by hand.
-inline const bo::core::DataCatalog& catalog_no_migration() {
+// The real data with migration and risks switched off (batch size 0, unreachable risk thresholds): for tests
+// of one system that set populations by hand and run for months without maintenance offices.
+inline const bo::core::DataCatalog& catalog_isolated() {
     static const bo::core::DataCatalog kCatalog = [] {
         bo::core::DataCatalog c = catalog();
         c.migration.batch_people = 0;
+        c.risks.hazard_threshold = 0x7FFFFFFF;
+        c.risks.disease_threshold = 0x7FFFFFFF;
+        c.risks.crime_threshold = 0x7FFFFFFF;
         return c;
     }();
     return kCatalog;

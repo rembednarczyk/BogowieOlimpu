@@ -207,7 +207,23 @@ void follow_path(CityState& city, Walker& w) {
 
 void provide_coverage(CityState& city, const Walker& w) {
     for (const BuildingId id : buildings_in_square(city, w.tile, kServiceRadius)) {
-        city.buildings.items.at(id).coverage[w.type] = w.coverage_days;
+        Building& b = city.buildings.items.at(id);
+        b.coverage[w.type] = w.coverage_days;
+        if ((w.resets & 1U) != 0) {
+            b.fire_counter = 0;
+            if (b.burning_days > 0 && b.burning_days <= kExtinguishWindowDays) {
+                b.burning_days = 0;  // caught in time (Z:90)
+            }
+        }
+        if ((w.resets & 2U) != 0) {
+            b.damage_counter = 0;
+        }
+        if ((w.resets & 4U) != 0) {
+            b.disease_counter = 0;
+        }
+        if ((w.resets & 8U) != 0) {
+            b.crime_counter = 0;
+        }
     }
 }
 
@@ -229,6 +245,7 @@ WalkerId spawn_roaming_walker(CityState& city, WalkerStore& walkers, const DataC
     w.speed_raw = t->second.speed_raw;
     w.max_roam_ticks = *t->second.roam_ticks;
     w.coverage_days = t->second.coverage_days;
+    w.resets = t->second.resets;
     const auto bt = catalog.buildings.find(b->second.type);
     w.return_north = bt != catalog.buildings.end() && bt->second.return_north;
     constexpr std::int32_t kDx[] = {0, 1, 0, -1};

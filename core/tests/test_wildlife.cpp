@@ -33,7 +33,7 @@ TEST_CASE("boar herds: 7 at the spawn point, a young boar every 26 days; hunters
     std::vector<std::string> r(12, std::string(40, '.'));
     r[6] = std::string(40, '=');
     r[2][8] = 'h';
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{3, Difficulty::Hero, 9000, r, true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{3, Difficulty::Hero, 9000, r, true});
     sim.issue(PlaceBuilding{"boar_hunters_lodge", 2, 4});
     sim.issue(PlaceBuilding{"granary", 20, 2});
     sim.step(1);
@@ -54,7 +54,7 @@ TEST_CASE("a fishery builds its boat, then sails to the fishing ground; output f
             r[y] = std::string(48, '~');
         }
         r[10][static_cast<std::size_t>(4 + distance)] = 'f';
-        Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{3, Difficulty::Hero, 9000, r, true});
+        Simulation sim(bo::test::catalog_isolated(), SimulationConfig{3, Difficulty::Hero, 9000, r, true});
         sim.issue(PlaceBuilding{"fishery", 3, 7});
         sim.issue(PlaceBuilding{"granary", 6, 2});  // close: the fishery holds one load, the deliveryman must keep up
         sim.step(1);

@@ -90,6 +90,7 @@ struct BuildingType {
     std::vector<std::string> tends;            // lodges: tree types, in the order of `outputs`
     std::string footprint_text;                // footprint from buildings.json when the stats size has none
     std::string resource;                      // extraction: terrain id of the resource (forest, copper ore...)
+    bool player_placeable = true;              // ruins are made by the simulation only
     std::vector<std::string> prey;             // hunting lodges: "boar", "deer" (Z:46, P:8)
 };
 
@@ -104,6 +105,8 @@ struct WalkerType {
     std::int32_t culture_points = 0;            // points a visit gives a house (doc 18)
     std::uint8_t coverage_days = 96;            // service counter set by a visit (doc 24; clerk 50)
     std::optional<std::int32_t> max_source_distance;  // vendors: tiles to a storage (doc 24: 37 measured)
+    std::uint8_t resets = 0;      // risk counters a visit clears: 1 fire, 2 collapse, 4 disease, 8 crime (C7)
+    bool stops_outlaws = false;   // watchman, nobleman (Z:88)
 };
 
 // Mood and migration parameters (data/migration.json, doc 24).
@@ -152,6 +155,21 @@ struct ProductionParams {
     std::int32_t boat_build_days = 0;           // fishery: the boat is built first (Z:47)
 };
 
+// Risk parameters (data/risks.json, module C7). Counters grow by the risk value each day.
+struct RiskParams {
+    std::int32_t hazard_threshold = 960;
+    std::int32_t burn_days = 32;
+    std::int32_t spread_every_days = 8;
+    std::int32_t spread_chance_per_4 = 1;
+    std::int32_t disease_threshold = 960;
+    std::int32_t disease_hungry_multiplier = 2;
+    std::int32_t plague_death_percent = 50;
+    std::int32_t quarantine_days = 96;
+    std::int32_t crime_threshold = 960;
+    std::vector<std::pair<std::int32_t, std::string>> criminal_by_happiness;  // (below, walker), first match
+    std::uint32_t criminal_roam_ticks = 512;
+};
+
 struct DataCatalog {
     std::uint64_t version = 0;                      // FNV-1a 64 over file names and bytes, sorted by name
     std::vector<std::string> files;                 // loaded file names, sorted
@@ -170,6 +188,7 @@ struct DataCatalog {
     // Yearly wage per worker in thousandths of a drachma, per wage rate (doc 18).
     std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_per_mille{};
     MigrationParams migration;
+    RiskParams risks;
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

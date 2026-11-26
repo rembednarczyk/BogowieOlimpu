@@ -68,7 +68,9 @@ bool operator==(const Building& a, const Building& b) {
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
            a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house &&
            a.storage == b.storage && a.producer == b.producer && a.stall == b.stall && a.animal == b.animal &&
-           a.orchard == b.orchard;
+           a.orchard == b.orchard && a.fire_counter == b.fire_counter && a.damage_counter == b.damage_counter &&
+           a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
+           a.burning_days == b.burning_days;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -111,6 +113,10 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     }
     const BuildingType& bt = type_it->second;
     const BuildingStats& stats = stats_it->second;
+    if (!bt.player_placeable) {
+        r.reason = "build.unknown_type";
+        return r;
+    }
     const std::string& rule = bt.placement;
     Building b;
     b.type = type;

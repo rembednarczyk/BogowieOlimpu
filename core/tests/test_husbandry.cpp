@@ -22,7 +22,7 @@ std::vector<std::string> farmland() {
 }
 
 Simulation town() {
-    return Simulation(bo::test::catalog_no_migration(), SimulationConfig{4, Difficulty::Hero, 9000, farmland(), true});
+    return Simulation(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 9000, farmland(), true});
 }
 
 Building& at(Simulation& sim, TilePos p) {

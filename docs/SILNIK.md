@@ -104,7 +104,9 @@ Zrobione:
 
 - Łowiectwo i rybołówstwo (L-103): punkty odradzania dzików (stado 7, młode co 26 dni) i jeleni (jedno na miesiąc), myśliwi z chat łowców, łódź przystani rybackiej budowana na start i pływająca do łowiska, nabrzeże jeżowców; łowiska i punkty jako cechy kafla mapy.
 
-Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C7 ryzyka, C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- C7 ryzyka: liczniki pożaru i zawalenia z `building_stats.json` (60 / ryzyko miesięcy, losowy rozrzut), płonący budynek 32 dni, rozprzestrzenianie z wiatrem, gaszenie przez zarządcę, ruiny; zaraza z kwarantanną (healer zeruje); przestępcy według zadowolenia domu, straż zatrzymuje, złodziej i wandal atakują domy elity (L-104). Parametry w `data/risks.json`.
+
+Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

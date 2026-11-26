@@ -24,12 +24,14 @@ inline constexpr std::uint8_t kServiceCoverageDays = 96;  // a visit lasts 96 da
 inline constexpr std::int32_t kServiceRadius = 2;          // 5x5 square around the walker (doc 24)
 inline constexpr std::int32_t kRoamTargetDistance = 8;     // initial aim, tiles from the building
 inline constexpr std::int32_t kRoamTargetRoadRadius = 6;
+// A superintendent saves a burning building within this many days [ZAŁOŻENIE, L-104; Z:90].
+inline constexpr std::uint8_t kExtinguishWindowDays = 8;
 
 // AtTarget: a working walker (deliveryman, vendor) reached its target and waits for the logistics step.
 enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed, Done, AtTarget };
 
 // What a destination walker carries out (module C5). Stored in saves: append only.
-enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish };
+enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime };
 
 struct Walker {
     WalkerId id = kNoWalker;
@@ -61,6 +63,8 @@ struct Walker {
     std::uint32_t want_loads = 0;
     TilePos resource;               // Extract: the resource tile worked
     std::uint32_t work_ticks = 0;   // Extract: ticks of work left at the resource
+    std::uint8_t resets = 0;        // C7: risk counters this walker clears (WalkerType::resets)
+    std::string variant;            // outlaws: "mugger", "thief", "vandal" (Z:87-88)
 };
 
 struct WalkerStore {

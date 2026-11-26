@@ -29,7 +29,7 @@ Building& at(Simulation& sim, TilePos p) {
 }  // namespace
 
 TEST_CASE("storage: 8 slots of 4 loads; one good per slot; sculptures take a slot each (doc 19)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"storehouse", 10, 3});
     sim.step(1);
     Building& s = at(sim, {10, 3});
@@ -44,7 +44,7 @@ TEST_CASE("storage: 8 slots of 4 loads; one good per slot; sculptures take a slo
 }
 
 TEST_CASE("default orders: Granary takes food only when fully staffed; Storehouse refuses wheat (Z:66-68)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 10, 2});
     sim.issue(PlaceBuilding{"storehouse", 16, 3});
     sim.step(52);
@@ -60,7 +60,7 @@ TEST_CASE("default orders: Granary takes food only when fully staffed; Storehous
 }
 
 TEST_CASE("a farm staffed all year harvests 8 loads in its harvest month and delivers them one by one") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"carrot_farm", 0, 3});  // harvest in month 4 (index 3)
     sim.issue(PlaceBuilding{"granary", 30, 2});
     sim.step(1);
@@ -76,7 +76,7 @@ TEST_CASE("a farm staffed all year harvests 8 loads in its harvest month and del
 }
 
 TEST_CASE("food vendor fills its stall from a Granary within reach; the peddler feeds huts into shacks") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 20, 2});
     // Common agora over the main street: road lane is row 6 (rotation 1: long axis along x).
     sim.issue(PlaceBuilding{"common_agora", 10, 4, 1});
@@ -109,7 +109,7 @@ TEST_CASE("house target: two months of the food of the current or next level (L-
 }
 
 TEST_CASE("elite plots need 2 food, 1 fleece and 1 olive oil in storage (doc 18)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 10, 2});
     sim.issue(PlaceBuilding{"storehouse", 16, 3});
     sim.step(1);
@@ -140,6 +140,8 @@ TEST_CASE("whole chain on real labour and migration: farm, granary, agora, fount
     sim.issue(PlaceBuilding{"common_agora", 20, 4, 1});
     sim.issue(PlaceBuilding{"fountain", 18, 7});
     sim.issue(PlaceBuilding{"gymnasium", 27, 7});
+    sim.issue(PlaceBuilding{"maintenance_office", 44, 4});  // without it the huts burn within months (C7)
+    sim.issue(PlaceBuilding{"infirmary", 44, 7});
     for (int x = 12; x < 40; x += 2) {
         if (x < 18 || x > 30) {
             sim.issue(PlaceBuilding{"common_housing", x, 4});
@@ -160,7 +162,7 @@ TEST_CASE("whole chain on real labour and migration: farm, granary, agora, fount
 }
 
 TEST_CASE("save v7: storage, stalls and walkers with cargo survive a round trip") {
-    Simulation a(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation a(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     a.issue(PlaceBuilding{"granary", 20, 2});
     a.issue(PlaceBuilding{"common_agora", 10, 4, 1});
     a.issue(PlaceBuilding{"carrot_farm", 0, 3});
@@ -179,7 +181,7 @@ TEST_CASE("save v7: storage, stalls and walkers with cargo survive a round trip"
     }
     CHECK(cargo);
     std::string error;
-    auto b = Simulation::load(bo::test::catalog_no_migration(), a.save(), error);
+    auto b = Simulation::load(bo::test::catalog_isolated(), a.save(), error);
     REQUIRE(b);
     CHECK(a.state_hash() == b->state_hash());
     a.run_days(20);
@@ -188,7 +190,7 @@ TEST_CASE("save v7: storage, stalls and walkers with cargo survive a round trip"
 }
 
 TEST_CASE("storage orders: Don't Accept and Empty refuse deliveries, Get receives (Z:66-68)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 10, 2});
     sim.step(52);
     const BuildingId g = sim.state().city.map.at({10, 2}).building;
@@ -203,7 +205,7 @@ TEST_CASE("storage orders: Don't Accept and Empty refuse deliveries, Get receive
 }
 
 TEST_CASE("Empty sends goods to another storage; Get fetches from one up to the limit (4 loads a trip)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"granary", 10, 2});
     sim.issue(PlaceBuilding{"granary", 24, 2});
     sim.step(52);
@@ -230,6 +232,10 @@ TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)
         }
     }
     r[6] = std::string(48, '=');
+    r[14] = std::string(48, '=');  // a second street for more households
+    for (std::size_t y = 6; y < 15; ++y) {
+        r[y][11] = '=';
+    }
     Simulation sim(bo::test::catalog(), SimulationConfig{9, Difficulty::Hero, 20000, r});
     sim.issue(PlaceBuilding{"carrot_farm", 0, 3});
     sim.issue(PlaceBuilding{"onion_farm", 3, 3});
@@ -239,6 +245,14 @@ TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)
     sim.issue(PlaceBuilding{"common_agora", 20, 4, 1});
     sim.issue(PlaceBuilding{"fountain", 18, 7});
     sim.issue(PlaceBuilding{"gymnasium", 27, 7});
+    sim.issue(PlaceBuilding{"maintenance_office", 46, 4});  // without them the huts burn within months (C7)
+    sim.issue(PlaceBuilding{"maintenance_office", 8, 7});
+    sim.issue(PlaceBuilding{"maintenance_office", 46, 12});
+    for (int x = 12; x < 46; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 12});
+        sim.issue(PlaceBuilding{"common_housing", x, 15});
+    }
+    sim.issue(PlaceBuilding{"infirmary", 44, 7});
     for (int x = 12; x < 18; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 4});
         sim.issue(PlaceBuilding{"common_housing", x, 7});
@@ -257,6 +271,7 @@ TEST_CASE("whole chain with fleece and gardens: houses reach homestead (Z:30-31)
     sim.issue(PlaceBuilding{"food_vendor_stall", agora.slot_origins[0].x, agora.slot_origins[0].y});
     sim.issue(PlaceBuilding{"fleece_vendor_stall", agora.slot_origins[1].x, agora.slot_origins[1].y});
     sim.issue(SetSectorPriority{static_cast<std::uint8_t>(Sector::Distribution), 5});
+    sim.issue(SetSectorPriority{static_cast<std::uint8_t>(Sector::HygieneSafety), 5});  // maintenance first (C7)
     sim.run_days(16 * 12 * 3);
     int homesteads = 0;
     for (const auto& [id, b] : sim.state().city.buildings.items) {

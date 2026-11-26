@@ -94,6 +94,7 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         const auto& res = o.value("resource", json());
         t.resource = res.is_string() ? res.get<std::string>() : "";
         t.prey = strings("prey");
+        t.player_placeable = o.value("player_placeable", true);
         const auto& dp = o.value("delivery_priority", json());
         if (dp.is_object()) {
             for (const auto& [good, list] : dp.items()) {
@@ -153,6 +154,11 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
         w.culture_points = o.value("culture_points", 0);
         w.coverage_days = o.value("coverage_days", static_cast<std::uint8_t>(96));
         w.max_source_distance = opt_int(o.value("max_source_distance_tiles", json()));
+        for (const auto& r : o.value("resets", json::array())) {
+            const auto v = r.get<std::string>();
+            w.resets |= static_cast<std::uint8_t>(v == "fire" ? 1 : v == "collapse" ? 2 : v == "disease" ? 4 : v == "crime" ? 8 : 0);
+        }
+        w.stops_outlaws = o.value("stops_outlaws", false);
         cat.walkers.emplace(w.id, w);
     }
 }
@@ -372,6 +378,23 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 std::llround(diff.at("wage_drachmas_per_worker_year").at(kWageKeys[i]).get<double>() * 1000.0));
         }
         load_migration(docs.at("migration.json"), diff, cat.migration);
+        if (docs.count("risks.json") != 0) {
+            const auto& rk = docs.at("risks.json");
+            RiskParams& p = cat.risks;
+            p.hazard_threshold = rk.value("hazard_threshold", p.hazard_threshold);
+            p.burn_days = rk.value("burn_days", p.burn_days);
+            p.spread_every_days = rk.value("spread_every_days", p.spread_every_days);
+            p.spread_chance_per_4 = rk.value("spread_chance_per_4", p.spread_chance_per_4);
+            p.disease_threshold = rk.value("disease_threshold", p.disease_threshold);
+            p.disease_hungry_multiplier = rk.value("disease_hungry_multiplier", p.disease_hungry_multiplier);
+            p.plague_death_percent = rk.value("plague_death_percent", p.plague_death_percent);
+            p.quarantine_days = rk.value("quarantine_days", p.quarantine_days);
+            p.crime_threshold = rk.value("crime_threshold", p.crime_threshold);
+            for (const auto& row : rk.at("criminal_by_happiness")) {
+                p.criminal_by_happiness.emplace_back(row.at("below"), row.at("walker"));
+            }
+            p.criminal_roam_ticks = rk.value("criminal_roam_ticks", p.criminal_roam_ticks);
+        }
         for (const auto& g : docs.at("goods.json")) {
             cat.goods[g.at("id").get<std::string>()] = g.value("class", "");
         }

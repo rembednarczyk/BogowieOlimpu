@@ -88,9 +88,17 @@ struct PeopleMoved {  // C8: daily migration result
     std::uint32_t left = 0;
 };
 
+// C7: fires, collapses, plagues and crimes, for messages and the hazards view. Values stored in replays: append.
+enum class DisasterKind : std::uint8_t { FireStarted = 0, BurnedDown, Collapsed, Plague, Crime };
+
+struct Disaster {
+    DisasterKind kind = DisasterKind::FireStarted;
+    std::uint32_t building = 0;
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
-                           HouseChanged, MonthlyFinance, PeopleMoved>;
+                           HouseChanged, MonthlyFinance, PeopleMoved, Disaster>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

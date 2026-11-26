@@ -9,6 +9,7 @@
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
+#include "bo/core/risks.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
 
@@ -176,6 +177,25 @@ void run_logistics(Simulation& sim) {
     }
 }
 
+void emit_risks(Simulation& sim, const RiskEvents& ev) {
+    for (const BuildingId id : ev.removed) {
+        sim.emit(BuildingRemoved{id});
+    }
+    for (const BuildingId id : ev.placed) {
+        const Building& b = sim.state().city.buildings.items.at(id);
+        sim.emit(BuildingPlaced{b.id, b.type, b.origin.x, b.origin.y, b.width, b.height, b.rotation, b.parent});
+    }
+    for (const WalkerId id : ev.spawned) {
+        sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
+    }
+    for (const auto& [kind, id] : ev.disasters) {
+        sim.emit(Disaster{kind, id});
+    }
+}
+
+// C7: daily risks (fire, collapse, plague, crime).
+void run_risks(Simulation& sim) { emit_risks(sim, advance_risks(sim.mutable_state(), sim.catalog())); }
+
 bool is_build_command(const Command& c) {
     return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
            std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
@@ -201,6 +221,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"migration", 26, &run_migration},
         {"production", 27, &run_production},
         {"logistics", 28, &run_logistics},
+        {"risks", 29, &run_risks},
         {"walker_spawn", 31, &run_walker_spawn},
         {"coverage_decay", 35, &run_coverage_decay},
     };
@@ -312,6 +333,14 @@ void Simulation::step_walkers() {
             peddler_sells(state_, catalog_, w);  // sells on every new tile, like coverage (doc 06)
         }
     }
+    RiskEvents crimes;
+    for (auto& [id, w] : walkers) {
+        if (w.phase == WalkerPhase::AtTarget && w.job == WalkerJob::Crime) {
+            crime_at_target(state_, catalog_, w, crimes);
+        }
+    }
+    emit_risks(*this, crimes);
+    catch_outlaws(state_, catalog_);
     handle_arrivals(state_, catalog_);
     for (auto it = walkers.begin(); it != walkers.end();) {
         if (it->second.phase != WalkerPhase::Done) {

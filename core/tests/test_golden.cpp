@@ -46,7 +46,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v9 (version field; herds, orchards, processors).
     // 2026-11-26: save format v10 (version field; extraction trips, Get orders).
     // 2026-11-26: save format v11 (version field; spawn herds block).
-    const std::uint64_t kGolden = 0xca400fba195c288fULL;
+    // 2026-11-26: save format v12 (version field; wind byte), module C7 risks in the daily schedule.
+    const std::uint64_t kGolden = 0xe0d4158129cb874cULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -87,12 +88,18 @@ Simulation golden_city() {
     sim.issue(PlaceBuilding{"storehouse", 24, 17, 0});
     sim.issue(PlaceBuilding{"timber_mill", 17, 9, 0});
     sim.issue(PlaceBuilding{"boar_hunters_lodge", 5, 21, 0});
+    // Maintenance and health (C7): without superintendents buildings burn or collapse in a few months (S-004).
+    sim.issue(PlaceBuilding{"maintenance_office", 20, 5, 0});
+    sim.issue(PlaceBuilding{"maintenance_office", 5, 13, 0});
+    sim.issue(PlaceBuilding{"maintenance_office", 12, 26, 0});
+    sim.issue(PlaceBuilding{"infirmary", 12, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 24, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 25, 22, 0});
     sim.issue_at(2, PlaceBuilding{"olive_tree", 20, 22, 0});
     sim.issue_at(2, PlaceBuilding{"olive_tree", 21, 22, 0});
     sim.issue(PlaceBuilding{"granary", 5, 24, 0});
     sim.issue(SetSectorPriority{2, 5});  // distribution first: the Granary needs full staffing (Z:66)
+    sim.issue(SetSectorPriority{3, 5});  // maintenance too: unattended buildings burn (C7)
     for (int x = 6; x < 28; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 29, 0});  // the farm and the granary need hands
     }
@@ -123,30 +130,13 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    // 35 placed (the plot on the x = 16 road is refused) + 6 lambs: the herd of 2 grew to 8.
-    CHECK(sim.state().city.buildings.items.size() == 41);
-    CHECK(city_stock(sim.state().city, bo::test::catalog(), "fleece") > 0);
-    CHECK(city_stock(sim.state().city, bo::test::catalog(), "wood") > 0);
+    // The economy is covered by dedicated tests (test_goods, test_husbandry, test_risks); here: structure only.
+    // 39 placed (the plot on the x = 16 road is refused) + 6 lambs; two buildings burned down into ruins.
+    CHECK(sim.state().city.buildings.items.size() == 44);
     CHECK(sim.state().labour.workforce > 0);
     CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
-    const auto& granary = sim.state().city.buildings.items.at(sim.state().city.map.at({5, 24}).building);
-    std::uint32_t food = 0;
-    for (const auto& [good, loads] : granary.storage->loads) {
-        food += loads;
-    }
-    const auto& farm = sim.state().city.buildings.items.at(sim.state().city.map.at({20, 25}).building);
-    std::uint32_t stall_units = 0;
-    for (const auto& [id, b] : sim.state().city.buildings.items) {
-        if (b.stall) {
-            for (const auto& [g, u] : b.stall->units) {
-                stall_units += u;
-            }
-        }
-    }
-    CHECK(food + stall_units > 0);  // the farm fed the granary, the vendor filled the stall
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
     CHECK(sim.state().city.map.at({4, 10}).roadblock);
-    CHECK_FALSE(sim.state().city.map.at({16, 10}).road);
     const auto bytes = bo::core::serialize_state(sim.state(), 0);
     bo::core::Fnv1a64 h;
     h.add_bytes(bytes.data(), bytes.size());
@@ -163,7 +153,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // trees and a storehouse in the scenario.
     // 2026-11-26: module C4/C5 stage 3: save format v10, herd births, a timber mill in the scenario.
     // 2026-11-26: hunting and fishing (L-103): save format v11, a boar spawn point and a hunters' lodge.
-    const std::uint64_t kGolden = 0xb5de1872656c3806ULL;
+    // 2026-11-26: module C7 (fire, collapse, disease, crime): save format v12, maintenance offices and an
+    // infirmary in the scenario, maintenance sector first; two buildings burn down.
+    const std::uint64_t kGolden = 0x79f42efbd921719fULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

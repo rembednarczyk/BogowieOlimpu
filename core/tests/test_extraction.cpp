@@ -20,7 +20,7 @@ std::vector<std::string> quarry_map(char resource, std::int32_t distance) {
 }
 
 std::uint32_t yearly_loads(const std::string& building, char resource, std::int32_t distance) {
-    Simulation sim(bo::test::catalog_no_migration(),
+    Simulation sim(bo::test::catalog_isolated(),
                    SimulationConfig{2, Difficulty::Hero, 9000, quarry_map(resource, distance), true});
     sim.issue(PlaceBuilding{building, 2, 4});
     sim.issue(PlaceBuilding{"storehouse", 20, 7});
@@ -65,7 +65,7 @@ TEST_CASE("masonry shops make 12 slabs a year while a quarry is within 20 tiles 
 }
 
 TEST_CASE("the mint turns 200 silver into 100 drachmas for the treasury (doc 19)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{2, Difficulty::Hero, 0, quarry_map('s', 2), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{2, Difficulty::Hero, 0, quarry_map('s', 2), true});
     sim.issue(PlaceBuilding{"mint", 2, 4});
     sim.step(1);
     const std::int64_t after_build = sim.state().finance.treasury;
@@ -77,7 +77,7 @@ TEST_CASE("the mint turns 200 silver into 100 drachmas for the treasury (doc 19)
 }
 
 TEST_CASE("a sculpture studio waits for 4 bronze per sculpture (doc 19)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{2, Difficulty::Hero, 9000, quarry_map('.', 2), true});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{2, Difficulty::Hero, 9000, quarry_map('.', 2), true});
     sim.issue(PlaceBuilding{"sculpture_studio", 2, 4});
     sim.step(1);
     auto& b = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({2, 4}).building);

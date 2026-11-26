@@ -61,7 +61,7 @@ TEST_CASE("no room: the batch does not wait") {
 }
 
 TEST_CASE("moods: high taxes and unemployment lower happiness in a city of 300+; popularity is the mean") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 1000, street(30)});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 1000, street(30)});
     for (int x = 0; x < 30; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 1});
     }
@@ -84,7 +84,7 @@ TEST_CASE("moods: high taxes and unemployment lower happiness in a city of 300+;
 }
 
 TEST_CASE("small cities do not complain (below 300 people: base happiness)") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Titan, 1000, street(10)});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Titan, 1000, street(10)});
     sim.issue(PlaceBuilding{"common_housing", 0, 1});
     sim.issue(SetTaxRate{TaxRate::Outrageous});
     sim.step(1);
@@ -114,7 +114,7 @@ TEST_CASE("emigration takes people from the lowest levels, only above 100 reside
 }
 
 TEST_CASE("a house cut off from roads empties after more than 4 days; the people are rehoused first") {
-    Simulation sim(bo::test::catalog_no_migration(), SimulationConfig{1, Difficulty::Hero, 1000, street(10)});
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 1000, street(10)});
     sim.issue(PlaceBuilding{"common_housing", 0, 1});
     sim.issue(PlaceBuilding{"common_housing", 4, 1});
     sim.step(1);
@@ -123,11 +123,11 @@ TEST_CASE("a house cut off from roads empties after more than 4 days; the people
     st.city.buildings.items.at(1).road_access.reset();  // as if its road were gone
     for (int d = 0; d < 4; ++d) {
         st.city.buildings.items.at(1).road_access.reset();
-        migrate(st, bo::test::catalog_no_migration());
+        migrate(st, bo::test::catalog_isolated());
     }
     CHECK(st.city.buildings.items.at(1).house->population == 8);
     st.city.buildings.items.at(1).road_access.reset();
-    const auto r = migrate(st, bo::test::catalog_no_migration());
+    const auto r = migrate(st, bo::test::catalog_isolated());
     CHECK(st.city.buildings.items.at(1).house->population == 0);
     CHECK(r.rehoused == 8);
     CHECK(st.city.buildings.items.at(2).house->population == 8);

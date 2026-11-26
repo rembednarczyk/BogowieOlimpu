@@ -110,6 +110,32 @@ void write_building(ByteWriter& w, const Building& b) {
     }
     w.u32(b.workers);  // since v5
     write_goods_state(w, b);  // since v7
+    w.u32(b.fire_counter);    // since v12
+    w.u32(b.damage_counter);
+    w.u32(b.disease_counter);
+    w.u32(b.crime_counter);
+    w.u8(b.burning_days);
+    w.u32(b.house ? b.house->quarantine_days : 0U);
+}
+
+bool read_risks(ByteReader& r, Building& b) {
+    std::uint32_t v[5] = {};
+    for (auto& x : v) {
+        if (!r.u32(x) || x > 0xFFFF) {
+            return false;
+        }
+    }
+    if (!r.u8(b.burning_days)) {
+        return false;
+    }
+    b.fire_counter = static_cast<std::uint16_t>(v[0]);
+    b.damage_counter = static_cast<std::uint16_t>(v[1]);
+    b.disease_counter = static_cast<std::uint16_t>(v[2]);
+    b.crime_counter = static_cast<std::uint16_t>(v[3]);
+    if (b.house) {
+        b.house->quarantine_days = static_cast<std::uint16_t>(v[4]);
+    }
+    return true;
 }
 
 bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
@@ -184,7 +210,7 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
     }
     if (version >= 3) {
         return read_building_v3(r, b) && (version < 4 || read_house(r, b, version)) && (version < 5 || r.u32(b.workers)) &&
-               (version < 7 || read_goods_state(r, b, version));
+               (version < 7 || read_goods_state(r, b, version)) && (version < 12 || read_risks(r, b));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -263,6 +289,7 @@ void write_city(ByteWriter& w, const CityState& c) {
     }
     write_undo(w, c.undo);  // since v3
     w.u32(c.homeless);      // since v4
+    w.u8(c.wind);                                        // since v12
     w.u32(static_cast<std::uint32_t>(c.spawns.size()));  // since v11
     for (const auto& [tile, s] : c.spawns) {
         w.u32(tile);
@@ -298,6 +325,9 @@ bool read_city(ByteReader& r, CityState& c, std::uint32_t version) {
         return false;
     }
     if (version >= 4 && !r.u32(c.homeless)) {
+        return false;
+    }
+    if (version >= 12 && (!r.u8(c.wind) || c.wind > 3)) {
         return false;
     }
     std::uint32_t spawns = 0;
@@ -349,6 +379,8 @@ void write_walkers(ByteWriter& w, const WalkerStore& s) {
         w.u32(k.want_loads);
         write_pos(w, k.resource);
         w.u32(k.work_ticks);
+        w.u8(k.resets);  // since v12
+        w.str(k.variant);
     }
 }
 
@@ -373,11 +405,14 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > 8 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > 9 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&
             (!r.str(k.want_good) || !r.u32(k.want_loads) || !read_pos(r, k.resource) || !r.u32(k.work_ticks))) {
+            return false;
+        }
+        if (ok && version >= 12 && (!r.u8(k.resets) || !r.str(k.variant))) {
             return false;
         }
         k.job = static_cast<WalkerJob>(job);

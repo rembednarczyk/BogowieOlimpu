@@ -67,7 +67,7 @@ TEST_CASE("save v2: map, buildings, coverage and walkers mid-route survive a rou
 }
 
 // Tail of a save with an empty city, in order: map size 8, buildings 8, undo record 29 (v3), homeless 4 (v4),
-// spawn herds 4 (v11), labour 85 (v5), migration 13 (v6), finance 64 (v5), walkers 8. Older versions lack the
+// wind 1 (v12), spawn herds 4 (v11), labour 85 (v5), migration 13 (v6), finance 64 (v5), walkers 8. Older versions lack the
 // blocks added later.
 namespace {
 
@@ -77,6 +77,7 @@ constexpr std::size_t kMigration = 13;
 constexpr std::size_t kLabour = 85;
 constexpr std::size_t kHomeless = 4;
 constexpr std::size_t kSpawns = 4;
+constexpr std::size_t kWind = 1;
 constexpr std::size_t kUndo = 29;
 constexpr std::size_t kCityBase = 16;
 
@@ -102,7 +103,10 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     a.step(10);
     const auto current = a.save();
     const std::uint64_t h = a.state_hash();
-    auto v10 = current;
+    auto v11 = current;
+    cut(v11, kWalkersBlock + kFinance + kMigration + kLabour + kSpawns, kWind);
+    check_load(v11, 11, h);
+    auto v10 = v11;
     cut(v10, kWalkersBlock + kFinance + kMigration + kLabour, kSpawns);
     check_load(v10, 10, h);
     check_load(v10, 6, h);  // v7-v10 add only per-tile, per-building and per-walker fields

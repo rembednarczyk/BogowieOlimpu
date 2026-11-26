@@ -129,5 +129,6 @@
 {"id": "altar_of_olympus", "ref_name": "altar_of_olympus", "name_pl": "piramida", "tab": "aesthetics", "culture": "atlantean", "base": "pyramid", "monument": "altar_of_olympus", "requires_road": "plank_to_road", "src": "P:26-28; S-004 pyramids"},
 {"id": "temple_of_olympus", "ref_name": "temple_of_olympus", "name_pl": "piramida", "tab": "aesthetics", "culture": "atlantean", "base": "pyramid", "monument": "temple_of_olympus", "requires_road": "plank_to_road", "src": "P:26-28; S-004 pyramids"},
 {"id": "observatory_kosmika", "ref_name": "observatory_kosmika", "name_pl": "piramida", "tab": "aesthetics", "culture": "atlantean", "base": "pyramid", "monument": "observatory_kosmika", "requires_road": "plank_to_road", "src": "P:26-28; S-004 pyramids"},
-{"id": "museum_atlantika", "ref_name": "museum_atlantika", "name_pl": "piramida", "tab": "aesthetics", "culture": "atlantean", "base": "pyramid", "monument": "museum_atlantika", "requires_road": "plank_to_road", "src": "P:26-28; S-004 pyramids"}
+{"id": "museum_atlantika", "ref_name": "museum_atlantika", "name_pl": "piramida", "tab": "aesthetics", "culture": "atlantean", "base": "pyramid", "monument": "museum_atlantika", "requires_road": "plank_to_road", "src": "P:26-28; S-004 pyramids"},
+{"id": "ruins", "ref_name": "Ruins", "name_pl": "ruiny", "tab": "general", "culture": "any", "requires_road": false, "player_placeable": false, "notes": "zostaje po pożarze i zawaleniu; usuwa się ją jak zabudowę", "src": "Z:89-90"}
 ]
