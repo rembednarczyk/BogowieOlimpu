@@ -7,6 +7,7 @@
 
 #include "bo/core/appeal.h"
 #include "bo/core/finance.h"
+#include "bo/core/gods.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
@@ -167,6 +168,7 @@ void Simulation::step_walkers() {
     catch_outlaws(state_, catalog_);
     muggings(state_, catalog_);
     handle_arrivals(state_, catalog_);
+    apply_sanctification(state_.city);  // hunters and extractors brought their catch (4x when sanctified)
     for (auto it = walkers.begin(); it != walkers.end();) {
         if (it->second.phase != WalkerPhase::Done) {
             ++it;
@@ -296,6 +298,14 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const StartInvasion&) { apply_combat_command(command, index); },
                    [&](const BribeInvaders&) { apply_combat_command(command, index); },
                    [&](const Surrender&) { apply_combat_command(command, index); },
+                   [&](const Pray& c) {
+                       const std::string err = pray(state_, catalog_, c.building);
+                       if (err.empty()) {
+                           emit(PrayerAnswered{c.building});
+                       } else {
+                           emit(CommandRejected{index, err});
+                       }
+                   },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});

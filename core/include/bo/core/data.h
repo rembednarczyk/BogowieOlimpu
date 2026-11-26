@@ -202,6 +202,9 @@ struct SanctuaryParams {
     std::string god;
     std::int32_t initial_marble = 0;
     std::map<std::string, std::int32_t> materials;  // marble, wood, sculpture
+    std::vector<std::string> sanctifies;            // building types the god blesses ("any": Zeus)
+    std::string prayer;                             // gods.json prayer effect id
+    std::int32_t prayer_cooldown_days = 96;         // gods_rules.json [ZAŁOŻENIE, L-053]
 };
 
 // Combat stats of one unit (data/enemies.json, doc 22): hit = max(0, attack - armor), rates in ticks.
@@ -287,6 +290,10 @@ struct DataCatalog {
     CombatParams combat;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
+    std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)
+    std::int32_t prayer_money = 1000;                    // [ZAŁOŻENIE, L-112]
+    std::int32_t sanctify_every_days = 16;               // [ZAŁOŻENIE, L-112]
+    std::int32_t sanctify_reach_tiles = 40;              // [ZAŁOŻENIE, L-112]
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

@@ -91,6 +91,8 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, StartInvasion>) {
                 w.str(cmd.nation);
                 w.u32(cmd.soldiers);
+            } else if constexpr (std::is_same_v<T, Pray>) {
+                w.u32(cmd.building);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -118,6 +120,53 @@ bool read_xy(ByteReader& r, Command& out) {
     }
     out = t;
     return true;
+}
+
+// Commands of modules D (army, invasions, gods), indices 13 and up.
+bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out) {
+    switch (index) {
+        case 13:
+        case 15: {
+            std::uint32_t company = 0;
+            if (!r.u32(company)) {
+                return false;
+            }
+            out = index == 13 ? Command{MusterCompany{company}} : Command{SendCompanyHome{company}};
+            return true;
+        }
+        case 14: {
+            MoveCompany c;
+            if (!r.u32(c.company) || !r.i32(c.x) || !r.i32(c.y)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 16: {
+            StartInvasion c;
+            if (!r.str(c.nation) || !r.u32(c.soldiers)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 17:
+            out = BribeInvaders{};
+            return true;
+        case 18:
+            out = Surrender{};
+            return true;
+        case 19: {
+            Pray c;
+            if (!r.u32(c.building)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        default:
+            return false;
+    }
 }
 
 bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
@@ -203,39 +252,8 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
             out = c;
             return true;
         }
-        case 13:
-        case 15: {
-            std::uint32_t company = 0;
-            if (!r.u32(company)) {
-                return false;
-            }
-            out = index == 13 ? Command{MusterCompany{company}} : Command{SendCompanyHome{company}};
-            return true;
-        }
-        case 14: {
-            MoveCompany c;
-            if (!r.u32(c.company) || !r.i32(c.x) || !r.i32(c.y)) {
-                return false;
-            }
-            out = c;
-            return true;
-        }
-        case 16: {
-            StartInvasion c;
-            if (!r.str(c.nation) || !r.u32(c.soldiers)) {
-                return false;
-            }
-            out = c;
-            return true;
-        }
-        case 17:
-            out = BribeInvaders{};
-            return true;
-        case 18:
-            out = Surrender{};
-            return true;
         default:
-            return false;
+            return read_module_d_command(r, index, out);
     }
 }
 

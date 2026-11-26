@@ -71,7 +71,8 @@ bool operator==(const Building& a, const Building& b) {
            a.storage == b.storage && a.producer == b.producer && a.stall == b.stall && a.animal == b.animal &&
            a.orchard == b.orchard && a.fire_counter == b.fire_counter && a.damage_counter == b.damage_counter &&
            a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
-           a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary;
+           a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary &&
+           a.sanctified == b.sanctified && a.sanctified_base == b.sanctified_base;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {

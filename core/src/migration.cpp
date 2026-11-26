@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "bo/core/gods.h"
 #include "bo/core/housing.h"
 #include "bo/core/path.h"
 
@@ -261,7 +262,8 @@ MigrationResult migrate(WorldState& st, const DataCatalog& catalog) {
         r.arrived = fill_houses(st, catalog, static_cast<std::uint32_t>(st.migration.pool), entry, &r.spawned);
         st.migration.pool = 0;  // no room: immigration is blocked, the batch does not wait (doc 24)
     } else if (st.migration.pool <= -p.min_batch) {
-        if (static_cast<std::int32_t>(city_population(st.city)) > p.emigration_min_population) {
+        if (static_cast<std::int32_t>(city_population(st.city)) > p.emigration_min_population &&
+            !god_blesses(st.city, catalog, "aphrodite")) {  // Aphrodite: nobody emigrates (doc 10)
             r.left = empty_houses(st, catalog, static_cast<std::uint32_t>(-st.migration.pool), entry, r.spawned);
         }
         st.migration.pool = 0;

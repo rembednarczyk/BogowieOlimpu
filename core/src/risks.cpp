@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <optional>
 
+#include "bo/core/gods.h"
 #include "bo/core/housing.h"
 #include "bo/core/walker.h"
 
@@ -257,6 +258,8 @@ RiskEvents advance_risks(WorldState& st, const DataCatalog& catalog) {
     }
     auto& rng = st.rng.stream(RngStream::Hazards);
     const std::uint32_t day_mask = rng.next_u32() & 7U;  // fire grows on 1 day in 8 per building (S-007 OG)
+    const bool no_fires = god_blesses(st.city, catalog, "hephaestus");  // prevents fires (doc 10, Z:121)
+    const bool no_unrest = god_blesses(st.city, catalog, "dionysus");   // no unrest (doc 10, Z:122)
     std::vector<BuildingId> ids;
     for (const auto& [id, b] : st.city.buildings.items) {
         if (b.type != "ruins" && !b.tiles.empty()) {
@@ -288,7 +291,7 @@ RiskEvents advance_risks(WorldState& st, const DataCatalog& catalog) {
         // Collapse: + damage_risk every day, 60 / damage_risk months to the threshold (S-004 legend).
         b.damage_counter = bump(b.damage_counter, hazard_rate(catalog, b, st.difficulty, false));
         // Fire: on the building's day (1 in 8) + fire_risk x random 1-5 [RODZINA, S-007 OG structure].
-        if (((b.id + st.city.map.at(b.origin).random_byte) & 7U) == day_mask) {
+        if (((b.id + st.city.map.at(b.origin).random_byte) & 7U) == day_mask && !no_fires) {
             const auto span = static_cast<std::uint32_t>(p.fire_factor_max - p.fire_factor_min + 1);
             const auto factor = p.fire_factor_min + static_cast<std::int32_t>(rng.next_u32() % span);
             b.fire_counter = bump(b.fire_counter, hazard_rate(catalog, b, st.difficulty, true) * factor);
@@ -331,7 +334,7 @@ RiskEvents advance_risks(WorldState& st, const DataCatalog& catalog) {
         if (h.happiness >= p.crime_happiness_below) {
             h.crime_level = 0;  // content houses breed no criminals [RODZINA]; escalation starts over
         }
-        b.crime_counter = bump(b.crime_counter, m.crime_risk);
+        b.crime_counter = no_unrest ? 0 : bump(b.crime_counter, m.crime_risk);  // Dionysus: no unrest (doc 10)
         if (b.crime_counter >= p.crime_threshold && b.road_access && h.happiness < p.crime_happiness_below) {
             b.crime_counter = 0;
             spawn_criminal(st, catalog, id, ev);

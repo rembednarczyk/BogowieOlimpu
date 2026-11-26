@@ -153,9 +153,12 @@ struct SanctuaryState {
     std::uint16_t days_since_sacrifice = 0;
     WalkerId priest = kNoWalker;
     bool favor_lost = false;  // no sacrifice for too long: the god turns away (Z:124)
+    std::uint16_t prayer_cooldown = 0;  // days until the god listens again (since v20)
+    std::uint16_t days_to_sanctify = 0;  // days until the god blesses the next building (since v20)
     friend bool operator==(const SanctuaryState& a, const SanctuaryState& b) {
         return a.complete == b.complete && a.needed == b.needed && a.on_site == b.on_site &&
-               a.days_since_sacrifice == b.days_since_sacrifice && a.priest == b.priest && a.favor_lost == b.favor_lost;
+               a.days_since_sacrifice == b.days_since_sacrifice && a.priest == b.priest && a.favor_lost == b.favor_lost &&
+               a.prayer_cooldown == b.prayer_cooldown && a.days_to_sanctify == b.days_to_sanctify;
     }
 };
 
@@ -186,6 +189,8 @@ struct Building {
     std::uint16_t disease_counter = 0;
     std::uint16_t crime_counter = 0;
     std::uint8_t burning_days = 0;  // 0: not burning
+    bool sanctified = false;            // D1: the next production gives 4x (doc 21); since v20
+    std::uint32_t sanctified_base = 0;  // output loads when last looked at, to see new production
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)

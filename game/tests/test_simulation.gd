@@ -159,6 +159,10 @@ func _init() -> void:
 	sa.step(1)
 	var mrej: Array = sa.drain_events().filter(func(e): return e["type"] == "command_rejected")
 	check(mrej.size() == 1 and mrej[0]["reason"] == "build.sanctuary_needs_marble", "sanctuary needs marble")
+	sa.pray(1)
+	sa.step(1)
+	var prej: Array = sa.drain_events().filter(func(e): return e["type"] == "command_rejected")
+	check(prej.size() == 1 and prej[0]["reason"] == "myth.no_sanctuary", "prayer needs a finished sanctuary")
 
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
 	if failures == 0:

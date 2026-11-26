@@ -8,6 +8,7 @@ add_library(bo_core STATIC
     src/combat.cpp
     src/extraction.cpp
     src/finance.cpp
+    src/gods.cpp
     src/housing.cpp
     src/horses.cpp
     src/husbandry.cpp
@@ -73,6 +74,7 @@ if(BO_BUILD_TESTS)
         tests/test_wildlife.cpp
         tests/test_risks.cpp
         tests/test_sanctuary.cpp
+        tests/test_gods.cpp
         tests/test_trade.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)

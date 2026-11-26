@@ -168,11 +168,18 @@ void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
 
 void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat) {
     if (docs.count("gods_rules.json") != 0) {
-        cat.max_sanctuaries = docs.at("gods_rules.json").value("max_sanctuaries_per_city", cat.max_sanctuaries);
+        const auto& gr = docs.at("gods_rules.json");
+        cat.max_sanctuaries = gr.value("max_sanctuaries_per_city", cat.max_sanctuaries);
+        cat.prayer_goods_loads = gr.value("prayer_goods_loads", cat.prayer_goods_loads);
+        cat.prayer_money = gr.value("prayer_money", cat.prayer_money);
+        cat.sanctify_every_days = gr.value("sanctify_every_days", cat.sanctify_every_days);
+        cat.sanctify_reach_tiles = gr.value("sanctify_reach_tiles", cat.sanctify_reach_tiles);
     }
     if (docs.count("gods.json") == 0) {
         return;
     }
+    const json rules = docs.count("gods_rules.json") != 0 ? docs.at("gods_rules.json") : json::object();
+    const json cooldowns = rules.value("prayer_cooldown_days", json::object());
     for (const auto& g : docs.at("gods.json")) {
         const std::string god = g.at("id").get<std::string>();
         for (const auto& [suffix, key] : {std::pair<std::string, std::string>{"", "sanctuary_data"},
@@ -187,6 +194,9 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.materials["marble"] = opt_int(d.value("marble", json())).value_or(0);
             p.materials["wood"] = opt_int(d.value("wood", json())).value_or(0);
             p.materials["sculpture"] = opt_int(d.value("sculptures", json())).value_or(0);
+            p.sanctifies = g.value("sanctifies", std::vector<std::string>{});
+            p.prayer = g.value("prayer", "");
+            p.prayer_cooldown_days = cooldowns.value(god, cooldowns.value("default", p.prayer_cooldown_days));
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
     }

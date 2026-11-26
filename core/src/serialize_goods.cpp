@@ -87,6 +87,8 @@ void write_goods_state(ByteWriter& w, const Building& b) {
         w.u32(t.days_since_sacrifice);
         w.u32(t.priest);
         w.u8(t.favor_lost ? 1 : 0);
+        w.u32(t.prayer_cooldown);  // since v20
+        w.u32(t.days_to_sanctify);
     }
 }
 
@@ -193,6 +195,13 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
             return false;
         }
         t.days_since_sacrifice = static_cast<std::uint16_t>(days);
+        std::uint32_t pray = 0;
+        std::uint32_t bless = 0;
+        if (version >= 20 && (!r.u32(pray) || !r.u32(bless) || pray > 0xFFFF || bless > 0xFFFF)) {
+            return false;
+        }
+        t.prayer_cooldown = static_cast<std::uint16_t>(pray);
+        t.days_to_sanctify = static_cast<std::uint16_t>(bless);
         b.sanctuary = std::move(t);
     }
     return true;

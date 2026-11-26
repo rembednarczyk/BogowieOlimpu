@@ -115,6 +115,10 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["soldiers"] = static_cast<int64_t>(e.soldiers);
                        d["bribe"] = static_cast<int64_t>(e.bribe);
                    },
+                   [&d](const bo::core::PrayerAnswered& e) {
+                       d["type"] = "prayer_answered";
+                       d["building"] = static_cast<int64_t>(e.building);
+                   },
                    [&d](const bo::core::SanctuaryCompleted& e) {
                        d["type"] = "sanctuary_completed";
                        d["building"] = static_cast<int64_t>(e.building);
@@ -297,6 +301,12 @@ void BoSimulation::start_invasion(const String& nation, int64_t soldiers) {
     }
 }
 
+void BoSimulation::pray(int64_t sanctuary) {
+    if (sim_ && sanctuary > 0) {
+        sim_->issue(bo::core::Pray{static_cast<std::uint32_t>(sanctuary)});
+    }
+}
+
 void BoSimulation::bribe_invaders() {
     if (sim_) {
         sim_->issue(bo::core::BribeInvaders{});
@@ -435,6 +445,7 @@ Array BoSimulation::get_buildings() const {
         d["disease_risk"] = static_cast<int64_t>(b.disease_counter);
         d["crime_risk"] = static_cast<int64_t>(b.crime_counter);
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
+        d["sanctified"] = b.sanctified;
         if (b.sanctuary) {  // D1: loads still to build in, delivered loads, sacrifices
             int64_t needed = 0;
             int64_t on_site = 0;
@@ -449,6 +460,7 @@ Array BoSimulation::get_buildings() const {
             d["sanctuary_loads_on_site"] = on_site;
             d["days_since_sacrifice"] = static_cast<int64_t>(b.sanctuary->days_since_sacrifice);
             d["favor_lost"] = b.sanctuary->favor_lost;
+            d["prayer_cooldown"] = static_cast<int64_t>(b.sanctuary->prayer_cooldown);
         }
         if (b.house) {
             d["house_level"] = static_cast<int64_t>(b.house->level);
@@ -612,6 +624,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_companies"), &BoSimulation::get_companies);
     ClassDB::bind_method(D_METHOD("start_invasion", "nation", "soldiers"), &BoSimulation::start_invasion);
     ClassDB::bind_method(D_METHOD("bribe_invaders"), &BoSimulation::bribe_invaders);
+    ClassDB::bind_method(D_METHOD("pray", "sanctuary"), &BoSimulation::pray);
     ClassDB::bind_method(D_METHOD("surrender"), &BoSimulation::surrender);
     ClassDB::bind_method(D_METHOD("get_bribe_cost"), &BoSimulation::get_bribe_cost);
     ClassDB::bind_method(D_METHOD("set_trade_order", "building", "good", "import_on", "import_limit", "export_on",

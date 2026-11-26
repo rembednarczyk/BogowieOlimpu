@@ -64,6 +64,8 @@ public:
     // Invasions (D3 stage 2): started by the scenario later; the player bribes, surrenders or fights.
     void start_invasion(const godot::String& nation, int64_t soldiers);
     void bribe_invaders();
+    // Gods (D1): a prayer at a finished sanctuary; the answer comes as "prayer_answered" or "command_rejected".
+    void pray(int64_t sanctuary);
     void surrender();
     int64_t get_bribe_cost() const;
     int64_t get_workforce() const;

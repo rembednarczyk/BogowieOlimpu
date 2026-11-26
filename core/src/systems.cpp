@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "bo/core/appeal.h"
 #include "bo/core/finance.h"
+#include "bo/core/gods.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
@@ -165,6 +166,7 @@ static void run_production(Simulation& sim) {
     advance_husbandry(st, sim.catalog());
     advance_extraction(st, sim.catalog());
     advance_wildlife(st, sim.catalog());
+    apply_sanctification(st.city);  // farms, processors, extraction: 4x when sanctified (doc 21)
     const WolfEvents wolves = advance_wolves(st, sim.catalog());
     for (const BuildingId id : wolves.removed) {
         sim.emit(BuildingRemoved{id});
@@ -180,6 +182,7 @@ static void run_production(Simulation& sim) {
 
 static void run_logistics(Simulation& sim) {
     const auto ev = dispatch_workers(sim.mutable_state(), sim.catalog());
+    apply_sanctification(sim.mutable_state().city);  // note what the deliverymen took
     for (const WalkerId id : ev.spawned) {
         sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
     }
@@ -215,6 +218,7 @@ static void run_trade(Simulation& sim) {
 // D1: sanctuary construction and sacrifices.
 static void run_mythology(Simulation& sim) {
     const MythEvents ev = advance_sanctuaries(sim.mutable_state(), sim.catalog());
+    advance_gods(sim.mutable_state(), sim.catalog());
     for (const WalkerId id : ev.spawned) {
         sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
     }

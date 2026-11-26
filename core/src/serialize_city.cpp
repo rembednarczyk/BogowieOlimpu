@@ -118,6 +118,8 @@ void write_building(ByteWriter& w, const Building& b) {
     w.u32(b.house ? b.house->quarantine_days : 0U);
     w.u8(b.house ? b.house->crime_level : 0U);  // since v13
     w.u32(b.house ? b.house->incoming : 0U);     // since v15
+    w.u8(b.sanctified ? 1 : 0);                  // since v20
+    w.u32(b.sanctified_base);
 }
 
 bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
@@ -151,6 +153,11 @@ bool read_risks(ByteReader& r, Building& b, std::uint32_t version) {
     if (b.house) {
         b.house->incoming = incoming;
     }
+    std::uint8_t sanctified = 0;
+    if (version >= 20 && (!r.u8(sanctified) || !r.u32(b.sanctified_base))) {
+        return false;
+    }
+    b.sanctified = sanctified != 0;
     return true;
 }
 

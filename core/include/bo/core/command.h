@@ -112,10 +112,15 @@ struct StartInvasion {
 struct BribeInvaders {};
 struct Surrender {};
 
+// A prayer at a finished sanctuary (Z:124).
+struct Pray {
+    std::uint32_t building = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
-                             StartInvasion, BribeInvaders, Surrender>;
+                             StartInvasion, BribeInvaders, Surrender, Pray>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {
