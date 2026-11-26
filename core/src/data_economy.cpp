@@ -179,6 +179,10 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         cat.max_sanctuaries = gr.value("max_sanctuaries_per_city", cat.max_sanctuaries);
         cat.prayer_goods_loads = gr.value("prayer_goods_loads", cat.prayer_goods_loads);
         cat.prayer_money = gr.value("prayer_money", cat.prayer_money);
+        cat.prayer_chance_full_days = gr.value("prayer_chance_full_days", cat.prayer_chance_full_days);
+        cat.prayer_chance_min = gr.value("prayer_chance_min", cat.prayer_chance_min);
+        cat.talos_days = gr.value("talos_days", cat.talos_days);
+        cat.hera_stall_units = gr.value("hera_stall_units", cat.hera_stall_units);
         cat.sanctify_every_days = gr.value("sanctify_every_days", cat.sanctify_every_days);
         cat.sanctify_reach_tiles = gr.value("sanctify_reach_tiles", cat.sanctify_reach_tiles);
         const json wrath = gr.value("wrath_numbers", json::object());

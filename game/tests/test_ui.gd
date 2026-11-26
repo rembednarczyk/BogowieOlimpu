@@ -90,6 +90,7 @@ func _process(_d: float) -> bool:
 	check(ui.mode == "" and ui.mode_group.get_pressed_button() == null, "cancel")
 	ui.tap(Vector2i(55, 14))
 	check(ui.card.visible and ui.card_text.text != "", "the card of the Palace")
+	check(not ui.pray_btn.visible, "no prayer on the card of a Palace")
 	check(game.screen_to_tile(Vector2(500, 360)).x >= 0, "screen to tile")
 	# City report: goals of the episode, requests with a Send button that needs the goods in storage.
 	ui.toggle_report()

@@ -823,6 +823,7 @@ Array BoSimulation::get_buildings() const {
             d["days_since_sacrifice"] = static_cast<int64_t>(b.sanctuary->days_since_sacrifice);
             d["favor_lost"] = b.sanctuary->favor_lost;
             d["prayer_cooldown"] = static_cast<int64_t>(b.sanctuary->prayer_cooldown);
+            d["prayer_chance"] = static_cast<int64_t>(bo::core::prayer_chance(*b.sanctuary, *catalog_));
         }
         if (b.house) {
             d["house_level"] = static_cast<int64_t>(b.house->level);

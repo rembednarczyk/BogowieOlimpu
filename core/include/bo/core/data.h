@@ -345,6 +345,10 @@ struct DataCatalog {
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)
     std::int32_t prayer_money = 1000;                    // [ZAŁOŻENIE, L-112]
+    std::int32_t prayer_chance_full_days = 16;           // [ZAŁOŻENIE, L-053] full chance this soon after a sacrifice
+    std::int32_t prayer_chance_min = 10;                 // percent when the god is about to turn away
+    std::uint16_t talos_days = 64;                       // Hephaestus's prayer [ZAŁOŻENIE, L-112]
+    std::uint32_t hera_stall_units = 400;
     std::int32_t sanctify_every_days = 16;               // [ZAŁOŻENIE, L-112]
     std::int32_t sanctify_reach_tiles = 40;              // [ZAŁOŻENIE, L-112]
     std::map<std::string, std::int32_t> wrath;           // gods_rules.json wrath_numbers [ZAŁOŻENIE, L-115]

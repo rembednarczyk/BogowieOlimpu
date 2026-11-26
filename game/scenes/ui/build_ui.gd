@@ -41,6 +41,8 @@ var hint: Label
 var status: Label
 var card: PanelContainer
 var card_text: Label
+var pray_btn: Button
+var card_sanctuary := 0  # the sanctuary on the card, for the prayer
 
 func setup(g: Node3D) -> void:
 	game = g
@@ -142,6 +144,8 @@ func _build() -> void:
 	card_text = Label.new()
 	card_text.add_theme_font_size_override("font_size", 18)
 	card_box.add_child(card_text)
+	pray_btn = _button("ui.pray", func(): _pray(), Vector2(200, CELL.y))
+	card_box.add_child(pray_btn)
 	card_box.add_child(_button("ui.close", func(): card.visible = false, Vector2(140, CELL.y)))
 	card.add_child(card_box)
 	card.visible = false
@@ -471,6 +475,11 @@ func _confirm() -> void:
 	game.clear_ghost()
 	confirm_btn.disabled = true  # stay in the mode: the next drag or tap builds more
 
+func _pray() -> void:
+	if card_sanctuary != 0:
+		game.sim.pray(card_sanctuary)
+		pray_btn.disabled = true
+
 func _open_card(tile: Vector2i) -> void:
 	if tile.x < 0:
 		return
@@ -491,6 +500,12 @@ func _open_card(tile: Vector2i) -> void:
 			lines.append(tr("ui.stock") % str(b["stock_loads"]))
 		lines.append(tr("ui.fire_risk") % b.get("fire_risk", 0))
 		lines.append(tr("ui.collapse_risk") % b.get("damage_risk", 0))
+		# A finished sanctuary: how likely the god listens now (Z:132, L-053), and the prayer.
+		pray_btn.visible = b.get("sanctuary_complete", false)
+		card_sanctuary = id if pray_btn.visible else 0
+		if pray_btn.visible:
+			lines.append(tr("ui.prayer_chance") % b["prayer_chance"])
+			pray_btn.disabled = b["prayer_cooldown"] > 0 or b["prayer_chance"] == 0
 		card_text.text = "\n".join(lines)
 		card.visible = true
 		return

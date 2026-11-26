@@ -85,7 +85,7 @@ TEST_CASE("Artemis answers a prayer with 24 loads of pork, then not again too so
     CHECK(result(sim) == "answered");
 }
 
-TEST_CASE("prayers: Hades gives money, a god who turned away does not listen, Ares needs the world (L-112)") {
+TEST_CASE("prayers: Hades gives money, a god who turned away does not listen, Ares joins the next army (L-112)") {
     auto hades = with_god("hades");
     const std::int64_t before = hades.state().finance.treasury;
     hades.issue(Pray{sanctuary_id(hades)});
@@ -96,7 +96,8 @@ TEST_CASE("prayers: Hades gives money, a god who turned away does not listen, Ar
     auto ares = with_god("ares");
     ares.issue(Pray{sanctuary_id(ares)});
     ares.step(1);
-    CHECK(result(ares) == "myth.prayer_not_available");
+    CHECK(result(ares) == "answered");
+    CHECK(ares.state().ares_with_army);
 
     auto angry = with_god("dionysus");
     angry.mutable_state().city.buildings.items.at(sanctuary_id(angry)).sanctuary->favor_lost = true;
@@ -179,4 +180,79 @@ TEST_CASE("B-011: the sanctuary goal counts a finished sanctuary that stands, wi
     sim.step(1);
     sim.run_days(17);
     CHECK_FALSE(sim.state().scenario.goals[0].met);  // destroyed: the goal is lost again (eZeus, S-008)
+}
+
+// Prays at the one sanctuary of `sim` with fresh sacrifices; the answer key.
+std::string pray_now(Simulation& sim) {
+    auto& s = *sim.mutable_state().city.buildings.items.at(sanctuary_id(sim)).sanctuary;
+    s.days_since_sacrifice = 0;
+    s.prayer_cooldown = 0;
+    sim.drain_events();
+    sim.issue(Pray{sanctuary_id(sim)});
+    sim.step(1);
+    return result(sim);
+}
+
+TEST_CASE("L-053: the chance of a prayer falls with the days since the last sacrifice (Z:132)") {
+    auto sim = with_god("hades");
+    auto& s = *sim.mutable_state().city.buildings.items.at(sanctuary_id(sim)).sanctuary;
+    s.days_since_sacrifice = 0;
+    CHECK(prayer_chance(s, sim.catalog()) == 100);
+    s.days_since_sacrifice = 104;
+    const std::int32_t mid = prayer_chance(s, sim.catalog());
+    CHECK((mid > 10 && mid < 100));
+    s.days_since_sacrifice = 191;
+    CHECK(prayer_chance(s, sim.catalog()) <= 11);
+    std::size_t answered = 0;
+    std::size_t denied = 0;
+    for (int i = 0; i < 60; ++i) {
+        auto& t = *sim.mutable_state().city.buildings.items.at(sanctuary_id(sim)).sanctuary;
+        t.days_since_sacrifice = 191;
+        t.prayer_cooldown = 0;
+        sim.drain_events();
+        sim.issue(Pray{sanctuary_id(sim)});
+        sim.step(1);
+        const std::string r = result(sim);
+        answered += r == "answered" ? 1 : 0;
+        denied += r == "myth.prayer_denied" ? 1 : 0;
+    }
+    CHECK(denied > answered);
+    CHECK(answered > 0);
+}
+
+TEST_CASE("Zeus beats the next army; Talos guards the city for months (Z:119-120, L-112)") {
+    for (const char* god : {"zeus", "hephaestus"}) {
+        auto sim = with_god(god);
+        CHECK(pray_now(sim) == "answered");
+        sim.mutable_state().city.map.at({0, 20}).feature = static_cast<std::uint8_t>(TileFeature::InvasionPoint);
+        sim.issue(StartInvasion{"greek", 6});
+        sim.run_days(1);
+        bool repelled = false;
+        for (const auto& e : sim.drain_events()) {
+            if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
+                repelled = repelled || end->result == 0;
+            }
+        }
+        CHECK_MESSAGE(repelled, god);
+        CHECK_FALSE(sim.state().zeus_guard);
+    }
+}
+
+TEST_CASE("Aphrodite fills the houses; Hermes fulfils a request for nothing (Z:122)") {
+    auto love = with_god("aphrodite");
+    love.issue(PlaceBuilding{"common_housing", 44, 18});
+    love.step(1);
+    auto& h = *love.mutable_state().city.buildings.items.at(love.state().city.map.at({44, 18}).building).house;
+    h.population = 2;
+    CHECK(pray_now(love) == "answered");
+    CHECK(love.state().city.buildings.items.at(love.state().city.map.at({44, 18}).building).house->population == 8);
+
+    auto hermes = with_god("hermes");
+    CHECK(pray_now(hermes) == "myth.no_room_for_gift");  // no request open: nothing to do, no cooldown
+    CityRequest r;
+    r.good = "marble";
+    r.amount = 50;
+    hermes.mutable_state().scenario.requests.push_back(r);
+    CHECK(pray_now(hermes) == "answered");
+    CHECK(hermes.state().scenario.requests.empty());
 }

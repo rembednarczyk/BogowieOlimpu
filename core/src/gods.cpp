@@ -38,6 +38,7 @@ void advance_gods(WorldState& st, const DataCatalog& catalog) {
     for (auto& [id, b] : city.buildings.items) {
         b.cursed_days = static_cast<std::uint16_t>(b.cursed_days > 0 ? b.cursed_days - 1 : 0);
     }
+    st.talos_days = static_cast<std::uint16_t>(st.talos_days > 0 ? st.talos_days - 1 : 0);
     std::vector<BuildingId> sanctuaries;
     for (const auto& [id, b] : city.buildings.items) {
         if (b.sanctuary && b.sanctuary->complete) {
@@ -83,53 +84,6 @@ void apply_sanctification(CityState& city) {
         }
         b.sanctified_base = b.producer->output_loads;
     }
-}
-
-std::string pray(WorldState& st, const DataCatalog& catalog, BuildingId id) {
-    const auto it = st.city.buildings.items.find(id);
-    if (it == st.city.buildings.items.end() || !it->second.sanctuary || !it->second.sanctuary->complete) {
-        return "myth.no_sanctuary";
-    }
-    SanctuaryState& s = *it->second.sanctuary;
-    if (s.favor_lost) {
-        return "myth.god_turned_away";
-    }
-    if (s.prayer_cooldown > 0) {
-        return "myth.prayer_too_soon";  // the god ignores requests that come too often (Z:124)
-    }
-    const SanctuaryParams& p = catalog.sanctuaries.at(it->second.type);
-    const auto loads = static_cast<std::uint32_t>(catalog.prayer_goods_loads);
-    const std::string& effect = p.prayer;
-    std::uint32_t given = 0;
-    if (effect == "food_to_granaries") {
-        given = store_in_city(st.city, catalog, "wheat", loads);
-    } else if (effect == "pork") {
-        given = store_in_city(st.city, catalog, "pork", loads);
-    } else if (effect == "seafood_when_low_food") {
-        given = store_in_city(st.city, catalog, "fish", loads);
-    } else if (effect == "olives_and_olive_oil") {
-        given = store_in_city(st.city, catalog, "olives", loads / 2) + store_in_city(st.city, catalog, "olive_oil", loads / 2);
-    } else if (effect == "wine_by_satyrs") {
-        given = store_in_city(st.city, catalog, "wine", loads);
-    } else if (effect == "money") {
-        st.finance.treasury += catalog.prayer_money;
-        given = 1;
-    } else if (effect == "cures_plague_improves_health") {
-        for (auto& [bid, b] : st.city.buildings.items) {
-            b.disease_counter = 0;
-            if (b.house) {
-                b.house->quarantine_days = 0;
-            }
-        }
-        given = 1;
-    } else {
-        return "myth.prayer_not_available";  // armies, monsters, world requests: later modules
-    }
-    if (given == 0) {
-        return "myth.no_room_for_gift";
-    }
-    s.prayer_cooldown = static_cast<std::uint16_t>(p.prayer_cooldown_days);
-    return {};
 }
 
 }  // namespace bo::core

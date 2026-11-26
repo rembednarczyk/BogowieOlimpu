@@ -14,6 +14,7 @@ add_library(bo_core STATIC
     src/build_order.cpp
     src/culture.cpp
     src/relations.cpp
+    src/prayers.cpp
     src/housing.cpp
     src/horses.cpp
     src/husbandry.cpp

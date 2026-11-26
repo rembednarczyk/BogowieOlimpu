@@ -258,6 +258,8 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.u8(p.diplomacy.months_good);
         w.u8(p.diplomacy.aid_cooldown);
     }
+    w.u8(static_cast<std::uint8_t>((s.zeus_guard ? 1U : 0U) | (s.ares_with_army ? 2U : 0U)));  // since v31
+    w.u32(s.talos_days);
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -331,6 +333,14 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
             return false;
         }
     }
+    std::uint8_t help = 0;
+    std::uint32_t talos = 0;
+    if (version >= 31 && (!r.u8(help) || !r.u32(talos) || talos > 0xFFFF)) {
+        return false;
+    }
+    s.zeus_guard = (help & 1U) != 0;
+    s.ares_with_army = (help & 2U) != 0;
+    s.talos_days = static_cast<std::uint16_t>(talos);
     return true;
 }
 

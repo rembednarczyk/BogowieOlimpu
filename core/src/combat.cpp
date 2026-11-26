@@ -335,6 +335,15 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
         }
     }
     const bool rechase = st.time.tick() % 15 == 0;  // re-aim chases once a tile [ZAŁOŻENIE, L-110]
+    if (inv.active && (st.zeus_guard || st.talos_days > 0)) {
+        for (const WalkerId id : inv.invaders) {  // Zeus strikes the army down (Z:119); Talos guards (Z:120)
+            const auto it = items.find(id);
+            if (it != items.end()) {
+                it->second.hp = 0;
+            }
+        }
+        st.zeus_guard = false;
+    }
     towers_shoot(st, catalog, fighters);
     for (const WalkerId id : fighters) {
         Walker& w = items.at(id);

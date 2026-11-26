@@ -55,7 +55,8 @@ void battle_abroad(WorldState& st, const DataCatalog& catalog, Expedition& e) {
     TradePartner& p = st.trade.partners[e.city];
     const std::int64_t ours_x2 = army_strength_x2(st, e.companies);
     const std::int64_t theirs_x2 = 2LL * p.diplomacy.military * catalog.world.city_strength_per_shield;
-    e.won = ours_x2 > theirs_x2;
+    e.won = ours_x2 > theirs_x2 || st.ares_with_army;  // Ares marches with the army (Z:121, L-112)
+    st.ares_with_army = false;
     // Each side loses 0.5 x enemy strength / own strength of its soldiers (doc 24, L-063).
     std::uint32_t soldiers = 0;
     for (const std::uint32_t c : e.companies) {

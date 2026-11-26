@@ -117,3 +117,5 @@ hero.perseus,Perseusz,Perseus
 hero.atalanta,Atalanta,Atalanta
 hero.bellerophon,Bellerofont,Bellerophon
 ui.debt_line,"Miasto jest zadłużone od %d dni. Po roku długu nikt się nie wprowadza, po trzech latach rządy przepadają.",The city has been in debt for %d days. After a year nobody moves in; after three years you lose office.
+ui.pray,Módl się,Pray
+ui.prayer_chance,Szansa wysłuchania modlitwy: %d %%,Chance the god grants a prayer: %d %%

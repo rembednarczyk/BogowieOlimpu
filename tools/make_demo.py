@@ -269,6 +269,10 @@ for x, y in [(53, 19), (57, 19), (64, 19)]:
     put("elite_housing", x, y, day=ELITE + 200, retry=True)
 put("podium", 70, 14, day=ELITE); put("podium", 70, 17, day=ELITE)
 
+# Prayers (Z:124): Hermes fulfils a city's request; the god may refuse (Z:132, L-053). Gifts of goods (Athena:
+# 24 loads) would fill the storehouses that keep the sculptures for Perseus.
+steps.append({"day": MYTH + 400, "every": 48, "pray": [53, 24]})
+
 # Perseus (doc 21): summoned when the hall's needs are met, then sent on Hermes's quest.
 steps.append({"day": MYTH, "every": 16, "summon_hero": [64, 12]})
 steps.append({"day": MYTH, "every": 16, "hero_quest": 0})

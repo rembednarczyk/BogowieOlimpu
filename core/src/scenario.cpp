@@ -273,13 +273,15 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
     return ev;
 }
 
-std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uint32_t index) {
+std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uint32_t index, bool free) {
     ScenarioState& s = st.scenario;
     if (index >= s.requests.size()) {
         return "scenario.no_request";
     }
     const CityRequest r = s.requests[index];
-    if (r.good == "drachmas") {
+    if (free) {
+        // Hermes's prayer (Z:122): the request is fulfilled without the player's goods.
+    } else if (r.good == "drachmas") {
         if (st.finance.treasury < r.amount) {
             return "scenario.cannot_afford";
         }

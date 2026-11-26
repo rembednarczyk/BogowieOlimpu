@@ -16,6 +16,7 @@
 #include "bo/core/data.h"
 #include "bo/core/adventure.h"
 #include "bo/core/build_order.h"
+#include "bo/core/gods.h"
 #include "bo/core/simulation.h"
 
 class BoSimulation : public godot::RefCounted {
