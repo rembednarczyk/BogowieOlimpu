@@ -17,7 +17,7 @@ Opis interfejsu gry referencyjnej na PC. Służy jako lista **funkcji informacyj
 | 9 | Military | Fortifications, Military Workshops; kompanie, triery, wieże |
 | 0 | Aesthetics | Beautification, Recreational Areas, Commemorative Monuments; (P) Pyramids |
 | (P) | Science | Bibliotheke, Astronomy, Technology, Museum |
-| — | Overview | raport miasta, prośby |
+| brak | Overview | raport miasta, prośby |
 
 Każda zakładka ma panel informacji i "lupę" (szczegóły).
 
