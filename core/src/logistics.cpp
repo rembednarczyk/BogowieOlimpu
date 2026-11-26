@@ -7,6 +7,7 @@
 #include "bo/core/housing.h"
 #include "bo/core/path.h"
 #include "bo/core/storage.h"
+#include "bo/core/trade.h"
 #include "bo/core/walker.h"
 
 namespace bo::core {
@@ -40,7 +41,7 @@ std::uint32_t stall_units(const DataCatalog& catalog, const Building& stall) {
 }
 
 bool receiver_accepts(const Building& r, const DataCatalog& catalog, const std::string& good) {
-    return storage_accepts(r, catalog, good) || processor_accepts(r, catalog, good);
+    return storage_accepts(r, catalog, good) || processor_accepts(r, catalog, good) || trade_accepts(r, catalog, good);
 }
 
 // The good a producer ships next: its single output, or a lodge fruit with a full load (100 units).
@@ -73,7 +74,8 @@ void dispatch_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId
     for (const auto& category : priority) {
         std::optional<std::pair<std::uint32_t, BuildingId>> best;
         for (const auto& [rid, r] : city.buildings.items) {
-            if (!r.road_access || !category_matches(category, r.type) || !receiver_accepts(r, catalog, good)) {
+            const bool kind = category == "trade_exporting" ? r.trade.has_value() : category_matches(category, r.type);
+            if (!r.road_access || !kind || !receiver_accepts(r, catalog, good)) {
                 continue;
             }
             const std::uint32_t d = dist[city.map.index(*r.road_access)];
@@ -118,8 +120,10 @@ void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, 
     const auto dist = road_distances(city, {from}, PathMode::Road);
     std::optional<std::pair<std::uint32_t, BuildingId>> best;
     for (const auto& [sid, s] : city.buildings.items) {
-        if (!s.storage || !s.road_access ||
-            std::find(type.sources.begin(), type.sources.end(), s.type) == type.sources.end()) {
+        const bool listed = std::find(type.sources.begin(), type.sources.end(), s.type) != type.sources.end();
+        const bool importing = s.trade.has_value() &&
+                               std::find(type.sources.begin(), type.sources.end(), "trade_importing") != type.sources.end();
+        if (!s.storage || !s.road_access || (!listed && !importing) || (s.trade && !importing)) {
             continue;
         }
         const TilePos p = *s.road_access;
@@ -128,7 +132,8 @@ void dispatch_vendor(WorldState& st, const DataCatalog& catalog, BuildingId id, 
         }
         bool has_goods = false;
         for (const auto& [good, loads] : s.storage->loads) {
-            has_goods = has_goods || (loads > 0 && good_matches(catalog, good, type.sells));
+            const bool usable = !s.trade || trade_offers(s, good);  // export goods are not for the city (Z:79)
+            has_goods = has_goods || (loads > 0 && usable && good_matches(catalog, good, type.sells));
         }
         const std::uint32_t d = dist[city.map.index(p)];
         if (has_goods && d != kUnreachable && (!best || d < best->first)) {
@@ -236,7 +241,7 @@ bool dispatch_orders(WorldState& st, const DataCatalog& catalog, BuildingId id, 
             storage_room(s, catalog, good) > 0) {
             const auto from = nearest_storage(city, id, dist, [&](const Building& r) {
                 const auto it = r.storage->loads.find(good);
-                return it != r.storage->loads.end() && it->second > 0 &&
+                return !r.trade && it != r.storage->loads.end() && it->second > 0 &&
                        storage_order(r, catalog.buildings.at(r.type), good).kind != StorageOrderKind::Get;
             });
             if (!from) {
@@ -254,10 +259,58 @@ bool dispatch_orders(WorldState& st, const DataCatalog& catalog, BuildingId id, 
     return false;
 }
 
+// Trade building deliverymen (Z:78-79, 4 loads, doc 19): imported goods go to a processor that needs them or to
+// a storage that takes them; goods for export are fetched from storages up to the amount kept for sale.
+void dispatch_trade_deliveryman(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev,
+                                const std::vector<std::uint32_t>& dist) {
+    CityState& city = st.city;
+    Building& s = city.buildings.items.at(id);
+    for (const auto& [good_key, order] : s.trade->orders) {
+        const std::string& good = good_key;
+        const auto have_it = s.storage->loads.find(good);
+        const std::uint32_t have = have_it == s.storage->loads.end() ? 0 : have_it->second;
+        if (order.import_on && have > 0) {
+            std::optional<std::pair<std::uint32_t, BuildingId>> best;
+            for (const auto& [rid, r] : city.buildings.items) {
+                if (rid == id || r.trade || !r.road_access ||
+                    !(processor_accepts(r, catalog, good) || storage_accepts(r, catalog, good))) {
+                    continue;
+                }
+                const std::uint32_t d = dist[city.map.index(*r.road_access)];
+                if (d != kUnreachable && (!best || d < best->first)) {
+                    best = std::make_pair(d, rid);
+                }
+            }
+            if (best && send_storage_walker(st, catalog, id, best->second, WalkerJob::Deliver, ev) != kNoWalker) {
+                const std::uint32_t n = std::min(have, catalog.trade.deliveryman_loads);
+                st.walkers.items.at(s.storage->deliveryman).cargo[good] = n;
+                s.storage->loads[good] -= n;
+                return;
+            }
+        }
+        if (order.export_on && have < order.export_keep) {
+            const auto from = nearest_storage(city, id, dist, [&](const Building& r) {
+                const auto it = r.storage->loads.find(good);
+                return !r.trade && it != r.storage->loads.end() && it->second > 0;
+            });
+            if (from && send_storage_walker(st, catalog, id, *from, WalkerJob::Fetch, ev) != kNoWalker) {
+                Walker& w = st.walkers.items.at(s.storage->deliveryman);
+                w.want_good = good;
+                w.want_loads = std::min(catalog.trade.deliveryman_loads, order.export_keep - have);
+                return;
+            }
+        }
+    }
+}
+
 void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingId id, LogisticsEvents& ev) {
     CityState& city = st.city;
     Building& s = city.buildings.items.at(id);
     const auto dist = road_distances(city, {*s.road_access}, PathMode::Road);
+    if (s.trade) {
+        dispatch_trade_deliveryman(st, catalog, id, ev, dist);
+        return;
+    }
     if (dispatch_orders(st, catalog, id, ev, dist, true)) {
         return;
     }
@@ -333,7 +386,8 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
 
 void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
     for (auto& [wid, w] : st.walkers.items) {
-        if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish) {
+        if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish ||
+            w.job == WalkerJob::Trade) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);
@@ -362,7 +416,7 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
             Building& s = target->second;
             if (w.job == WalkerJob::Deliver) {
                 for (auto it = w.cargo.begin(); it != w.cargo.end();) {
-                    if (storage_accepts(s, catalog, it->first)) {
+                    if (storage_accepts(s, catalog, it->first) || trade_accepts(s, catalog, it->first)) {
                         s.storage->loads[it->first] += it->second;
                         it = w.cargo.erase(it);
                     } else {
@@ -383,7 +437,7 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
                                         : catalog.buildings.at(home->second.type).sells;
                 std::uint32_t taken = 0;
                 for (auto& [good, loads] : s.storage->loads) {
-                    if (!good_matches(catalog, good, sells)) {
+                    if (!good_matches(catalog, good, sells) || (s.trade && !trade_offers(s, good))) {
                         continue;
                     }
                     const std::uint32_t n = std::min(loads, kVendorLoads - taken);

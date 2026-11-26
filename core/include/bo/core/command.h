@@ -71,8 +71,24 @@ struct SetStorageOrder {
     std::uint32_t limit = 32;  // loads
 };
 
+// Trade (Z:76-79): the partner city of a Trading Post or Pier, and its import and export orders per good.
+struct SetTradePartner {
+    std::uint32_t building = 0;
+    std::int32_t partner = -1;
+};
+
+struct SetTradeOrder {
+    std::uint32_t building = 0;
+    std::string good;
+    bool import_on = false;
+    std::uint32_t import_limit = 0;
+    bool export_on = false;
+    std::uint32_t export_keep = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
-                             Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder>;
+                             Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
+                             SetTradeOrder>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

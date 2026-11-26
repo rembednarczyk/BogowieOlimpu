@@ -73,6 +73,54 @@ BuildResult place_on_coast(CityState& city, Building b) {
     return r;
 }
 
+// Pier (Z:76, doc 20: 4x4 on land + 2x2 on water): the land part follows the coast rule; the dock is the 2x2
+// of water in front of the middle of the water side [ZAŁOŻENIE, L-105: position of the dock].
+BuildResult place_pier(CityState& city, Building b, std::uint32_t max_piers) {
+    BuildResult r;
+    std::uint32_t piers = 0;
+    for (const auto& [id, o] : city.buildings.items) {
+        piers += o.type == b.type ? 1U : 0U;
+    }
+    if (piers >= max_piers) {
+        r.reason = "build.too_many_piers";  // at most 10 trade piers (S-005)
+        return r;
+    }
+    r.reason = rect_check(city, b, b.tiles);
+    if (!r.ok()) {
+        return r;
+    }
+    for (const Dir d : kDirs) {
+        const auto edge = outer_edge(b, d);
+        if (!std::all_of(edge.begin(), edge.end(), [&city](TilePos p) { return is_water(city.map, p); })) {
+            continue;
+        }
+        std::vector<TilePos> dock;
+        for (std::int32_t depth = 0; depth < 2; ++depth) {
+            for (std::int32_t i = 1; i <= 2; ++i) {  // the middle two tiles of a 4-tile side
+                const TilePos e = edge[static_cast<std::size_t>(i + 1)];
+                const TilePos p = depth == 0 ? e : step(e, d);
+                if (!is_water(city.map, p) || city.map.at(p).building != kNoBuilding) {
+                    dock.clear();
+                    break;
+                }
+                dock.push_back(p);
+            }
+            if (dock.empty()) {
+                break;
+            }
+        }
+        if (dock.size() != 4) {
+            continue;
+        }
+        b.rotation = static_cast<std::uint8_t>(d);
+        b.tiles.insert(b.tiles.end(), dock.begin(), dock.end());
+        r.building = add_building(city, std::move(b));
+        return r;
+    }
+    r.reason = "build.needs_straight_coast";
+    return r;
+}
+
 // Agoras (Z:69-70, doc 06): common 3x6 has an existing road along one long side, grand 5x6 a road through the
 // middle; the remaining lanes hold 2x2 stall slots, three per two-lane band.
 BuildResult place_agora(CityState& city, Building b, bool road_in_center, std::int32_t slots) {

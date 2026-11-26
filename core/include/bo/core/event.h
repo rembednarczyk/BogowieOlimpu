@@ -96,9 +96,16 @@ struct Disaster {
     std::uint32_t building = 0;
 };
 
+struct TradeDone {  // C9: a trader finished at a trade building
+    std::uint32_t building = 0;
+    std::uint32_t loads_bought = 0;  // imported
+    std::uint32_t loads_sold = 0;    // exported
+    std::int64_t money = 0;          // + earned, - paid
+};
+
 using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged, WageRateChanged, CommandRejected,
                            BuildingPlaced, BuildingRemoved, TileChanged, WalkerSpawned, WalkerRemoved, UndoApplied,
-                           HouseChanged, MonthlyFinance, PeopleMoved, Disaster>;
+                           HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

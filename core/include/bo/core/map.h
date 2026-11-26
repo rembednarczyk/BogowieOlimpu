@@ -40,7 +40,11 @@ bool terrain_buildable(Terrain t);
 bool terrain_walkable(Terrain t);
 
 // Resource points set by the map: animal spawn points and fishing grounds. Stored in saves: append only.
-enum class TileFeature : std::uint8_t { None = 0, BoarSpawn, DeerSpawn, FishGround, UrchinGround };
+enum class TileFeature : std::uint8_t {
+    None = 0, BoarSpawn, DeerSpawn, FishGround, UrchinGround,
+    LandEntry,  // where the road to the rest of Greece meets the map edge (Z:17): caravans, immigrants
+    SeaEntry    // where ships enter the map
+};
 
 enum class Dir : std::uint8_t { North = 0, East = 1, South = 2, West = 3 };
 inline constexpr std::array<Dir, 4> kDirs = {Dir::North, Dir::East, Dir::South, Dir::West};
@@ -141,7 +145,8 @@ private:
 // '.' grassland, ',' meadow, 'T' forest, 'm' marsh, 'b' beach, '#' rock, '~' water, 'c' copper, 's' silver,
 // 'q' marble quarry, 'o' orichalc, 'k' black marble, '=' road on grassland, 'x' roadblock on grassland,
 // '^' '>' 'v' '<' grassland ramp leading up to the north, east, south, west,
-// 'h' boar spawn and 'd' deer spawn on grassland, 'f' fishing ground and 'u' urchins on water.
+// 'h' boar spawn and 'd' deer spawn on grassland, 'f' fishing ground and 'u' urchins on water,
+// 'E' land entry (a road tile), 'S' sea entry (a water tile).
 // Optional `elevation` rows: one hex digit (0-f) per tile. All rows must have the same length.
 // Returns nullopt with `error` on bad input.
 std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std::string& error,

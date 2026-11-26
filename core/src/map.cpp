@@ -53,6 +53,12 @@ std::optional<TileMap> parse_text_map(const std::vector<std::string>& rows, std:
         for (std::size_t x = 0; x < rows[y].size(); ++x) {
             Tile& tile = map.at({static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)});
             const char c = rows[y][x];
+            if (c == 'E' || c == 'S') {
+                tile.terrain = c == 'E' ? Terrain::Grassland : Terrain::Water;
+                tile.road = c == 'E';
+                tile.feature = static_cast<std::uint8_t>(c == 'E' ? TileFeature::LandEntry : TileFeature::SeaEntry);
+                continue;
+            }
             const std::string_view kFeatures = "hdfu";
             if (kFeatures.find(c) != std::string_view::npos) {
                 const auto f = kFeatures.find(c);

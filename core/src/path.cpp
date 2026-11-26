@@ -31,7 +31,7 @@ bool passable(const CityState& city, TilePos p, const PathRequest& req) {
             }
             return t.road || terrain_walkable(t.terrain);
         case PathMode::Water:
-            return t.terrain == Terrain::Water && (t.building == kNoBuilding || t.road);
+            return t.terrain == Terrain::Water && (t.building == kNoBuilding || t.road || t.building == req.goal_building);
     }
     return false;
 }

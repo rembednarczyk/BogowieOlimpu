@@ -25,6 +25,23 @@ void write_economy(ByteWriter& w, const WorldState& s) {
     w.i32(m.pool);
     w.u32(m.arrived_this_month);
     w.u32(m.left_this_month);
+    w.u32(static_cast<std::uint32_t>(s.trade.partners.size()));  // since v14
+    for (const auto& p : s.trade.partners) {
+        w.str(p.id);
+        w.str(p.relation);
+        w.u8(p.by_sea ? 1 : 0);
+        for (const auto* offers : {&p.sells, &p.buys}) {
+            w.u32(static_cast<std::uint32_t>(offers->size()));
+            for (const auto& [good, o] : *offers) {
+                w.str(good);
+                w.i32(o.price);
+                w.u32(o.yearly_limit);
+                w.u32(o.traded);
+            }
+        }
+    }
+    w.u64(s.trade.last_trader_day);
+    w.u32(s.trade.traders_today);
     const FinanceState& f = s.finance;
     w.i64(f.tax_remainder);
     w.i64(f.wage_remainder);
@@ -67,6 +84,37 @@ bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version) {
     if (version >= 6 &&
         (!r.u8(m.popularity) || !r.i32(m.pool) || !r.u32(m.arrived_this_month) || !r.u32(m.left_this_month))) {
         return false;
+    }
+    if (version >= 14) {
+        std::uint32_t partners = 0;
+        if (!r.u32(partners) || partners > 256) {
+            return false;
+        }
+        s.trade.partners.resize(partners);
+        for (auto& p : s.trade.partners) {
+            std::uint8_t sea = 0;
+            if (!r.str(p.id) || !r.str(p.relation) || !r.u8(sea)) {
+                return false;
+            }
+            p.by_sea = sea != 0;
+            for (auto* offers : {&p.sells, &p.buys}) {
+                std::uint32_t n = 0;
+                if (!r.u32(n) || n > 4096) {
+                    return false;
+                }
+                for (std::uint32_t i = 0; i < n; ++i) {
+                    std::string good;
+                    TradeOffer o;
+                    if (!r.str(good) || !r.i32(o.price) || !r.u32(o.yearly_limit) || !r.u32(o.traded)) {
+                        return false;
+                    }
+                    (*offers)[good] = o;
+                }
+            }
+        }
+        if (!r.u64(s.trade.last_trader_day) || !r.u32(s.trade.traders_today)) {
+            return false;
+        }
     }
     FinanceState& f = s.finance;
     if (!r.i64(f.tax_remainder) || !r.i64(f.wage_remainder)) {

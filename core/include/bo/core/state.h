@@ -2,6 +2,9 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "bo/core/city.h"
 #include "bo/core/command.h"
@@ -37,6 +40,27 @@ struct MigrationState {
     std::uint32_t left_this_month = 0;
 };
 
+// Module C9: partner cities as the scenario sets them (world map data arrives with module D).
+struct TradeOffer {
+    std::int32_t price = 0;            // drachmas per load
+    std::uint32_t yearly_limit = 0;    // loads a year (Z:75)
+    std::uint32_t traded = 0;          // loads traded this year
+};
+
+struct TradePartner {
+    std::string id;
+    std::string relation = "ally";     // ally, colony, vassal, rival, distant (Z:167-170)
+    bool by_sea = false;               // sea route (blue) or land route (red-brown) (Z:75)
+    std::map<std::string, TradeOffer> sells;  // what we can import
+    std::map<std::string, TradeOffer> buys;   // what we can export
+};
+
+struct TradeWorld {
+    std::vector<TradePartner> partners;
+    std::uint64_t last_trader_day = ~std::uint64_t{0};  // at most one new trader a day (doc 24)
+    std::uint32_t traders_today = 0;
+};
+
 struct WorldState {
     GameTime time;
     RngSet rng;
@@ -45,6 +69,7 @@ struct WorldState {
     CityState city;
     LabourState labour;
     MigrationState migration;
+    TradeWorld trade;
     WalkerStore walkers;
     std::uint64_t next_command_sequence = 0;
     CommandLog pending_commands;  // sorted by (tick, sequence)

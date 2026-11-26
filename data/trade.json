@@ -1,0 +1,19 @@
+{
+ "src": "docs/gameplay/06-dystrybucja-handel.md (Z:74-80), 24 (rodzina S-006/S-007), 19 (S-004, S-005)",
+ "caravan_loads": 8,
+ "ship_loads": 12,
+ "loads_src": "[RODZINA] doc 24: karawana 8 ładunków w każdą stronę, statek 12",
+ "caravan_interval_days": 4,
+ "ship_interval_days": 30,
+ "interval_src": "[RODZINA] doc 24: odstęp 4 dni karawana, 30 dni statek",
+ "max_new_traders_per_day": 1,
+ "max_new_traders_src": "[RODZINA] doc 24: maks. 1 nowy kupiec dziennie na całą mapę",
+ "building_capacity_loads": 32,
+ "building_capacity_src": "[ZAŁOŻENIE L-105] jak magazyn (8 pól po 4 ładunki); doc 19: doręczyciele budynku handlowego wożą po 4 ładunki",
+ "deliveryman_loads": 4,
+ "deliveryman_src": "doc 19 (logistics.json: trade_building 4)",
+ "trading_relations": ["ally", "colony", "vassal", "distant"],
+ "relations_src": "Z:74, Z:167-170: rywale nie handlują; Distant City tylko handel",
+ "max_piers": 10,
+ "max_piers_src": "S-005 (doc 19)"
+}

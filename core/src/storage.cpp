@@ -70,8 +70,8 @@ bool storage_accepts(const Building& b, const DataCatalog& catalog, const std::s
 std::uint32_t city_stock(const CityState& city, const DataCatalog& catalog, const std::string& good_or_class) {
     std::uint32_t total = 0;
     for (const auto& [id, b] : city.buildings.items) {
-        if (!b.storage) {
-            continue;
+        if (!b.storage || b.trade) {
+            continue;  // goods in trade buildings are not the city's stock (Z:79)
         }
         for (const auto& [good, loads] : b.storage->loads) {
             if (good_matches(catalog, good, {good_or_class})) {

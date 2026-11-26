@@ -21,6 +21,7 @@ struct SimulationConfig {
     std::vector<std::string> text_map;     // optional map in the parse_text_map format (tests, golden scenario)
     bool full_staffing = false;            // development switch (LabourState::full_staffing)
     std::vector<std::string> elevation_map;  // optional heights for text_map (one hex digit per tile)
+    std::vector<TradePartner> trade_partners;  // scenario partner cities (C9)
 };
 
 class Simulation;

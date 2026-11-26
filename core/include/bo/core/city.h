@@ -111,6 +111,31 @@ struct StallState {
     }
 };
 
+// Trading Post and Pier orders per good (Z:77-79): buy up to import_limit loads, keep export_keep loads for sale.
+struct TradeOrder {
+    bool import_on = false;
+    std::uint32_t import_limit = 0;
+    bool export_on = false;
+    std::uint32_t export_keep = 0;
+    friend bool operator==(const TradeOrder& a, const TradeOrder& b) {
+        return a.import_on == b.import_on && a.import_limit == b.import_limit && a.export_on == b.export_on &&
+               a.export_keep == b.export_keep;
+    }
+};
+
+// A trade building (C9): its partner city (index into WorldState::trade.partners), orders and the trader on
+// the way. Its goods sit in Building::storage, kept apart from the city's stock (Z:79).
+struct TradePostState {
+    std::int32_t partner = -1;
+    std::map<std::string, TradeOrder> orders;
+    std::uint32_t days_since_trader = 0;
+    WalkerId trader = kNoWalker;
+    friend bool operator==(const TradePostState& a, const TradePostState& b) {
+        return a.partner == b.partner && a.orders == b.orders && a.days_since_trader == b.days_since_trader &&
+               a.trader == b.trader;
+    }
+};
+
 // How a building relates to roads under it.
 enum class RoadMode : std::uint8_t {
     None = 0,
@@ -137,6 +162,7 @@ struct Building {
     std::optional<StallState> stall;        // agora stalls
     std::optional<AnimalState> animal;      // sheep, goats
     std::optional<OrchardState> orchard;    // olive trees, grapevines
+    std::optional<TradePostState> trade;    // Trading Post, Pier
     // Risks (C7): counters grow by the building's risk each day; a visit of the right walker clears them.
     std::uint16_t fire_counter = 0;
     std::uint16_t damage_counter = 0;
@@ -236,6 +262,7 @@ BuildResult place_agora(CityState& city, Building b, bool road_in_center, std::i
 BuildResult place_stall(CityState& city, Building b);
 BuildResult place_over_road(CityState& city, Building b, bool both_sides);
 BuildResult place_crossing(CityState& city, Building b, bool no_adjacent_same);
+BuildResult place_pier(CityState& city, Building b, std::uint32_t max_piers);
 // Sheep and goats: on a free meadow tile, joining the nearest shed of `shed_type` with room in its herd.
 BuildResult place_animal(CityState& city, const DataCatalog& catalog, Building b, const std::string& shed_type);
 

@@ -106,7 +106,9 @@ Zrobione:
 
 - C7 ryzyka: liczniki pożaru i zawalenia z `building_stats.json` (60 / ryzyko miesięcy, losowy rozrzut), płonący budynek 32 dni, rozprzestrzenianie z wiatrem, gaszenie przez zarządcę, ruiny; zaraza z kwarantanną (healer zeruje); przestępcy według zadowolenia domu, straż zatrzymuje, złodziej i wandal atakują domy elity (L-104). Parametry w `data/risks.json`.
 
-Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9), C9 handel; punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
+- C9 handel: partnerzy handlowi w konfiguracji scenariusza (stan, trasa lądowa lub morska, oferty z ceną i rocznym limitem), faktoria lądowa i molo z dokiem na wodzie (najwyżej 10), rozkazy importu i eksportu, karawany co 4 dni (8 ładunków) i statki co 30 dni (12), maks. 1 nowy kupiec dziennie, punkty wejścia na mapę (symbole E i S), rywale nie handlują, towar w budynku handlowym poza zapasami miasta, dostawy produkcji najpierw na eksport, doręczyciele budynku handlowego rozwożą import i zbierają towar na eksport (L-105). Parametry w `data/trade.json`.
+
+Zostaje: stadnina i fabryka rydwanów, wilki, eksport i import jako cel dostaw (C9),  punkt wejścia na mapę i spacerujący imigranci (O-006); domy elity w migracji; premie miasta Stadium i Museum do kultury; wysokość terenu (L-099, dane częściowe).
 
 | Moduł | Zakres | Specyfikacja |
 |---|---|---|

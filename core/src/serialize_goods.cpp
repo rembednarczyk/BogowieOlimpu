@@ -30,7 +30,7 @@ bool read_counts(ByteReader& r, std::map<std::string, std::uint32_t>& m) {
 // Storage, producer and stall state (v7): a flag byte, then each present block.
 void write_goods_state(ByteWriter& w, const Building& b) {
     w.u8(static_cast<std::uint8_t>((b.storage ? 1U : 0U) | (b.producer ? 2U : 0U) | (b.stall ? 4U : 0U) |
-                                   (b.animal ? 8U : 0U) | (b.orchard ? 16U : 0U)));
+                                   (b.animal ? 8U : 0U) | (b.orchard ? 16U : 0U) | (b.trade ? 32U : 0U)));
     if (b.storage) {
         write_counts(w, b.storage->loads);
         w.u32(static_cast<std::uint32_t>(b.storage->orders.size()));
@@ -66,11 +66,23 @@ void write_goods_state(ByteWriter& w, const Building& b) {
         w.u32(b.orchard->days_since_tended);
         w.u8(b.orchard->worker_coming ? 1 : 0);
     }
+    if (b.trade) {  // since v14
+        w.i32(b.trade->partner);
+        w.u32(b.trade->days_since_trader);
+        w.u32(b.trade->trader);
+        w.u32(static_cast<std::uint32_t>(b.trade->orders.size()));
+        for (const auto& [good, o] : b.trade->orders) {
+            w.str(good);
+            w.u8(static_cast<std::uint8_t>((o.import_on ? 1U : 0U) | (o.export_on ? 2U : 0U)));
+            w.u32(o.import_limit);
+            w.u32(o.export_keep);
+        }
+    }
 }
 
 bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
     std::uint8_t flags = 0;
-    if (!r.u8(flags) || flags > 31) {
+    if (!r.u8(flags) || flags > 63) {
         return false;
     }
     if ((flags & 1U) != 0) {
@@ -143,6 +155,25 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
         }
         o.days_since_tended = static_cast<std::uint16_t>(days);
         b.orchard = o;
+    }
+    if ((flags & 32U) != 0) {
+        TradePostState t;
+        std::uint32_t n = 0;
+        if (!r.i32(t.partner) || !r.u32(t.days_since_trader) || !r.u32(t.trader) || !r.u32(n) || n > 4096) {
+            return false;
+        }
+        for (std::uint32_t i = 0; i < n; ++i) {
+            std::string good;
+            std::uint8_t f = 0;
+            TradeOrder o;
+            if (!r.str(good) || !r.u8(f) || !r.u32(o.import_limit) || !r.u32(o.export_keep)) {
+                return false;
+            }
+            o.import_on = (f & 1U) != 0;
+            o.export_on = (f & 2U) != 0;
+            t.orders[good] = o;
+        }
+        b.trade = std::move(t);
     }
     return true;
 }

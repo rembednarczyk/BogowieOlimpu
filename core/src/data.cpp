@@ -95,6 +95,7 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.resource = res.is_string() ? res.get<std::string>() : "";
         t.prey = strings("prey");
         t.player_placeable = o.value("player_placeable", true);
+        t.trade_building = o.value("per_partner_city", false);
         const auto& dp = o.value("delivery_priority", json());
         if (dp.is_object()) {
             for (const auto& [good, list] : dp.items()) {
@@ -451,6 +452,19 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         }
         load_migration(docs.at("migration.json"), diff, cat.migration);
         load_risks(docs, cat.risks);
+        if (docs.count("trade.json") != 0) {
+            const auto& tj = docs.at("trade.json");
+            TradeParams& t = cat.trade;
+            t.caravan_loads = tj.value("caravan_loads", t.caravan_loads);
+            t.ship_loads = tj.value("ship_loads", t.ship_loads);
+            t.caravan_interval_days = tj.value("caravan_interval_days", t.caravan_interval_days);
+            t.ship_interval_days = tj.value("ship_interval_days", t.ship_interval_days);
+            t.max_new_traders_per_day = tj.value("max_new_traders_per_day", t.max_new_traders_per_day);
+            t.building_capacity_loads = tj.value("building_capacity_loads", t.building_capacity_loads);
+            t.deliveryman_loads = tj.value("deliveryman_loads", t.deliveryman_loads);
+            t.trading_relations = tj.value("trading_relations", std::vector<std::string>{});
+            t.max_piers = tj.value("max_piers", t.max_piers);
+        }
         for (const auto& g : docs.at("goods.json")) {
             cat.goods[g.at("id").get<std::string>()] = g.value("class", "");
         }

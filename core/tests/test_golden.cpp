@@ -48,7 +48,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v11 (version field; spawn herds block).
     // 2026-11-26: save format v12 (version field; wind byte), module C7 risks in the daily schedule.
     // 2026-11-26: save format v13 (version field; city hygiene byte), L-104 revised from S-010 and S-007.
-    const std::uint64_t kGolden = 0x7bd2ffc6fd8ac9d9ULL;
+    // 2026-11-26: save format v14 (version field; empty trade block), module C9.
+    const std::uint64_t kGolden = 0x3de79ed55d302eeaULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -78,8 +79,15 @@ Simulation golden_city() {
     // A one-level plateau on the two east columns, reached by a ramp at (30, 16) (L-099).
     rows[16][30] = '>';
     rows[20][1] = 'h';  // boar spawn point
+    rows[4][1] = 'E';   // land entry: the road to Greece
     const std::vector<std::string> heights(32, std::string(31, '0') + "1");
-    Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows, false, heights});
+    SimulationConfig cfg{20261126, Difficulty::Hero, 3000, rows, false, heights};
+    TradePartner corinth;
+    corinth.id = "corinth";
+    corinth.sells["fleece"] = TradeOffer{60, 8, 0};
+    corinth.buys["wood"] = TradeOffer{75, 8, 0};
+    cfg.trade_partners.push_back(corinth);
+    Simulation sim(bo::test::catalog(), cfg);
     sim.issue(PlaceRoad{30, 16});
     sim.issue(PlaceRoad{31, 16});
     sim.issue(PlaceRoad{31, 15});
@@ -94,6 +102,7 @@ Simulation golden_city() {
     sim.issue(PlaceBuilding{"maintenance_office", 5, 13, 0});
     sim.issue(PlaceBuilding{"maintenance_office", 12, 26, 0});
     sim.issue(PlaceBuilding{"infirmary", 12, 22, 0});
+    sim.issue(PlaceBuilding{"trading_post", 24, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 24, 22, 0});
     sim.issue_at(2, PlaceBuilding{"sheep", 25, 22, 0});
     sim.issue_at(2, PlaceBuilding{"olive_tree", 20, 22, 0});
@@ -122,7 +131,12 @@ Simulation golden_city() {
     sim.issue_at(kTicksPerMonth * 6 + 5, Undo{});
     sim.issue_at(kTicksPerMonth * 7, PlaceBuilding{"common_housing", 5, 2, 0});
     sim.issue_at(kTicksPerMonth * 7, PlaceBuilding{"flower_garden", 8, 1, 0});
-    sim.step(kTicksPerYear * 2 + 17);
+    sim.step(1);
+    const BuildingId post = sim.state().city.map.at({24, 22}).building;
+    sim.issue(SetTradePartner{post, 0});
+    sim.issue(SetTradeOrder{post, "wood", false, 0, true, 4});
+    sim.issue(SetTradeOrder{post, "fleece", true, 4, false, 0});
+    sim.step(kTicksPerYear * 2 + 16);
     return sim;
 }
 
@@ -132,8 +146,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
     // The economy is covered by dedicated tests (test_goods, test_husbandry, test_risks); here: structure only.
-    // 39 placed (the plot on the x = 16 road is refused) + 6 lambs, with ruins replacing lost buildings.
-    CHECK(sim.state().city.buildings.items.size() == 45);
+    // 40 placed (the plot on the x = 16 road is refused) + lambs, minus what burned down (ruins stay).
+    CHECK(sim.state().city.buildings.items.size() == 38);
+    CHECK(sim.state().trade.partners[0].sells.at("fleece").traded + sim.state().trade.partners[0].buys.at("wood").traded > 0);
     CHECK(sim.state().labour.workforce > 0);
     CHECK(sim.state().city.map.at({31, 15}).road_network == sim.state().city.map.at({29, 16}).road_network);
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
@@ -158,7 +173,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // infirmary in the scenario, maintenance sector first; two buildings burn down.
     // 2026-11-26: L-104 revised (S-010, S-007 OG fire model, family hygiene, plague 1 in 3, crime escalation,
     // firefighters sent to fires, Hygiene & Safety first at equal priority): save format v13.
-    const std::uint64_t kGolden = 0x58f36f6c12a8b47eULL;
+    // 2026-11-26: module C9 trade: save format v14, a land entry, a trading post and a partner city.
+    const std::uint64_t kGolden = 0x932e401c2eb27479ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

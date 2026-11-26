@@ -23,6 +23,8 @@ add_library(bo_core STATIC
     src/serialize_goods.cpp
     src/simulation.cpp
     src/storage.cpp
+    src/systems.cpp
+    src/trade.cpp
     src/undo.cpp
 )
 target_include_directories(bo_core PUBLIC include)
@@ -59,6 +61,7 @@ if(BO_BUILD_TESTS)
         tests/test_extraction.cpp
         tests/test_wildlife.cpp
         tests/test_risks.cpp
+        tests/test_trade.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

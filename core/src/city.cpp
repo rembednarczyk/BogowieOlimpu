@@ -70,7 +70,7 @@ bool operator==(const Building& a, const Building& b) {
            a.storage == b.storage && a.producer == b.producer && a.stall == b.stall && a.animal == b.animal &&
            a.orchard == b.orchard && a.fire_counter == b.fire_counter && a.damage_counter == b.damage_counter &&
            a.disease_counter == b.disease_counter && a.crime_counter == b.crime_counter &&
-           a.burning_days == b.burning_days;
+           a.burning_days == b.burning_days && a.trade == b.trade;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -140,7 +140,10 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         if (rotation % 2 == 1) {
             std::swap(b.width, b.height);
         }
-        if (rule == "straight_coast" || rule == "straight_coast_same_shore_as_urchins") {
+        if (rule == "straight_coast_with_dock") {
+            b.width = b.height = 4;  // land part; size text "4x4+ 2x2w" (S-004)
+            r = place_pier(city, std::move(b), catalog.trade.max_piers);
+        } else if (rule == "straight_coast" || rule == "straight_coast_same_shore_as_urchins") {
             // Urchin quay: same coast rule; the urchins must be reachable by water [ZAŁOŻENIE, L-103].
             r = place_on_coast(city, std::move(b));  // faces the water by itself; rotation is ignored
         } else if (rule == "long_side_over_road" || rule == "road_through_center") {
@@ -180,6 +183,10 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         }
         if (!bt.sells.empty()) {
             placed.stall = StallState{};
+        }
+        if (bt.trade_building) {
+            placed.trade = TradePostState{};
+            placed.storage = StorageState{};  // goods for trade, apart from the city's stock (Z:79)
         }
         for (const auto& [lodge_id, lodge] : catalog.buildings) {
             if (std::find(lodge.tends.begin(), lodge.tends.end(), type) != lodge.tends.end()) {

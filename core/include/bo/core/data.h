@@ -91,6 +91,7 @@ struct BuildingType {
     std::string footprint_text;                // footprint from buildings.json when the stats size has none
     std::string resource;                      // extraction: terrain id of the resource (forest, copper ore...)
     bool player_placeable = true;              // ruins are made by the simulation only
+    bool trade_building = false;               // Trading Post, Pier: one partner city each (Z:76)
     std::vector<std::string> prey;             // hunting lodges: "boar", "deer" (Z:46, P:8)
 };
 
@@ -182,6 +183,19 @@ struct RiskParams {
     std::int32_t extinguish_days = 12;
 };
 
+// Trade parameters (data/trade.json, module C9).
+struct TradeParams {
+    std::uint32_t caravan_loads = 8;
+    std::uint32_t ship_loads = 12;
+    std::uint32_t caravan_interval_days = 4;
+    std::uint32_t ship_interval_days = 30;
+    std::uint32_t max_new_traders_per_day = 1;
+    std::uint32_t building_capacity_loads = 32;
+    std::uint32_t deliveryman_loads = 4;
+    std::vector<std::string> trading_relations;
+    std::uint32_t max_piers = 10;
+};
+
 struct DataCatalog {
     std::uint64_t version = 0;                      // FNV-1a 64 over file names and bytes, sorted by name
     std::vector<std::string> files;                 // loaded file names, sorted
@@ -201,6 +215,7 @@ struct DataCatalog {
     std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_per_mille{};
     MigrationParams migration;
     RiskParams risks;
+    TradeParams trade;
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
     std::map<std::string, ProductionParams> production;
     std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)

@@ -78,6 +78,15 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, SetIndustryEnabled>) {
                 w.str(cmd.type);
                 w.u8(cmd.enabled ? 1 : 0);
+            } else if constexpr (std::is_same_v<T, SetTradePartner>) {
+                w.u32(cmd.building);
+                w.i32(cmd.partner);
+            } else if constexpr (std::is_same_v<T, SetTradeOrder>) {
+                w.u32(cmd.building);
+                w.str(cmd.good);
+                w.u8(static_cast<std::uint8_t>((cmd.import_on ? 1U : 0U) | (cmd.export_on ? 2U : 0U)));
+                w.u32(cmd.import_limit);
+                w.u32(cmd.export_keep);
             } else if constexpr (std::is_same_v<T, SetStorageOrder>) {
                 w.u32(cmd.building);
                 w.str(cmd.good);
@@ -154,6 +163,25 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
                 return false;
             }
             c.enabled = on != 0;
+            out = c;
+            return true;
+        }
+        case 11: {
+            SetTradePartner c;
+            if (!r.u32(c.building) || !r.i32(c.partner)) {
+                return false;
+            }
+            out = c;
+            return true;
+        }
+        case 12: {
+            SetTradeOrder c;
+            std::uint8_t flags = 0;
+            if (!r.u32(c.building) || !r.str(c.good) || !r.u8(flags) || !r.u32(c.import_limit) || !r.u32(c.export_keep)) {
+                return false;
+            }
+            c.import_on = (flags & 1U) != 0;
+            c.export_on = (flags & 2U) != 0;
             out = c;
             return true;
         }
