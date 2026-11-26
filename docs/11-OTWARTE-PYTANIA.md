@@ -18,7 +18,7 @@ Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzj
 9. Tryb łagodny (bez klęsk i gniewu bogów). Rekomendacja: później, jako rozbudowa; referencja ma ustawienie trudności (L-091).
 10. Mity spoza referencji w kampanii. Rekomendacja: tak, kampanie piszemy sami (R-002), mechanika ta sama.
 16. **[B]** Limit 20 kompanii (Z:136) a R-004 (brak sztucznych limitów). Limit wpływa na balans walki, nie tylko na sprzęt. Rekomendacja: zostawić 20 jako wartość referencyjną w danych (1:1), zmiana jako przyszła rozbudowa.
-17. **[B]** Nazewnictwo w grze. Instrukcje używają nazw w większości ogólnych lub mitologicznych (Granary, Agora, Hero's Hall). Rekomendacja: lista kontrolna z `02-ORYGINALNOSC.md` dla każdej nazwy; nazwy z mitologii i historii zostają, wymyślone przez twórców referencji (np. nazwa paktu atlantydzkiego) zastępujemy.
+17. **[ROZSTRZYGNIĘTE 2026-11-26: własne nazwy EN w polu `name_en` danych, zwykłe i historyczne słowa zostają; DECYZJE.md "Odpowiedzi po przeglądzie referencji"]** Nazewnictwo w grze. Instrukcje używają nazw w większości ogólnych lub mitologicznych (Granary, Agora, Hero's Hall). Rekomendacja: lista kontrolna z `02-ORYGINALNOSC.md` dla każdej nazwy; nazwy z mitologii i historii zostają, wymyślone przez twórców referencji (np. nazwa paktu atlantydzkiego) zastępujemy.
 18. Kolejność dostaw tam, gdzie instrukcja milczy (L-019). Rekomendacja: przyjąć kolejność "potrzebujący budynek przetwórczy → eksport → magazyn" jako założenie robocze.
 
 ## Technologia

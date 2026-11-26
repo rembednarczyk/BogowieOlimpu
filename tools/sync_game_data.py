@@ -26,16 +26,12 @@ with open(root / 'game' / 'i18n' / 'buildings.csv', 'w', encoding='utf-8', newli
     w = csv.writer(fh, lineterminator='\n')
     w.writerow(['keys', 'pl', 'en'])
     for b in buildings:
-        pl = b.get('name_pl', b['id'])
-        en = b['id'].replace('_', ' ')
-        if b.get('god'):
-            pl = f"{pl} ({b['god']})"
-        w.writerow([f"building.{b['id']}", pl, en])
-    # Goods and house levels: our Polish names, working English from the ids.
+        # Our own names in both languages (R-002; owner's decision 2026-11-26: name_en in the data).
+        w.writerow([f"building.{b['id']}", b.get('name_pl', b['id']), b.get('name_en', b['id'].replace('_', ' '))])
     for name, prefix in (('goods.json', 'good'), ('housing.json', 'house')):
         with open(root / 'data' / name, encoding='utf-8') as gh:
             for g in json.load(gh):
-                w.writerow([f"{prefix}.{g['id']}", g.get('name_pl', g['id']), g['id'].replace('_', ' ')])
+                w.writerow([f"{prefix}.{g['id']}", g.get('name_pl', g['id']), g.get('name_en', g['id'].replace('_', ' '))])
 # Adventures (our content, scenarios/*.json) -> game/scenarios/ (res://scenarios).
 sdst = root / 'game' / 'scenarios'
 if sdst.exists():
