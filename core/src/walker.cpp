@@ -145,7 +145,7 @@ bool roam_decide(const CityState& city, Walker& w) {
 
 // Return target: the home's road access. Fountain and Infirmary walkers return to the road tile "directly
 // north of the building that does not touch it" (doc 17, S-004): the north-west corner diagonal in our grid
-// [ZAŁOŻENIE, L-098], falling back to the road access when that tile is not a road.
+// (L-098, diagramy S-004), falling back to the road access when that tile is not a road.
 std::optional<TilePos> home_access(const CityState& city, const Walker& w) {
     const auto it = city.buildings.items.find(w.home);
     if (it == city.buildings.items.end()) {

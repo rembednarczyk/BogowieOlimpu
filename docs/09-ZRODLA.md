@@ -83,6 +83,22 @@ Materiały chronione prawem autorskim (instrukcje, zrzuty z gry referencyjnej) t
 - Wiarygodność: wysoka dla danych scenariusza i nazw sektorów pracy; niska dla reguł symulacji (README projektu: "not an exact copy"; znalezione błędy w zaniku wody i kultury).
 - Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, `docs/ASSETY.md`, konflikty K-021, K-024 do K-030 w `docs/gameplay/98-konflikty-zrodel.md`, poprawki w `data/`.
 
+### S-009: Instrukcja edytora przygód (Zeus/Poseidon Adventure Editor)
+- Typ: instrukcja PDF (archive.org, tekst OCR), materiał chroniony prawem autorskim: tylko do analizy, poza repo.
+- Pobrane: 2026-11-26 (sesja źródłowa dla L-096 do L-099).
+- Zakres: wysokość terenu (poziomy do 15, rampy łączące poziomy różniące się o 1, półspadki), wymagania prostego brzegu i miejsca dla łodzi.
+- Wiarygodność: wysoka (dokument wydawcy).
+- Wydestylowane: `docs/gameplay/99-luki.md` (L-096, L-097, L-099), `docs/gameplay/01-podstawy.md`.
+
+### S-010: Oficjalny poradnik Prima (Zeus, eGuide)
+- Typ: poradnik PDF (archive.org, tekst OCR), chroniony: tylko do analizy, poza repo.
+- Pobrane: 2026-11-26.
+- Zakres: rozmiary budynków nabrzeżnych, koszt przeprawy "za kafel" o szerokości 1, okno Undo "kilka chwil".
+- Wiarygodność: średnia (OCR z błędami, część tabel zniekształcona).
+- Wydestylowane: `docs/gameplay/99-luki.md` (L-035, L-096, L-097).
+
+Uzupełnienie S-004 i S-005 z tej samej sesji: strona spacerujących Zeus Heaven (`/units/`, kafel powrotu fontanny z diagramami) oraz wątki forum o rampach, płaskowyżach i cofaniu rozbiórki.
+
 ## Kandydaci na kolejne źródła
 
 Potrzebne do zamknięcia pozostałych luk P0 (`docs/gameplay/99-luki.md`: L-001, L-008, L-012b, L-017):

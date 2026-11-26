@@ -42,7 +42,7 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 | L-032 | Ceny towarów | P1 | częściowa: przykładowe ceny (doc 19); ceny ustala scenariusz |
 | L-033 | Pojemność karawan i statków, częstotliwość | P1 | zamknięta [RODZINA]: 8/12 ładunków, 4/30 dni, doc 24 |
 | L-034 | Lata długu do przegranej | P2 | częściowa: założenie 3 lata, doc 24 |
-| L-035 | Okno Undo | P2 | otwarta; [ZAŁOŻENIE] w rdzeniu: 1 dzień (51 ticków), cofa komendy budowy jednego ticku (przeciągnięcie) |
+| L-035 | Okno Undo | P2 | częściowa: okno liczy się w czasie gry, "kilka chwil" (S-010; poradnik: cofnięcie wymaga odpauzowania); rozbiórkę da się cofnąć (S-005, średnia pewność). Dokładny czas nieznany; [ZAŁOŻENIE] 1 dzień (51 ticków), cofa komendy budowy jednego ticku |
 | L-036 | Wydajność Mint | P1 | zamknięta: doc 19 (próg K-009 otwarty) |
 | L-037 | Zwierzęta na budynek | P1 | zamknięta: 8 |
 | L-038 | Odrost wypasionej łąki | P2 | otwarta |
@@ -97,10 +97,10 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 | L-093 | Struktura przygód i celów | P1 | częściowa: doc 23; pełna lista typów celów L-093b otwarta |
 | L-094 | Budowa przy pustym skarbcu (czy gra blokuje budowę, gdy brakuje drachm, i czy dopuszcza dług) | P1 | otwarta; [ZAŁOŻENIE] w rdzeniu: budowa zawsze dozwolona, skarbiec może zejść poniżej zera |
 | L-095 | Przechodniość terenu poza drogą (plaża, las) dla ruchu na przełaj | P2 | otwarta; [ZAŁOŻENIE] plaża przechodnia, las nie (Z:17-18 mówi tylko o bagnie i skałach) |
-| L-096 | Ustawienie budynków nabrzeżnych (czy obrys leży na lądzie, czy częściowo na wodzie; co znaczy "prosty brzeg") | P1 | otwarta; [ZAŁOŻENIE] cały obrys na lądzie, jeden pełny bok przy wodzie, pas wody wychodzi o kafel za oba narożniki |
-| L-097 | Przeprawa: szerokość ("2xn" w S-004), największa rozpiętość, warunek prostych brzegów, próg mała/duża | P1 | otwarta; [ZAŁOŻENIE] szerokość 1, do 8 kafli wody, sąsiedzi boczni lądowań to ląd, a skrajnych kafli wody to woda; próg mała/duża przy statkach (D) |
-| L-098 | Kafel powrotu fontanny i lecznicy: "bezpośrednio na północ, nieprzylegający do budynku" (doc 17) w siatce kartezjańskiej | P2 | otwarta; [ZAŁOŻENIE] kafel po przekątnej od narożnika północno-zachodniego, gdy jest drogą; inaczej zwykły punkt wyjścia |
-| L-099 | Wysokość terenu: poziomy, klify, przejścia, wpływ na budowę i ruch | P1 | otwarta; brak danych w instrukcjach; do zebrania z S-004 lub testu w oryginale |
+| L-096 | Ustawienie budynków nabrzeżnych (czy obrys leży na lądzie, czy częściowo na wodzie; co znaczy "prosty brzeg") | P1 | częściowa: prosty, gładki odcinek brzegu, nie w wąskich kanałach i zatoczkach, łodzie potrzebują miejsca (S-001, S-009); rozmiary 2×2 i 3×3 potwierdzone (S-010). Położenie obrysu względem linii brzegu nieznane; [ZAŁOŻENIE] cały obrys na lądzie, jeden pełny bok przy wodzie, pas wody o kafel za oba narożniki |
+| L-097 | Przeprawa: szerokość, największa rozpiętość, próg mała/duża | P1 | częściowa: szerokość 1 kafla, koszt za kafel (S-010, średnia pewność); typ dobierany sam: wąska woda daje małą przeprawę, pod którą statki nie przepłyną (S-001); dwie przeprawy nie stoją obok siebie. Rozpiętość maksymalna i próg nieznane; [ZAŁOŻENIE] do 8 kafli wody (jak most w grze z tej samej rodziny), próg mała/duża przy statkach (D) |
+| L-098 | Kafel powrotu fontanny i lecznicy | P2 | zamknięta (średnia pewność): diagramy S-004 (`/units/`) pokazują kafel nad górnym narożnikiem budynku, stykający się z nim tylko po przekątnej; w naszej siatce to przekątna od narożnika północno-zachodniego (ten sam narożnik, od którego zaczyna się szukanie wyjścia) |
+| L-099 | Wysokość terenu | P1 | częściowa: poziomy całkowite do 15 nad terenem płaskim; rampy łączą teren różniący się o 1 poziom i stawia je edytor mapy, nie gracz; półspadek rozkłada różnicę na 2 kafle i też może mieć rampę (S-009); droga przeciągnięta przez rampę staje się schodami; po klifie nie da się budować dróg (S-005); skały do przejścia tylko przez przełęcze i schody (S-001). Nieznane: budynki na granicy poziomów, wpływ wysokości na atrakcyjność, wodę, pożar |
 
 ## Kandydaci na kolejne źródła
 

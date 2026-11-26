@@ -32,6 +32,7 @@ Hierarchia źródeł (R-012):
 | K-028 | Żywność Residence i Mansion na miesiąc | S-004: 1 i 2 (zaokrąglenie w dół) | S-008: 2 i 3 (zaokrąglenie) | S-004 | otwarty |
 | K-029 | Koszt mostu (Beginner) | S-004: 8 | S-008: 5 | S-004 | otwarty |
 | K-030 | Brąz na zbroję | S-005: 1 | S-008: 2 (decyzja autora) | 1 | rozstrzygnięty |
+| K-031 | Przydział pracowników przy niedoborze | Z:62: sektory o wyższym priorytecie dostają pracowników pierwsze | S-008: podział proporcjonalny do potrzeb × wag priorytetu | instrukcja: kolejno od najwyższego priorytetu; równe priorytety dzielą proporcjonalnie do potrzeb, reszta według części ułamkowych | otwarty |
 
 ## Ocena S-008 (eZeus) po weryfikacji
 
