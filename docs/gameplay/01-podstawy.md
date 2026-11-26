@@ -60,7 +60,7 @@ Dodatek dodaje: skała z rudą orichalku (czerwone samorodki), kamieniołom czar
 ## Drogi i blokady (Z:19-20)
 
 - Drogi stawia się pojedynczo lub przeciąganiem.
-- **Roadblock** (blokada drogi): chodziki losowe zawracają na blokadzie; chodziki celowe przechodzą przez nią.
+- **Roadblock** (blokada drogi): spacerujący losowi zawracają na blokadzie; spacerujący celowi przechodzą przez nią.
 
 ## Kamera (Z:21)
 

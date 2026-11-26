@@ -15,7 +15,7 @@
 
 ### Tax Office (Z:96)
 
-- Droga wymagana. Wysyła **clerks** (chodzik losowy), którzy **rejestrują** mijane domy do podatku i **co miesiąc** pobierają należność.
+- Droga wymagana. Wysyła **clerks** (spacerujący losowy), którzy **rejestrują** mijane domy do podatku i **co miesiąc** pobierają należność.
 - Dom niezarejestrowany nie płaci.
 - Sanktyfikacja Hadesa: domy w pobliżu płacą więcej (Z:96, Z:119).
 

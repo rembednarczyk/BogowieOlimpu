@@ -11,7 +11,7 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 
 ## Kategorie
 
-`OGÓLNE`, `MIASTO`, `DOMY`, `CHODZIKI`, `EKONOMIA`, `RELIGIA`, `MIT` (herosi, potwory), `WOJSKO`, `ŚWIAT` (mapa świata), `SCENARIUSZE`, `UX`, `TECH`, `OPRAWA`, `PROCES`.
+`OGÓLNE`, `MIASTO`, `DOMY`, `SPACERUJĄCY`, `EKONOMIA`, `RELIGIA`, `MIT` (herosi, potwory), `WOJSKO`, `ŚWIAT` (mapa świata), `SCENARIUSZE`, `UX`, `TECH`, `OPRAWA`, `PROCES`.
 
 ## Format reguły
 
@@ -67,12 +67,12 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Wpływ na: walidacja budowy, `data/buildings.json` (`requires_road`).
 - Historia: 2026-11-26 utworzona; 2026-11-26 potwierdzona przez właściciela
 
-### R-006 [CHODZIKI] Dwa typy chodzików i blokady
+### R-006 [SPACERUJĄCY] Dwa typy spacerujących i blokady
 - Status: obowiązuje
 - Źródło: S-001 (Z:19-20, Z:25-26)
-- Treść: Chodzik losowy zawraca na Roadblock, chodzik celowy przez niego przechodzi. Wykonawcy kultury i nauki są celowi w drodze ze szkoły do miejsca występu i losowi po wyjściu z miejsca występu.
+- Treść: Spacerujący losowy zawraca na Roadblock, spacerujący celowy przez niego przechodzi. Wykonawcy kultury i nauki są celowi w drodze ze szkoły do miejsca występu i losowi po wyjściu z miejsca występu.
 - Uzasadnienie: mechanika sterowania pokryciem usług.
-- Wpływ na: `data/walkers.json`, system chodzików.
+- Wpływ na: `data/walkers.json`, system spacerujących.
 - Historia: 2026-11-26 utworzona; 2026-11-26 potwierdzona przez właściciela
 
 ### R-007 [DOMY] Regres do najwyższego spełnionego poziomu

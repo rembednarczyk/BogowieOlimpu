@@ -10,7 +10,7 @@ Reguły gry: `docs/gameplay/`. Zasady inżynierskie: `docs/PRAKTYKI.md` (rozdzia
 
 ## Kolejność systemów w ticku (robocza)
 
-Jedna jawna tablica, np.: komendy → kalendarz (miesiąc, żniwa, roczne limity handlu, igrzyska) → imigracja/emigracja → przydział pracowników (priorytety sektorów) → produkcja → logistyka (doręczyciele, rozkazy magazynów, vendorzy) → chodzicy (ruch, obsługa w zasięgu) → zużycie dóbr w domach → ewolucja i regres domów → higiena, niepokoje, zagrożenia → religia (ofiary, sanktyfikacja, wizyty, gniew) → wojsko → świat (prośby, opinie, trybut, handel) → cele scenariusza → zdarzenia.
+Jedna jawna tablica, np.: komendy → kalendarz (miesiąc, żniwa, roczne limity handlu, igrzyska) → imigracja/emigracja → przydział pracowników (priorytety sektorów) → produkcja → logistyka (doręczyciele, rozkazy magazynów, vendorzy) → spacerujący (ruch, obsługa w zasięgu) → zużycie dóbr w domach → ewolucja i regres domów → higiena, niepokoje, zagrożenia → religia (ofiary, sanktyfikacja, wizyty, gniew) → wojsko → świat (prośby, opinie, trybut, handel) → cele scenariusza → zdarzenia.
 
 ## Zasady
 
@@ -22,16 +22,16 @@ Jedna jawna tablica, np.: komendy → kalendarz (miesiąc, żniwa, roczne limity
 ## Model danych
 
 - **Mapa:** siatka kafli z warstwami (teren, wysokość, budynek, droga, atrakcyjność, zasięgi wody, ryzyka).
-- **Encje:** budynki, chodziki, jednostki, potwory, bogowie jako encje w układzie ECS lub struktur tablicowych (data-oriented).
-- **Systemy:** każdy system aktualizuje swoją część stanu w ustalonej kolejności, np.: imigracja, zatrudnienie, produkcja, logistyka, chodziki, usługi, ewolucja domów, ryzyka, religia, mapa świata, zdarzenia.
+- **Encje:** budynki, spacerujący, jednostki, potwory, bogowie jako encje w układzie ECS lub struktur tablicowych (data-oriented).
+- **Systemy:** każdy system aktualizuje swoją część stanu w ustalonej kolejności, np.: imigracja, zatrudnienie, produkcja, logistyka, spacerujący, usługi, ewolucja domów, ryzyka, religia, mapa świata, zdarzenia.
 - **Częstotliwości:** nie każdy system musi działać co tick. Ewolucja domów i atrakcyjność mogą przeliczać się co N ticków, rozłożone na grupy budynków.
 
-## Chodziki i ścieżki
+## Spacerujący i ścieżki
 
 - Graf dróg utrzymywany przyrostowo przy budowie i wyburzaniu.
-- Chodziki celowe: A* lub wstępnie obliczone pola odległości do magazynów, z cache tras.
-- Chodziki losowe: zasady wyboru kierunku na skrzyżowaniach zgodne z regułami gatunku (do wydestylowania ze źródeł), limit dystansu, powrót do budynku.
-- Obsługa w zasięgu: przy każdym kroku chodzik oznacza budynki w promieniu obsługi. Implementacja przez przestrzenne indeksy kafli.
+- Spacerujący celowi: A* lub wstępnie obliczone pola odległości do magazynów, z cache tras.
+- Spacerujący losowi: zasady wyboru kierunku na skrzyżowaniach zgodne z regułami gatunku (do wydestylowania ze źródeł), limit dystansu, powrót do budynku.
+- Obsługa w zasięgu: przy każdym kroku spacerujący oznacza budynki w promieniu obsługi. Implementacja przez przestrzenne indeksy kafli.
 
 ## Zapis gry
 

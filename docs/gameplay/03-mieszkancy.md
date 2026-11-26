@@ -73,7 +73,7 @@ Mieszkańcy elity zostają, dopóki mają: żywność, wełnę, oliwę z Agory, 
 
 ### Szlachcice (noblemen)
 
-Szlachcic z domu elity jest chodzikiem losowym, który broni domu i siebie przed przestępcami (Z:88).
+Szlachcic z domu elity jest spacerującym losowym, który broni domu i siebie przed przestępcami (Z:88).
 
 ## Rada projektowa z instrukcji (Z:35)
 

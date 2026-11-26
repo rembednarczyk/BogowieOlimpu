@@ -7,7 +7,7 @@ Budujesz greckie polis od pierwszej drogi do metropolii, zabiegasz o łaskę bog
 ## Filary
 
 1. **Żywe miasto.** Każdy mieszkaniec i pracownik jest widoczną postacią na ulicy. Gracz rozumie miasto, patrząc na nie: kto niesie zboże, kto gasi pożar, gdzie brakuje wody.
-2. **Logistyka jako zagadka.** Rozmieszczenie budynków, zasięgi chodzików i łańcuchy produkcji tworzą układankę przestrzenną. Dobre miasto jest efektem projektu urbanistycznego gracza.
+2. **Logistyka jako zagadka.** Rozmieszczenie budynków, zasięgi spacerujących i łańcuchy produkcji tworzą układankę przestrzenną. Dobre miasto jest efektem projektu urbanistycznego gracza.
 3. **Bogowie jako siła natury.** Bogowie realnie zmieniają miasto: błogosławią, karzą, nawiedzają. Sanktuaria są największymi i najbardziej efektownymi budowlami w grze.
 4. **Mit w zasięgu ręki.** Herosi, potwory i misje z mitów są wplecione w rozgrywkę ekonomiczną.
 5. **Pełna głębia na małym ekranie.** Telefon dostaje całą grę. Interfejs jest projektowany pod dotyk od pierwszego dnia.

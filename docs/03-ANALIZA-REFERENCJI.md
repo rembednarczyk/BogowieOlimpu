@@ -4,11 +4,11 @@ Notatki analityczne: dlaczego mechaniki referencji działają i gdzie gracze nap
 
 ## Rodowód gatunku
 
-Seria citybuilderów "z chodzikami" z przełomu wieków: Caesar III, Pharaoh (z Cleopatrą), Zeus (z Poseidonem), Emperor. Wspólny trzon: siatka izometryczna, domy ewoluujące od potrzeb, chodzicy z zasięgiem, łańcuchy produkcji, scenariusze z celami.
+Seria citybuilderów "ze spacerującymi" z przełomu wieków: Caesar III, Pharaoh (z Cleopatrą), Zeus (z Poseidonem), Emperor. Wspólny trzon: siatka izometryczna, domy ewoluujące od potrzeb, spacerujący z zasięgiem, łańcuchy produkcji, scenariusze z celami.
 
 Notatki projektantów referencji (Z:183-187) mówią wprost o kierunku względem poprzedników: gra miała być **mniej poważna, krótsza w rozgrywce i bardziej wyrozumiała dla gracza**, z mitologią w centrum, a gracz jest niezależnym władcą, który nie odpowiada przed nikim.
 
-Współczesne tytuły warte przejrzenia pod kątem UX: Pharaoh: A New Era, Nebuchadnezzar, Builders of Egypt, Anno, Banished, Farthest Frontier, Manor Lords. Open-source'owe reimplementacje gier z tej rodziny (Julius, Augustus, Akhenaten) mogą pomóc zamknąć luki w zachowaniu chodzików; ich kod jest na GPL (patrz `PRAKTYKI.md`, rozdział 1).
+Współczesne tytuły warte przejrzenia pod kątem UX: Pharaoh: A New Era, Nebuchadnezzar, Builders of Egypt, Anno, Banished, Farthest Frontier, Manor Lords. Open-source'owe reimplementacje gier z tej rodziny (Julius, Augustus, Akhenaten) mogą pomóc zamknąć luki w zachowaniu spacerujących; ich kod jest na GPL (patrz `PRAKTYKI.md`, rozdział 1).
 
 ## Co wyróżnia referencję (zweryfikowane z instrukcją)
 
@@ -39,7 +39,7 @@ Korekta wcześniejszej wersji tego pliku: dodatek **nie** wprowadza "przygotowan
 
 Ponieważ R-001 każe odwzorować mechanikę 1:1, poniższe zapisujemy jako pomysły na później (każdy wymagałby reguły i wpisu w `ODSTEPSTWA.md`):
 
-- Chodzicy losowi, którzy omijają domy; brak kontroli trasy poza Roadblock.
+- Spacerujący losowi, którzy omijają domy; brak kontroli trasy poza Roadblock.
 - Pułapka importu: kupiec patrzy tylko na zapas w swoim budynku (Z:78).
 - Tracenie niezebranych owoców po żniwach i wypas blokujący łąkę.
 - Mikrozarządzanie rozkazami magazynów.

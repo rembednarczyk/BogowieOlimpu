@@ -14,7 +14,7 @@ Hierarchia źródeł (R-012):
 | K-005 | Kolejność dostaw pszenicy | Z:40: Horse Ranch, eksport, Granary | S-005 JonN: farma woli Storehouse od Granary | instrukcja + Storehouse tylko z Accept dla pszenicy | otwarty |
 | K-006 | Odrastanie lasu | Z:18: wykarczowany las nie odrasta | S-005: drzewa ścięte przez drwali odrastają | oba: Clear Land usuwa las trwale, wycinka odrasta | rozstrzygnięty |
 | K-007 | Zużycie żywności | S-004: 0,25/os./mies. (3/rok) | S-005 Moquel: 3,125/rok | S-004 | rozstrzygnięty |
-| K-008 | Zasięg chodzików | S-004: 27/35/44 | S-005: 26/34/43 | S-004, z kaflem startowym | rozstrzygnięty |
+| K-008 | Zasięg spacerujących | S-004: 27/35/44 | S-005: 26/34/43 | S-004, z kaflem startowym | rozstrzygnięty |
 | K-009 | Próg startu mennicy | S-005: 200 srebra | S-005: 250 srebra | 200 | otwarty |
 | K-010 | Wydajność Growers' Lodge | S-004: 20/rok | S-005: 12, 18, 24, 25 | 20 (maks. 25) | rozstrzygnięty |
 | K-012 | Miesiąc dostawy zboża | Z:40, S-004: lipiec | S-005 JonN: styczeń | lipiec | rozstrzygnięty |
@@ -37,4 +37,4 @@ Hierarchia źródeł (R-012):
 
 - eZeus nie czyta plików modelu gry; statystyki budynków są wpisane w kod. Kolumna Beginner (koszt, pożar, zawalenie) zgadza się z naszą prawie wszędzie; pozostałe poziomy trudności liczy płaskimi mnożnikami (×1/1,8/2,25/2,75/3,25), więc nasze tabele per poziom są dokładniejsze.
 - Zgodne z naszymi danymi: koszty sanktuariów, liczby rzeźb w sanktuariach, hipodrom, pojemności magazynów i wozów, wymagania herosów (eZeus pomija 3 triery Jazona), wszystkie pary potwór-heros.
-- Nie przejmujemy uproszczeń eZeus: budynki bez wymogu drogi, jednolity zasięg chodzików 40, jednolita liczba pracowników sanktuariów, ogólne statystyki walki, ciągła produkcja farm.
+- Nie przejmujemy uproszczeń eZeus: budynki bez wymogu drogi, jednolity zasięg spacerujących 40, jednolita liczba pracowników sanktuariów, ogólne statystyki walki, ciągła produkcja farm.

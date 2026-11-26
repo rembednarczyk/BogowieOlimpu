@@ -9,7 +9,7 @@
 | 4 poziomy zoomu (kafel 30×15 ... 120×60 px) | jeden model 3D z LOD (2-3 poziomy) |
 | 8 kierunków, 5 rysowanych + 3 lustrzane | model obraca się dowolnie; animacja jedna dla wszystkich kierunków |
 | klatki animacji (np. chód 12 klatek) | klip animacji; liczba klatek oryginału = wskazówka długości klipu |
-| tłum: każdy chodzik to sprite | tłum: MultiMesh + animacje wypiekane do tekstur (VAT) |
+| tłum: każdy spacerujący to sprite | tłum: MultiMesh + animacje wypiekane do tekstur (VAT) |
 | nakładki animowane na budynek (6-60 klatek) | animowane części modelu, cząsteczki, shader |
 | ~55 300 sprite'ów na poziom zoomu | ok. 150 modeli budynków i ich części, ok. 110 typów postaci, 14 bogów, 8 herosów, 17 potworów, ok. 35 jednostek wojskowych |
 
@@ -19,7 +19,7 @@ Wariant awaryjny (gdyby 3D w czasie rzeczywistym było za drogie na telefonie): 
 
 - 1 kafel = 1 m; wysokość kondygnacji i proporcje z architektury greckiej (`PRAKTYKI.md` rozdz. 9: kształt realistyczny, stylizacja w materiale i świetle).
 - Front budynku w osi −Y; punkt odniesienia w narożniku obrysu; obrys zgodny z `data/building_stats.json`.
-- Postacie: wspólny szkielet humanoida; jeden zestaw "chodzik standardowy" (chód + śmierć) dla ok. 30 typów, różnice w ubiorze i rekwizytach.
+- Postacie: wspólny szkielet humanoida; jeden zestaw "spacerujący standardowy" (chód + śmierć) dla ok. 30 typów, różnice w ubiorze i rekwizytach.
 - Towary: osobne modele ładunków (skrzynie, amfory, bele, bloki, sztaby) wspólne dla wozów, magazynów i stosów przy budynkach.
 - Każdy asset ma wpis w rejestrze pochodzenia (autor, źródło, licencja, zmiany) przed wejściem do repo.
 
@@ -86,8 +86,8 @@ Konsekwencja dla produkcji: na każdy model budynku dochodzą warianty "budowa" 
 
 | Grupa | Liczba typów | Animacje (długość w klatkach oryginału) |
 |---|---|---|
-| Chodzik standardowy | ok. 30 | chód 12, śmierć 8 |
-| Chodzicy z pracą | ok. 20 | np. strażak: chód, noszenie wody, gaszenie 40; rzemieślnik: budowa 9; górnik: kopanie 10; ogrodnik: praca i zbiór przy oliwkach i winoroślach; zbieracz jeżowców: pływanie, zbiór 40 |
+| Spacerujący standardowy | ok. 30 | chód 12, śmierć 8 |
+| Spacerujący z pracą | ok. 20 | np. strażak: chód, noszenie wody, gaszenie 40; rzemieślnik: budowa 9; górnik: kopanie 10; ogrodnik: praca i zbiór przy oliwkach i winoroślach; zbieracz jeżowców: pływanie, zbiór 40 |
 | Wozy i łodzie | | wóz z ładunkiem dla 16 towarów (2-3 poziomy załadunku), wóz z wołami (marmur, drewno, rzeźba, czarny marmur), łódź rybacka, statek handlowy, triera, fregata, okręty wroga |
 | Zwierzęta | 11 | dzik, koza, wilk, jeleń, owca (ostrzyżona i nie), koń, byk, bydło (3 umaszczenia), wół, konie wyścigowe (4 maści), ryby i jeżowce jako znaczniki |
 | Jednostki gracza | 7 | rabble (rzut 12), hoplita, jeździec, łucznik na wieży; atlantydzkie: hoplita, łucznik, rydwan |
@@ -131,7 +131,7 @@ Projekt UI robimy pod dotyk (`docs/06-MOBILE-UX.md`); lista mówi, **jakie infor
 | Muzyka | 12 utworów miejskich, 6 bitewnych, menu, 3 dżingle | muzyka adaptacyjna z warstwami (`08-OPRAWA.md`) |
 | Narracja kampanii | per epizod | własne teksty, lektor PL i EN |
 | Ambient | ok. 240 plików w 2 warstwach, ok. 60 kategorii (budynki, zwierzęta, teren, katastrofy) | dźwięk z pozycji budynku, natężenie z zoomu |
-| Głosy chodziców | ok. 45 typów, 7 komentarzy o stanie miasta + kwestia bezczynności + kwestie zdarzeń; ok. 400 plików | ta sama struktura kwestii; teksty piszemy sami |
+| Głosy spacerujących | ok. 45 typów, 7 komentarzy o stanie miasta + kwestia bezczynności + kwestie zdarzeń; ok. 400 plików | ta sama struktura kwestii; teksty piszemy sami |
 | Bogowie | ok. 25 plików na boga (zazdrość, zaloty, inwazja, potwór, zadanie, pomoc, pojawienie, klątwa, sanktyfikacja, ataki) | |
 | Herosi | ok. 13 na herosa | |
 | Potwory | ok. 7 na potwora | |

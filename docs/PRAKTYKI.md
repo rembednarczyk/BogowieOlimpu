@@ -1,6 +1,6 @@
 # Praktyki projektu Bogowie Olimpu
 
-Zasady pracy dostosowane do tego projektu na podstawie wytycznych z trzech wcześniejszych gier właściciela (źródło S-003). Oryginał opisuje gry zręcznościowe i otwarty świat; tu przekładamy go na deterministyczny citybuilder z tysiącami chodzików, specyfikacją 1:1 z instrukcji i grą na telefon.
+Zasady pracy dostosowane do tego projektu na podstawie wytycznych z trzech wcześniejszych gier właściciela (źródło S-003). Oryginał opisuje gry zręcznościowe i otwarty świat; tu przekładamy go na deterministyczny citybuilder z tysiącami spacerujących, specyfikacją 1:1 z instrukcji i grą na telefon.
 
 - **Zasada**: obowiązuje zawsze.
 - **Wytyczna**: domyślny wybór; odstępstwo wymaga zapisanego powodu (wpis w `docs/DECYZJE.md`).
@@ -24,7 +24,7 @@ Wzorce, które w tym projekcie są domyślne:
 | Determinizm | deterministyczny lockstep RTS (Terrano, Bettner, "1500 Archers on a 28.8", GDC 2001) |
 | Ścieżki doręczycieli | A* z rozstrzyganiem remisów numerem kafla; mapy odległości (Dijkstra maps) do magazynów |
 | Zasięg usług | indeks przestrzenny (spatial hash) po kaflach |
-| Chodzicy losowi | model z gatunku; open-source'owe reimplementacje gier z tej samej rodziny (Julius i Augustus dla Caesar III, Akhenaten dla Pharaoh) jako źródło wiedzy. **Kod na licencji GPL: czytamy, nie kopiujemy**, dopóki nie zapadnie decyzja licencyjna |
+| Spacerujący losowi | model z gatunku; open-source'owe reimplementacje gier z tej samej rodziny (Julius i Augustus dla Caesar III, Akhenaten dla Pharaoh) jako źródło wiedzy. **Kod na licencji GPL: czytamy, nie kopiujemy**, dopóki nie zapadnie decyzja licencyjna |
 
 **Zasada. Specyfikacja z instrukcji jest źródłem reguł.** `docs/gameplay/` i `data/` są nadrzędne wobec intuicji. Każde odstępstwo trafia do rejestru `docs/ODSTEPSTWA.md` z identyfikatorem, powodem i statusem.
 
@@ -34,7 +34,7 @@ Wzorce, które w tym projekcie są domyślne:
 
 ## 2. Architektura
 
-**Zasada. Symulacja działa bez renderera.** Domena (reguły, ekonomia, chodzicy, bogowie, świat, zapis) to czysty kod uruchamiany w testach bez przeglądarki i GPU. Render, audio, wejście i zapis do pamięci urządzenia są za portami.
+**Zasada. Symulacja działa bez renderera.** Domena (reguły, ekonomia, spacerujący, bogowie, świat, zapis) to czysty kod uruchamiany w testach bez przeglądarki i GPU. Render, audio, wejście i zapis do pamięci urządzenia są za portami.
 
 **Zasada. Kierunek zależności pilnuje narzędzie w CI** (np. dependency-cruiser): domena nie importuje niczego z zewnątrz; symulacja tylko domenę; UI nie zna silnika ani wnętrza symulacji; brak cykli.
 
@@ -62,13 +62,13 @@ Wzorce, które w tym projekcie są domyślne:
 
 **Zasada. Losowość i czas w domenie tylko przez porty, zakaz pilnuje linter** (bez `Math.random`, `Date.now`, `performance.now`, bez `any`). Osobne strumienie RNG dla niezależnych warstw: migracja, zagrożenia budowlane, zaraza, przestępczość, bogowie, świat, potwory, generacja mapy. Nowy system dostaje nowy strumień, żeby nie przetasować reszty.
 
-**Zasada. Iteracja w kolejności identyfikatorów** tam, gdzie wynik zależy od kolejności: kolejność systemów w jednej jawnej tablicy, budynki i chodzicy po id, remisy A* po numerze kafla, kolejka przydziału pracowników po priorytecie sektora i id.
+**Zasada. Iteracja w kolejności identyfikatorów** tam, gdzie wynik zależy od kolejności: kolejność systemów w jednej jawnej tablicy, budynki i spacerujący po id, remisy A* po numerze kafla, kolejka przydziału pracowników po priorytecie sektora i id.
 
 **Wytyczna. Nowe byty dopisujemy na koniec, z osobną pulą identyfikatorów** (dotyczy też `data/*.json`).
 
-**Zasada. Złoty hash na małym, stałym scenariuszu, aktualizowany tylko ręcznie.** Scenariusz testowy (np. mapa 32×32 kafle) zawiera po jednym egzemplarzu każdego łańcucha: farmę, spichlerz, agorę, dom, fontannę, warsztat, sanktuarium w budowie, jednego chodzika każdego typu. Commit zmieniający hash nazywa regułę, która go zmieniła. Hash nie jest liczony na mapach kampanii.
+**Zasada. Złoty hash na małym, stałym scenariuszu, aktualizowany tylko ręcznie.** Scenariusz testowy (np. mapa 32×32 kafle) zawiera po jednym egzemplarzu każdego łańcucha: farmę, spichlerz, agorę, dom, fontannę, warsztat, sanktuarium w budowie, jednego spacerującego każdego typu. Commit zmieniający hash nazywa regułę, która go zmieniła. Hash nie jest liczony na mapach kampanii.
 
-**Wytyczna. Stały hash nie dowodzi braku zmiany zachowania.** Zmiany chodzików porównujemy też audytem pokrycia usług na mapach referencyjnych.
+**Wytyczna. Stały hash nie dowodzi braku zmiany zachowania.** Zmiany spacerujących porównujemy też audytem pokrycia usług na mapach referencyjnych.
 
 **Wytyczna. Stan liczalny z ziarna nie trafia do zapisu** (np. oferta handlowa miasta w danym roku, jeśli wynika z ziarna i roku).
 
@@ -76,13 +76,13 @@ Wzorce, które w tym projekcie są domyślne:
 
 **Wytyczna. Narzędzia diagnostyczne zapisują stan tą samą drogą co gra.**
 
-**Wytyczna. LOD symulacji tylko tam, gdzie nie zmienia wyniku.** Chodzik poza ekranem nie potrzebuje animacji, ale jego ruch po kaflach liczy się identycznie. Przyspieszenia symulacji (np. zgrubny krok dla chodzików poza ekranem) wchodzą tylko z dowodem identycznego hasha.
+**Wytyczna. LOD symulacji tylko tam, gdzie nie zmienia wyniku.** Spacerujący poza ekranem nie potrzebuje animacji, ale jego ruch po kaflach liczy się identycznie. Przyspieszenia symulacji (np. zgrubny krok dla spacerujących poza ekranem) wchodzą tylko z dowodem identycznego hasha.
 
 ## 4. Testy
 
 **Zasada. Logikę sprawdzają testy bez przeglądarki**, krokujące symulację (`step(n)`) i czekające na stan gry, nie na zegar. Przeglądarka tylko do rozruchu, rysowania, HUD na telefonie i dotyku.
 
-**Zasada. Test całej rozgrywki jako bramka zmian ekonomii, chodzików i scenariuszy.** Autopilot wykonuje skrypt budowy (build order) na scenariuszu i musi osiągnąć cele (np. 1500 mieszkańców i domy na poziomie Tenement przed rokiem X, sanktuarium ukończone). Scenariusz, którego autopilot nie przejdzie, nie przechodzi testu.
+**Zasada. Test całej rozgrywki jako bramka zmian ekonomii, spacerujących i scenariuszy.** Autopilot wykonuje skrypt budowy (build order) na scenariuszu i musi osiągnąć cele (np. 1500 mieszkańców i domy na poziomie Tenement przed rokiem X, sanktuarium ukończone). Scenariusz, którego autopilot nie przejdzie, nie przechodzi testu.
 
 **Wytyczna. Test niezmienników z "chaotycznym burmistrzem".** Losowo stawia, burzy, zmienia rozkazy magazynów, podatki i płace. Sprawdzamy: brak NaN, brak ujemnych zapasów, populacja ≤ pojemność, każdy doręczyciel ma cel albo status "utknął", determinizm.
 
@@ -110,7 +110,7 @@ Wzorce, które w tym projekcie są domyślne:
 
 | Audyt | Co mierzy |
 |---|---|
-| Pokrycie usług | % domów odwiedzonych przez każdy typ chodzika w ostatnim miesiącu, per dzielnica |
+| Pokrycie usług | % domów odwiedzonych przez każdy typ spacerującego w ostatnim miesiącu, per dzielnica |
 | Logistyka | doręczyciele utknięci, średni czas dostawy, puste przebiegi vendorów, statusy Agory ("Too Distant", "No Supply") |
 | Ekonomia | bilans roczny, żywność na mieszkańca, rozkład poziomów domów, bezrobocie |
 | Tempo scenariusza | czas osiągnięcia każdego celu przez autopilota, na kilku ziarnach |
@@ -147,7 +147,7 @@ Kandydaci w tym projekcie: budynki bez drogi w scenariuszach, doręczyciele bez 
 
 **Zasada. Każda opcja jakości ma zrzut A/B.**
 
-**Wytyczna. Zmiana chodzików mierzona w najgorszym przypadku**: największe miasto referencyjne, wszyscy chodzicy aktywni, pożar i inwazja naraz.
+**Wytyczna. Zmiana spacerujących mierzona w najgorszym przypadku**: największe miasto referencyjne, wszyscy spacerujący aktywni, pożar i inwazja naraz.
 
 ## 8. Weryfikacja wizualna
 
@@ -185,7 +185,7 @@ Kandydaci w tym projekcie: budynki bez drogi w scenariuszach, doręczyciele bez 
 
 **Wytyczna. AI z klasycznych technik**: AI przywódców na mapie świata jako maszyna stanów z progami opinii z `data/diplomacy.json`; walka jednostek ze steeringiem (Reynolds) i formacjami; trudność jako parametry.
 
-**Wytyczna. Ruch dla oka zgodny z animacją**: prędkość chodzika z tempa klipu.
+**Wytyczna. Ruch dla oka zgodny z animacją**: prędkość spacerującego z tempa klipu.
 
 ## 11. Assety i licencje
 
@@ -322,7 +322,7 @@ Kandydaci w tym projekcie: budynki bez drogi w scenariuszach, doręczyciele bez 
 
 **Wytyczna. Pytanie zawsze z rekomendacją, odpowiedź zapisana.** Niejednoznaczną prośbę interpretujemy i zapisujemy interpretację.
 
-**Wytyczna. Kody w raportach z opisem w nawiasie**, np. "L-001 (kierunek chodzika na skrzyżowaniu)".
+**Wytyczna. Kody w raportach z opisem w nawiasie**, np. "L-001 (kierunek spacerującego na skrzyżowaniu)".
 
 **Wytyczna. PR i merge tylko na prośbę właściciela.**
 

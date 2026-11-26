@@ -21,7 +21,7 @@ Patrz [05-przemysl-praca.md](05-przemysl-praca.md): Refinery (orichalc), Black M
 
 **Atlantydzi nie ulepszają domów, dopóki nie dostaną nauczania naukowego.** Nauka pełni w ich domach rolę kultury. Wymagania poziomów są takie same jak greckie (`data/housing.json`), a punkty nauki zastępują punkty kultury 1:1 (S-004, S-008; tabela punktów w doc 18). Nazwy poziomów nadamy własne (L-080, R-002).
 
-| Dziedzina | Szkolenie | Miejsce pracy | Chodzik losowy | Uwagi |
+| Dziedzina | Szkolenie | Miejsce pracy | Spacerujący losowy | Uwagi |
 |---|---|---|---|---|
 | Scholars | Bibliotheke (od razu) | Bibliotheke | uczony | jeden budynek, brak fazy celowej |
 | Astronomers | University | Observatory | astronom z Observatory | University musi mieć drogę do Observatory |
@@ -30,7 +30,7 @@ Patrz [05-przemysl-praca.md](05-przemysl-praca.md): Refinery (orichalc), Black M
 
 - Zakładka Science: szacunek nauczania w każdej dziedzinie; szczegóły z liczbą budynków.
 - Widoki: Show Scholars / Astronomers / Inventors / Curators / All Science. Kolumny przed domami i przed Hercules' Hall (heros też potrzebuje nauki).
-- Apollo sanktyfikuje budynki nauki (więcej chodzików); w gniewie przeklina je (brak odkryć).
+- Apollo sanktyfikuje budynki nauki (więcej spacerujących); w gniewie przeklina je (brak odkryć).
 
 ## Hipodrom (P:13-15)
 

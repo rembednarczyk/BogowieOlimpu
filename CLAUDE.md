@@ -63,7 +63,7 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 
 ## Raport dla właściciela
 
-Krótki, po polsku, kończy się trzema listami: **zrobione, sprawdzone, niesprawdzone**. Pytanie zawsze z rekomendacją. Kody z opisem w nawiasie, np. "L-001 (kierunek chodzika na skrzyżowaniu)".
+Krótki, po polsku, kończy się trzema listami: **zrobione, sprawdzone, niesprawdzone**. Pytanie zawsze z rekomendacją. Kody z opisem w nawiasie, np. "L-001 (kierunek spacerującego na skrzyżowaniu)".
 
 ## Agenci
 

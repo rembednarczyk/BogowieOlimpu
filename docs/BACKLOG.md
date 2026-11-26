@@ -4,7 +4,7 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 
 ## Następne
 
-1. **Moduły B (mapa i ruch)** z `docs/SILNIK.md`: siatka i teren, budowa, graf dróg, ścieżki, chodzik losowy, chodzicy celowi, indeks przestrzenny; rozszerzenie złotego hasha o scenariusz 32×32.
+1. **Moduły B (mapa i ruch)** z `docs/SILNIK.md`: siatka i teren, budowa, graf dróg, ścieżki, spacerujący losowy, spacerujący celowi, indeks przestrzenny; rozszerzenie złotego hasha o scenariusz 32×32.
 2. **Skrypt instalacji narzędzi** zapisany w środowisku chmurowym (Godot, Blender, Vulkan lavapipe, Xvfb). Zostaje: potwierdzić w świeżej sesji; dopisać scons, Android SDK i szablony eksportu, gdy będą potrzebne.
 3. **Uzupełnienia szkieletu**: deterministyczny zrzut (zamrożona symulacja zamiast czasu klatki), gdUnit4 dla testów GDScript, clang-tidy w CI, budowa GDExtension na Androida (arm64). Zostaje z modułów A: nic.
 4. **Prototyp tłumu E4** w Godocie: 3 000 postaci (MultiMesh + VAT) i 2 000 budynków; pomiar na Xiaomi 15T Pro w rendererze Mobile. Wymaga szablonów eksportu Android i sposobu dostarczania APK właścicielowi.

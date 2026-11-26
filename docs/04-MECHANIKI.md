@@ -7,7 +7,7 @@ Wcześniejsza wersja tego pliku powstała przed lekturą instrukcji i zawierała
 | System | Specyfikacja | Faza 1 (prototyp) | Faza 2 (vertical slice) | Faza 3 (treści) | Faza 5 (rozszerzenie) |
 |---|---|---|---|---|---|
 | Teren, budowa, drogi, blokady, undo | [01](gameplay/01-podstawy.md) | tak | | | |
-| Chodzicy losowi i celowi | [02](gameplay/02-chodziki.md) | tak | | | |
+| Spacerujący losowi i celowi | [02](gameplay/02-spacerujacy.md) | tak | | | |
 | Domy zwykłe: ewolucja i regres | [03](gameplay/03-mieszkancy.md) | tak | | | |
 | Domy elity | [03](gameplay/03-mieszkancy.md) | | tak | | |
 | Migracja i popularność | [03](gameplay/03-mieszkancy.md), [13](gameplay/13-przeglad-popularnosc.md) | tak | | | |

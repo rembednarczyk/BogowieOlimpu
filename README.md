@@ -12,7 +12,7 @@ Faza 0.5: rozbudowa silnika na Godocie 4. Gotowe: specyfikacja, rdzeń symulacji
 |---|---|
 | [CLAUDE.md](CLAUDE.md) | Zasady pracy w repo dla ludzi i agentów AI, start sesji |
 | [docs/gameplay/](docs/gameplay/README.md) | **Specyfikacja rozgrywki 1:1** z cytatami stron instrukcji, luki w danych |
-| [data/](data/README.md) | Specyfikacja w JSON: budynki, towary, domy, chodzicy, bogowie, potwory, herosi, wojsko, dyplomacja |
+| [data/](data/README.md) | Specyfikacja w JSON: budynki, towary, domy, spacerujący, bogowie, potwory, herosi, wojsko, dyplomacja |
 | [docs/PRAKTYKI.md](docs/PRAKTYKI.md) | Praktyki inżynierskie i procesowe projektu |
 | [docs/00-PLAN.md](docs/00-PLAN.md) | Plan, fazy, ryzyka |
 | [docs/01-WIZJA.md](docs/01-WIZJA.md) | Wizja, filary, cele "AAA" |

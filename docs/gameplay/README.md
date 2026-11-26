@@ -26,7 +26,7 @@ Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści)
 | Plik | Zakres |
 |---|---|
 | [01-podstawy.md](01-podstawy.md) | Teren, budowa, drogi, czas, przygody, epizody, kolonie, warunki porażki |
-| [02-chodziki.md](02-chodziki.md) | Chodziki losowe i celowe, blokady dróg |
+| [02-spacerujacy.md](02-spacerujacy.md) | Spacerujący losowi i celowi, blokady dróg |
 | [03-mieszkancy.md](03-mieszkancy.md) | Domy zwykłe i elity, ewolucja, regres, migracja |
 | [04-zywnosc.md](04-zywnosc.md) | Farmy, sady, hodowla, łowiectwo, rybołówstwo |
 | [05-przemysl-praca.md](05-przemysl-praca.md) | Surowce, warsztaty, płace, zatrudnienie, priorytety |
@@ -41,17 +41,17 @@ Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści)
 | [14-swiat.md](14-swiat.md) | Mapa świata, stany dyplomatyczne, akcje, opinie przywódców |
 | [15-atlantyda.md](15-atlantyda.md) | Dodatek: kultura atlantydzka, nauka, hipodrom, piramidy, nowi bogowie |
 | [16-interfejs-referencyjny.md](16-interfejs-referencyjny.md) | Zakładki, widoki specjalne, ikony problemów, komunikaty, skróty |
-| [17-czas-i-ruch.md](17-czas-i-ruch.md) | Model czasu, prędkości, zasięgi i zachowanie chodzików |
+| [17-czas-i-ruch.md](17-czas-i-ruch.md) | Model czasu, prędkości, zasięgi i zachowanie spacerujących |
 | [18-domy-i-ekonomia-liczby.md](18-domy-i-ekonomia-liczby.md) | Domy (model per trudność), punkty kultury, zużycie, praca, płace, podatki, hipodrom |
 | [19-produkcja-i-logistyka-liczby.md](19-produkcja-i-logistyka-liczby.md) | Tempo produkcji, pojemności, doręczyciele, sady, hodowla, utrzymanie |
 | [20-atrakcyjnosc-i-budynki.md](20-atrakcyjnosc-i-budynki.md) | Algorytm atrakcyjności, ryzyka, rozmiary, koszty |
 | [21-mitologia-liczby.md](21-mitologia-liczby.md) | Sanktuaria, fazy budowy, sanktyfikacja, herosi, zadania |
 | [22-wojsko-liczby.md](22-wojsko-liczby.md) | Statystyki jednostek, wrogowie, okup, rajdy |
 | [23-przygody-i-edytor.md](23-przygody-i-edytor.md) | Struktura przygód, edytor, zdarzenia, cele |
-| [24-algorytmy-silnika.md](24-algorytmy-silnika.md) | Algorytmy z rodziny silnika: chodzik losowy, zanik usług, praca, migracja, ryzyka, walka, handel, opinie |
+| [24-algorytmy-silnika.md](24-algorytmy-silnika.md) | Algorytmy z rodziny silnika: spacerujący losowy, zanik usług, praca, migracja, ryzyka, walka, handel, opinie |
 | [98-konflikty-zrodel.md](98-konflikty-zrodel.md) | Rozbieżności między źródłami i przyjęte wartości |
 | [99-luki.md](99-luki.md) | Dane, których źródła nie podają, ze statusem |
 
 ## Dane maszynowe
 
-Katalog [`/data`](../../data/README.md) zawiera te same informacje w formie JSON: budynki, towary, domy, chodziki, bogowie, potwory, herosi, wojsko, dyplomacja, igrzyska, teren. Dokumenty md są nadrzędne wobec JSON w razie rozbieżności, a rozbieżność to błąd do poprawienia.
+Katalog [`/data`](../../data/README.md) zawiera te same informacje w formie JSON: budynki, towary, domy, spacerujący, bogowie, potwory, herosi, wojsko, dyplomacja, igrzyska, teren. Dokumenty md są nadrzędne wobec JSON w razie rozbieżności, a rozbieżność to błąd do poprawienia.

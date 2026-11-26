@@ -20,22 +20,22 @@ Oznaczenia:
 - Dzień = **51 ticków** (klatek), miesiąc = 16 dni, rok = 12 miesięcy = 192 dni = 9 792 ticki.
   - Akhenaten: komentarz `9792` w kodzie czasu = 51 × 16 × 12; Julius używa 50 ticków na dzień.
   - Zeus Heaven: miesiąc = 16 dni po 51 klatek.
-- Kafel = 15 kroków; chodzik o prędkości standardowej robi 1 krok na tick, czyli 51 × 16 / 15 = **54,4 kafla na miesiąc**. Zgodne z S-004.
+- Kafel = 15 kroków; spacerujący o prędkości standardowej robi 1 krok na tick, czyli 51 × 16 / 15 = **54,4 kafla na miesiąc**. Zgodne z S-004.
 - Systemy miejskie działają raz na dzień, każdy w ustalonym ticku dnia. Kolejność systemów to jedna tablica, zgodnie z `docs/05-SYMULACJA.md`.
 
 Decyzja dla implementacji: tick symulacji = 1 klatka referencyjna; zegar gry liczy dni po 51 ticków. Zamyka L-004 ostatecznie.
 
-## Chodzik losowy (zamyka L-001) [RODZINA]
+## Spacerujący losowy (zamyka L-001) [RODZINA]
 
 ### Start
 
-1. Budynek trzyma licznik kierunku (N, E, S, W). Każdy nowy chodzik dostaje bieżący kierunek, a licznik przesuwa się o 90° zgodnie z zegarem. Wartość początkowa licznika jest losowa dla budynku (z ziarna).
-2. Chodzik wychodzi na kafel drogi przy budynku. Punkt wyjścia: przegląd kafli wokół obrysu **od północy zgodnie z zegarem**; pierwszy kafel drogi (S-004, S-007).
-3. Cel wstępny: punkt 8 kafli od budynku w wybranym kierunku. Najbliższa droga w promieniu 6 kafli od tego punktu staje się celem; chodzik idzie do niej wyznaczoną trasą. Po dotarciu licznik dystansu zeruje się. Jeśli drogi nie ma, od razu przechodzi do swobodnego krążenia.
+1. Budynek trzyma licznik kierunku (N, E, S, W). Każdy nowy spacerujący dostaje bieżący kierunek, a licznik przesuwa się o 90° zgodnie z zegarem. Wartość początkowa licznika jest losowa dla budynku (z ziarna).
+2. Spacerujący wychodzi na kafel drogi przy budynku. Punkt wyjścia: przegląd kafli wokół obrysu **od północy zgodnie z zegarem**; pierwszy kafel drogi (S-004, S-007).
+3. Cel wstępny: punkt 8 kafli od budynku w wybranym kierunku. Najbliższa droga w promieniu 6 kafli od tego punktu staje się celem; spacerujący idzie do niej wyznaczoną trasą. Po dotarciu licznik dystansu zeruje się. Jeśli drogi nie ma, od razu przechodzi do swobodnego krążenia.
 
 ### Decyzja na każdym kaflu (swobodne krążenie)
 
-Na środku kafla chodzik obsługuje okolicę (niżej), potem liczy sąsiednie kafle drogi w 4 kierunkach. **Roadblock i Gatehouse nie liczą się jako droga** dla chodzika losowego.
+Na środku kafla spacerujący obsługuje okolicę (niżej), potem liczy sąsiednie kafle drogi w 4 kierunkach. **Roadblock i Gatehouse nie liczą się jako droga** dla spacerującego losowego.
 
 | Liczba dróg | Zachowanie |
 |---|---|
@@ -45,23 +45,23 @@ Na środku kafla chodzik obsługuje okolicę (niżej), potem liczy sąsiednie ka
 | 3-4 | wybór pseudolosowy: `(licznik_kroków + stały_losowy_bajt_kafla) mod 4` daje kierunek; jeśli to droga i nie kierunek powrotu, bierze go; inaczej zmniejsza licznik nieudanych wyborów i skręca w swoją stronę |
 
 - Stały losowy bajt kafla jest generowany przy tworzeniu mapy (z ziarna). Ruch jest więc deterministyczny, choć wygląda losowo.
-- Po wyczerpaniu licznika nieudanych wyborów (100 po dotarciu do celu wstępnego, potem 5) chodzik **ponownie celuje** w punkt wstępny: szuka najbliższej drogi zgodnie z zegarem i przeciwnie od kierunku do celu; bliższa strona wygrywa, remis na korzyść prawej. To ustawia jego "stronę" skrętu.
-- Szerokie drogi i place: przy 3 drogach i ciągu ≥ 5 kafli drogi wśród 8 sąsiadów chodzik traktuje miejsce jak drogę dwukierunkową wzdłuż kierunku ruchu; przy pełnym otoczeniu drogą idzie prosto. Dotyczy bulwarów i alei.
+- Po wyczerpaniu licznika nieudanych wyborów (100 po dotarciu do celu wstępnego, potem 5) spacerujący **ponownie celuje** w punkt wstępny: szuka najbliższej drogi zgodnie z zegarem i przeciwnie od kierunku do celu; bliższa strona wygrywa, remis na korzyść prawej. To ustawia jego "stronę" skrętu.
+- Szerokie drogi i place: przy 3 drogach i ciągu ≥ 5 kafli drogi wśród 8 sąsiadów spacerujący traktuje miejsce jak drogę dwukierunkową wzdłuż kierunku ruchu; przy pełnym otoczeniu drogą idzie prosto. Dotyczy bulwarów i alei.
 
 ### Zasięg i powrót
 
 - Budżet krążenia liczony w tickach: **384 (≈ 26 kafli), 512 (≈ 34 kafle), 640 (≈ 43 kafle)**. Odpowiada to pomiarom Zeusa 26/34/43 (S-005), które S-004 podaje jako 27/35/44 z kaflem startowym.
-- Po wyczerpaniu budżetu chodzik szuka drogi w promieniu 2 kafli od budynku i wraca najkrótszą drogą, **obsługując domy po drodze**. Bez drogi powrotnej znika.
+- Po wyczerpaniu budżetu spacerujący szuka drogi w promieniu 2 kafli od budynku i wraca najkrótszą drogą, **obsługując domy po drodze**. Bez drogi powrotnej znika.
 - Wyjątek Zeusa: Fountain i Infirmary wracają do kafla na północ od budynku (S-004), co pozwala wydłużyć trasę.
 
-### Wysyłanie chodzików
+### Wysyłanie spacerujących
 
-- Budynek ma naraz tylko jednego chodzika danego typu.
-- Opóźnienie kolejnego chodzika zależy od obsady: pełna obsada najszybciej, potem coraz wolniej (S-006: 3/7/15/29/44 dni przy ≥100/75/50/25/1%; S-007: 0/1/3/7/15 dni). [ZAŁOŻENIE: wariant S-007 jako bliższy Zeusowi.]
+- Budynek ma naraz tylko jednego spacerującego danego typu.
+- Opóźnienie kolejnego spacerującego zależy od obsady: pełna obsada najszybciej, potem coraz wolniej (S-006: 3/7/15/29/44 dni przy ≥100/75/50/25/1%; S-007: 0/1/3/7/15 dni). [ZAŁOŻENIE: wariant S-007 jako bliższy Zeusowi.]
 
 ## Obsługa domów i zanik usług (zamyka L-012b) [RODZINA]
 
-- Na środku każdego kafla chodzik obsługuje **każdy budynek w kwadracie 5×5 (promień 2)** wokół siebie. Duże budynki łapią się z dalszej odległości. Obsługują też chodzicy w drodze do miejsca występu i w drodze powrotnej.
+- Na środku każdego kafla spacerujący obsługuje **każdy budynek w kwadracie 5×5 (promień 2)** wokół siebie. Duże budynki łapią się z dalszej odległości. Obsługują też spacerujący w drodze do miejsca występu i w drodze powrotnej.
 - Wizyta ustawia licznik usługi w domu na **96**; licznik spada o **1 dziennie**, więc usługa trwa **96 dni = 6 miesięcy**. Kolumny w widokach specjalnych to ten licznik.
 - Poborca: licznik 50 dni.
 - Superintendent zeruje ryzyko pożaru i zawalenia wszystkich budynków w kwadracie 5×5; watchman i healer działają analogicznie na ryzyko przestępczości i choroby domu (patrz niżej).
@@ -75,7 +75,7 @@ Na środku kafla chodzik obsługuje okolicę (niżej), potem liczy sąsiednie ka
 - **Pula pracowników**: `populacja × odsetek(trudność, płace)` z tabeli S-004 (identyczna w S-008).
 - **Priorytety**: instrukcja (Z:62) opisuje poziom priorytetu ustawiany strzałkami. Przyjmujemy poziomy z S-008: brak 0, bardzo niski 1, niski 3, umiarkowany 5 (domyślny), wysoki 8, bardzo wysoki 12. [eZeus]
 - **Przydział przy niedoborze** [eZeus]: sektor dostaje `floor(W × max_s × waga_s / Σ(max_i × waga_i))`, nie więcej niż potrzebuje; reszta po jednym według największej części ułamkowej. W sektorze każdy budynek dostaje ten sam ułamek obsady, reszta według części ułamkowych. Wyłączona branża dostaje 0.
-- **Dostęp do pracy**: budynek musi mieć połączenie pieszo z punktem wejścia (S-005). Rodzina silnika wymaga dodatkowo, by budynek był w zasięgu "poszukiwacza pracy"; Zeus go nie ma (brak takiego chodzika w S-004).
+- **Dostęp do pracy**: budynek musi mieć połączenie pieszo z punktem wejścia (S-005). Rodzina silnika wymaga dodatkowo, by budynek był w zasięgu "poszukiwacza pracy"; Zeus go nie ma (brak takiego spacerującego w S-004).
 - **Wydajność rośnie liniowo z obsadą** [RODZINA]: postęp produkcji rośnie dziennie o liczbę pracowników; tempo z `data/production.json` dotyczy pełnej obsady.
 
 ## Nastroje i migracja (zamyka L-017, częściowo L-018) [RODZINA + S-004]

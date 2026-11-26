@@ -50,6 +50,6 @@ Rozwinięcie wszystkich pozycji plus migracja, produkcja żywności, kultura, wy
 
 ## Narzędzia
 
-- **See Problems**: tylko budynki i chodzicy z problemem, z ikonami (lista w [16](16-interfejs-referencyjny.md)).
+- **See Problems**: tylko budynki i spacerujący z problemem, z ikonami (lista w [16](16-interfejs-referencyjny.md)).
 - **See Roads**: sieć dróg.
 - **Overview Map**: mapa z lotu ptaka z prostokątem widoku.

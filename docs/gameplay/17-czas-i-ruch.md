@@ -1,4 +1,4 @@
-# 17. Czas, ruch i chodzicy: liczby
+# 17. Czas, ruch i spacerujący: liczby
 
 Źródła: S-004 (Zeus Heaven, strony `units`, `trivia`), S-005 (wątek "Ok Folks - Let's Crunch Numbers", pomiary Nero Would i Caesar Alan; dane z plików `figure_model` gry). Dane: `data/walkers.json`.
 
@@ -12,7 +12,7 @@
 | Rok | 12 miesięcy = 384 e-dni | S-005 |
 | Kafel | 15 "kroków" | S-005 |
 
-Chodzik o prędkości standardowej robi 1 krok na klatkę: 51/15 = 3,4 kafla na dzień roboczy = **54,4 kafla na miesiąc**.
+Spacerujący o prędkości standardowej robi 1 krok na klatkę: 51/15 = 3,4 kafla na dzień roboczy = **54,4 kafla na miesiąc**.
 
 Wniosek dla implementacji (L-004): naturalny tick symulacji to **1 klatka referencyjna**, czyli 816 ticków na miesiąc. Prędkość gry skaluje liczbę ticków na sekundę. Decyzja w `docs/05-SYMULACJA.md` po prototypie.
 
@@ -49,9 +49,9 @@ Implementujemy tablicę indeksów, bez wzoru.
 
 Prędkości są takie same na każdym poziomie trudności.
 
-## Zasięgi chodzików losowych (S-004)
+## Zasięgi spacerujących losowych (S-004)
 
-| Budynek | Chodzik | Kafle |
+| Budynek | Spacerujący | Kafle |
 |---|---|---|
 | Fountain | water bearer | 27 |
 | Infirmary | healer | 27 |
@@ -64,7 +64,7 @@ Prędkości są takie same na każdym poziomie trudności.
 
 Pomiar forum podaje wartości o 1 mniejsze (26/34/43), bo nie liczy kafla startowego. Przyjmujemy S-004 i liczymy kafel startowy (K-008).
 
-## Zachowanie chodzika losowego
+## Zachowanie spacerującego losowego
 
 1. Wychodzi z budynku na drogę i idzie, dopóki nie przejdzie limitu kafli albo nie natrafi na Roadblock lub koniec drogi.
 2. Po przekroczeniu limitu wraca **najkrótszą drogą** do budynku.
@@ -74,14 +74,14 @@ Pomiar forum podaje wartości o 1 mniejsze (26/34/43), bo nie liczy kafla starto
 
 ## Punkt wyjścia z budynku (S-004)
 
-- Chodzik wychodzi na kafel drogi przylegający do budynku. Gdy kilka kafli przylega, gra szuka **od kafla na północ od budynku zgodnie z ruchem wskazówek zegara**; pierwszy znaleziony kafel to punkt wyjścia i powrotu.
-- **Wyjątek: Fountain i Infirmary.** Ich chodzicy wracają zawsze do kafla bezpośrednio na północ od budynku, który nie przylega do budynku. Odcinek drogi między wyjściem a tym kaflem nosiwoda przejdzie w całości, więc da się wydłużyć efektywną trasę ponad 27 kafli. To mechanika 1:1 (wykorzystywana przez graczy).
+- Spacerujący wychodzi na kafel drogi przylegający do budynku. Gdy kilka kafli przylega, gra szuka **od kafla na północ od budynku zgodnie z ruchem wskazówek zegara**; pierwszy znaleziony kafel to punkt wyjścia i powrotu.
+- **Wyjątek: Fountain i Infirmary.** Ich spacerujący wracają zawsze do kafla bezpośrednio na północ od budynku, który nie przylega do budynku. Odcinek drogi między wyjściem a tym kaflem nosiwoda przejdzie w całości, więc da się wydłużyć efektywną trasę ponad 27 kafli. To mechanika 1:1 (wykorzystywana przez graczy).
 - Bóg po przybyciu do sanktuarium pojawia się na najbliższej drodze, szukając od NE zgodnie z zegarem, w promieniu ok. 10 kafli (S-004 trivia); według forum w promieniu 7 kafli na drodze o najwyższej atrakcyjności (K-022, niepotwierdzone).
 
-## Chodzicy celowi i doręczyciele
+## Spacerujący celowi i doręczyciele
 
 - Doręczyciel budynku produkcyjnego niesie **1 ładunek**; doręczyciel Storehouse, Granary i budynku handlowego **4 ładunki** (rzeźba zawsze 1).
-- Chodzik celowy, który wyruszył, zawsze dochodzi do celu. Gdy cel zniknie, idzie do jego miejsca i szuka nowego celu albo wraca. Gdy budynek źródłowy zniknie, doręczyciel kończy dostawę i znika; jeśli nie ma celu, znika od razu z ładunkiem (S-005, JonN).
+- Spacerujący celowy, który wyruszył, zawsze dochodzi do celu. Gdy cel zniknie, idzie do jego miejsca i szuka nowego celu albo wraca. Gdy budynek źródłowy zniknie, doręczyciel kończy dostawę i znika; jeśli nie ma celu, znika od razu z ładunkiem (S-005, JonN).
 - Doręczyciel z rozkazem Get może iść na przełaj; inne idą drogami.
 - Food vendor sięga do Granary w odległości do 37 kafli w linii prostej (S-005).
 - Hostler z Chariot Factory szuka koni do 44 kafli; handler hipodromu idzie przez całą mapę (S-005).

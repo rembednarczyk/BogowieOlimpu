@@ -93,16 +93,16 @@ Wrogi bóg atakuje osobiście albo, gdy jest zajęty, wysyła potwora. Ponadto "
 |---|---|
 | Zeus | niszczy Palace, potem inne budynki; potrafi rzucić klątwę każdego boga; **kupcy nie przybywają do przeklętego miasta** |
 | Poseidon | Trireme Wharf, Urchin Quay, Fishery przeklęte (nieczynne do zdjęcia klątwy); statki handlowe nie przypływają, dopóki jest w mieście |
-| Hades | **wszyscy chodzicy w mieście trafiają do podziemi** (puste ulice); przeklina Foundry i Mint |
+| Hades | **wszyscy spacerujący w mieście trafiają do podziemi** (puste ulice); przeklina Foundry i Mint |
 | Demeter | niszczy uprawy, zabija owce i kozy |
 | Athena | zostawia Walls i Towers bez obsady; niszczy przemysł oliwny |
 | Artemis | pełny atak jej i Amazonek; zabija myśliwych; wzmacnia watahy wilków |
 | Apollo | zaraza; kultura przestaje działać na domy; (dodatek) przeklina budynki nauki |
 | Ares | wkracza z armią Sparti |
 | Hephaestus | podpala budynki; metal w Sculpture Studio i Armory staje się bezużyteczny |
-| Aphrodite | chodzicy i część mieszkańców odchodzą za nią z miasta |
+| Aphrodite | spacerujący i część mieszkańców odchodzą za nią z miasta |
 | Hermes | kradnie pieniądze; drogi niebezpieczne dla karawan |
-| Dionysus | zabiera chodziców z ulic; przeklina winorośle |
+| Dionysus | zabiera spacerujących z ulic; przeklina winorośle |
 | Hera (P) | "dziwne rzeczy z ludźmi" [NIEJASNE]; zabija połowę bydła; niszczy uprawy pomarańczy; obniża opinię wszystkich przywódców o graczu |
 | Atlas (P) | zamienia w kamień ludzi na swojej drodze; przeklina Masonry Shop i Black Marble Workshop (niszczy marmur na miejscu, wstrzymuje dostawy); przeklina Artisans' Guild (pracujący rzemieślnik ginie, reszta zostaje w gildii) |
 

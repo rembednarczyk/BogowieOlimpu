@@ -4,7 +4,7 @@ Bogowie Olimpu jest grą z tego samego gatunku co Zeus: Pan Olimpu i dodatek Pos
 
 ## Przejmujemy (mechaniki i zasady gatunku)
 
-- Siatka kafli, drogi, chodziki losowe i celowe, zasięgi obsługi.
+- Siatka kafli, drogi, spacerujący losowi i celowe, zasięgi obsługi.
 - Ewolucja domów zależna od zaspokojenia potrzeb i atrakcyjności otoczenia.
 - Podział na zwykłych mieszkańców i elitę.
 - Łańcuchy produkcji, magazyny, rynek dystrybuujący towary do domów.

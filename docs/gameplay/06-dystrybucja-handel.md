@@ -52,7 +52,7 @@ Rozkazy Get i Empty działają tylko przy pełnej obsadzie (Z:68).
 | Horse Trainer's Stall | **bezpośrednio z Horse Ranch** | koni nie da się przechowywać |
 | Chariot Vendor's Stall (dodatek) | bezpośrednio z Chariot Factory | |
 
-- Po powrocie vendora z Agory wychodzi **peddler** (chodzik losowy), który sprzedaje domom na trasie potrzebne dobra, jeśli Agora je ma.
+- Po powrocie vendora z Agory wychodzi **peddler** (spacerujący losowy), który sprzedaje domom na trasie potrzebne dobra, jeśli Agora je ma.
 - **Agora jest prywatna: miasto nie zarabia na sprzedaży** (Z:73).
 
 ### Statusy towaru w panelu Agory

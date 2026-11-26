@@ -10,9 +10,9 @@ Stan: **referencja 1:1** z instrukcji (S-001, S-002) uzupełniona liczbami z S-0
 |---|---|
 | `terrain.json` | typy terenu i złoża |
 | `goods.json` | towary: gdzie składowane, kto produkuje, kto zużywa, czy handlowe |
-| `buildings.json` | wszystkie budynki: kategoria, kultura, wymagania, wejścia, wyjścia, priorytety dostaw, chodzicy, wpływ na atrakcyjność, sanktyfikacja |
+| `buildings.json` | wszystkie budynki: kategoria, kultura, wymagania, wejścia, wyjścia, priorytety dostaw, spacerujący, wpływ na atrakcyjność, sanktyfikacja |
 | `housing.json` | poziomy domów zwykłych i elity: wymagania, regres, służba wojskowa |
-| `walkers.json` | chodzicy: typ (losowy, celowy, dwufazowy), budynek źródłowy |
+| `walkers.json` | spacerujący: typ (losowy, celowy, dwufazowy), budynek źródłowy |
 | `gods.json` | bogowie: ranga, sanktuarium, korzyści, sanktyfikacja, modlitwa, gniew, potwór |
 | `monsters.json` | potwory: pan, heros-pogromca |
 | `heroes.json` | herosi: potwory, wymagania znane z instrukcji |

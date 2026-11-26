@@ -48,7 +48,7 @@ Histereza atrakcyjności (AppD < AppE) jest kluczowa: dom awansuje przy AppE, co
 
 Dom zbiera punkty od wykonawców, którzy go minęli niedawno. Suma musi osiągnąć Ent poziomu.
 
-| Chodzik | Punkty |
+| Spacerujący | Punkty |
 |---|---|
 | filozof (Podium) | 15 |
 | atleta (Gymnasium) | 20 |

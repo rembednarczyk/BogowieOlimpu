@@ -2,7 +2,7 @@
 
 Decyzja właściciela (2026-11-26): **Godot 4**. Assety robimy i przerabiamy w **Blenderze w kontenerze**. **Przed treścią gry rozbudowujemy silnik pod założenia** ze specyfikacji (`docs/gameplay/`, `data/`) i praktyk (`docs/PRAKTYKI.md`).
 
-Zakres "rozbudowy silnika" (potwierdzony przez właściciela 2026-11-26): budujemy warstwę silnika gry na Godocie, czyli moduły ogólne, z których potem złożymy grę: symulację, logistykę, chodziców, renderowanie tłumu, nakładki, narzędzia i potok assetów. Godota nie forkujemy, dopóki pomiar nie pokaże, że rozszerzenie (GDExtension) nie wystarcza.
+Zakres "rozbudowy silnika" (potwierdzony przez właściciela 2026-11-26): budujemy warstwę silnika gry na Godocie, czyli moduły ogólne, z których potem złożymy grę: symulację, logistykę, spacerujących, renderowanie tłumu, nakładki, narzędzia i potok assetów. Godota nie forkujemy, dopóki pomiar nie pokaże, że rozszerzenie (GDExtension) nie wystarcza.
 
 ## Środowisko w kontenerze (sprawdzone 2026-11-26)
 
@@ -37,7 +37,7 @@ assets/      wynik potoku Blendera (.glb, tekstury, animacje)   ◄── skrypt
 
 Język rdzenia (decyzja 2026-11-26): **C++17 jako samodzielna biblioteka**, podpięta przez GDExtension. Powody:
 - determinizm: arytmetyka stałoprzecinkowa i jawna kolejność bez zależności od maszyny wirtualnej skryptów;
-- wydajność dla tysięcy chodzików na telefonie;
+- wydajność dla tysięcy spacerujących na telefonie;
 - testy rdzenia działają natywnie w kontenerze, bez uruchamiania Godota (zasada "logika bez renderera");
 - działa tak samo na Androidzie, iOS i PC; C# w Godocie ma słabsze wsparcie mobilne.
 
@@ -68,8 +68,8 @@ Stan: moduły A1-A6 zaimplementowane w `core/`, 21 przypadków testowych, złoty
 | B2 Budowa | obrysy, walidacja (droga, łąka, brzeg), obrót, koszt per trudność, undo | doc 01, 20, `building_stats.json` |
 | B3 Graf dróg | drogi, Roadblock, aleje, bulwary, przeprawy i mosty, dostęp do budynku (od północy zgodnie z zegarem) | doc 17, 24 |
 | B4 Ścieżki | A* z remisami po numerze kafla, mapy odległości do magazynów, ruch na przełaj | doc 24 |
-| B5 Chodzik losowy | algorytm rodziny silnika, budżety 384/512/640 ticków, wyjątek fontanny | doc 24 |
-| B6 Chodzicy celowi | doręczyciele, vendorzy, wozy, pasterze, myśliwi, rybacy | doc 02, 19 |
+| B5 Spacerujący losowy | algorytm rodziny silnika, budżety 384/512/640 ticków, wyjątek fontanny | doc 24 |
+| B6 Spacerujący celowi | doręczyciele, vendorzy, wozy, pasterze, myśliwi, rybacy | doc 02, 19 |
 | B7 Indeks przestrzenny | obsługa w kwadracie 5×5, zapytania o budynki w promieniu | doc 24 |
 
 ### C. Systemy miasta

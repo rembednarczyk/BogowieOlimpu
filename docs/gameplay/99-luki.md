@@ -8,8 +8,8 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 
 | ID | Luka | P | Status |
 |---|---|---|---|
-| L-001 | Wybór kierunku chodzika losowego na skrzyżowaniu | P0 | zamknięta [RODZINA]: doc 24 |
-| L-002 | Zasięgi chodzików losowych | P0 | zamknięta: S-004, doc 17 |
+| L-001 | Wybór kierunku spacerującego losowego na skrzyżowaniu | P0 | zamknięta [RODZINA]: doc 24 |
+| L-002 | Zasięgi spacerujących losowych | P0 | zamknięta: S-004, doc 17 |
 | L-003 | Prędkości | P0 | zamknięta: S-004, S-005, doc 17 |
 | L-004 | Model czasu | P0 | zamknięta: 51 ticków/dzień, 16 dni/miesiąc, kafel = 15 kroków (S-005, S-007), doc 17, 24 |
 | L-005 | Rozmiary budynków | P0 | zamknięta: `building_stats.json` |
@@ -101,4 +101,4 @@ Aktualizacja 2026-11-26 po S-004, S-005 (Zeus Heaven, forum) oraz S-006..S-008 (
 - Pliki modelu gry (`figure_model`, pliki tekstowe w katalogu `Model`) albo ich opisy: rozstrzygną L-001, L-008, L-017, L-052, L-057b, L-062.
 - Instrukcja edytora przygód (PDF z płyty).
 - Strona Pecunii o narzędziach i formatach plików (link z ZeusMapper; obecnie niedostępna z tego środowiska).
-- Reimplementacje gier z tej rodziny (Julius/Augustus, Akhenaten) jako źródło wiedzy o algorytmie chodzików (GPL, tylko do lektury).
+- Reimplementacje gier z tej rodziny (Julius/Augustus, Akhenaten) jako źródło wiedzy o algorytmie spacerujących (GPL, tylko do lektury).

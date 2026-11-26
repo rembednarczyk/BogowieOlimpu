@@ -8,7 +8,7 @@
 
 ### Infirmary
 
-- Droga wymagana. Wysyła healerów (chodzik losowy).
+- Droga wymagana. Wysyła healerów (spacerujący losowy).
 - Ludzie chcą być w zasięgu healera, ale **nie chcą mieszkać tuż obok** (ujemna atrakcyjność na bliskim dystansie).
 
 ### Zaraza (Z:85)
@@ -64,7 +64,7 @@ Kolumna przed domem = szansa na spisek przestępczy. Przejście watchmana obniż
 ## Woda (Z:91-92)
 
 - Domy zwykłe potrzebują wody z **Fountain**, by ewoluować (od poziomu Hovel). Domy elity mają własne źródło.
-- Fountain (droga) wysyła **water bearers** (chodzik losowy).
+- Fountain (droga) wysyła **water bearers** (spacerujący losowy).
 - Widok See Water: niebieska kolumna przed domem = jak niedawno był nosiwoda.
 
 ## Panel bezpieczeństwa

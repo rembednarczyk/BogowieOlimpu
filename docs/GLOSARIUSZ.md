@@ -2,10 +2,10 @@
 
 | Termin | Znaczenie |
 |---|---|
-| Chodzik | Postać poruszająca się po drogach i wykonująca zadanie budynku, z którego wyszła. |
-| Chodzik losowy | Chodzik bez celu, który obsługuje budynki mijane po drodze (np. nosiciel wody, sprzedawca z rynku). |
-| Chodzik celowy | Chodzik zmierzający do konkretnego budynku (np. tragarz z towarem do magazynu). |
-| Zasięg obsługi | Odległość od chodzika, w której budynek zostaje obsłużony. |
+| Spacerujący | Postać poruszająca się po drogach i wykonująca zadanie budynku, z którego wyszła. |
+| Spacerujący losowy | Spacerujący bez celu, który obsługuje budynki mijane po drodze (np. nosiciel wody, sprzedawca z rynku). |
+| Spacerujący celowy | Spacerujący zmierzający do konkretnego budynku (np. tragarz z towarem do magazynu). |
+| Zasięg obsługi | Odległość od spacerującego, w której budynek zostaje obsłużony. |
 | Ewolucja domu | Awans domu na wyższy poziom po spełnieniu wymagań; regres przy ich utracie. |
 | Elita | Zamożni mieszkańcy rezydencji, źródło ciężkich jednostek wojskowych. |
 | Atrakcyjność | Wartość kafla wynikająca z sąsiedztwa budynków, ozdób i terenu, wymagana przez wyższe poziomy domów. |

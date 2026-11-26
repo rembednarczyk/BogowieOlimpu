@@ -26,6 +26,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Proces
 
+### 2026-11-26: Termin "spacerujący" zamiast "chodzik"
+- Decyzja: postacie wykonujące zadania budynków (ang. walkers) nazywamy w dokumentacji "spacerujący" (losowy, celowy, dwufazowy). W kodzie zostaje angielskie `walker`.
+- Cytat właściciela: "termin chodzicy zamień na spacerujący".
+- Wdrożone: wszystkie dokumenty i komentarze; plik `docs/gameplay/02-chodziki.md` przemianowany na `02-spacerujacy.md`.
+
 ### 2026-11-26: Zeus Heaven jako źródło liczb (S-004, S-005)
 - Decyzja: dane liczbowe i algorytmy uzupełniamy z portalu Zeus Heaven i wskazanych przez niego wątków forum; konflikty rozstrzyga hierarchia R-012.
 - Cytat właściciela: "Tutaj masz kilka linków z wiedzą o grze, na ich podstawie uzupełnij wiedzę. Przeskanuj też cały portal w poszukiwaniu brakującej wiedzy."

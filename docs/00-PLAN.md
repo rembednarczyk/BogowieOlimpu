@@ -29,7 +29,7 @@ Kryterium wyjścia: rdzeń w C++ z testami i złotym hashem, GDExtension działa
 Cel: udowodnić, że rdzeń symulacji działa i daje dobrą rozgrywkę.
 
 - Siatka kafli, drogi, budowa i wyburzanie.
-- Chodziki losowe i celowe, wyszukiwanie ścieżek.
+- Spacerujący losowi i celowe, wyszukiwanie ścieżek.
 - Domy z ewolucją poziomów, populacja, zatrudnienie.
 - Łańcuch żywności: farma, magazyn zboża, agora, dom.
 - Jeden łańcuch przemysłowy i handel z jednym miastem.
@@ -74,7 +74,7 @@ Kryterium wyjścia: 30 minut grania na telefonie średniej klasy przy 60 FPS (ce
 | Ryzyko | Skutek | Środek zaradczy |
 |---|---|---|
 | Złożony UI citybuildera na małym ekranie | Gra niegrywalna na telefonie | Prototyp UX w fazie 1 równolegle z symulacją, testy na 6" ekranie |
-| Tysiące chodzików i budynków na mobilnym CPU/GPU | Spadki FPS, grzanie telefonu | Symulacja w ECS/danych, LOD, budżety z `07-TECHNOLOGIA.md` |
+| Tysiące spacerujących i budynków na mobilnym CPU/GPU | Spadki FPS, grzanie telefonu | Symulacja w ECS/danych, LOD, budżety z `07-TECHNOLOGIA.md` |
 | Zbyt bliskie odwzorowanie gry referencyjnej | Ryzyko prawne, brak tożsamości | Granice z `02-ORYGINALNOSC.md`, przegląd nazw i grafik |
 | Rozrost zakresu "AAA" | Projekt nigdy się nie kończy | Definicja AAA z `01-WIZJA.md`, priorytety MVP / v1 / później |
 | Determinizm psuje się przy optymalizacji | Rozjazd zapisów, błędy trudne do odtworzenia | Testy powtarzalności w CI od fazy 1 |

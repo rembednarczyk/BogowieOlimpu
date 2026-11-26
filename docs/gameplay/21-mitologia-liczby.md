@@ -51,7 +51,7 @@ Materiały jadą tylko drogą z magazynu lub budynku handlowego połączonego z 
 ### Gniew: uzupełnienia S-004
 
 - Poseidon: niszczy też Fishery, Urchin Quay, Piery i statki; zatrzymuje handel morski.
-- Hades: przeklina też Palace; zabija wszystkich chodziców.
+- Hades: przeklina też Palace; zabija wszystkich spacerujących.
 - Hera: zamienia ludzi w krowy; przeklina Corral.
 - Apollo: przeklina też Infirmary.
 - Hermes: zatrzymuje handel lądowy.

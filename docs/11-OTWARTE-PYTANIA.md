@@ -12,7 +12,7 @@ Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzj
 
 ## Rozgrywka
 
-6. ~~Jak wiernie odwzorowujemy chodzików losowych?~~ Rozstrzygnięte: 1:1 (R-001). Algorytm to luka L-001.
+6. ~~Jak wiernie odwzorowujemy spacerujących losowych?~~ Rozstrzygnięte: 1:1 (R-001). Algorytm to luka L-001.
 7. Kamera: obrót co 90° jak w referencji czy swobodny? Rekomendacja: obrót co 90° plus płynny zoom (zgodność z czytelnością siatki), swobodny obrót do sprawdzenia w prototypie.
 8. ~~Przenoszenie dorobku między epizodami?~~ Rozstrzygnięte: 1:1, miasto macierzyste zamrożone podczas kolonizacji (Z:17).
 9. Tryb łagodny (bez klęsk i gniewu bogów). Rekomendacja: później, jako rozbudowa; referencja ma ustawienie trudności (L-091).
