@@ -131,3 +131,11 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Wpływ na: `data/difficulty.json`, testy, audyty.
 - Historia: 2026-11-26 utworzona
 
+### R-014 [PROCES] Algorytmy spoza źródeł Zeusa
+- Status: propozycja
+- Źródło: lektura S-006 (Julius), S-007 (Akhenaten), S-008 (eZeus), 2026-11-26
+- Treść: Gdy S-001..S-005 nie opisują algorytmu, przyjmujemy rozwiązanie rodziny silnika potwierdzone w S-006 i S-007, o ile nie przeczy pomiarom Zeusa. Gdy rodzina milczy, przyjmujemy rozwiązanie S-008 jako założenie robocze. Oznaczenia [RODZINA] i [eZeus] w `docs/gameplay/24-algorytmy-silnika.md`. Kodu tych projektów nie kopiujemy (GPL/AGPL).
+- Uzasadnienie: S-006 i S-007 wiernie odtwarzają poprzedników Zeusa na tym samym silniku; ich wartości pokrywają się z pomiarami Zeusa (czas, prędkości, zasięgi). S-008 czyta z oryginału tylko scenariusze, reguły symulacji ustala autor.
+- Wpływ na: `docs/gameplay/24-algorytmy-silnika.md`, `data/`.
+- Historia: 2026-11-26 utworzona
+

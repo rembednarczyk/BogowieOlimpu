@@ -10,6 +10,7 @@ Ten katalog opisuje mechaniki gry referencyjnej i dodatku tak, jak przedstawiaj�
 | `P:nn` | S-002, instrukcja dodatku (Poseidon), strona drukowana `nn` |
 | `S-004` | portal Zeus Heaven (zeus.heavengames.com): tabele modelu gry, pomiary |
 | `S-005` | wątki forum City Builders z pomiarami społeczności |
+| `S-006`, `S-007`, `S-008` | reimplementacje: Julius (Caesar III), Akhenaten (Pharaoh), eZeus (Zeus) |
 
 Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści).
 
@@ -47,6 +48,7 @@ Strony podajemy według numeracji drukowanej w instrukcji (tej ze spisu treści)
 | [21-mitologia-liczby.md](21-mitologia-liczby.md) | Sanktuaria, fazy budowy, sanktyfikacja, herosi, zadania |
 | [22-wojsko-liczby.md](22-wojsko-liczby.md) | Statystyki jednostek, wrogowie, okup, rajdy |
 | [23-przygody-i-edytor.md](23-przygody-i-edytor.md) | Struktura przygód, edytor, zdarzenia, cele |
+| [24-algorytmy-silnika.md](24-algorytmy-silnika.md) | Algorytmy z rodziny silnika: chodzik losowy, zanik usług, praca, migracja, ryzyka, walka, handel, opinie |
 | [98-konflikty-zrodel.md](98-konflikty-zrodel.md) | Rozbieżności między źródłami i przyjęte wartości |
 | [99-luki.md](99-luki.md) | Dane, których źródła nie podają, ze statusem |
 

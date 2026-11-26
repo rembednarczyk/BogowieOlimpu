@@ -61,6 +61,28 @@ Materiały chronione prawem autorskim (instrukcje, zrzuty z gry referencyjnej) t
 - Wiarygodność: średnia (pomiary graczy, część na wersji 1.0 gry; rozbieżności w 98-konflikty).
 - Wydestylowane: `docs/gameplay/17`, `19`, `21`, `23`; `data/production.json`, `logistics.json`.
 
+### S-006: Julius (reimplementacja Caesar III)
+- Typ: kod źródłowy, https://github.com/bvschaik/julius (AGPL), klon tylko do odczytu.
+- Dostarczone: 2026-11-26 (wskazane przez właściciela).
+- Zakres: algorytm chodzika losowego, zasięgi w tickach, obsługa i zanik usług, praca, nastroje, migracja, pożary i zawalenia, zdrowie, przestępczość, ewolucja domów, walka, handel, czas gry.
+- Wiarygodność: wysoka dla Caesar III; dla Zeusa pośrednia (ta sama rodzina silnika), potwierdzona zgodnością liczb z S-004 i S-005.
+- Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, R-014.
+- Notatki: wartości per poziom domu Julius ładuje z plików oryginału (`c3_model.txt`), więc nie ma ich w repo.
+
+### S-007: Akhenaten (reimplementacja Pharaoh)
+- Typ: kod źródłowy, https://github.com/dalerank/akhenaten (GPL), klon tylko do odczytu; oryginalne zachowania oznaczone `// OG`, wartości w `src/scripts/**/*.js`.
+- Dostarczone: 2026-11-26 (wskazane przez właściciela).
+- Zakres: jak S-006, plus nastroje bogów, budowa monumentów fazami, punkt wyjścia z budynku, 51 ticków na dzień.
+- Wiarygodność: wysoka dla zachowań `// OG`; niska dla opcji remake i miejsc oznaczonych TODO (np. przestępczość, malaria).
+- Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, R-014.
+
+### S-008: eZeus (reimplementacja Zeusa i Posejdona)
+- Typ: kod źródłowy, https://github.com/MaurycyLiebner/eZeus (GPL-3), klon tylko do odczytu.
+- Dostarczone: 2026-11-26 (wskazane przez właściciela).
+- Zakres: z oryginału czyta scenariusze (zdarzenia, cele, dozwolone budynki, fundusze), mapy świata (towary i roczne ilości, siła militarna 1-6, bogactwo, początkowa opinia, trybut) i teksty. Reguły symulacji i stałe czasowe (`enumbers.cpp`) ustala autor; część tabel (koszty, ryzyka, pracownicy, ceny, płace, herosi) wygląda na przepisaną z oryginału.
+- Wiarygodność: wysoka dla danych scenariusza i nazw sektorów pracy; niska dla reguł symulacji (README projektu: "not an exact copy"; znalezione błędy w zaniku wody i kultury).
+- Wydestylowane: `docs/gameplay/24-algorytmy-silnika.md`, inwentarz assetów, weryfikacja danych.
+
 ## Kandydaci na kolejne źródła
 
 Potrzebne do zamknięcia pozostałych luk P0 (`docs/gameplay/99-luki.md`: L-001, L-008, L-012b, L-017):
