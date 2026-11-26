@@ -44,6 +44,45 @@ struct HouseState {
     }
 };
 
+// Storage orders (Z:66-69). Stored in saves: append only.
+enum class StorageOrderKind : std::uint8_t { Accept = 0, Get, Empty, DontAccept };
+
+struct StorageOrder {
+    StorageOrderKind kind = StorageOrderKind::Accept;
+    std::uint32_t limit = 32;  // loads (Accept and Get)
+    friend bool operator==(const StorageOrder& a, const StorageOrder& b) {
+        return a.kind == b.kind && a.limit == b.limit;
+    }
+};
+
+// Granary and Storehouse (module C5): stock in loads, orders per good (missing entry = default order).
+struct StorageState {
+    std::map<std::string, std::uint32_t> loads;
+    std::map<std::string, StorageOrder> orders;
+    friend bool operator==(const StorageState& a, const StorageState& b) {
+        return a.loads == b.loads && a.orders == b.orders;
+    }
+};
+
+// Producer (module C4): yearly progress, finished loads waiting for the deliveryman.
+struct ProducerState {
+    std::uint32_t progress = 0;      // farms: 8 x staffing percent per day, harvest at the harvest month
+    std::uint32_t output_loads = 0;  // finished loads at the building
+    WalkerId deliveryman = kNoWalker;
+    friend bool operator==(const ProducerState& a, const ProducerState& b) {
+        return a.progress == b.progress && a.output_loads == b.output_loads && a.deliveryman == b.deliveryman;
+    }
+};
+
+// Agora stall (module C5): goods in units (100 per load) and its vendor.
+struct StallState {
+    std::map<std::string, std::uint32_t> units;
+    WalkerId vendor = kNoWalker;
+    friend bool operator==(const StallState& a, const StallState& b) {
+        return a.units == b.units && a.vendor == b.vendor;
+    }
+};
+
 // How a building relates to roads under it.
 enum class RoadMode : std::uint8_t {
     None = 0,
@@ -65,6 +104,9 @@ struct Building {
     std::vector<TilePos> slot_origins;  // agora: north-west corners of the 2x2 stall slots
     std::vector<BuildingId> slots;      // agora: stall per slot (kNoBuilding = free)
     std::optional<HouseState> house;    // houses only
+    std::optional<StorageState> storage;    // Granary, Storehouse
+    std::optional<ProducerState> producer;  // buildings with outputs
+    std::optional<StallState> stall;        // agora stalls
     std::optional<TilePos> road_access;   // exit and entry tile (recomputed on every road or building change)
     std::uint8_t staffing_percent = 100;  // set daily by the labour module (C3)
     std::uint32_t workers = 0;            // assigned by the labour module (C3)

@@ -63,8 +63,16 @@ struct SetIndustryEnabled {
     bool enabled = true;
 };
 
+// Granary or Storehouse order for one good (Z:66-69). kind: 0 Accept, 1 Get, 2 Empty, 3 Don't Accept.
+struct SetStorageOrder {
+    std::uint32_t building = 0;
+    std::string good;
+    std::uint8_t kind = 0;
+    std::uint32_t limit = 32;  // loads
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
-                             Undo, SetSectorPriority, SetIndustryEnabled>;
+                             Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

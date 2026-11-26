@@ -270,8 +270,13 @@ WalkerId spawn_destination_walker(CityState& city, WalkerStore& walkers, const D
     return id;
 }
 
+void send_home(CityState& city, Walker& w) {
+    w.step_accum_raw = 0;
+    start_return(city, w);
+}
+
 void step_walker(CityState& city, Walker& w) {
-    if (w.phase == WalkerPhase::Done) {
+    if (w.phase == WalkerPhase::Done || w.phase == WalkerPhase::AtTarget) {
         return;
     }
     if (w.phase == WalkerPhase::Roaming) {
@@ -302,14 +307,21 @@ void step_walker(CityState& city, Walker& w) {
                 enter_tile(city, w, step(w.tile, w.dir));
                 break;
             case WalkerPhase::Returning:
-            case WalkerPhase::Routed:
                 follow_path(city, w);
                 if (w.path_pos >= w.path.size()) {
                     w.phase = WalkerPhase::Done;
                 }
                 break;
-            case WalkerPhase::Done:
+            case WalkerPhase::Routed:
+                follow_path(city, w);
+                if (w.path_pos >= w.path.size()) {
+                    w.phase = w.job == WalkerJob::None ? WalkerPhase::Done : WalkerPhase::AtTarget;
+                }
                 break;
+            case WalkerPhase::Done:
+            case WalkerPhase::AtTarget:
+                w.step_accum_raw = 0;
+                return;
         }
     }
 }

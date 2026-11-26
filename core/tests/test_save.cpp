@@ -95,11 +95,12 @@ void check_load(std::vector<std::uint8_t> bytes, std::uint8_t version, std::uint
 
 }  // namespace
 
-TEST_CASE("older saves (v1-v5) migrate to the current format") {
+TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const auto current = a.save();
     const std::uint64_t h = a.state_hash();
+    check_load(current, 6, h);  // v7 adds only per-building and per-walker blocks
     auto v5 = current;
     cut(v5, kWalkersBlock + kFinance, kMigration);
     check_load(v5, 5, h);

@@ -5,6 +5,8 @@
 #include <iterator>
 #include <set>
 
+#include "bo/core/storage.h"
+
 namespace bo::core {
 namespace {
 
@@ -45,9 +47,12 @@ BuildResult place_ordinary(CityState& city, Building b, bool needs_meadow, bool 
     return r;
 }
 
-// Elite plots need goods in city storage (doc 18: 2 loads of food, 1 fleece, 1 olive oil). Storage arrives
-// with module C5; until then the city holds no stock, so elite plots are refused.
-bool elite_site_ok(const CityState&) { return false; }
+// Elite plots need goods in city storage (doc 18, logistics.json: 2 loads of food, 1 fleece, 1 olive oil).
+// The site conditions "culture access" and "high appeal" (Z:32) are checked when the house is lived in.
+bool elite_site_ok(const CityState& city, const DataCatalog& catalog) {
+    return city_stock(city, catalog, "food") >= 2 && city_stock(city, catalog, "fleece") >= 1 &&
+           city_stock(city, catalog, "olive_oil") >= 1;
+}
 
 }  // namespace
 
@@ -57,7 +62,8 @@ bool operator==(const Building& a, const Building& b) {
            a.parent == b.parent && a.slot_origins == b.slot_origins && a.slots == b.slots &&
            a.road_access == b.road_access && a.staffing_percent == b.staffing_percent && a.workers == b.workers &&
            a.days_since_spawn == b.days_since_spawn && a.next_roam_dir == b.next_roam_dir &&
-           a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house;
+           a.roaming_walker == b.roaming_walker && a.coverage == b.coverage && a.house == b.house &&
+           a.storage == b.storage && a.producer == b.producer && a.stall == b.stall;
 }
 
 std::string land_check(const CityState& city, TilePos p) {
@@ -123,7 +129,7 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
             r.reason = "build.not_rotatable";
         } else {
             const bool elite = type == "elite_housing";
-            if (elite && !elite_site_ok(city)) {
+            if (elite && !elite_site_ok(city, catalog)) {
                 r.reason = "build.elite_needs_goods";  // 2 food, 1 fleece, 1 oil in storage (doc 18; storage: C5)
             } else {
                 if (type == "common_housing" || elite) {
@@ -137,6 +143,16 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     }
     if (r.ok()) {
         r.cost = cost_of(catalog, bt.stats_id, difficulty);
+        Building& placed = city.buildings.items.at(r.building);
+        if (!bt.stores_class.empty()) {
+            placed.storage = StorageState{};
+        }
+        if (!bt.outputs.empty()) {
+            placed.producer = ProducerState{};
+        }
+        if (!bt.sells.empty()) {
+            placed.stall = StallState{};
+        }
     }
     return r;
 }

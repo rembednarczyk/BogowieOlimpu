@@ -71,6 +71,26 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.no_adjacent_same = o.value("no_adjacent_same", false);
         t.plot_needs_road = o.value("plot_needs_road", false);
         t.stats_id = o.value("stats_from", t.id);
+        auto strings = [&o](const char* key) {
+            std::vector<std::string> v;
+            const auto& a = o.value(key, json());
+            if (a.is_array()) {
+                for (const auto& e : a) {
+                    if (e.is_string()) {
+                        v.push_back(e.get<std::string>());
+                    }
+                }
+            }
+            return v;
+        };
+        t.stores_class = strings("stores_class");
+        t.outputs = strings("outputs");
+        t.delivery_priority = strings("delivery_priority");
+        t.sells = strings("sells");
+        t.sources = strings("sources");
+        t.accepts_only_when_fully_staffed = o.value("accepts_only_when_fully_staffed", false);
+        const auto& order = o.value("default_order", json());
+        t.storage_wheat_only_for_horses = order.is_object() && order.value("wheat", "") == "dont_accept";
         cat.buildings.emplace(t.id, t);
     }
     for (const auto& o : stats) {
@@ -118,6 +138,7 @@ void load_walkers(const json& walkers, DataCatalog& cat) {
         w.speed_raw = (milli * 15 * 65536) / (816 * 1000);
         w.culture_points = o.value("culture_points", 0);
         w.coverage_days = o.value("coverage_days", static_cast<std::uint8_t>(96));
+        w.max_source_distance = opt_int(o.value("max_source_distance_tiles", json()));
         cat.walkers.emplace(w.id, w);
     }
 }
@@ -337,6 +358,25 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                 std::llround(diff.at("wage_drachmas_per_worker_year").at(kWageKeys[i]).get<double>() * 1000.0));
         }
         load_migration(docs.at("migration.json"), diff, cat.migration);
+        for (const auto& g : docs.at("goods.json")) {
+            cat.goods[g.at("id").get<std::string>()] = g.value("class", "");
+        }
+        if (docs.count("production.json") != 0) {
+            for (const auto& p : docs.at("production.json")) {
+                ProductionParams pp;
+                const auto& lpy = p.value("loads_per_year", json());
+                pp.loads_per_year = lpy.is_array() ? lpy.at(0).get<std::int32_t>() : opt_int(lpy).value_or(0);
+                if (const auto m = opt_int(p.value("harvest_month", json()))) {
+                    pp.harvest_month = *m - 1;  // data: 1-12
+                }
+                pp.max_storage_distance = opt_int(p.value("max_storage_distance", json())).value_or(300);
+                cat.production[p.at("id").get<std::string>()] = pp;
+            }
+        }
+        const auto& logistics = docs.count("logistics.json") != 0 ? docs.at("logistics.json") : json::object();
+        cat.storage_slots = logistics.value("storage_tiles", 8);
+        cat.loads_per_slot = logistics.value("loads_per_storage_tile", 4);
+        cat.units_per_load = logistics.value("units_per_load", 100);
         for (std::size_t d = 0; d < cat.worker_percent.size(); ++d) {
             const auto& row = diff.at("worker_percentage").at(std::string(difficulty_code(static_cast<Difficulty>(d))));
             for (std::size_t w = 0; w < cat.worker_percent[d].size(); ++w) {

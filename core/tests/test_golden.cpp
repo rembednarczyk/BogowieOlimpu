@@ -40,7 +40,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v4 appends the homeless count (module C2, serialize_city.cpp).
     // 2026-11-26: save format v5 adds labour and finance blocks (modules C3, C6).
     // 2026-11-26: save format v6 adds the migration state; popularity starts at the base (module C8).
-    const std::uint64_t kGolden = 0x9d37fb261d5fb002ULL;
+    // 2026-11-26: save format v7 (version field; empty city has no new blocks), modules C4-C5 stage 1.
+    const std::uint64_t kGolden = 0x93eb69a058aa8b23ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -50,7 +51,7 @@ TEST_CASE("golden hash") {
 namespace {
 
 // 32x32 city: a road grid with a roadblock, forest, meadow, four service buildings, an agora with a stall,
-// a boulevard, an undone road, six house plots filled by immigrants, two years of play.
+// a boulevard, an undone road, six house plots filled by immigrants, a farm feeding a granary, two years.
 Simulation golden_city() {
     std::vector<std::string> rows(32, std::string(32, '.'));
     for (std::size_t i = 2; i < 30; ++i) {
@@ -65,8 +66,15 @@ Simulation golden_city() {
     for (std::size_t i = 20; i < 26; ++i) {
         rows[8][i] = 'T';
         rows[22][i] = ',';
+        rows[26][i] = ',';
     }
     Simulation sim(bo::test::catalog(), SimulationConfig{20261126, Difficulty::Hero, 3000, rows});
+    sim.issue(PlaceBuilding{"carrot_farm", 20, 25, 0});
+    sim.issue(PlaceBuilding{"granary", 5, 24, 0});
+    sim.issue(SetSectorPriority{2, 5});  // distribution first: the Granary needs full staffing (Z:66)
+    for (int x = 6; x < 28; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 29, 0});  // the farm and the granary need hands
+    }
     for (int x = 5; x < 15; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 17, 0});  // immigrants bring the workers (C8, C3)
     }
@@ -94,8 +102,23 @@ Simulation golden_city() {
 TEST_CASE("golden hash: city with buildings and walkers") {
     const auto sim = golden_city();
     REQUIRE(sim.setup_error().empty());
-    CHECK(sim.state().city.buildings.items.size() == 14);
+    CHECK(sim.state().city.buildings.items.size() == 26);  // the plot on the x = 16 road is refused
     CHECK(sim.state().labour.workforce > 0);
+    const auto& granary = sim.state().city.buildings.items.at(sim.state().city.map.at({5, 24}).building);
+    std::uint32_t food = 0;
+    for (const auto& [good, loads] : granary.storage->loads) {
+        food += loads;
+    }
+    const auto& farm = sim.state().city.buildings.items.at(sim.state().city.map.at({20, 25}).building);
+    std::uint32_t stall_units = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        if (b.stall) {
+            for (const auto& [g, u] : b.stall->units) {
+                stall_units += u;
+            }
+        }
+    }
+    CHECK(food + stall_units > 0);  // the farm fed the granary, the vendor filled the stall
     CHECK_FALSE(sim.state().city.map.at({12, 10}).road);  // undone
     CHECK(sim.state().city.map.at({4, 10}).roadblock);
     CHECK_FALSE(sim.state().city.map.at({16, 10}).road);
@@ -108,7 +131,9 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: modules C1-C2: save format v4 (house state), scenario extended with a house plot and a garden.
     // 2026-11-26: modules C3, C6: save format v5, full staffing switch, monthly finance, clerk counter 50 days.
     // 2026-11-26: module C8: save format v6, immigration fills six house plots, real labour replaces full staffing.
-    const std::uint64_t kGolden = 0xe4679bab920eb90aULL;
+    // 2026-11-26: modules C4-C5 stage 1: save format v7 (storage, producers, stalls, cargo), scenario extended
+    // with a farm, a granary and eleven more house plots; the agora stall now fetches food.
+    const std::uint64_t kGolden = 0xd3642488ca4e1ad4ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

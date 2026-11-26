@@ -24,7 +24,11 @@ inline constexpr std::int32_t kServiceRadius = 2;          // 5x5 square around 
 inline constexpr std::int32_t kRoamTargetDistance = 8;     // initial aim, tiles from the building
 inline constexpr std::int32_t kRoamTargetRoadRadius = 6;
 
-enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed, Done };
+// AtTarget: a working walker (deliveryman, vendor) reached its target and waits for the logistics step.
+enum class WalkerPhase : std::uint8_t { ToTarget = 0, Roaming, Returning, Routed, Done, AtTarget };
+
+// What a destination walker carries out (module C5). Stored in saves: append only.
+enum class WalkerJob : std::uint8_t { None = 0, Deliver, Fetch };
 
 struct Walker {
     WalkerId id = kNoWalker;
@@ -48,6 +52,10 @@ struct Walker {
     std::uint32_t random_counter = 0;
     bool return_north = false;  // S-004: Fountain, Infirmary
     std::uint8_t coverage_days = kServiceCoverageDays;  // counter a visit sets (clerk: 50, doc 24)
+    // Logistics (C5)
+    WalkerJob job = WalkerJob::None;
+    BuildingId target = kNoBuilding;
+    std::map<std::string, std::uint32_t> cargo;  // good -> loads
 };
 
 struct WalkerStore {
@@ -65,6 +73,9 @@ WalkerId spawn_destination_walker(CityState& city, WalkerStore& walkers, const D
 
 // Advances one walker by one tick. Sets phase Done when the walker should be removed.
 void step_walker(CityState& city, Walker& w);
+
+// Sends a walker back to its home building along roads (phase Returning), or Done when there is no way.
+void send_home(CityState& city, Walker& w);
 
 // Gives service coverage around `w` to every building in the 5x5 square.
 void provide_coverage(CityState& city, const Walker& w);

@@ -78,6 +78,11 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, SetIndustryEnabled>) {
                 w.str(cmd.type);
                 w.u8(cmd.enabled ? 1 : 0);
+            } else if constexpr (std::is_same_v<T, SetStorageOrder>) {
+                w.u32(cmd.building);
+                w.str(cmd.good);
+                w.u8(cmd.kind);
+                w.u32(cmd.limit);
             } else {
                 w.i32(cmd.x);
                 w.i32(cmd.y);
@@ -149,6 +154,14 @@ bool read_command(ByteReader& r, Command& out, std::uint32_t version) {
                 return false;
             }
             c.enabled = on != 0;
+            out = c;
+            return true;
+        }
+        case 10: {
+            SetStorageOrder c;
+            if (!r.u32(c.building) || !r.str(c.good) || !r.u8(c.kind) || !r.u32(c.limit)) {
+                return false;
+            }
             out = c;
             return true;
         }

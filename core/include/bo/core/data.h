@@ -77,6 +77,14 @@ struct BuildingType {
     bool no_adjacent_same = false;   // water crossings (Z:102)
     std::string stats_id;            // row in building_stats.json (default: id; house plots use "hut")
     bool plot_needs_road = false;    // house plots must touch a road when placed (Z:29, Z:32)
+    // Goods (module C4/C5)
+    std::vector<std::string> stores_class;   // storage: goods classes kept (Granary: food; Storehouse: raw...)
+    bool storage_wheat_only_for_horses = false;  // Storehouse: wheat only on request, default Don't Accept (Z:68)
+    bool accepts_only_when_fully_staffed = false;  // Granary (Z:66)
+    std::vector<std::string> outputs;          // goods produced
+    std::vector<std::string> delivery_priority;  // destination categories, first match wins (doc 04/05)
+    std::vector<std::string> sells;            // agora stall: goods (or class "food") it sells
+    std::vector<std::string> sources;          // agora stall: building types its vendor fetches from
 };
 
 enum class WalkerKind : std::uint8_t { Roaming = 0, Destination, TwoPhase };
@@ -89,6 +97,7 @@ struct WalkerType {
     std::int64_t speed_raw = 0;                 // steps per tick as Fixed raw value (54.4 tiles/month = 1.0)
     std::int32_t culture_points = 0;            // points a visit gives a house (doc 18)
     std::uint8_t coverage_days = 96;            // service counter set by a visit (doc 24; clerk 50)
+    std::optional<std::int32_t> max_source_distance;  // vendors: tiles to a storage (doc 24: 37 measured)
 };
 
 // Mood and migration parameters (data/migration.json, doc 24).
@@ -112,6 +121,13 @@ struct MigrationParams {
         tax_mood{};
 };
 
+// Production parameters (data/production.json, S-004/S-005).
+struct ProductionParams {
+    std::int32_t loads_per_year = 0;       // at full staffing (lower bound when the source gives a range)
+    std::optional<std::int32_t> harvest_month;  // farms: 0-based month of the yearly harvest
+    std::int32_t max_storage_distance = 300;    // tiles a deliveryman may walk to a receiver
+};
+
 struct DataCatalog {
     std::uint64_t version = 0;                      // FNV-1a 64 over file names and bytes, sorted by name
     std::vector<std::string> files;                 // loaded file names, sorted
@@ -130,6 +146,11 @@ struct DataCatalog {
     // Yearly wage per worker in thousandths of a drachma, per wage rate (doc 18).
     std::array<std::int32_t, static_cast<std::size_t>(WageRate::Count)> wage_per_mille{};
     MigrationParams migration;
+    std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)
+    std::map<std::string, ProductionParams> production;
+    std::int32_t storage_slots = 8;            // logistics.json: 8 tiles x 4 loads (doc 19)
+    std::int32_t loads_per_slot = 4;
+    std::int32_t units_per_load = 100;
 };
 
 struct DataLoadResult {

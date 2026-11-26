@@ -7,6 +7,7 @@
 #include "bo/core/finance.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
+#include "bo/core/logistics.h"
 #include "bo/core/migration.h"
 #include "bo/core/serialize.h"
 #include "bo/core/walker.h"
@@ -155,6 +156,16 @@ void run_migration(Simulation& sim) {
     }
 }
 
+// C4/C5: daily production and dispatch of deliverymen and vendors.
+void run_production(Simulation& sim) { advance_production(sim.mutable_state(), sim.catalog()); }
+
+void run_logistics(Simulation& sim) {
+    const auto ev = dispatch_workers(sim.mutable_state(), sim.catalog());
+    for (const WalkerId id : ev.spawned) {
+        sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
+    }
+}
+
 bool is_build_command(const Command& c) {
     return std::holds_alternative<PlaceBuilding>(c) || std::holds_alternative<PlaceRoad>(c) ||
            std::holds_alternative<PlaceRoadblock>(c) || std::holds_alternative<ClearLand>(c) ||
@@ -178,6 +189,8 @@ const std::vector<DailySystem>& daily_schedule() {
         {"finance", 24, &run_finance},
         {"moods", 25, &run_moods},
         {"migration", 26, &run_migration},
+        {"production", 27, &run_production},
+        {"logistics", 28, &run_logistics},
         {"walker_spawn", 31, &run_walker_spawn},
         {"coverage_decay", 35, &run_coverage_decay},
     };
@@ -283,13 +296,19 @@ void Simulation::apply_undo_command(std::uint32_t index) {
 void Simulation::step_walkers() {
     auto& walkers = state_.walkers.items;
     for (auto& [id, w] : walkers) {
+        const TilePos before = w.tile;
         step_walker(state_.city, w);
+        if (w.type == "peddler" && w.tile != before) {
+            peddler_sells(state_, catalog_, w);  // sells on every new tile, like coverage (doc 06)
+        }
     }
+    handle_arrivals(state_, catalog_);
     for (auto it = walkers.begin(); it != walkers.end();) {
         if (it->second.phase != WalkerPhase::Done) {
             ++it;
             continue;
         }
+        unload_at_home(state_, catalog_, it->second);
         const auto home = state_.city.buildings.items.find(it->second.home);
         if (home != state_.city.buildings.items.end() && home->second.roaming_walker == it->first) {
             home->second.roaming_walker = kNoWalker;
@@ -357,6 +376,18 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                            return;
                        }
                        state_.labour.priority[c.sector] = c.priority;
+                   },
+                   [&](const SetStorageOrder& c) {
+                       const auto b = city.buildings.items.find(c.building);
+                       if (b == city.buildings.items.end() || !b->second.storage ||
+                           catalog_.goods.count(c.good) == 0 || c.kind > 3) {
+                           emit(CommandRejected{index, "storage.bad_order"});
+                       } else if (c.kind == 1 || c.kind == 2) {
+                           emit(CommandRejected{index, "storage.order_not_implemented"});  // Get, Empty: stage 2
+                       } else {
+                           b->second.storage->orders[c.good] =
+                               StorageOrder{static_cast<StorageOrderKind>(c.kind), c.limit};
+                       }
                    },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {

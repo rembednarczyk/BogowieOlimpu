@@ -52,6 +52,8 @@ bool read_tile(ByteReader& r, Tile& t) {
     return true;
 }
 
+void write_goods_state(ByteWriter& w, const Building& b);
+
 void write_building(ByteWriter& w, const Building& b) {
     w.u32(b.id);
     w.str(b.type);
@@ -96,6 +98,94 @@ void write_building(ByteWriter& w, const Building& b) {
         w.u8(h.days_without_road);  // since v6
     }
     w.u32(b.workers);  // since v5
+    write_goods_state(w, b);  // since v7
+}
+
+void write_counts(ByteWriter& w, const std::map<std::string, std::uint32_t>& m) {
+    w.u32(static_cast<std::uint32_t>(m.size()));
+    for (const auto& [k, v] : m) {
+        w.str(k);
+        w.u32(v);
+    }
+}
+
+bool read_counts(ByteReader& r, std::map<std::string, std::uint32_t>& m) {
+    std::uint32_t n = 0;
+    if (!r.u32(n) || n > 4096) {
+        return false;
+    }
+    for (std::uint32_t i = 0; i < n; ++i) {
+        std::string k;
+        std::uint32_t v = 0;
+        if (!r.str(k) || !r.u32(v)) {
+            return false;
+        }
+        m[k] = v;
+    }
+    return true;
+}
+
+// Storage, producer and stall state (v7): a flag byte, then each present block.
+void write_goods_state(ByteWriter& w, const Building& b) {
+    w.u8(static_cast<std::uint8_t>((b.storage ? 1U : 0U) | (b.producer ? 2U : 0U) | (b.stall ? 4U : 0U)));
+    if (b.storage) {
+        write_counts(w, b.storage->loads);
+        w.u32(static_cast<std::uint32_t>(b.storage->orders.size()));
+        for (const auto& [good, o] : b.storage->orders) {
+            w.str(good);
+            w.u8(static_cast<std::uint8_t>(o.kind));
+            w.u32(o.limit);
+        }
+    }
+    if (b.producer) {
+        w.u32(b.producer->progress);
+        w.u32(b.producer->output_loads);
+        w.u32(b.producer->deliveryman);
+    }
+    if (b.stall) {
+        write_counts(w, b.stall->units);
+        w.u32(b.stall->vendor);
+    }
+}
+
+bool read_goods_state(ByteReader& r, Building& b) {
+    std::uint8_t flags = 0;
+    if (!r.u8(flags) || flags > 7) {
+        return false;
+    }
+    if ((flags & 1U) != 0) {
+        StorageState s;
+        std::uint32_t n = 0;
+        if (!read_counts(r, s.loads) || !r.u32(n) || n > 4096) {
+            return false;
+        }
+        for (std::uint32_t i = 0; i < n; ++i) {
+            std::string good;
+            std::uint8_t kind = 0;
+            StorageOrder o;
+            if (!r.str(good) || !r.u8(kind) || kind > 3 || !r.u32(o.limit)) {
+                return false;
+            }
+            o.kind = static_cast<StorageOrderKind>(kind);
+            s.orders[good] = o;
+        }
+        b.storage = std::move(s);
+    }
+    if ((flags & 2U) != 0) {
+        ProducerState p;
+        if (!r.u32(p.progress) || !r.u32(p.output_loads) || !r.u32(p.deliveryman)) {
+            return false;
+        }
+        b.producer = p;
+    }
+    if ((flags & 4U) != 0) {
+        StallState s;
+        if (!read_counts(r, s.units) || !r.u32(s.vendor)) {
+            return false;
+        }
+        b.stall = std::move(s);
+    }
+    return true;
 }
 
 bool read_house(ByteReader& r, Building& b, std::uint32_t version) {
@@ -169,7 +259,8 @@ bool read_building(ByteReader& r, Building& b, std::uint32_t version) {
         b.coverage[service] = days;
     }
     if (version >= 3) {
-        return read_building_v3(r, b) && (version < 4 || read_house(r, b, version)) && (version < 5 || r.u32(b.workers));
+        return read_building_v3(r, b) && (version < 4 || read_house(r, b, version)) && (version < 5 || r.u32(b.workers)) &&
+               (version < 7 || read_goods_state(r, b));
     }
     // Migration v2 -> v3: every v2 building is an ordinary rectangle.
     for (std::int32_t dy = 0; dy < b.height; ++dy) {
@@ -307,6 +398,9 @@ void write_walkers(ByteWriter& w, const WalkerStore& s) {
         w.u32(k.random_counter);
         w.u8(k.return_north ? 1 : 0);  // since v3
         w.u8(k.coverage_days);         // since v5
+        w.u8(static_cast<std::uint8_t>(k.job));  // since v7
+        w.u32(k.target);
+        write_counts(w, k.cargo);
     }
 }
 
@@ -324,12 +418,17 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
         std::uint8_t turn = 0;
         std::uint8_t north = 0;
         const bool ok = r.u32(k.id) && r.str(k.type) && r.u8(kind) && kind <= 2 && r.u32(k.home) && r.u8(phase) &&
-                        phase <= 4 && read_pos(r, k.tile) && r.u8(dir) && dir <= 3 && r.u8(came) &&
+                        phase <= 5 && read_pos(r, k.tile) && r.u8(dir) && dir <= 3 && r.u8(came) &&
                         r.i64(k.speed_raw) && r.i64(k.step_accum_raw) && read_positions(r, k.path) &&
                         r.u32(k.path_pos) && r.u32(k.roam_ticks) && r.u32(k.max_roam_ticks) &&
                         read_pos(r, k.roam_target) && r.u8(turn) && r.i32(k.ticks_until_next_turn) &&
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
+        std::uint8_t job = 0;
+        if (ok && version >= 7 && (!r.u8(job) || job > 2 || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+            return false;
+        }
+        k.job = static_cast<WalkerJob>(job);
         if (!ok) {
             return false;
         }
@@ -348,83 +447,3 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
 
 }  // namespace bo::core
 
-namespace bo::core {
-
-// Labour and finance details (v5). Written after the city block, before the walkers.
-void write_economy(ByteWriter& w, const WorldState& s) {
-    const LabourState& l = s.labour;
-    for (const std::uint8_t p : l.priority) {
-        w.u8(p);
-    }
-    w.u32(static_cast<std::uint32_t>(l.disabled_types.size()));
-    for (const auto& t : l.disabled_types) {
-        w.str(t);
-    }
-    w.u8(l.full_staffing ? 1 : 0);
-    w.u32(l.workforce);
-    w.u32(l.employed);
-    for (std::size_t i = 0; i < kSectors; ++i) {
-        w.u32(l.sector_need[i]);
-        w.u32(l.sector_employed[i]);
-    }
-    const MigrationState& m = s.migration;  // since v6
-    w.u8(m.popularity);
-    w.i32(m.pool);
-    w.u32(m.arrived_this_month);
-    w.u32(m.left_this_month);
-    const FinanceState& f = s.finance;
-    w.i64(f.tax_remainder);
-    w.i64(f.wage_remainder);
-    for (const FinanceYear* y : {&f.this_year, &f.last_year}) {
-        w.i64(y->taxes);
-        w.i64(y->wages);
-        w.i64(y->construction);
-    }
-}
-
-bool read_economy(ByteReader& r, WorldState& s, std::uint32_t version) {
-    LabourState& l = s.labour;
-    for (auto& p : l.priority) {
-        if (!r.u8(p) || p >= kPriorityLevels) {
-            return false;
-        }
-    }
-    std::uint32_t n = 0;
-    if (!r.u32(n) || n > 4096) {
-        return false;
-    }
-    for (std::uint32_t i = 0; i < n; ++i) {
-        std::string t;
-        if (!r.str(t)) {
-            return false;
-        }
-        l.disabled_types.insert(t);
-    }
-    std::uint8_t full = 0;
-    if (!r.u8(full) || !r.u32(l.workforce) || !r.u32(l.employed)) {
-        return false;
-    }
-    l.full_staffing = full != 0;
-    for (std::size_t i = 0; i < kSectors; ++i) {
-        if (!r.u32(l.sector_need[i]) || !r.u32(l.sector_employed[i])) {
-            return false;
-        }
-    }
-    MigrationState& m = s.migration;
-    if (version >= 6 &&
-        (!r.u8(m.popularity) || !r.i32(m.pool) || !r.u32(m.arrived_this_month) || !r.u32(m.left_this_month))) {
-        return false;
-    }
-    FinanceState& f = s.finance;
-    if (!r.i64(f.tax_remainder) || !r.i64(f.wage_remainder)) {
-        return false;
-    }
-    for (FinanceYear* y : {&f.this_year, &f.last_year}) {
-        if (!r.i64(y->taxes) || !r.i64(y->wages) || !r.i64(y->construction)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-}  // namespace bo::core
