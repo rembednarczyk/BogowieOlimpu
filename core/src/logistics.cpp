@@ -349,7 +349,8 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
         if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish ||
             w.job == WalkerJob::Trade || w.job == WalkerJob::Settle || w.job == WalkerJob::Prowl ||
             w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade || w.job == WalkerJob::Supply ||
-            w.job == WalkerJob::Build || w.job == WalkerJob::Sacrifice) {
+            w.job == WalkerJob::Build || w.job == WalkerJob::Sacrifice || w.job == WalkerJob::Monster ||
+            w.job == WalkerJob::Hero) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);

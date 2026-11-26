@@ -58,6 +58,7 @@ public:
     void emit_combat(const CombatEvents& ev);
     void apply_combat_command(const Command& command, std::uint32_t index);
     void apply_world_command(const Command& command, std::uint32_t index);
+    void apply_myth_command(const Command& command, std::uint32_t index);
 
     [[nodiscard]] const WorldState& state() const { return state_; }
     WorldState& mutable_state() { return state_; }

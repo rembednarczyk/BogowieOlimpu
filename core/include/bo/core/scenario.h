@@ -85,6 +85,7 @@ struct ScenarioEvents {
     std::vector<std::int32_t> invasion_cities;
     std::vector<const ScenarioEvent*> god_attacks;  // fired this day (pointers into ScenarioState::events)
     std::vector<const ScenarioEvent*> disasters;
+    std::vector<const ScenarioEvent*> monsters;  // monster id in `nation`, strength in `amount`, target in `good`
     bool won = false;
 };
 

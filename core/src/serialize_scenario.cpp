@@ -85,4 +85,54 @@ bool read_scenario(ByteReader& r, ScenarioState& s, std::uint32_t version) {
     return true;
 }
 
+// Monsters and heroes (D5 stage 3, since v24).
+void write_monsters(ByteWriter& w, const WorldState& s) {
+    w.u32(static_cast<std::uint32_t>(s.monsters.size()));
+    for (const MonsterState& m : s.monsters) {
+        w.str(m.id);
+        w.u32(m.walker);
+        w.i32(m.home.x);
+        w.i32(m.home.y);
+        w.str(m.target_kind);
+        w.u32(m.target);
+        w.u32(m.days);
+        w.u8(static_cast<std::uint8_t>((m.resting ? 1U : 0U) | (m.slain ? 2U : 0U)));
+    }
+    w.u32(static_cast<std::uint32_t>(s.heroes.size()));
+    for (const HeroState& h : s.heroes) {
+        w.str(h.id);
+        w.u32(h.hall);
+        w.u32(h.walker);
+    }
+}
+
+bool read_monsters(ByteReader& r, WorldState& s) {
+    std::uint32_t n = 0;
+    if (!r.u32(n) || n > 256) {
+        return false;
+    }
+    s.monsters.resize(n);
+    for (MonsterState& m : s.monsters) {
+        std::uint32_t days = 0;
+        std::uint8_t flags = 0;
+        if (!r.str(m.id) || !r.u32(m.walker) || !r.i32(m.home.x) || !r.i32(m.home.y) || !r.str(m.target_kind) ||
+            !r.u32(m.target) || !r.u32(days) || days > 0xFFFF || !r.u8(flags)) {
+            return false;
+        }
+        m.days = static_cast<std::uint16_t>(days);
+        m.resting = (flags & 1U) != 0;
+        m.slain = (flags & 2U) != 0;
+    }
+    if (!r.u32(n) || n > 64) {
+        return false;
+    }
+    s.heroes.resize(n);
+    for (HeroState& h : s.heroes) {
+        if (!r.str(h.id) || !r.u32(h.hall) || !r.u32(h.walker)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace bo::core

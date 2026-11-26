@@ -104,6 +104,8 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
         ev.god_attacks.push_back(&e);
     } else if (e.type == "disaster") {
         ev.disasters.push_back(&e);
+    } else if (e.type == "monster") {
+        ev.monsters.push_back(&e);
     } else if (e.type == "relation" && has_city) {
         st.trade.partners[static_cast<std::size_t>(e.city)].relation = e.relation;
     }
@@ -149,6 +151,11 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             ev.god = e.value("god", "");
             ev.x = e.value("x", 0);
             ev.y = e.value("y", 0);
+            if (ev.type == "monster") {
+                ev.nation = e.value("monster", "");
+                ev.amount = e.value("strength", 1U);
+                ev.good = e.value("target", "food");
+            }
             if (ev.type == "disaster") {
                 ev.nation = e.value("kind", "earthquake");
                 ev.amount = e.value("radius", 2U);

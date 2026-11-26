@@ -34,6 +34,7 @@ const WALKER_COLORS := {
 	"wolf": Color(0.35, 0.35, 0.38), "artisan": Color(0.85, 0.5, 0.2), "ox_cart": Color(0.5, 0.4, 0.3),
 	"priest": Color(0.95, 0.95, 0.6), "hoplite": Color(0.6, 0.1, 0.1), "rabble": Color(0.7, 0.3, 0.2),
 	"horseman": Color(0.4, 0.05, 0.05), "immigrant": Color(0.8, 0.8, 0.6),
+	"calydonian_boar": Color(0.25, 0.15, 0.1), "ares_warriors": Color(0.5, 0.0, 0.0),
 }
 
 var sim := BoSimulation.new()
@@ -191,6 +192,10 @@ func _handle_events(events: Array) -> void:
 				if walker_nodes.has(e["id"]):
 					walker_nodes[e["id"]].queue_free()
 					walker_nodes.erase(e["id"])
+			"monster_appeared":
+				demo_note = "potwór: %s" % e["monster"]
+			"monster_slain":
+				demo_note = "potwór pokonany: %s" % e["monster"]
 			"god_attacked":
 				demo_note = "gniew boga: %s%s" % [e["god"], " (odparty)" if e["repelled"] else ""]
 			"disaster":

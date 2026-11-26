@@ -111,6 +111,8 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u32(cmd.building);
             } else if constexpr (std::is_same_v<T, FulfillRequest>) {
                 w.u32(cmd.request);
+            } else if constexpr (std::is_same_v<T, SummonHero>) {
+                w.u32(cmd.hall);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -218,12 +220,13 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
         }
         case 22:
             return read_dispatch(r, out);
-        case 23: {
-            FulfillRequest c;
-            if (!r.u32(c.request)) {
+        case 23:
+        case 24: {
+            std::uint32_t v = 0;
+            if (!r.u32(v)) {
                 return false;
             }
-            out = c;
+            out = index == 23 ? Command{FulfillRequest{v}} : Command{SummonHero{v}};
             return true;
         }
         default:
@@ -351,6 +354,7 @@ std::vector<std::uint8_t> serialize_state(const WorldState& s, std::uint64_t dat
     write_military(w, s.military);  // since v17
     write_world(w, s);              // since v21
     write_scenario(w, s.scenario);  // since v22
+    write_monsters(w, s);           // since v24
     return w.bytes();
 }
 
@@ -411,7 +415,8 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
          !read_walkers(r, s.walkers, out.format_version) ||
          (out.format_version >= 17 && !read_military(r, s.military, out.format_version)) ||
          (out.format_version >= 21 && !read_world(r, s)) ||
-         (out.format_version >= 22 && !read_scenario(r, s.scenario, out.format_version)))) {
+         (out.format_version >= 22 && !read_scenario(r, s.scenario, out.format_version)) ||
+         (out.format_version >= 24 && !read_monsters(r, s)))) {
         error = "save.corrupt";
         return std::nullopt;
     }

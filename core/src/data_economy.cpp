@@ -178,6 +178,22 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         for (const auto& [k, v] : wrath.items()) {
             cat.wrath[k] = v.get<std::int32_t>();
         }
+        const json monster = gr.value("monster_numbers", json::object());
+        for (const auto& [k, v] : monster.items()) {
+            if (v.is_number_integer()) {
+                cat.monster_numbers[k] = v.get<std::int32_t>();
+            }
+        }
+    }
+    if (docs.count("monsters.json") != 0) {
+        for (const auto& m : docs.at("monsters.json")) {
+            cat.monster_slayer[m.at("id").get<std::string>()] = m.value("slain_by", "");
+        }
+    }
+    if (docs.count("heroes.json") != 0) {
+        for (const auto& h : docs.at("heroes.json")) {
+            cat.hero_requirements[h.at("id").get<std::string>()] = h.value("requirements", std::vector<std::string>{});
+        }
     }
     if (docs.count("gods.json") == 0) {
         return;

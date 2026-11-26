@@ -142,11 +142,16 @@ struct FulfillRequest {
     std::uint32_t request = 0;
 };
 
+// Calls the hero who slays the monster in the city to a Hero's Hall (Z:130).
+struct SummonHero {
+    std::uint32_t hall = 0;
+};
+
 using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, PlaceRoadblock, ClearLand, Demolish,
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest>;
+                             FulfillRequest, SummonHero>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

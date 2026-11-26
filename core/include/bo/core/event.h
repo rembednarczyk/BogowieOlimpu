@@ -150,6 +150,19 @@ struct RequestClosed {  // D5: fulfilled, or withdrawn after the deadline
 
 struct EpisodeWon {};  // D5: all goals met
 
+struct MonsterAppeared {  // D5: a monster comes to the city (Z:127)
+    std::string monster;
+};
+
+struct MonsterSlain {
+    std::string monster;
+    bool by_hero = false;
+};
+
+struct HeroArrived {  // D5: a hero moves into his Hall (Z:130)
+    std::string hero;
+};
+
 struct GodAttacked {  // D5: a hostile god came (Z:125); repelled by a god with a sanctuary (Z:119, Z:122)
     std::string god;
     bool repelled = false;
@@ -161,7 +174,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
                            TributePaid, ExpeditionReturned, EpisodeLost,
                            CityRequestReceived, RequestClosed, EpisodeWon,
-                           GodAttacked>;
+                           GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

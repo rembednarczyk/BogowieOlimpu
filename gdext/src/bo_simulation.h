@@ -73,6 +73,9 @@ public:
     void bribe_invaders();
     // Gods (D1): a prayer at a finished sanctuary; the answer comes as "prayer_answered" or "command_rejected".
     void pray(int64_t sanctuary);
+    // Monsters and heroes (D5): calls the hero to a Hero's Hall; [{"monster", "slain", "resting", "hero"}]
+    void summon_hero(int64_t hall);
+    godot::Array get_monsters() const;
     // World (D4): `city` indexes the partners given to start_with_map; "drachmas" is money.
     void give_gift(int64_t city, const godot::String& good, int64_t amount);
     void request_from_city(int64_t city, const godot::String& good);

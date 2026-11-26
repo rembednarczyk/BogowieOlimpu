@@ -36,5 +36,11 @@
   "money_stolen_percent": 25,
   "opinion_loss": 10
  },
- "wrath_numbers_src": "[ZAŁOŻENIE L-115, L-054b] Z:125-127 bez liczb; klątwa 45 dni (eZeus ok. 2,8 mies., doc 24)"
+ "wrath_numbers_src": "[ZAŁOŻENIE L-115, L-054b] Z:125-127 bez liczb; klątwa 45 dni (eZeus ok. 2,8 mies., doc 24)",
+ "monster_numbers": {
+  "destroy_days": 2,
+  "rest_days": 16,
+  "hero_hall_goods_from": "city_storage"
+ },
+ "monster_numbers_src": "[ZAŁOŻENIE L-116] potwór niszczy cel po 2 dniach ataku i odpoczywa 16 dni w punkcie startu (S-004 scendesign: wraca do punktu startu); dobra dla herosa liczone z magazynów miasta"
 }

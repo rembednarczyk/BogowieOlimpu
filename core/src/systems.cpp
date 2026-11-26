@@ -9,6 +9,7 @@
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
+#include "bo/core/monsters.h"
 #include "bo/core/risks.h"
 #include "bo/core/sanctuary.h"
 #include "bo/core/trade.h"
@@ -282,6 +283,15 @@ static void run_scenario(Simulation& sim) {
             armies.emplace_back(w.invasion_nation, w.invasion_soldiers);
         }
     }
+    for (const ScenarioEvent* e : ev.monsters) {
+        MonsterEvents m;
+        if (spawn_monster(st, sim.catalog(), e->nation, e->amount, e->good, m).empty()) {
+            sim.emit(MonsterAppeared{e->nation});
+            for (const WalkerId id : m.spawned) {
+                sim.emit(WalkerSpawned{id, st.walkers.items.at(id).type});
+            }
+        }
+    }
     for (const ScenarioEvent* e : ev.disasters) {
         emit_wrath(sim, disaster(st, e->nation, {e->x, e->y}, static_cast<std::int32_t>(e->amount)));
     }
@@ -294,6 +304,18 @@ static void run_scenario(Simulation& sim) {
     }
     if (ev.won) {
         sim.emit(EpisodeWon{});
+    }
+}
+
+// D5: monsters walk, wreck and rest; heroes hunt them.
+static void run_monsters(Simulation& sim) {
+    MonsterEvents ev;
+    advance_monsters(sim.mutable_state(), sim.catalog(), ev);
+    for (const BuildingId id : ev.removed) {
+        sim.emit(BuildingRemoved{id});
+    }
+    for (const auto& [monster, by_hero] : ev.slain) {
+        sim.emit(MonsterSlain{monster, by_hero});
     }
 }
 
@@ -325,6 +347,7 @@ const std::vector<DailySystem>& daily_schedule() {
         {"world", 34, &run_world},
         {"coverage_decay", 35, &run_coverage_decay},
         {"scenario", 36, &run_scenario},
+        {"monsters", 37, &run_monsters},
     };
     return kSchedule;
 }

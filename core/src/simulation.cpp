@@ -12,6 +12,7 @@
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
+#include "bo/core/monsters.h"
 #include "bo/core/risks.h"
 #include "bo/core/trade.h"
 #include "bo/core/serialize.h"
@@ -228,6 +229,10 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                        emit(WageRateChanged{c.rate});
                    },
                    [&](const PlaceBuilding& c) {
+                       if (c.type == "heros_hall" && !hero_needed(state_)) {
+                           emit(CommandRejected{index, "build.no_hero_needed"});  // only with a reason (Z:130)
+                           return;
+                       }
                        apply_build(place_building(city, catalog_, diff, c.type, {c.x, c.y}, c.rotation), index,
                                    {c.x, c.y}, false);
                    },
@@ -303,25 +308,9 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const GiftToCity&) { apply_world_command(command, index); },
                    [&](const RequestFromCity&) { apply_world_command(command, index); },
                    [&](const DispatchArmy&) { apply_world_command(command, index); },
-                   [&](const FulfillRequest& c) {
-                       const auto city = c.request < state_.scenario.requests.size()
-                                             ? state_.scenario.requests[c.request].city
-                                             : 0U;
-                       const std::string err = fulfill_request(state_, catalog_, c.request);
-                       if (err.empty()) {
-                           emit(RequestClosed{city, true});
-                       } else {
-                           emit(CommandRejected{index, err});
-                       }
-                   },
-                   [&](const Pray& c) {
-                       const std::string err = pray(state_, catalog_, c.building);
-                       if (err.empty()) {
-                           emit(PrayerAnswered{c.building});
-                       } else {
-                           emit(CommandRejected{index, err});
-                       }
-                   },
+                   [&](const FulfillRequest&) { apply_world_command(command, index); },
+                   [&](const SummonHero&) { apply_myth_command(command, index); },
+                   [&](const Pray&) { apply_myth_command(command, index); },
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});
@@ -335,6 +324,30 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                command);
 }
 
+// Myth commands (D1, D5): prayers and heroes.
+void Simulation::apply_myth_command(const Command& command, std::uint32_t index) {
+    if (const auto* p = std::get_if<Pray>(&command)) {
+        const std::string err = pray(state_, catalog_, p->building);
+        if (err.empty()) {
+            emit(PrayerAnswered{p->building});
+        } else {
+            emit(CommandRejected{index, err});
+        }
+        return;
+    }
+    const auto& c = std::get<SummonHero>(command);
+    MonsterEvents ev;
+    const std::string err = summon_hero(state_, catalog_, c.hall, ev);
+    if (!err.empty()) {
+        emit(CommandRejected{index, err});
+        return;
+    }
+    emit(HeroArrived{state_.heroes.back().id});
+    for (const WalkerId id : ev.spawned) {
+        emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
+    }
+}
+
 // World commands (D4): gifts, requests, armies abroad.
 void Simulation::apply_world_command(const Command& command, std::uint32_t index) {
     std::string err;
@@ -344,6 +357,12 @@ void Simulation::apply_world_command(const Command& command, std::uint32_t index
         err = request_from_city(state_, catalog_, r->city, r->good);
     } else if (const auto* d = std::get_if<DispatchArmy>(&command)) {
         err = dispatch_army(state_, catalog_, d->city, d->raid, d->good, d->companies);
+    } else if (const auto* f = std::get_if<FulfillRequest>(&command)) {
+        const auto city = f->request < state_.scenario.requests.size() ? state_.scenario.requests[f->request].city : 0U;
+        err = fulfill_request(state_, catalog_, f->request);
+        if (err.empty()) {
+            emit(RequestClosed{city, true});
+        }
     }
     if (!err.empty()) {
         emit(CommandRejected{index, err});

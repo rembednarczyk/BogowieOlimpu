@@ -722,6 +722,38 @@
      "melee_rate": 75
     }
    }
+  },
+  "monster": {
+   "units_src": "[ZAŁOŻENIE L-057b] statystyki potwora nieznane; punkty życia × siła ze scenariusza; dobrany tak, by pokonało go ok. 4 kompanie hoplitów albo heros",
+   "units": {
+    "monster": {
+     "hp": 2000,
+     "attack": 40,
+     "armor": 10,
+     "armor_vs_missiles": 10,
+     "missile_attack": null,
+     "missile_range": null,
+     "missile_rate": null,
+     "speed": 54.4,
+     "melee_rate": 30
+    }
+   }
+  },
+  "hero": {
+   "units_src": "[ZAŁOŻENIE L-057b] statystyki herosa nieznane; heros pokonuje potwora siły 1 sam (Z:129-130)",
+   "units": {
+    "hero": {
+     "hp": 3000,
+     "attack": 60,
+     "armor": 20,
+     "armor_vs_missiles": 20,
+     "missile_attack": null,
+     "missile_range": null,
+     "missile_rate": null,
+     "speed": 68,
+     "melee_rate": 15
+    }
+   }
   }
  },
  "player_rules": {

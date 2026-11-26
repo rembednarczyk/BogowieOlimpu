@@ -148,7 +148,9 @@ Stan D4: etap 1 zrobiony (L-113, L-063, L-064, L-065). Partnerzy scenariusza maj
 
 Stan D5: etap 1 zrobiony (L-093, L-114). Format przygody JSON w `scenarios/` (opis w `scenarios/README.md`): mapa, wysokości, skarbiec, trudność, miasta świata z dyplomacją, zdarzenia datowane (inwazja, prośba z terminem, dar, zmiana relacji; opcjonalnie co rok) i cele (populacja, skarbiec, sanktuarium, domy na poziomie, wasal) sprawdzane co miesiąc; zwycięstwo epizodu. Prośby miast z terminem, spełnianiem i wycofaniem. Scena demo gra przygodę `scenarios/demo.json`. Format zapisu v22.
 
-Etap 2 zrobiony (L-115, L-054b): zdarzenia `god_attack` (gniew 14 bogów według doc 10 i 21, obrona Zeusa, Hery i Afrodyty, klątwy wyłączające budynki na 45 dni, armie Amazonek i Sparti) i `disaster` (trzęsienie ziemi, fala pływowa, osuwisko, lawa w promieniu wokół punktu). Format zapisu v23. Zostaje: potwory, herosi i Hero's Hall, zadania bogów, wizyty boga na mapie, kolonie i kolejne epizody, prośby o wojsko.
+Etap 2 zrobiony (L-115, L-054b): zdarzenia `god_attack` (gniew 14 bogów według doc 10 i 21, obrona Zeusa, Hery i Afrodyty, klątwy wyłączające budynki na 45 dni, armie Amazonek i Sparti) i `disaster` (trzęsienie ziemi, fala pływowa, osuwisko, lawa w promieniu wokół punktu). Format zapisu v23.
+
+Etap 3 zrobiony (L-116, L-057b): zdarzenie `monster` (punkt `M` na mapie, siła, cel: żywność, obywatele, wojsko, zasoby), potwór niszczy cele i wraca odpocząć, walczy z żołnierzami tą samą mechaniką co najeźdźcy, Apollo zabija potwory; Hero's Hall tylko przy potworze w mieście, przyzwanie herosa po spełnieniu wymagań z doc 21 (Perseusz pobiera 3000 dr), heros idzie na swojego potwora. Format zapisu v24. Zostaje: zadania bogów i miejsca zaczarowane, wymagania herosów zależne od triery, murów, igrzysk i podatków, pomniki, wizyty boga na mapie, kolonie i kolejne epizody, prośby o wojsko.
 
 Moduły C i D powstają w fazie 1 ("Prototyp symulacji") jako część silnika; ich odbiór to test zgodności ze specyfikacją (`PRAKTYKI.md` rozdz. 4).
 

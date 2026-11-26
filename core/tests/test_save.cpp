@@ -89,8 +89,17 @@ constexpr std::size_t kMilitary = 4 + kInvasion;  // v17: company count, after t
 
 constexpr std::size_t kScenario = 17;  // v22: empty id, no goals, events or requests, not won
 
-// The save without the v22 scenario block: the layout of v21.
+constexpr std::size_t kMonsters = 8;  // v24: no monsters, no heroes
+
+// The save without the v24 monster block: the layout of v23.
+std::vector<std::uint8_t> as_v23(std::vector<std::uint8_t> bytes) {
+    bytes.resize(bytes.size() - kMonsters);
+    return bytes;
+}
+
+// The save without the v22 scenario block and later: the layout of v21.
 std::vector<std::uint8_t> as_v21(std::vector<std::uint8_t> bytes) {
+    bytes = as_v23(std::move(bytes));
     bytes.resize(bytes.size() - kScenario);
     return bytes;
 }
@@ -130,6 +139,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v23(a.save()), 23, h);
     check_load(as_v21(a.save()), 21, h);
     check_load(as_v20(a.save()), 20, h);
     auto v17 = as_v20(a.save());

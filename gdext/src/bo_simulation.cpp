@@ -129,6 +129,19 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["fulfilled"] = e.fulfilled;
                    },
                    [&d](const bo::core::EpisodeWon&) { d["type"] = "episode_won"; },
+                   [&d](const bo::core::MonsterAppeared& e) {
+                       d["type"] = "monster_appeared";
+                       d["monster"] = String(e.monster.c_str());
+                   },
+                   [&d](const bo::core::MonsterSlain& e) {
+                       d["type"] = "monster_slain";
+                       d["monster"] = String(e.monster.c_str());
+                       d["by_hero"] = e.by_hero;
+                   },
+                   [&d](const bo::core::HeroArrived& e) {
+                       d["type"] = "hero_arrived";
+                       d["hero"] = String(e.hero.c_str());
+                   },
                    [&d](const bo::core::GodAttacked& e) {
                        d["type"] = "god_attacked";
                        d["god"] = String(e.god.c_str());
@@ -441,6 +454,29 @@ Array BoSimulation::get_cities() const {
         d["tribute"] = p.diplomacy.tribute;
         d["tribute_demand"] = p.diplomacy.tribute_demand;
         d["rebelling"] = p.diplomacy.rebelling;
+        out.append(d);
+    }
+    return out;
+}
+
+void BoSimulation::summon_hero(int64_t hall) {
+    if (sim_ && hall > 0) {
+        sim_->issue(bo::core::SummonHero{static_cast<std::uint32_t>(hall)});
+    }
+}
+
+Array BoSimulation::get_monsters() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    for (const auto& m : sim_->state().monsters) {
+        Dictionary d;
+        d["monster"] = String(m.id.c_str());
+        d["slain"] = m.slain;
+        d["resting"] = m.resting;
+        const auto slayer = catalog_->monster_slayer.find(m.id);
+        d["hero"] = String(slayer == catalog_->monster_slayer.end() ? "" : slayer->second.c_str());
         out.append(d);
     }
     return out;
@@ -772,6 +808,8 @@ void BoSimulation::_bind_methods() {
                          DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("bribe_invaders"), &BoSimulation::bribe_invaders);
     ClassDB::bind_method(D_METHOD("pray", "sanctuary"), &BoSimulation::pray);
+    ClassDB::bind_method(D_METHOD("summon_hero", "hall"), &BoSimulation::summon_hero);
+    ClassDB::bind_method(D_METHOD("get_monsters"), &BoSimulation::get_monsters);
     ClassDB::bind_method(D_METHOD("give_gift", "city", "good", "amount"), &BoSimulation::give_gift);
     ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);
     ClassDB::bind_method(D_METHOD("dispatch_army", "city", "raid", "good", "companies"), &BoSimulation::dispatch_army);

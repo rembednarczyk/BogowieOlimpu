@@ -14,17 +14,30 @@ namespace {
 std::int32_t chebyshev(TilePos a, TilePos b) { return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y)); }
 
 const UnitStats* stats_of(const DataCatalog& catalog, const Walker& w) {
-    const auto n = catalog.combat.nations.find(w.job == WalkerJob::Invade ? w.variant : "player_greek");
+    std::string nation = "player_greek";
+    std::string unit = w.type;
+    if (w.job == WalkerJob::Invade) {
+        nation = w.variant;
+    } else if (w.job == WalkerJob::Monster || w.job == WalkerJob::Hero) {
+        nation = w.job == WalkerJob::Monster ? "monster" : "hero";  // L-057b
+        unit = nation;
+    }
+    const auto n = catalog.combat.nations.find(nation);
     if (n == catalog.combat.nations.end()) {
         return nullptr;
     }
-    const auto u = n->second.units.find(w.type);
+    const auto u = n->second.units.find(unit);
     return u == n->second.units.end() ? nullptr : &u->second;
 }
 
 bool fighter(const Walker& w) {
-    return (w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade) && w.phase != WalkerPhase::Done && w.hp > 0;
+    const bool armed = w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade || w.job == WalkerJob::Monster ||
+                       w.job == WalkerJob::Hero;
+    return armed && w.phase != WalkerPhase::Done && w.hp > 0;
 }
+
+// Sides: the city (soldiers, heroes) against invaders and monsters.
+bool defends(const Walker& w) { return w.job == WalkerJob::Soldier || w.job == WalkerJob::Hero; }
 
 // The invaders' goal: the Palace (Z:137); without one, the building nearest to where they came in [ZAŁOŻENIE].
 std::optional<BuildingId> goal_of(const CityState& city, TilePos from) {
@@ -227,10 +240,12 @@ std::string surrender(WorldState& st, CombatEvents& ev) {
 
 void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
     Invasion& inv = st.military.invasion;
-    if (!inv.active) {
+    auto& items = st.walkers.items;
+    const bool monsters = std::any_of(items.begin(), items.end(),
+                                      [](const auto& kv) { return kv.second.job == WalkerJob::Monster; });
+    if (!inv.active && !monsters) {
         return;
     }
-    auto& items = st.walkers.items;
     std::vector<WalkerId> fighters;
     for (const auto& [id, w] : items) {
         if (fighter(w)) {
@@ -256,7 +271,7 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
         std::optional<std::pair<std::int32_t, WalkerId>> foe;
         for (const WalkerId oid : fighters) {
             const Walker& o = items.at(oid);
-            if (fighter(o) && o.job != w.job) {
+            if (fighter(o) && defends(o) != defends(w)) {
                 const std::int32_t d = chebyshev(w.tile, o.tile);
                 if (!foe || d < foe->first) {
                     foe = std::make_pair(d, oid);
@@ -317,6 +332,9 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
         if (w.job == WalkerJob::Soldier) {
             soldier_killed(st, catalog, w);
         }
+    }
+    if (!inv.active) {
+        return;  // only monsters about: their fate is the monster module's (monsters.cpp)
     }
     auto& inv_list = inv.invaders;
     inv_list.erase(std::remove_if(inv_list.begin(), inv_list.end(),

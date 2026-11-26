@@ -58,7 +58,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v21 (version field; invasion city, empty world block), module D4 stage 1.
     // 2026-11-26: save format v22 (version field; empty scenario block), module D5 stage 1.
     // 2026-11-26: save format v23 (version field; curse days, event fields), module D5 stage 2.
-    const std::uint64_t kGolden = 0x9c0071cd646cddadULL;
+    // 2026-11-26: save format v24 (version field; empty monster block), module D5 stage 3.
+    const std::uint64_t kGolden = 0xd4b2dad99a28e85cULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -194,7 +195,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v21: diplomacy of the partner city (opinion 60), module D4 stage 1.
     // 2026-11-26: save format v22 (version field; empty scenario block), module D5 stage 1.
     // 2026-11-26: save format v23: curse days per building (D5 stage 2, L-115).
-    const std::uint64_t kGolden = 0x658387045261dcd2ULL;
+    // 2026-11-26: save format v24 (version field; empty monster block), module D5 stage 3.
+    const std::uint64_t kGolden = 0x74429b48647c9fd5ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
