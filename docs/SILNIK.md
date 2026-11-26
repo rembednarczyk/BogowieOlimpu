@@ -16,7 +16,7 @@ Interpretacja "rozbudowy silnika" (do potwierdzenia, `11-OTWARTE-PYTANIA.md` pyt
 | Kompilacja C++ | g++, cmake | dostępne; scons do doinstalowania przez pip |
 | Rdzenie, pamięć | 4 rdzenie, 15 GB RAM | |
 
-Instalacja jest w `/opt/tools` i znika z kontenerem. Skrypt instalacyjny trzeba zapisać w ustawieniach środowiska (`BACKLOG.md`).
+Instalacja jest w `/opt/tools`. Skrypt startowy środowiska chmurowego (zapisany 2026-11-26) instaluje Godota i Blendera przy budowie nowego kontenera, tylko gdy sesja ma repo BogowieOlimpu. Działanie w świeżej sesji jeszcze niepotwierdzone.
 
 ## Architektura
 

@@ -5,7 +5,7 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 ## Następne
 
 1. **Potwierdzenie pyt. 22 i 23** (zakres rozbudowy silnika, język rdzenia), potem start modułów A z `docs/SILNIK.md`.
-2. **Skrypt instalacji narzędzi w środowisku chmurowym** (Godot 4.7.2, Blender 4.5.9 LTS, scons), żeby kolejne sesje miały je od startu.
+2. **Skrypt instalacji narzędzi** zapisany w środowisku chmurowym (Godot, Blender). Zostaje: potwierdzić w świeżej sesji; dopisać scons i szablony eksportu Android, gdy będą potrzebne.
 3. **Szkielet repo silnika**: `core/` (CMake, doctest, strażnik nagłówków), `gdext/` (godot-cpp), `game/` (projekt Godota, gdUnit4), `tools/blender/`, CI.
 4. **Prototyp tłumu E4** w Godocie: 3 000 postaci (MultiMesh + VAT) i 2 000 budynków; pomiar na telefonie odniesienia (pyt. 12, 24). Wymaga szablonów eksportu Android.
 5. **Inwentarz assetów** `docs/ASSETY.md` z analizy eZeus (agent w toku) i konwencje potoku Blendera.
