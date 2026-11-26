@@ -103,6 +103,12 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["elite"] = e.elite;
                        d["abandoned"] = e.abandoned;
                    },
+                   [&d](const bo::core::Disaster& e) {
+                       constexpr const char* kKinds[] = {"fire_started", "burned_down", "collapsed", "plague", "crime"};
+                       d["type"] = "disaster";
+                       d["kind"] = kKinds[static_cast<int>(e.kind)];
+                       d["building"] = static_cast<int64_t>(e.building);
+                   },
                    [&d](const bo::core::PeopleMoved& e) {
                        d["type"] = "people_moved";
                        d["arrived"] = static_cast<int64_t>(e.arrived);
@@ -308,6 +314,11 @@ Array BoSimulation::get_buildings() const {
         d["parent"] = static_cast<int64_t>(b.parent);
         d["has_road_access"] = b.road_access.has_value();
         d["workers"] = static_cast<int64_t>(b.workers);
+        d["burning"] = b.burning_days > 0;
+        d["fire_risk"] = static_cast<int64_t>(b.fire_counter);      // of 960 (data/risks.json)
+        d["damage_risk"] = static_cast<int64_t>(b.damage_counter);
+        d["disease_risk"] = static_cast<int64_t>(b.disease_counter);
+        d["crime_risk"] = static_cast<int64_t>(b.crime_counter);
         d["staffing"] = static_cast<int64_t>(b.staffing_percent);
         if (b.house) {
             d["house_level"] = static_cast<int64_t>(b.house->level);

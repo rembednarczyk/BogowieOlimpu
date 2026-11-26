@@ -19,9 +19,10 @@ const BUILDING_COLORS := {
 	"wine_vendor_stall": Color(0.60, 0.20, 0.45), "common_housing": Color(0.85, 0.72, 0.55),
 	"fleece_vendor_stall": Color(0.95, 0.95, 0.90), "carrot_farm": Color(0.90, 0.55, 0.20),
 	"onion_farm": Color(0.85, 0.80, 0.55), "carding_shed": Color(0.75, 0.65, 0.50), "granary": Color(0.80, 0.70, 0.40),
-	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0),
+	"storehouse": Color(0.55, 0.45, 0.35), "sheep": Color(1.0, 1.0, 1.0), "ruins": Color(0.35, 0.33, 0.30),
+	"infirmary": Color(0.95, 0.95, 0.98),
 }
-const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25,
+const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "sheep": 0.3}
 const WALKER_COLORS := {
 	"deliveryman": Color(0.55, 0.35, 0.15), "food_vendor": Color(0.95, 0.80, 0.30), "fleece_vendor": Color(0.9, 0.9, 0.9),
@@ -85,6 +86,9 @@ func _ready() -> void:
 			["storehouse", 21, 25]]:
 		sim.place_building(b[0], b[1], b[2])
 	sim.set_sector_priority(2, 5)  # distribution first: the granary takes food only when fully staffed
+	sim.set_sector_priority(3, 5)  # maintenance too: unattended buildings burn and collapse (C7)
+	for b in [["maintenance_office", 13, 5], ["maintenance_office", 6, 14], ["infirmary", 9, 9]]:
+		sim.place_building(b[0], b[1], b[2])
 	sim.step(1)
 	for i in 8:
 		sim.place_building("sheep", 7 + i % 4, 21 + i / 4)
@@ -146,8 +150,18 @@ func _handle_events(events: Array) -> void:
 				if walker_nodes.has(e["id"]):
 					walker_nodes[e["id"]].queue_free()
 					walker_nodes.erase(e["id"])
+			"disaster":
+				if e["kind"] == "fire_started" and building_nodes.has(e["building"]):
+					_tint(building_nodes[e["building"]], Color(0.9, 0.25, 0.1))  # placeholder for fire effects (E)
 	if tiles_dirty:
 		_rebuild_tiles()
+
+func _tint(node: Node3D, color: Color) -> void:
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = color
+			child.material_override = mat
 
 func _rebuild_tiles() -> void:
 	var w: int = sim.get_map_width()
