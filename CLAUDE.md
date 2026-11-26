@@ -46,7 +46,7 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 
 ## Narzędzia w kontenerze
 
-- Godot 4.7.2: `godot --headless --path <projekt> ...`; zrzuty: `xvfb-run -a godot --rendering-driver opengl3 ...` (tylko renderer Compatibility).
+- Godot 4.7.2: `godot --headless --path <projekt> ...`; zrzuty: `xvfb-run -a godot --rendering-driver vulkan --rendering-method mobile ...` (Vulkan programowy, lavapipe). Renderer gry: Mobile (R-015).
 - Blender 4.5 LTS: `blender -b --factory-startup --python <skrypt>`.
 - Jeśli narzędzi brak (nowy kontener), zainstaluj je według `docs/SILNIK.md`, sekcja "Środowisko".
 

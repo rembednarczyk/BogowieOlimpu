@@ -2,15 +2,15 @@
 
 Decyzja właściciela (2026-11-26): **Godot 4**. Assety robimy i przerabiamy w **Blenderze w kontenerze**. **Przed treścią gry rozbudowujemy silnik pod założenia** ze specyfikacji (`docs/gameplay/`, `data/`) i praktyk (`docs/PRAKTYKI.md`).
 
-Interpretacja "rozbudowy silnika" (do potwierdzenia, `11-OTWARTE-PYTANIA.md` pyt. 22): budujemy warstwę silnika gry na Godocie, czyli moduły ogólne, z których potem złożymy grę: symulację, logistykę, chodziców, renderowanie tłumu, nakładki, narzędzia i potok assetów. Godota nie forkujemy, dopóki pomiar nie pokaże, że rozszerzenie (GDExtension) nie wystarcza.
+Zakres "rozbudowy silnika" (potwierdzony przez właściciela 2026-11-26): budujemy warstwę silnika gry na Godocie, czyli moduły ogólne, z których potem złożymy grę: symulację, logistykę, chodziców, renderowanie tłumu, nakładki, narzędzia i potok assetów. Godota nie forkujemy, dopóki pomiar nie pokaże, że rozszerzenie (GDExtension) nie wystarcza.
 
 ## Środowisko w kontenerze (sprawdzone 2026-11-26)
 
 | Narzędzie | Wersja | Status |
 |---|---|---|
 | Godot | 4.7.2-stable (najnowsza stabilna) | działa bez okna (`--headless`): import, skrypty, testy |
-| Zrzuty z Godota | Xvfb + Mesa llvmpipe, renderer Compatibility (OpenGL 4.5) | działa, zrzut 640×360 sprawdzony |
-| Renderery Forward+ i Mobile (Vulkan) | brak programowego sterownika Vulkan w kontenerze | **nie działa**; zrzuty tylko w Compatibility |
+| Zrzuty z Godota | Xvfb + Mesa lavapipe, **Vulkan 1.4**, renderery Mobile i Forward+ | działa, zrzuty sprawdzone (R-015) |
+| Renderer Compatibility | OpenGL przez llvmpipe | działa, ale nie jest celem (R-015) |
 | Blender | 4.5.9 LTS | działa bez okna (`-b`), eksport glTF sprawdzony |
 | Łańcuch Blender → `.glb` → import Godota | | działa |
 | Kompilacja C++ | g++, cmake | dostępne; scons do doinstalowania przez pip |
@@ -35,7 +35,7 @@ game/        projekt Godota: render, kamera, UI, audio, wejście  ◄── test
 assets/      wynik potoku Blendera (.glb, tekstury, animacje)   ◄── skrypty Blendera + manifest + rejestr licencji
 ```
 
-Rekomendacja języka rdzenia: **C++ jako samodzielna biblioteka**, podpięta przez GDExtension (pyt. 23). Powody:
+Język rdzenia (decyzja 2026-11-26): **C++17 jako samodzielna biblioteka**, podpięta przez GDExtension. Powody:
 - determinizm: arytmetyka stałoprzecinkowa i jawna kolejność bez zależności od maszyny wirtualnej skryptów;
 - wydajność dla tysięcy chodzików na telefonie;
 - testy rdzenia działają natywnie w kontenerze, bez uruchamiania Godota (zasada "logika bez renderera");
@@ -132,6 +132,6 @@ Moduły C i D powstają w fazie 1 ("Prototyp symulacji") jako część silnika; 
 
 | Ryzyko | Środek |
 |---|---|
-| Renderer Mobile (Vulkan) nie do sprawdzenia w kontenerze | zrzuty i testy wizualne w Compatibility; pomiar wydajności na telefonie właściciela; ewentualnie gra na rendererze Compatibility, jeśli wystarczy |
+| Lavapipe różni się od GPU Mali w szczegółach i wydajności | zrzuty w kontenerze do oceny wyglądu; pomiar wydajności i weryfikacja wizualna na Xiaomi 15T Pro |
 | Wydajność tłumu na telefonie | prototyp E4 jako pierwszy pomiar w Godocie (3 000 postaci, 2 000 budynków) |
 | Złożoność GDExtension na Androidzie | szkielet `gdext/` z buildem Android na samym początku |

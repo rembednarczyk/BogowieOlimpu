@@ -132,10 +132,18 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Historia: 2026-11-26 utworzona
 
 ### R-014 [PROCES] Algorytmy spoza źródeł Zeusa
-- Status: propozycja
+- Status: obowiązuje
 - Źródło: lektura S-006 (Julius), S-007 (Akhenaten), S-008 (eZeus), 2026-11-26
 - Treść: Gdy S-001..S-005 nie opisują algorytmu, przyjmujemy rozwiązanie rodziny silnika potwierdzone w S-006 i S-007, o ile nie przeczy pomiarom Zeusa. Gdy rodzina milczy, przyjmujemy rozwiązanie S-008 jako założenie robocze. Oznaczenia [RODZINA] i [eZeus] w `docs/gameplay/24-algorytmy-silnika.md`. Kodu tych projektów nie kopiujemy (GPL/AGPL).
 - Uzasadnienie: S-006 i S-007 wiernie odtwarzają poprzedników Zeusa na tym samym silniku; ich wartości pokrywają się z pomiarami Zeusa (czas, prędkości, zasięgi). S-008 czyta z oryginału tylko scenariusze, reguły symulacji ustala autor.
 - Wpływ na: `docs/gameplay/24-algorytmy-silnika.md`, `data/`.
+- Historia: 2026-11-26 utworzona; 2026-11-26 obowiązuje (zgoda właściciela na rekomendacje pyt. 22-23 wraz ze stanem dokumentacji)
+
+### R-015 [TECH] Natywny rendering i biblioteki od początku
+- Status: obowiązuje
+- Źródło: decyzja właściciela 2026-11-26
+- Treść: Gra celuje w natywne API: renderer Godota Mobile (Vulkan) na telefonach, rdzeń w C++ przez GDExtension. Renderer Compatibility (OpenGL ES 3 / poziom WebGL 2) nie jest celem i nie jest bazą testów wizualnych. Testy wizualne w kontenerze idą na Vulkanie programowym (lavapipe) w rendererze Mobile.
+- Uzasadnienie: właściciel chce pracować bez ograniczeń poziomu przeglądarki; telefon odniesienia (Xiaomi 15T Pro) obsługuje Vulkan.
+- Wpływ na: `docs/07-TECHNOLOGIA.md`, `docs/SILNIK.md`, shadery i materiały (muszą działać w rendererze Mobile).
 - Historia: 2026-11-26 utworzona
 

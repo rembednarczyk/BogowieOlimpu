@@ -40,6 +40,13 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Technologia
 
+### 2026-11-26: Własna warstwa silnika, rdzeń w C++, natywny Vulkan, telefon odniesienia Xiaomi 15T Pro
+- Decyzje właściciela: zakres rozbudowy silnika zgodnie z rekomendacją (pyt. 22: własna warstwa na Godocie, bez forka); rdzeń symulacji w C++17 jako samodzielna biblioteka + GDExtension, prezentacja w GDScript (pyt. 23); telefon odniesienia **Xiaomi 15T Pro**; praca od początku na natywnych bibliotekach, bez ograniczeń poziomu WebGL.
+- Cytat właściciela: "1. zgoda 2. zgoda 3. co do telefonu to referencyjny to xiaomi 15t pro - chciałbym, żebyśmy od początku pracowali na natywnych bibliotekach, nie na ograniczeniach webgl przeglądarki".
+- Wniosek (koordynator): renderer gry = **Mobile (Vulkan)**; renderer Compatibility (OpenGL ES 3, poziom WebGL 2) nie jest celem ani bazą testów (R-015). Forward+ (Vulkan) jako opcja dla PC.
+- Sprawdzone w kontenerze: programowy Vulkan 1.4 (Mesa lavapipe) instaluje się z apt; Godot renderuje i robi zrzuty w Mobile i Forward+. Skrypt startowy środowiska zaktualizowany (sterownik Vulkan, Xvfb).
+- Nie sprawdzono: parametrów Xiaomi 15T Pro (przyjęte z wiedzy ogólnej, do potwierdzenia na urządzeniu); wydajności na urządzeniu; eksportu na Androida.
+
 ### 2026-11-26: Silnik Godot 4, assety w Blenderze w kontenerze, najpierw rozbudowa silnika
 - Decyzja: Godot 4 (4.7.2-stable). Assety tworzymy i przerabiamy w Blenderze uruchamianym w kontenerze. Przed treścią gry rozbudowujemy silnik pod założenia.
 - Cytat właściciela: "Bierzemy Godot 4. assety będziemy robić/przerabiać w blenderze tutaj na kontenerze. Zanim zaczniemy grę, rozbudujemy silnik pod założenia".
