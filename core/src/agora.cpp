@@ -102,8 +102,8 @@ std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, Hous
         return 0;
     }
     if (g == HouseGood::Food) {
-        const std::int32_t monthly = std::max(cur.consumption[0], next ? next->consumption[0] : 0);
-        return static_cast<std::uint32_t>(2 * std::max(monthly, 1));
+        // 2 units a resident: about 8 months at 0.25 a month [ZAŁOŻENIE, L-100: eZeus, owner's decision].
+        return std::max<std::uint32_t>(2 * h.population, 1);
     }
     if (g == HouseGood::Horses) {  // HS: an estate keeps up to 4 horses (S-004)
         const std::int32_t slots = std::max(cur.model[di].horse_slots, next ? next->model[di].horse_slots : 0);
@@ -115,7 +115,7 @@ std::uint32_t house_target(const DataCatalog& catalog, const HouseState& h, Hous
         };
         return static_cast<std::uint32_t>(std::max({soldiers(cur), next ? soldiers(*next) : 0, 1}));
     }
-    return 4U;
+    return 8U;  // fleece, oil, wine: 4 months at 2 units a month [ZAŁOŻENIE, L-100: eZeus, owner's decision]
 }
 
 void peddler_sells(WorldState& st, const DataCatalog& catalog, const Walker& w) {

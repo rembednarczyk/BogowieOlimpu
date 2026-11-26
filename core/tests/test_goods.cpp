@@ -98,14 +98,17 @@ TEST_CASE("food vendor fills its stall from a Granary within reach; the peddler 
     CHECK(at(sim, {12, 7}).house->level >= 1);  // shack
 }
 
-TEST_CASE("house target: two months of the food of the current or next level (L-100)") {
+TEST_CASE("house target: 2 units of food a resident (8 months), 8 units of fleece, oil, wine (L-100, eZeus)") {
     const auto& cat = bo::test::catalog();
     HouseState hut;
-    CHECK(house_target(cat, hut, HouseGood::Food, Difficulty::Hero) == 8);  // shack eats 4 a month
+    hut.population = 8;
+    CHECK(house_target(cat, hut, HouseGood::Food, Difficulty::Hero) == 16);  // 8 people x 2 units
     CHECK(house_target(cat, hut, HouseGood::Fleece, Difficulty::Hero) == 0);
     HouseState hovel;
     hovel.level = 2;
-    CHECK(house_target(cat, hovel, HouseGood::Fleece, Difficulty::Hero) == 4);  // homestead needs fleece
+    hovel.population = 24;
+    CHECK(house_target(cat, hovel, HouseGood::Food, Difficulty::Hero) == 48);
+    CHECK(house_target(cat, hovel, HouseGood::Fleece, Difficulty::Hero) == 8);  // homestead needs fleece: 4 months
 }
 
 TEST_CASE("elite plots need 2 food, 1 fleece and 1 olive oil in storage (doc 18)") {

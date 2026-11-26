@@ -51,6 +51,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - L-053: modlitwa ma szansę wysłuchania pokazywaną w panelu (Z:132), liczba jako [ZAŁOŻENIE].
 - Kolejność prac: najpierw kultura i limity budynków (B-008 do B-010), potem przebieg od pustej mapy do domów elity, potem demo, potem mechaniki P1 z przeglądu.
 
+### 2026-11-26: Zapas dóbr w domu (L-100)
+- Cytat właściciela: "Tak, wdrażaj zgodnie z rekomendacją".
+- Dom trzyma do 2 jednostek żywności na mieszkańca (8 miesięcy) i do 8 jednostek wełny, oliwy i wina (4 miesiące), jak w eZeus; Zeus Heaven podaje tylko zużycie. Powód: z zapasem na 2 miesiące domy w demo co miesiąc spadały o poziom i wypychały mieszkańców na ulicę.
+
 ## Proces
 
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"
