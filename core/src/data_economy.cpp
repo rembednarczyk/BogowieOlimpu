@@ -108,6 +108,7 @@ void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) 
             pp.input_capacity = p.value("input_capacity", 0);
             pp.storage_loads = p.value("storage_loads", 0);
             pp.animals_max = p.value("animals_max", 0);
+            pp.slaughter_loads = p.value("slaughter_loads", 0);
             const auto& hm = p.value("harvest_months", json());
             if (hm.is_object()) {
                 for (const auto& [good, months] : hm.items()) {

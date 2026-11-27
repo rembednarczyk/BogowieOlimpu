@@ -207,8 +207,16 @@ void dispatch_field_workers(WorldState& st, const DataCatalog& catalog, Logistic
         const BuildingType& type = catalog.buildings.at(b.type);
         if (pp.animals_max > 0 && out.empty() && b.producer->output_loads < static_cast<std::uint32_t>(pp.storage_loads)) {
             std::optional<std::pair<std::int32_t, BuildingId>> best;  // nearest ready animal of this shed
+            BuildingId bull = kNoBuilding;  // a corral's first head guards the herd, it is not slaughtered (P:7)
             for (const auto& [aid, a] : items) {
-                if (a.animal && a.animal->shed == id && a.animal->days_to_ready == 0 && !a.animal->worker_coming) {
+                if (pp.slaughter_loads > 0 && a.animal && a.animal->shed == id) {
+                    bull = aid;
+                    break;
+                }
+            }
+            for (const auto& [aid, a] : items) {
+                if (a.animal && a.animal->shed == id && a.animal->days_to_ready == 0 && !a.animal->worker_coming &&
+                    aid != bull) {
                     const std::int32_t d = chebyshev(a.origin, b.origin);
                     if (!best || d < best->first) {
                         best = std::make_pair(d, aid);
@@ -280,7 +288,10 @@ void field_work_at_target(WorldState& st, const DataCatalog& catalog, Walker& w)
     if (w.job == WalkerJob::Shear && t.animal) {
         t.animal->worker_coming = false;
         t.animal->days_to_ready = kDaysPerYear;  // one load a year per animal (doc 19)
-        w.cargo[home_type.outputs.front()] = 1;
+        const auto pp = catalog.production.find(home->second.type);
+        const std::int32_t meat = pp == catalog.production.end() ? 0 : pp->second.slaughter_loads;
+        // Slaughter (P:7, L-132): a calf takes the place of the head and grows for a year.
+        w.cargo[home_type.outputs.front()] = meat > 0 ? static_cast<std::uint32_t>(meat) : 1;
     } else if (w.job == WalkerJob::Tend) {
         for (const BuildingId id : buildings_in_square(st.city, t.origin, kPrunerRadius)) {
             if (items.at(id).orchard) {

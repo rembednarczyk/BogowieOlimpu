@@ -157,6 +157,7 @@ struct ProductionParams {
     std::int32_t input_capacity = 0;            // processors: input loads held (3, doc 19)
     std::int32_t storage_loads = 0;             // sheds and lodges: finished loads held (5, doc 19)
     std::int32_t animals_max = 0;               // sheds: herd size (8, doc 19)
+    std::int32_t slaughter_loads = 0;           // corral: loads a slaughtered head gives (P:7, L-132); 0 = shorn
     std::map<std::string, std::vector<std::int32_t>> harvest_months;  // lodges: fruit -> 0-based months
     std::int32_t input_per_output = 1;          // sculpture studio: 4 bronze per sculpture (doc 19)
     // Extraction (L-102): workers walk to the resource, work, bring units_per_trip back.

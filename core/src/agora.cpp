@@ -32,8 +32,8 @@ std::optional<HouseGood> house_good_of(const DataCatalog& catalog, const std::st
     if (good == "armor") {
         return HouseGood::Armor;
     }
-    if (good == "horses") {
-        return HouseGood::Horses;
+    if (good == "horses" || good == "chariot") {
+        return HouseGood::Horses;  // in Atlantis a chariot from its stall fills an estate's horse need (P:19, S-008)
     }
     return std::nullopt;
 }

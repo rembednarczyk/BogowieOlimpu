@@ -197,6 +197,7 @@ std::vector<BuildingId> herd_births(WorldState& st, const DataCatalog& catalog) 
         const auto params = shed == st.city.buildings.items.end() ? catalog.production.end()
                                                                   : catalog.production.find(shed->second.type);
         if (params == catalog.production.end() || !shed->second.producer || herd.size() < 2 ||
+            params->second.slaughter_loads > 0 ||  // a corral breeds only in place of the slaughtered (P:7)
             herd.size() >= static_cast<std::size_t>(params->second.animals_max)) {
             continue;
         }

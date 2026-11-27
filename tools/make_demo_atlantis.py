@@ -10,7 +10,9 @@ Run: python3 tools/make_demo_atlantis.py   (then tools/sync_game_data.py copies 
 import json
 import os
 
-W, H = 48, 40
+W, H = 48, 80
+OLD_H = 40  # the old city; below it (y >= 40) the expansion's district. The tiles' random bytes go row by row, so
+            # the old city keeps its own (a wider map changed every tile's byte and the old city's fate)
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 grid = [["."] * W for _ in range(H)]
 
@@ -31,6 +33,14 @@ for y in (6, 14, 22, 37):      # streets
 for x in (12, 30):
     fill(x, 6, x, 37, "=")
 fill(31, 30, 46, 30, "=")      # a lane under the second row of farms
+# The south district (P:7-8, P:18-19): one road down the east edge from the y = 37 street, a roadblock on it keeps
+# the old city's roaming walkers at home (Z:19-20).
+fill(47, 38, 47, 45, "=")
+fill(1, 45, 47, 45, "=")
+fill(1, 67, 47, 67, "=")
+fill(24, 46, 24, 66, "=")
+fill(1, 46, 23, 56, ",")      # meadow: cattle and orange trees
+fill(0, 71, 23, 79, "T")      # forest: wood for the chariots of the army's stage (P:18)
 
 steps = []
 
@@ -108,6 +118,27 @@ put("university", 1, 15, day=SCIENCES); put("inventors_workshop", 5, 15, day=SCI
 put("maintenance_office", 9, 15, day=SCIENCES); put("watchpost", 9, 18, day=SCIENCES)
 put("laboratory", 5, 18, day=SCIENCES)
 put("observatory", 1, 23, day=SCIENCES); put("museum", 6, 23, day=SCIENCES)
+
+# Stage HUSBANDRY (P:7-8), once the old city stands: a corral with cattle and an orange grove on the south
+# meadow, their granary, houses for the hands. (Chariots come with the army's stage: estates keep them.)
+HUSBANDRY = 1450  # after the pyramid (the win): its masons and artisans keep their hands
+steps.append({"day": 0, "roadblock": [47, 38]})
+for x in (1, 11, 21, 31):
+    houses(x, 43, 4, day=HUSBANDRY)
+put("fountain", 9, 43, day=HUSBANDRY); put("fountain", 29, 43, day=HUSBANDRY)
+put("maintenance_office", 19, 43, day=HUSBANDRY); put("watchpost", 39, 43, day=HUSBANDRY)
+put("maintenance_office", 41, 43, day=HUSBANDRY)
+put("corral", 1, 46, day=HUSBANDRY)
+put("granary", 5, 46, day=HUSBANDRY)  # next to the corral: meat goes 23 tiles at most (data/production.json)
+put("maintenance_office", 21, 46, day=HUSBANDRY)  # or the granary falls (Z:89)
+put("orange_tenders_lodge", 9, 46, day=HUSBANDRY)
+for x in range(11, 21):
+    put("orange_tree", x, 46, day=HUSBANDRY)
+for x in range(1, 9):
+    put("cattle", x, 52, day=HUSBANDRY + 1)
+put("common_agora", 30, 45, rot=1, day=HUSBANDRY)
+put("food_vendor_stall", 30, 46, day=HUSBANDRY + 1)
+
 
 scenario = {
     "id": "demo_atlantis",

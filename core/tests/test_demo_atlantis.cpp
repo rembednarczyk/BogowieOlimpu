@@ -1,8 +1,9 @@
 // The Atlantis demo gate (tools/make_demo_atlantis.py; docs/PRAKTYKI.md ch. 4): the autopilot builds the
-// Atlantean city and wins it within eight years (the small city's quarries are slow for the pyramid, L-128); science lifts its houses (P:10-11) and the hippodrome races (P:13-15).
+// Atlantean city and wins it within eight years, then shows the expansion's husbandry (P:7-8, P:18-19) (the small city's quarries are slow for the pyramid, L-128); science lifts its houses (P:10-11) and the hippodrome races (P:13-15).
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <map>
 #include <sstream>
 
 #include "bo/core/build_order.h"
@@ -25,6 +26,32 @@ std::string read_text(const std::string& path) {
     return s.str();
 }
 
+// The expansion's mechanics the demo must show (the owner's rule), noted as they happen.
+constexpr const char* kExpansionMechanics[] = {
+    "cattle_meat",    // a corral's rancher brings meat (P:7)
+    "oranges",        // orange tenders pick for the granary (P:8)
+};
+
+void note_expansion(const Simulation& sim, std::map<std::string, std::uint32_t>& seen) {
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        if (b.storage) {
+            const auto meat = b.storage->loads.find("meat");
+            const auto oranges = b.storage->loads.find("oranges");
+            seen["cattle_meat"] += meat != b.storage->loads.end() && meat->second > 0 ? 1 : 0;
+            seen["oranges"] += oranges != b.storage->loads.end() && oranges->second > 0 ? 1 : 0;
+        }
+    }
+}
+
+bool all_shown(const std::map<std::string, std::uint32_t>& seen) {
+    for (const char* m : kExpansionMechanics) {
+        if (seen.count(m) == 0 || seen.at(m) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins it") {
@@ -42,10 +69,12 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     bool racing = false;
     bool crosswalk = false;
     std::vector<std::string> refused;
+    std::map<std::string, std::uint32_t> seen;
+    std::uint64_t won_day = 0;
     std::uint64_t day = 0;
     const char* years = std::getenv("BO_DEMO_YEARS");
-    const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 8) * kDaysPerMonth * kMonthsPerYear;
-    for (; day < cap && !(sim.state().scenario.won && science && sciences && racing && crosswalk); ++day) {
+    const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 10) * kDaysPerMonth * kMonthsPerYear;
+    for (; day < cap && !(sim.state().scenario.won && science && sciences && racing && crosswalk && all_shown(seen)); ++day) {
         for (const auto& c : due_commands(*order, sim, day)) {
             sim.issue(c);
         }
@@ -67,6 +96,8 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
                 sciences = sciences || all;
             }
         }
+        note_expansion(sim, seen);
+        won_day = won_day == 0 && sim.state().scenario.won ? day : won_day;
         racing = racing || working_hippodrome(sim.state(), sim.catalog()) > 0;
         for (const BuildingId id : hippodrome_track(sim.state().city).segments) {
             for (const TilePos p : sim.state().city.buildings.items.at(id).tiles) {
@@ -124,10 +155,14 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
         MESSAGE("refused: " << r);
     }
     CHECK(sim.state().scenario.won);
+    CHECK(won_day < 8 * kDaysPerMonth * kMonthsPerYear);  // won within eight years; the expansion's stage follows
     CHECK(science);  // scholars in the houses (P:10-11)
     CHECK(sciences);  // and astronomers, inventors, curators in one house (P:10-12)
     CHECK(racing);   // the hippodrome with its horses (P:13-15)
     CHECK(crosswalk);  // a crosswalk over it (P:14)
+    for (const char* m : kExpansionMechanics) {
+        CHECK_MESSAGE((seen.count(m) > 0 && seen.at(m) > 0), "the Atlantis demo never showed: " << std::string(m));
+    }
     for (const auto& c : bo::test::demo::cut_off(sim)) {
         MESSAGE("cut off from the land entry: " << c);  // B-021
     }
