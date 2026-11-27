@@ -49,6 +49,7 @@ const WALKER_COLORS := {
 	"priest": Color(0.95, 0.95, 0.6), "hoplite": Color(0.6, 0.1, 0.1), "rabble": Color(0.7, 0.3, 0.2),
 	"horseman": Color(0.4, 0.05, 0.05), "immigrant": Color(0.8, 0.8, 0.6),
 	"calydonian_boar": Color(0.25, 0.15, 0.1), "ares_warriors": Color(0.5, 0.0, 0.0),
+	"trireme": Color(0.85, 0.9, 1.0), "transport": Color(0.45, 0.3, 0.15), "warship": Color(0.15, 0.15, 0.2),
 }
 
 var sim := BoSimulation.new()
