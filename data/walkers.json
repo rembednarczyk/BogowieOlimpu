@@ -50,5 +50,8 @@
 {"id": "rabble", "type": "destination", "from": "common_housing", "to": "company_standard", "speed_tiles_per_month": 72.53, "src": "Z:136; doc 22 (S-004 units)"},
 {"id": "hoplite", "type": "destination", "from": "elite_housing", "to": "company_standard", "speed_tiles_per_month": 54.4, "src": "Z:136; doc 22 (S-004 units)"},
 {"id": "horseman", "type": "destination", "from": "elite_housing", "to": "company_standard", "speed_tiles_per_month": 108.8, "src": "Z:136; doc 22 (S-004 units)"},
+{"id": "archer", "type": "destination", "from": "common_housing", "to": "company_standard", "speed_tiles_per_month": 54.4, "src": "P:15; S-004 units (enemies.json atlantean)"},
+{"id": "spearman", "type": "destination", "from": "elite_housing", "to": "company_standard", "speed_tiles_per_month": 54.4, "src": "P:15; S-004 units (enemies.json atlantean)"},
+{"id": "charioteer", "type": "destination", "from": "elite_housing", "to": "company_standard", "speed_tiles_per_month": 95.2, "src": "P:15; S-004 units (enemies.json atlantean)"},
 {"id": "wolf", "type": "destination", "from": "wolf_spawn", "to": "sheep_or_goat", "speed_tiles_per_month": 68, "src": "Z:45, P:7; doc 17 (prędkość zwierząt); liczby [ZAŁOŻENIE L-107] z S-008 (eZeus: wolf_max_count 8, wolf_hunt_wait 20, wolf_hunt_distance 60)", "wolves": {"pack": 8, "refill_days": 26, "hunt_one_in_days": 20, "reach_tiles": 60, "guard_tiles": 5, "prey": ["sheep", "goat"]}}
 ]

@@ -377,3 +377,70 @@ TEST_CASE("B-021 probe: a storehouse with Get orders supplies the wharf with woo
     };
     CHECK(units("wood") + units("armor") + wharf.producer->progress + wharf.producer->output_loads > 0);
 }
+
+namespace {
+
+// The sea city in Atlantis with a frigate wharf in place of the trireme wharf (P:15-18).
+Simulation frigate_city(bool orichalc) {
+    std::vector<std::string> rows(20, std::string(30, '.'));
+    rows[8] = std::string(30, '=');
+    for (std::size_t y = 12; y < 20; ++y) {
+        rows[y] = std::string(30, '~');
+    }
+    rows[19][29] = 'S';
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{16, Difficulty::Hero, 30000, rows, true});
+    sim.mutable_state().city.atlantean = true;
+    sim.issue(PlaceBuilding{"palace", 2, 2});
+    sim.step(1);
+    sim.issue(PlaceBuilding{"trireme_wharf", 10, 9});
+    sim.step(1);
+    CHECK(sim.state().city.map.at({10, 9}).building == kNoBuilding);  // Greek: not in Atlantis (P:16-17)
+    sim.issue(PlaceBuilding{"frigate_wharf", 10, 9});
+    sim.step(1);
+    auto& p = *sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({10, 9}).building).producer;
+    p.units["wood"] = 4;
+    p.units["armor"] = 4;
+    if (orichalc) {
+        p.units["orichalc"] = 1;
+    }
+    sim.run_days(120);  // 96 days a ship (L-117), then launched
+    return sim;
+}
+
+}  // namespace
+
+TEST_CASE("fleet: a frigate wharf builds a frigate; with orichalc it carries Atlantean Fire (P:15-18, L-133)") {
+    auto plain = frigate_city(false);
+    auto fire = frigate_city(true);
+    for (Simulation* sim : {&plain, &fire}) {
+        REQUIRE(sim->state().military.ships.size() == 1);
+        CHECK(trireme(*sim).type == "frigate");
+        CHECK(trireme(*sim).hp == sim->catalog().combat.nations.at("atlantean").units.at("frigate").hp);
+    }
+    const BuildingId yard = fire.state().city.map.at({10, 9}).building;
+    CHECK(fire.state().city.buildings.items.at(yard).producer->units.at("orichalc") == 0);  // used for the fire
+    CHECK(with_atlantean_fire(plain.state(), plain.catalog(), trireme(plain), 100) == 100);
+    CHECK(with_atlantean_fire(fire.state(), fire.catalog(), trireme(fire), 100) == fire.catalog().naval.atlantean_fire_percent);
+}
+
+TEST_CASE("fleet: Oceanids swim under the water: a trireme cannot hit them (P:19, L-133)") {
+    auto sim = with_trireme();
+    sim.issue(StartInvasion{"oceanid", 40, -1, true});
+    sim.step(1);
+    auto& st = sim.mutable_state();
+    REQUIRE(!ships_of_type(sim, "transport").empty());
+    const TilePos at = trireme(sim).tile;
+    for (const WalkerId id : st.military.invasion.invaders) {
+        st.walkers.items.at(id).speed_raw = 0;
+        st.walkers.items.at(id).cooldown = 60000;
+        st.walkers.items.at(id).tile = {at.x + 3, at.y + 1};
+    }
+    std::vector<std::int32_t> hp;
+    for (const WalkerId id : st.military.invasion.invaders) {
+        hp.push_back(st.walkers.items.at(id).hp);
+    }
+    sim.step(200);
+    for (std::size_t i = 0; i < hp.size(); ++i) {
+        CHECK(sim.state().walkers.items.at(sim.state().military.invasion.invaders[i]).hp == hp[i]);
+    }
+}

@@ -109,6 +109,10 @@ void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) 
             pp.storage_loads = p.value("storage_loads", 0);
             pp.animals_max = p.value("animals_max", 0);
             pp.slaughter_loads = p.value("slaughter_loads", 0);
+            const json optional = p.value("optional_inputs", json::object());  // named: items() must not outlive it
+            for (const auto& [g, n] : optional.items()) {
+                pp.optional_inputs[g] = n.get<std::int32_t>();
+            }
             const auto& hm = p.value("harvest_months", json());
             if (hm.is_object()) {
                 for (const auto& [good, months] : hm.items()) {
@@ -135,6 +139,7 @@ void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
         NationParams np;
         np.composition = n.value("composition", std::vector<std::int32_t>{});
         np.composition_units = n.value("composition_units", std::vector<std::string>{});
+        np.underwater = n.value("underwater", false);
         const json& units = n.contains("units") ? n.at("units") : n;  // player_greek lists its units directly
         for (const auto& [uid, u] : units.items()) {
             if (!u.is_object() || !u.contains("hp")) {
@@ -155,6 +160,16 @@ void load_combat(const std::map<std::string, json>& docs, CombatParams& p) {
             np.units[uid] = s;
         }
         p.nations[id] = np;
+    }
+    // The player's Atlantean citizens (P:15): the Atlantean table of S-004 (enemies.json "atlantean") [L-066].
+    const auto atl = p.nations.find("atlantean");
+    const auto own = p.nations.find("player_greek");
+    if (atl != p.nations.end() && own != p.nations.end()) {
+        for (const char* u : {"archer", "spearman", "charioteer", "frigate"}) {
+            if (atl->second.units.count(u) != 0 && own->second.units.count(u) == 0) {
+                own->second.units[u] = atl->second.units.at(u);
+            }
+        }
     }
     if (docs.count("military.json") != 0) {
         const json fort = docs.at("military.json").value("fortification_hits", json::object());

@@ -49,7 +49,7 @@ void lose_soldier(WorldState& st, const std::string& unit, BuildingId house) {
     auto& armor = h.goods[static_cast<std::size_t>(HouseGood::Armor)];
     auto& horses = h.goods[static_cast<std::size_t>(HouseGood::Horses)];
     armor -= armor > 0 ? 1 : 0;
-    horses -= unit == "horseman" && horses > 0 ? 1 : 0;
+    horses -= unit_role(unit) == "horseman" && horses > 0 ? 1 : 0;
 }
 
 void battle_abroad(WorldState& st, const DataCatalog& catalog, Expedition& e) {
@@ -124,7 +124,7 @@ std::int64_t army_strength_x2(const WorldState& st, const std::vector<std::uint3
         for (const auto& m : company.members) {
             n += m.soldiers;
         }
-        x2 += company.unit == "horseman" ? 3 * n : 2 * n;
+        x2 += unit_role(company.unit) == "horseman" ? 3 * n : 2 * n;
     }
     return x2;
 }
@@ -246,7 +246,7 @@ std::string dispatch_aid(WorldState& st, const DataCatalog& catalog, std::uint32
     std::vector<std::uint32_t> chosen;
     for (std::uint32_t i = 0; i < st.military.companies.size() && chosen.size() < companies; ++i) {
         const Company& c = st.military.companies[i];
-        if (c.status == CompanyStatus::AtHome && c.unit != "rabble" && !c.members.empty()) {
+        if (c.status == CompanyStatus::AtHome && unit_role(c.unit) != "rabble" && !c.members.empty()) {
             chosen.push_back(i);  // no rabble abroad (Z:136, 13-przeglad)
         }
     }
@@ -286,7 +286,7 @@ std::string dispatch_army(WorldState& st, const DataCatalog& catalog, std::uint3
     }
     for (const std::uint32_t c : companies) {
         if (c >= st.military.companies.size() || st.military.companies[c].status != CompanyStatus::AtHome ||
-            st.military.companies[c].unit == "rabble" || st.military.companies[c].members.empty()) {
+            unit_role(st.military.companies[c].unit) == "rabble" || st.military.companies[c].members.empty()) {
             return "world.bad_company";  // no rabble abroad (Z:136, Z:177)
         }
     }

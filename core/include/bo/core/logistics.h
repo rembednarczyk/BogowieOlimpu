@@ -14,6 +14,8 @@ namespace bo::core {
 
 // Vendor fetches up to this many loads [ZAŁOŻENIE, L-100: same as a storage deliveryman, doc 19].
 inline constexpr std::uint32_t kVendorLoads = 4;
+// A frigate wharf's mark (in its producer's units) that its ship carries Atlantean Fire (P:15-18, L-133).
+inline constexpr const char* kAtlanteanFire = "atlantean_fire";
 // A stall sends its vendor when it holds less than this many units of its goods [ZAŁOŻENIE, L-100].
 inline constexpr std::uint32_t kStallRefillUnits = 200;
 // Default vendor reach when the data gives none (doc 24: 40 tiles [RODZINA]).

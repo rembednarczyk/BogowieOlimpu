@@ -1,3 +1,4 @@
+#include "bo/core/military.h"
 #include "bo/core/build_order.h"
 
 #include "bo/core/storage.h"
@@ -245,7 +246,7 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
             auto& army = std::get<DispatchArmy>(c);
             const auto& companies = sim.state().military.companies;
             for (std::uint32_t i = 0; i < companies.size(); ++i) {
-                if (companies[i].status == CompanyStatus::AtHome && companies[i].unit != "rabble" &&
+                if (companies[i].status == CompanyStatus::AtHome && unit_role(companies[i].unit) != "rabble" &&
                     !companies[i].members.empty()) {
                     army.companies.push_back(i);
                 }

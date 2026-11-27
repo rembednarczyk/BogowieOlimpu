@@ -86,22 +86,28 @@ TilePos mooring_of(const WorldState& st, const Ship& s) {
     return m.value_or(s.station);
 }
 
+// The ship a wharf builds: a trireme, or in Atlantis a frigate (P:15-18); empty for any other building.
+std::string ship_of_wharf(const std::string& wharf) {
+    return wharf == "trireme_wharf" ? "trireme" : wharf == "frigate_wharf" ? "frigate" : "";
+}
+
 void launch(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
     const auto& player = catalog.combat.nations.find("player_greek");
-    if (player == catalog.combat.nations.end() || player->second.units.count("trireme") == 0) {
+    if (player == catalog.combat.nations.end()) {
         return;
     }
-    const UnitStats& s = player->second.units.at("trireme");
     for (auto& [id, b] : st.city.buildings.items) {
         const bool has_ship = std::any_of(st.military.ships.begin(), st.military.ships.end(),
                                           [id = id](const Ship& sh) { return sh.wharf == id; });
-        const auto moor = b.type == "trireme_wharf" && b.producer ? mooring(st.city, b) : std::nullopt;
-        if (has_ship || !moor || b.producer->output_loads == 0) {
+        const std::string unit = ship_of_wharf(b.type);
+        const auto moor = !unit.empty() && b.producer ? mooring(st.city, b) : std::nullopt;
+        if (has_ship || !moor || b.producer->output_loads == 0 || player->second.units.count(unit) == 0) {
             continue;
         }
+        const UnitStats& s = player->second.units.at(unit);
         Walker w;
         w.id = st.walkers.next_id++;
-        w.type = "trireme";
+        w.type = unit;
         w.job = WalkerJob::Ship;
         w.home = id;
         w.tile = *moor;
@@ -159,6 +165,18 @@ bool is_ship(const Walker& w) {
 
 bool is_transport(const Walker& w) { return w.job == WalkerJob::Invade && w.type == "transport"; }
 
+std::int32_t with_atlantean_fire(const WorldState& st, const DataCatalog& catalog, const Walker& w, std::int32_t attack) {
+    if (w.job != WalkerJob::Ship) {
+        return attack;
+    }
+    const auto wharf = st.city.buildings.items.find(w.home);
+    if (wharf == st.city.buildings.items.end() || !wharf->second.producer ||
+        wharf->second.producer->units.count(kAtlanteanFire) == 0 || wharf->second.producer->units.at(kAtlanteanFire) == 0) {
+        return attack;
+    }
+    return attack * catalog.naval.atlantean_fire_percent / 100;  // P:15-18, L-133
+}
+
 namespace combat_detail {
 
 std::int32_t ship_engage(const WorldState& st, const DataCatalog& catalog, const Walker& w, const UnitStats& s) {
@@ -192,6 +210,10 @@ std::optional<std::pair<std::int32_t, WalkerId>> naval_foe(const WorldState& st,
         const std::int32_t d = chebyshev(w.tile, o.tile);
         if (!fighter(o) || defends(o) == defends(w) || d > limit) {
             continue;
+        }
+        const auto nation = catalog.combat.nations.find(o.variant);
+        if (w.job == WalkerJob::Ship && is_ship(o) && nation != catalog.combat.nations.end() && nation->second.underwater) {
+            continue;  // Oceanids swim under the water: no frigate or trireme can hit them (P:19)
         }
         int rank = 0;
         if (w.job == WalkerJob::Ship) {
@@ -322,10 +344,12 @@ void sail_home(WorldState& st, const DataCatalog& catalog, BuildingId wharf) {
         if (sh.wharf != wharf || sh.crew != Crew::Abroad) {
             continue;
         }
-        const UnitStats& s = catalog.combat.nations.at("player_greek").units.at("trireme");
+        const auto yard = st.city.buildings.items.find(wharf);
+        const std::string unit = yard == st.city.buildings.items.end() ? "trireme" : ship_of_wharf(yard->second.type);
+        const UnitStats& s = catalog.combat.nations.at("player_greek").units.at(unit.empty() ? "trireme" : unit);
         Walker w;
         w.id = st.walkers.next_id++;
-        w.type = "trireme";
+        w.type = unit.empty() ? "trireme" : unit;
         w.job = WalkerJob::Ship;
         w.home = wharf;
         w.tile = mooring_of(st, sh);
@@ -350,6 +374,7 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
         const auto wharf = st.city.buildings.items.find(it->wharf);
         if (wharf != st.city.buildings.items.end() && wharf->second.producer) {
             wharf->second.producer->output_loads = 0;  // sunk: the wharf builds another (S-008)
+            wharf->second.producer->units.erase(kAtlanteanFire);  // and the fire went down with it
         }
         it = ships.erase(it);
     }

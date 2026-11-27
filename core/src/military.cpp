@@ -96,6 +96,17 @@ bool route(CityState& city, Walker& w, TilePos to) {
 
 }  // namespace
 
+std::string unit_role(const std::string& unit) {
+    return unit == "archer" ? "rabble" : unit == "spearman" ? "hoplite" : unit == "charioteer" ? "horseman" : unit;
+}
+
+std::string citizen_unit(const CityState& city, const std::string& role) {
+    if (!city.atlantean) {
+        return role;
+    }
+    return role == "rabble" ? "archer" : role == "hoplite" ? "spearman" : role == "horseman" ? "charioteer" : role;
+}
+
 std::uint32_t house_soldiers(const DataCatalog& catalog, const HouseState& h, Difficulty d) {
     const auto& levels = levels_of(catalog, h);
     if (h.abandoned || h.level >= levels.size() || levels[h.level].military.empty()) {
@@ -127,7 +138,7 @@ void form_companies(WorldState& st, const DataCatalog& catalog) {
     if (palace) {
         for (const char* unit : {"horseman", "hoplite", "rabble"}) {
             Company current;
-            current.unit = unit;
+            current.unit = citizen_unit(st.city, unit);  // archers, spearmen, charioteers in Atlantis (P:15)
             std::size_t size = 0;
             for (const auto& [id, b] : st.city.buildings.items) {
                 if (!b.house || formed.size() == kMaxCompanies) {
@@ -372,7 +383,7 @@ std::string send_company_home(WorldState& st, std::uint32_t index) {
 std::uint32_t workers_in_the_field(const WorldState& st, const DataCatalog& catalog) {
     std::uint32_t n = 0;
     for (const Company& c : st.military.companies) {
-        if (c.unit == "rabble" && c.status != CompanyStatus::AtHome) {
+        if (unit_role(c.unit) == "rabble" && c.status != CompanyStatus::AtHome) {
             n += static_cast<std::uint32_t>(c.soldiers.size());
         }
     }

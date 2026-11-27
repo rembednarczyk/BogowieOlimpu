@@ -157,6 +157,7 @@ struct ProductionParams {
     std::int32_t input_capacity = 0;            // processors: input loads held (3, doc 19)
     std::int32_t storage_loads = 0;             // sheds and lodges: finished loads held (5, doc 19)
     std::int32_t animals_max = 0;               // sheds: herd size (8, doc 19)
+    std::map<std::string, std::int32_t> optional_inputs;  // frigate wharf: orichalc for Atlantean Fire (P:15-18)
     std::int32_t slaughter_loads = 0;           // corral: loads a slaughtered head gives (P:7, L-132); 0 = shorn
     std::map<std::string, std::vector<std::int32_t>> harvest_months;  // lodges: fruit -> 0-based months
     std::int32_t input_per_output = 1;          // sculpture studio: 4 bronze per sculpture (doc 19)
@@ -287,6 +288,7 @@ struct NavalParams {
     std::int32_t attack_all_engage = 200;
     std::int32_t crew_workers = 20;  // taken from the workforce while a trireme is crewed (Z:141)
     std::int32_t orders_min_crew_percent = 50;  // below it a short-handed ship takes no orders (Z:141, L-124)
+    std::int32_t atlantean_fire_percent = 150;  // a frigate's or tower's blows with Atlantean Fire (P:15-18, L-133)
 };
 
 struct GamesParams {
@@ -365,6 +367,7 @@ struct NationParams {
     std::vector<std::int32_t> composition;     // percent per unit, heavy infantry, missiles, cavalry (doc 22)
     std::vector<std::string> composition_units;
     std::map<std::string, UnitStats> units;
+    bool underwater = false;  // Oceanids (P:19): at sea no player ship can hit them (L-133)
 };
 
 struct CombatParams {

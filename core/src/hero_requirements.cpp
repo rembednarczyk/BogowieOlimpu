@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 
+#include "bo/core/military.h"
 #include "bo/core/appeal.h"
 #include "bo/core/culture.h"
 #include "bo/core/games.h"
@@ -147,9 +148,10 @@ std::size_t count_houses(const WorldState& st, bool elite) {
     }));
 }
 
+// Companies of a role: hoplites count spearmen in Atlantis, horsemen charioteers (Z:130 "(Atl: ...)", P:15).
 std::int64_t companies_of(const WorldState& st, const std::string& unit) {
     return std::count_if(st.military.companies.begin(), st.military.companies.end(),
-                         [&unit](const Company& c) { return unit.empty() || c.unit == unit; });
+                         [&unit](const Company& c) { return unit.empty() || unit_role(c.unit) == unit; });
 }
 
 std::int64_t horses_in_city(const WorldState& st) {

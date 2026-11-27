@@ -96,6 +96,13 @@ struct MilitaryState {
     }
 };
 
+// The Greek role of a citizen unit (P:15, L-066): Atlantis's archers, spearmen and charioteers stand where
+// rabble, hoplites and horsemen stand: from the same houses, with the same equipment (a chariot fills the horse
+// slot, L-132), the same rules for losses, tactics and going abroad. Any other unit is its own role.
+std::string unit_role(const std::string& unit);
+// The citizen unit of a role in this city: the Greek one, or the Atlantean in an Atlantean city.
+std::string citizen_unit(const CityState& city, const std::string& role);
+
 // Soldiers a house gives (doc 22): round(population x %S / 100) of the unit of its level; hoplites need one
 // armor each, horsemen armor and a horse each (Z:136-137).
 std::uint32_t house_soldiers(const DataCatalog& catalog, const HouseState& h, Difficulty d);

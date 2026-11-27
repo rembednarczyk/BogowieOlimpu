@@ -266,6 +266,7 @@ void load_army_rules(const std::map<std::string, json>& docs, DataCatalog& cat) 
         np.attack_all_engage = n.value("attack_all_engage_tiles", np.attack_all_engage);
         np.crew_workers = n.value("crew_workers", np.crew_workers);
         np.orders_min_crew_percent = n.value("orders_min_crew_percent", np.orders_min_crew_percent);
+        np.atlantean_fire_percent = n.value("atlantean_fire_percent", np.atlantean_fire_percent);
     }
 }
 

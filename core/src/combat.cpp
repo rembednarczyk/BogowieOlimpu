@@ -9,6 +9,7 @@
 #include "bo/core/naval.h"
 #include "bo/core/path.h"
 #include "bo/core/state.h"
+#include "bo/core/storage.h"
 #include "bo/core/walker.h"
 
 namespace bo::core {
@@ -133,6 +134,9 @@ void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<
         return;
     }
     const UnitStats& shot = rabble->second.units.at("rabble");
+    // An Atlantean tower with orichalc in the city's store fires Atlantean Fire (P:18) [ZAŁOŻENIE, L-133].
+    const bool fire = st.city.atlantean && city_stock(st.city, catalog, "orichalc") > 0;
+    const std::int32_t power = fire ? shot.missile_attack * catalog.naval.atlantean_fire_percent / 100 : shot.missile_attack;
     for (auto& [id, b] : st.city.buildings.items) {
         if (b.type != "tower" || !st.towers_manned || b.staffing_percent == 0 || b.cursed_days > 0) {
             continue;
@@ -155,7 +159,7 @@ void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<
         }
         Walker& o = st.walkers.items.at(foe->second);
         const UnitStats* os = stats_of(catalog, o);
-        const std::int32_t hit = std::max(0, shot.missile_attack - (os ? os->armor_vs_missiles : 0));
+        const std::int32_t hit = std::max(0, power - (os ? os->armor_vs_missiles : 0));
         o.hp -= catalog.combat.tower_shots * hit;
         b.cooldown = static_cast<std::uint16_t>(shot.missile_rate);
     }
@@ -208,12 +212,13 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
     const auto house = st.city.buildings.items.find(w.home);
     if (house != st.city.buildings.items.end() && house->second.house) {
         HouseState& h = *house->second.house;
-        const auto loss = static_cast<std::uint32_t>(w.type == "rabble" ? catalog.combat.rabble_population_loss_per_death : 1);
+        const std::string role = unit_role(w.type);
+        const auto loss = static_cast<std::uint32_t>(role == "rabble" ? catalog.combat.rabble_population_loss_per_death : 1);
         h.population -= std::min(h.population, loss);
         auto& armor = h.goods[static_cast<std::size_t>(HouseGood::Armor)];
         auto& horses = h.goods[static_cast<std::size_t>(HouseGood::Horses)];
-        armor -= w.type != "rabble" && armor > 0 ? 1 : 0;
-        horses -= w.type == "horseman" && horses > 0 ? 1 : 0;
+        armor -= role != "rabble" && armor > 0 ? 1 : 0;
+        horses -= role == "horseman" && horses > 0 ? 1 : 0;
     }
     Company* c = company_of(st, w.id);
     if (!c || !c->nation.empty()) {

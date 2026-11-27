@@ -114,9 +114,16 @@ TEST_CASE("invaders walled off break through a wall or the gate, then march on (
 
 namespace {
 
-// Invaders' total hit points after 8 days next to a tower; `man`: the Man All order was given.
-std::int64_t invader_hp_after_tower(bool man) {
+// Invaders' total hit points after 8 days next to a tower; `man`: the Man All order was given; `fire`: an
+// Atlantean city with orichalc in store (Atlantean Fire, P:18, L-133).
+std::int64_t invader_hp_after_tower(bool man, bool fire = false) {
     auto sim = walled();
+    if (fire) {
+        sim.mutable_state().city.atlantean = true;
+        sim.issue(PlaceBuilding{"storehouse", 30, 11});
+        sim.step(1);
+        sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({30, 11}).building).storage->loads["orichalc"] = 2;
+    }
     for (int y = 13; y < 16; ++y) {
         sim.issue(PlaceBuilding{"wall", 16, y});
     }
@@ -143,6 +150,10 @@ std::int64_t invader_hp_after_tower(bool man) {
 
 TEST_CASE("a manned tower shoots the invaders in range; without Man All it stays silent (Z:146, L-117)") {
     CHECK(invader_hp_after_tower(true) < invader_hp_after_tower(false));
+}
+
+TEST_CASE("an Atlantean tower with orichalc in store fires Atlantean Fire: it hits harder (P:18, L-133)") {
+    CHECK(invader_hp_after_tower(true, true) < invader_hp_after_tower(true));
 }
 
 TEST_CASE("a trireme wharf builds a trireme from wood and armor, one at a time (Z:141, L-117)") {

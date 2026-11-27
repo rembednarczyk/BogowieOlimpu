@@ -87,6 +87,11 @@ std::uint32_t processor_room_loads(const Building& b, const DataCatalog& catalog
     }
     if (!p.inputs_multi.empty()) {  // chariot factory: wood and horses in pieces
         const auto cap = static_cast<std::uint32_t>(p.input_capacity);
+        const auto opt = p.optional_inputs.find(good);  // frigate wharf: orichalc for the next ship (P:15-18)
+        if (opt != p.optional_inputs.end()) {
+            const auto need = static_cast<std::uint32_t>(opt->second);
+            return units(good) < need ? need - units(good) : 0;
+        }
         return p.inputs_multi.count(good) != 0 && units(good) < cap ? cap - units(good) : 0;
     }
     const auto cap = static_cast<std::uint32_t>(p.input_capacity);
@@ -167,6 +172,12 @@ void advance_husbandry(WorldState& st, const DataCatalog& catalog) {
                     p.progress -= 100 * kDaysPerYear;
                     for (const auto& [g, n] : pp.inputs_multi) {
                         p.units[g] -= static_cast<std::uint32_t>(n);
+                    }
+                    for (const auto& [g, n] : pp.optional_inputs) {  // the ship gets its Atlantean Fire (L-133)
+                        if (p.units[g] >= static_cast<std::uint32_t>(n)) {
+                            p.units[g] -= static_cast<std::uint32_t>(n);
+                            p.units[kAtlanteanFire] = 1;
+                        }
                     }
                     ++p.output_loads;
                 }

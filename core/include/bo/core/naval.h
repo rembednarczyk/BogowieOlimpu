@@ -15,6 +15,8 @@ namespace bo::core {
 // Ships of either side: the player's triremes, the invaders' transports and warships.
 bool is_ship(const Walker& w);
 bool is_transport(const Walker& w);
+// A frigate armed with Atlantean Fire (its wharf took orichalc for it) strikes harder (P:15-18, L-133).
+std::int32_t with_atlantean_fire(const WorldState& state, const DataCatalog& catalog, const Walker& w, std::int32_t attack);
 
 // Daily: a wharf that has built its trireme launches it at its mooring (one ship a wharf, Z:141; a sunk one is
 // built again); a ship beaten below repair_below_percent goes back to the wharf (Carry Out Repairs, Z:142),

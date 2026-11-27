@@ -1,6 +1,8 @@
 // Tactics, strength at the Palace and the gods' help in battle (Z:119-120, Z:138-139, Z:144; L-110).
 #include <algorithm>
 
+#include "bo/core/military.h"
+#include "bo/core/naval.h"
 #include "bo/core/blessings.h"
 #include "combat_internal.h"
 
@@ -68,31 +70,32 @@ void fight(WorldState& st, const DataCatalog& catalog, Walker& w, const UnitStat
         c->status = CompanyStatus::Fighting;
     }
     const bool special = c && c->tactic == Tactic::Special;
-    if (special && w.type == "rabble" && foe.first <= 1 && s.missile_attack > 0) {
+    if (special && unit_role(w.type) == "rabble" && foe.first <= 1 && s.missile_attack > 0) {
         const TilePos away{w.tile.x + (w.tile.x - o.tile.x) * catalog.tactics.skirmish_retreat,
                            w.tile.y + (w.tile.y - o.tile.y) * catalog.tactics.skirmish_retreat};
         if (route(st.city, w, away)) {
             return;  // skirmish: out of reach, then throw again
         }
     }
-    if (special && w.type == "horseman" && w.cooldown > 0 && w.phase != WalkerPhase::AtTarget) {
+    if (special && unit_role(w.type) == "horseman" && w.cooldown > 0 && w.phase != WalkerPhase::AtTarget) {
         return;  // harass: still riding back to the standard after the last blow
     }
     if (foe.first <= 1 && s.attack > 0) {
         stand(w);
         if (w.cooldown == 0 && os) {
-            const std::int32_t attack = blessed_attack(
-                st, catalog, w, special && w.type == "hoplite" ? s.attack * catalog.tactics.wedge_attack_percent / 100 : s.attack);
+            const std::int32_t attack = with_atlantean_fire(st, catalog, w, blessed_attack(
+                st, catalog, w, special && unit_role(w.type) == "hoplite" ? s.attack * catalog.tactics.wedge_attack_percent / 100 : s.attack));
             o.hp -= std::max(0, attack - armor_of(st, catalog, o, *os));
             w.cooldown = static_cast<std::uint16_t>(s.melee_rate);
-            if (special && w.type == "horseman") {
+            if (special && unit_role(w.type) == "horseman") {
                 route(st.city, w, company_slot(st.city, c->standard, w.want_loads));  // harass: ride back
             }
         }
     } else if (s.missile_attack > 0 && foe.first <= s.missile_range) {
         stand(w);
         if (w.cooldown == 0 && os) {
-            o.hp -= std::max(0, blessed_attack(st, catalog, w, s.missile_attack) - os->armor_vs_missiles);
+            const std::int32_t shot = with_atlantean_fire(st, catalog, w, blessed_attack(st, catalog, w, s.missile_attack));
+            o.hp -= std::max(0, shot - os->armor_vs_missiles);
             w.cooldown = static_cast<std::uint16_t>(s.missile_rate);
         }
     } else if (rechase || w.phase == WalkerPhase::AtTarget) {

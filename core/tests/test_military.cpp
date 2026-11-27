@@ -152,3 +152,62 @@ TEST_CASE("save v17: a company in the field survives a round trip with the same 
     b->run_days(3);
     CHECK(a.state_hash() == b->state_hash());
 }
+
+TEST_CASE("Atlantis: common houses give archers in place of rabble; they muster with the Atlantean stats (P:15, L-066)") {
+    auto sim = town();
+    sim.mutable_state().city.atlantean = true;
+    for (int x = 2; x < 8; x += 2) {
+        sim.issue(PlaceBuilding{"common_housing", x, 4});
+    }
+    sim.issue(PlaceBuilding{"palace", 20, 7});
+    sim.step(1);
+    run(sim, 2);
+    REQUIRE(!sim.state().military.companies.empty());
+    CHECK(sim.state().military.companies[0].unit == "archer");
+    CHECK(unit_role("archer") == "rabble");
+    CHECK(unit_role("spearman") == "hoplite");
+    CHECK(unit_role("charioteer") == "horseman");
+    CHECK(citizen_unit(sim.state().city, "hoplite") == "spearman");
+    sim.issue(MusterCompany{0});
+    sim.step(1);
+    CHECK_FALSE(rejected(sim, "military.bad_company"));
+    REQUIRE(sim.state().military.companies[0].soldiers.size() == 8);
+    const Walker& archer = sim.state().walkers.items.at(sim.state().military.companies[0].soldiers[0]);
+    CHECK(archer.type == "archer");
+    CHECK(archer.hp == sim.catalog().combat.nations.at("atlantean").units.at("archer").hp);  // 80 (S-004)
+}
+
+TEST_CASE("Atlantis: estates give spearmen with armor and charioteers with armor and a chariot (P:15, P:18)") {
+    auto sim = town();
+    sim.mutable_state().city.atlantean = true;
+    sim.issue(PlaceBuilding{"palace", 20, 7});
+    sim.issue(PlaceBuilding{"storehouse", 30, 7});
+    sim.step(1);
+    auto& loads = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({30, 7}).building).storage->loads;
+    for (const char* g : {"wine", "olive_oil", "fleece", "armor", "horses", "wheat"}) {
+        loads[g] = 20;
+    }
+    sim.issue(PlaceBuilding{"elite_housing", 2, 2});
+    sim.step(1);
+    const BuildingId estate = sim.state().city.map.at({2, 2}).building;
+    REQUIRE(estate != kNoBuilding);
+    const auto& levels = sim.catalog().elite_levels;
+    std::uint8_t top = 0;
+    for (std::uint8_t i = 0; i < levels.size(); ++i) {
+        top = levels[i].military == "horseman" ? i : top;
+    }
+    for (int d = 0; d < 2; ++d) {
+        HouseState& h = *sim.mutable_state().city.buildings.items.at(estate).house;
+        h.level = top;
+        h.population = 40;
+        h.failed_checks = 0;
+        h.goods[static_cast<std::size_t>(HouseGood::Armor)] = 8;
+        h.goods[static_cast<std::size_t>(HouseGood::Horses)] = 8;  // chariots from the stall (L-132)
+        sim.run_days(1);
+    }
+    bool charioteers = false;
+    for (const Company& c : sim.state().military.companies) {
+        charioteers = charioteers || c.unit == "charioteer";
+    }
+    CHECK(charioteers);
+}
