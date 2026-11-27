@@ -199,5 +199,5 @@ Stan E7/E8 (krok 1, układ według decyzji właściciela w `DECYZJE.md`): `game/
 | Ryzyko | Środek |
 |---|---|
 | Lavapipe różni się od GPU Mali w szczegółach i wydajności | zrzuty w kontenerze do oceny wyglądu; pomiar wydajności i weryfikacja wizualna na Xiaomi 15T Pro |
-| Wydajność tłumu na telefonie | zmierzona 2026-11-27: 6 000 postaci z animacją przy 120 klatkach/s na Xiaomi 15T Pro; zostaje koszt cieni i słabszy telefon |
+| Wydajność tłumu na telefonie | zmierzona 2026-11-27: 6 000 postaci z animacją przy 120 klatkach/s na Xiaomi 15T Pro; cienie kosztują setne części ms i są w grze; zostaje słabszy telefon |
 | Złożoność GDExtension na Androidzie | szkielet `gdext/` z buildem Android na samym początku |

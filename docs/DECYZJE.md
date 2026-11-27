@@ -4,6 +4,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Cienie słońca w grze na stałe
+- Decyzja: cienie słońca włączone w grze (budynki i postacie); LOD tłumu dopiero dla słabszych telefonów.
+- Powód: pomiar właściciela na Xiaomi 15T Pro (APK 0.0.44): 6 000 postaci z animacją i 2 000 budynków, GPU średnio 4,42 ms, najgorzej 6,76 ms; cienie dodają setne części milisekundy, są widoczne na budynkach i postaciach („Myślę, że mogą wejść”).
+- Wdrożone: `game/scenes/boot.gd` `_build_environment` (cień słońca), zakres głębi kamery ortogonalnej według widoku (`_place_camera`), `07-TECHNOLOGIA.md`.
+- Niesprawdzone: wygląd cieni w samej grze na telefonie (w kontenerze Vulkan programowy rysuje je źle); kąt słońca do strojenia przy modelach z Blendera.
+
 ### 2026-11-27: Skala interfejsu w dp, 48 dp, panel po prawej, tylko poziomo
 - Decyzja: interfejs w dp (dpi/160 na telefonie i tablecie, skala systemowa na PC), cel dotyku 48 dp, suwak skali 75-150 %, tylko orientacja pozioma (obie strony), panel kategorii po prawej jak w oryginale; najmniejszy ekran 640 x 360 dp, nadmiar przewijany.
 - Powód: odpowiedzi właściciela na pytania 1-5 o skalowanie (podejście 2 z trzech). Dotychczasowe rozciąganie 1280 x 720 dawało 5,3-6,1 mm przycisku na telefonach i 25 mm na PC 24"; na Xiaomi lista Widok i kolumna budynków wychodziły poza ekran.
