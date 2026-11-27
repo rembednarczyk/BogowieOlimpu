@@ -231,6 +231,8 @@ func _goal_text(g: Dictionary) -> String:
 			return tr("goal.support") % [g["value"], tr("unit." + g["target"]) if g["target"] != "trireme" else tr("ui.ships")]
 		"slay":
 			return tr("goal.slay") % (g["target"] if g["target"] != "" else str(g["value"]))
+		"yearly_production":
+			return tr("goal.yearly_production") % [g["value"], tr("good." + g["target"])]
 		"set_aside_goods":
 			return tr("goal.set_aside_goods") % [g["value"], tr("good." + g["target"])]
 		"survive_until", "complete_before":

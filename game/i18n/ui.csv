@@ -225,3 +225,4 @@ ship.crew.2,załoga wraca,crew going home
 ui.crew_all,Wezwij wszystkie załogi,Call all crews
 ui.crew_call,Wezwij załogę,Call crew
 ui.crew_home,Odeślij załogę,Send crew home
+goal.yearly_production,Produkcja w roku: %d (%s),Yearly production: %d (%s)

@@ -1,6 +1,6 @@
 // Module D5: episode goals (docs/gameplay/23; doc 23; L-093b). The types of the reference's editor as eZeus
 // reads them (S-008, eepisodegoal): population, treasury, sanctuary, rule (vassal), quest, housing (houses),
-// support, slay, set aside goods, survive until, complete before, trading partners, yearly profit. Pyramids
+// support, slay, set aside goods, survive until, complete before, trading partners, yearly production and profit. Pyramids
 // (monuments) and the hippodrome wait for those buildings (L-093b).
 #include "bo/core/scenario.h"
 
@@ -108,6 +108,13 @@ bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGo
     }
     if (g.type == "trading_partners") {
         return trading_partners(st) >= g.value;
+    }
+    if (g.type == "yearly_production") {  // loads of a good made in one year, the best year or this one (S-008)
+        const auto get = [&g](const std::map<std::string, std::uint32_t>& m) {
+            const auto it = m.find(g.target);
+            return it != m.end() ? static_cast<std::int64_t>(it->second) : 0;
+        };
+        return std::max(get(st.produced_best_year), get(st.produced_this_year)) >= g.value;
     }
     if (g.type == "yearly_profit") {  // last year's taxes less wages and building [ZAŁOŻENIE, L-093b]
         const FinanceYear& y = st.finance.last_year;

@@ -149,7 +149,7 @@ TEST_CASE("the demo adventure (scenarios/demo.json) parses and starts") {
     auto sim = start(text.str());
     CHECK(sim.state().city.map.width() == 120);  // tools/make_demo.py
     CHECK(sim.state().trade.partners.size() == 4);
-    CHECK(sim.state().scenario.goals.size() == 10);
+    CHECK(sim.state().scenario.goals.size() == 11);
     CHECK(sim.state().scenario.events.size() == 10);
 }
 
@@ -241,4 +241,15 @@ TEST_CASE("goals: complete before a year, or the episode is lost; support counts
     army.mutable_state().walkers.items.emplace(w.id, w);
     army.mutable_state().military.ships.push_back(Ship{w.id, kNoBuilding, ShipOrder::Defend, w.tile});
     CHECK(met_after_month(army, 2));
+}
+
+TEST_CASE("goals: yearly production counts the loads producers deliver; the best year stays (S-008, L-093b)") {
+    auto sim = start(adventure("", R"({"type": "yearly_production", "target": "wheat", "value": 3})"));
+    sim.mutable_state().produced_this_year["wheat"] = 2;
+    CHECK_FALSE(met_after_month(sim, 0));
+    sim.mutable_state().produced_this_year["wheat"] = 3;
+    CHECK(met_after_month(sim, 0));
+    sim.run_days(16 * 12);  // a new year: this year's count starts again, the best year is kept
+    CHECK(sim.state().produced_best_year.at("wheat") >= 3);
+    CHECK(sim.state().produced_this_year.count("wheat") == 0);
 }

@@ -352,6 +352,11 @@
    "value": 4
   },
   {
+   "type": "yearly_production",
+   "target": "onions",
+   "value": 20
+  },
+  {
    "type": "complete_before",
    "value": 9
   }

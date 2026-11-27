@@ -114,6 +114,7 @@ scenario = {
         {"type": "support", "target": "rabble", "value": 40},
         {"type": "set_aside_goods", "target": "marble", "value": 20},
         {"type": "survive_until", "value": 4},
+        {"type": "yearly_production", "target": "onions", "value": 20},
         {"type": "complete_before", "value": 9},
     ],
 }

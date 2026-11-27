@@ -145,6 +145,9 @@ struct WorldState {
     // Goods the player keeps (Z:80; since v35): not for industry, traders, sanctuary sites or agora vendors.
     std::set<std::string> stockpiled;
     bool towers_manned = false;
+    // Loads made this year and in the best year so far, per good (goal yearly_production, S-008; since v43).
+    std::map<std::string, std::uint32_t> produced_this_year;
+    std::map<std::string, std::uint32_t> produced_best_year;
     std::int32_t games_host_year = -1;  // the year the city has the right to host the Olympian games (Z:111; v37)  // Man All (Z:146; since v36): the generals send sentries to every tower
     std::uint16_t caravan_curse_days = 0;
     std::uint16_t ship_curse_days = 0;

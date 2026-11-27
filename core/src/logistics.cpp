@@ -359,6 +359,14 @@ LogisticsEvents dispatch_workers(WorldState& st, const DataCatalog& catalog) {
     return ev;
 }
 
+// A load from a producer reaches a storehouse or a workshop: the year's production (goal yearly_production).
+static void count_production(WorldState& st, const Walker& w, const std::string& good, std::uint32_t loads) {
+    const auto home = st.city.buildings.items.find(w.home);
+    if (home != st.city.buildings.items.end() && home->second.producer && !home->second.storage) {
+        st.produced_this_year[good] += loads;
+    }
+}
+
 void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
     for (auto& [wid, w] : st.walkers.items) {
         if (w.phase != WalkerPhase::AtTarget || w.job == WalkerJob::Crime || w.job == WalkerJob::Extinguish ||
@@ -386,6 +394,7 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
                 if (n > 0) {
                     processor_add(p, catalog, it->first, n);
                     it->second -= n;
+                    count_production(st, w, it->first, n);
                 }
                 it = it->second == 0 ? w.cargo.erase(it) : std::next(it);
             }
@@ -397,6 +406,7 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
                 for (auto it = w.cargo.begin(); it != w.cargo.end();) {
                     if (storage_accepts(s, catalog, it->first) || trade_accepts(s, catalog, it->first)) {
                         s.storage->loads[it->first] += it->second;
+                        count_production(st, w, it->first, it->second);
                         it = w.cargo.erase(it);
                     } else {
                         ++it;  // no longer accepted: the load goes back home

@@ -325,6 +325,8 @@ void write_world(ByteWriter& w, const WorldState& s) {
     }
     w.u8(s.towers_manned ? 1 : 0);  // since v36
     w.i32(s.games_host_year);       // since v37
+    write_counts(w, s.produced_this_year);  // since v43
+    write_counts(w, s.produced_best_year);
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -438,7 +440,8 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
         return false;
     }
     s.towers_manned = manned != 0;
-    return version < 37 || r.i32(s.games_host_year);
+    return (version < 37 || r.i32(s.games_host_year)) &&
+           (version < 43 || (read_counts(r, s.produced_this_year) && read_counts(r, s.produced_best_year)));
 }
 
 // A trireme order (index 30, since v39, Z:142).

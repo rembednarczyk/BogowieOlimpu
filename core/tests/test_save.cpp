@@ -109,12 +109,21 @@ constexpr std::size_t kTowersManned = 1;  // v36: Man All flag
 
 constexpr std::size_t kHostYear = 4;  // v37: the year to host the games (the end of the world block)
 
+constexpr std::size_t kProduced = 8;  // v43: no goods made this year, none in the best year (end of the world block)
 constexpr std::size_t kSea = 13;  // v39: invasion by sea flag, landing tile, no ships (end of the army block)
 constexpr std::size_t kWorldBlock = 9 + kDeliveries + kDebt + kGodHelp + kTradeCurses + kStockpiled + kTowersManned +
-                                    kHostYear;  // the world block of an empty city, after the army block
+                                    kHostYear;  // the world block of an empty city up to v42, after the army block
+
+// The save without the v43 production record: the layout of v42.
+std::vector<std::uint8_t> as_v42(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kProduced), end);
+    return bytes;
+}
 
 // The save without the v39 fleet fields: the layout of v37 and v38 (v38 adds only per-company fields).
 std::vector<std::uint8_t> as_v38(std::vector<std::uint8_t> bytes) {
+    bytes = as_v42(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kWorldBlock + kScenario + kQuests + kAwarded + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kSea), end);
     return bytes;
@@ -241,9 +250,10 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
-    check_load(a.save(), 41, h);  // v42 adds only a per-ship field
-    check_load(a.save(), 40, h);  // v41 adds only a per-sanctuary field
-    check_load(a.save(), 39, h);  // v40 adds only a per-company field
+    check_load(as_v42(a.save()), 42, h);
+    check_load(as_v42(a.save()), 41, h);  // v42 adds only a per-ship field
+    check_load(as_v42(a.save()), 40, h);  // v41 adds only a per-sanctuary field
+    check_load(as_v42(a.save()), 39, h);  // v40 adds only a per-company field
     check_load(as_v38(a.save()), 38, h);
     check_load(as_v38(a.save()), 37, h);
     check_load(as_v36(a.save()), 36, h);

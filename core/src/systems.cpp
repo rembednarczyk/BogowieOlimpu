@@ -157,6 +157,11 @@ static void run_finance(Simulation& sim) {
     }
     if (st.time.month() == 0) {
         close_year(st.finance);
+        for (const auto& [good, n] : st.produced_this_year) {  // the best year of each good (S-008)
+            auto& best = st.produced_best_year[good];
+            best = std::max(best, n);
+        }
+        st.produced_this_year.clear();
     }
     const auto r = settle_month(st, sim.catalog());
     sim.emit(MonthlyFinance{r.taxes, r.wages});
