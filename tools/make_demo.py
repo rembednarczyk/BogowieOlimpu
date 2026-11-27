@@ -342,25 +342,27 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})
-steps.append({"day": EAST, "road": [76, 17, 91, 17]})  # along the stadium: its competitors reach the estate
 for y in (29, 37):
     steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
 steps.append({"day": EAST, "demolish": [2, 12]})
-put("stadium", 78, 12, day=EAST + 1, retry=True)
-put("maintenance_office", 88, 12, day=EAST); put("watchpost", 90, 12, day=EAST)  # or it burns (Z:89-90)
+# The stadium's road is y = 11 (its north side): from (82, 11) its competitors reach the estate by the x = 92
+# road in about 24 tiles.
+put("maintenance_office", 78, 12, day=EAST); put("watchpost", 80, 12, day=EAST)  # or it burns (Z:89-90)
+put("stadium", 82, 12, day=EAST + 1, retry=True)
 put("sanctuary_apollo", 94, 12, day=EAST + 200, retry=True, when={"marble": 20})  # after Perseus has his sculptures
 put("theater", 94, 24, day=EAST)
 put("gymnasium", 84, 30, day=EAST); put("podium", 88, 30, day=EAST)  # by the estate: athletes, philosophers
 put("college", 106, 26, day=EAST); put("maintenance_office", 109, 27, day=EAST)
-for x in (76, 79, 82, 85, 88):  # hedge mazes around the estate plot (82, 25)
+for x in (79, 82, 85, 88):  # hedge mazes around the estate plot (88, 25), by the x = 92 road
     put("hedge_maze", x, 18, day=EAST)
     put("hedge_maze", x, 21, day=EAST)
-for x in (76, 86, 89):  # (79, 25): the monument
+for x in (79, 82):
     put("hedge_maze", x, 25, day=EAST)
-for x in range(76, 92):
+for x in range(79, 92):
     put("column", x, 24, day=EAST)
-put("commemorative_monument", 79, 25, day=EAST + 200, retry=True)  # a second one, as earned (Z:155)
-put("elite_housing", 82, 25, day=EAST + 120, retry=True)
+put("commemorative_monument", 85, 25, day=EAST + 200, retry=True)  # a second one, as earned (Z:155)
+put("elite_housing", 88, 25, day=EAST + 120, retry=True)
+put("maintenance_office", 82, 35, day=EAST); put("watchpost", 84, 35, day=EAST)  # the granary and the stores
 put("granary", 76, 30, day=EAST); put("storehouse", 80, 30, day=EAST)
 for good in ["onions", "carrots"]:
     steps.append({"day": EAST + 1, "at": [76, 30], "storage_order": {"good": good, "kind": 1, "limit": 8}})
