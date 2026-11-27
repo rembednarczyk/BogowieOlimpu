@@ -218,6 +218,17 @@ struct SanctuaryParams {
     bool monument = false;  // an Atlantean monument (data/pyramids.json, P:26-28, L-128): built like a sanctuary,
                             // no god, no priests, no limit of four
     std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
+    std::string spontaneous;                        // gods.json spontaneous_help condition (Z:119-122, L-130)
+};
+
+// When a god helps without a prayer (data/gods_rules.json spontaneous_help; Z:119-122) [ZAŁOŻENIE, L-130].
+struct SpontaneousParams {
+    std::int32_t low_food_loads = 8;       // food in the city's granaries below this: Poseidon, Demeter
+    std::int32_t very_low_food_loads = 2;  // Artemis
+    std::int64_t low_money = 500;          // Hades
+    std::int32_t low_goods_loads = 2;      // olives and oil (Athena), wine (Dionysus)
+    std::int32_t vacant_percent = 50;      // inhabited houses filled below this: Aphrodite
+    std::int32_t request_days_left = 16;   // a request about to lapse: Hermes
 };
 
 // World (data/diplomacy.json; doc 24; assumptions L-063, L-064, L-113).
@@ -419,6 +430,7 @@ struct DataCatalog {
     std::uint32_t hera_stall_units = 400;
     std::int32_t sanctify_every_days = 16;               // [ZAŁOŻENIE, L-112]
     std::int32_t sanctify_reach_tiles = 40;              // [ZAŁOŻENIE, L-112]
+    SpontaneousParams spontaneous;                       // [ZAŁOŻENIE, L-130]
     std::map<std::string, std::int32_t> wrath;           // gods_rules.json wrath_numbers [ZAŁOŻENIE, L-115]
     std::map<std::string, std::int32_t> monster_numbers;  // gods_rules.json monster_numbers [ZAŁOŻENIE, L-116]
     std::map<std::string, std::string> monster_slayer;    // monsters.json: monster -> hero (Z:130)

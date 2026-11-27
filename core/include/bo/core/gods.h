@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "bo/core/city.h"
 #include "bo/core/data.h"
@@ -30,6 +31,12 @@ void apply_sanctification(CityState& city);
 // expansion: Hera restocks the stalls, Atlas brings a site's materials (Z:119-122, P:20-21).
 // The god may refuse (Z:132): see prayer_chance.
 std::string pray(WorldState& state, const DataCatalog& catalog, BuildingId sanctuary);
+// What a prayer gives (gods.json prayer effect): goods, money, a cure, a guard; false when there is nothing to give.
+bool grant_blessing(WorldState& state, const DataCatalog& catalog, const std::string& effect);
+
+// Monthly: a god with a complete sanctuary and the favour kept helps on its own when it sees its problem
+// (gods.json spontaneous_help; Z:119-122) [ZAŁOŻENIE, L-130]; the gods that helped, by sanctuary id order.
+std::vector<std::string> advance_god_help(WorldState& state, const DataCatalog& catalog);
 
 // Percent chance that the god of a finished sanctuary grants a prayer now (Z:132) [ZAŁOŻENIE, L-053]: full soon
 // after a sacrifice, then falling to prayer_chance_min when the god is about to turn away.

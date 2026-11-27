@@ -109,7 +109,7 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo",
                                       "built_grand_agora", "grand_agora_sells", "built_park", "built_bench",
                                       "built_fish_pond", "built_boulevard", "built_avenue", "built_water_crossing",
-                                      "fire", "crime", "emigration", "surrendered", "tribute_paid"};
+                                      "fire", "crime", "emigration", "surrendered", "tribute_paid", "god_helped", "sparti"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     const auto one = [&seen](const std::string& m) {
@@ -170,6 +170,9 @@ DemoRun run_demo(std::uint64_t years) {
         }
         if (std::getenv("BO_DEMO_REJECT") != nullptr) {  // every refused command with its day
             for (const auto& e : events) {
+                if (const auto* gh = std::get_if<GodHelped>(&e.event)) {
+                    std::printf("day %llu god helped: %s\n", static_cast<unsigned long long>(day), gh->god.c_str());
+                }
                 if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
                     std::printf("day %llu rejected %u: %s\n", static_cast<unsigned long long>(day), r->command_index,
                                 r->reason_key.c_str());
@@ -386,8 +389,6 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(houses_at(st, run.sim->catalog(), true, 0) >= 2);
     CHECK(st.scenario.won);
     CHECK(run.won_day < 7 * kDaysPerMonth * kMonthsPerYear);
-    CHECK(std::any_of(st.military.companies.begin(), st.military.companies.end(),
-                      [](const Company& c) { return c.nation == "divine"; }));  // Ares's Sparti (Z:140)
     CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);
     CHECK(st.city.map.at({23, 6}).terrain != Terrain::Forest);  // cleared on day 1 (Z:19)
     CHECK(st.city.map.at({58, 7}).building == kNoBuilding);   // the fountain of day 2 undone (Z:20)  // the earthquake of year 3 (demo.json) cracked the land

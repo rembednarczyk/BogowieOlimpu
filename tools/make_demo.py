@@ -247,6 +247,9 @@ for t, x in [("timber_mill", 4), ("timber_mill", 6), ("hunting_lodge", 20),
     put(t, x, 9, day=INDUSTRY)
 put("armory", 40, 9, day=MYTH + 400)  # bronze for the sculptures of the sanctuaries first (Z:117)
 put("storehouse", 23, 8, day=INDUSTRY); put("storehouse", 56, 8, day=INDUSTRY)
+for x in (23, 56):  # the industry's stores: no olives or oil, e.g. from Athena (Z:67, Z:120)
+    for good in ("olives", "olive_oil"):
+        steps.append({"day": INDUSTRY + 1, "at": [x, 8], "storage_order": {"good": good, "kind": 3, "limit": 0}})
 put("watchpost", 60, 9, day=INDUSTRY)
 put("winery", 30, 36, day=INDUSTRY)
 for i in range(10):
@@ -311,6 +314,7 @@ steps.append({"day": ARMY, "road": [49, 46, 49, 46]})
 put("trireme_wharf", 50, 47, day=ARMY)
 # Crews (Z:141): every trireme is launched unmanned; its crew is called from the workforce (Crew All, Z:150).
 steps.append({"day": ARMY, "every": 32, "ships": 4})
+steps.append({"day": 1190, "ships": 2})  # Carry Out Repairs: back to the wharves before the patrols (Z:142)
 steps.append({"day": 1200, "ship_order": [0, 3, 60, 54]})  # after the landing: the first one patrols (Z:142)
 put("storehouse", 71, 46, day=ARMY)  # wood for the triremes (Z:141): the timber mills are 50 tiles away
 steps.append({"day": ARMY + 1, "at": [71, 46], "storage_order": {"good": "wood", "kind": 1, "limit": 8}})
@@ -352,6 +356,7 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # horsemen (Z:136). Apollo's Oracle foretells (Z:124). Two agoras, a granary and a storehouse for the estate
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
+priorities(EAST, [4, 4, 5, 5, 3, 4, 3, 4])  # bronze and armour for the estates while the generals call the rabble
 steps.append({"day": EAST, "tax": 4})  # High: the district is dear (Z:97)
 steps.append({"day": EAST, "wage": 4})  # High wages: more of the people work (Z:59-60, doc 22)
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})
@@ -365,6 +370,7 @@ put("stadium", 82, 12, day=EAST + 1, retry=True)
 steps.append({"day": EAST + 1, "roadblock": [93, 11]})  # its competitors turn down the x = 92 road (Z:19-20)
 # Wine for the manor (Z:33): Rhodes's wine comes in by the pier, none goes out any more (Z:77-79).
 steps.append({"day": EAST, "at": [34, 46], "trade_order": {"good": "wine", "import": 12}})
+steps.append({"day": EAST, "at": [33, 36], "trade_order": {"good": "armor", "import": 8}})  # for the estates (Z:34, Z:148)
 put("sanctuary_apollo", 94, 12, day=EAST + 200, retry=True, when={"marble": 20})  # after Perseus has his sculptures
 put("theater", 94, 24, day=EAST)
 put("gymnasium", 84, 30, day=EAST); put("podium", 88, 30, day=EAST)  # by the estate: athletes, philosophers
@@ -428,7 +434,7 @@ steps.append({"day": 1000, "every": 48, "pray": [37, 37]})
 # Corinth (Z:174-175); after the war with Argos a gift brings its tribute back (Z:172, Z:176); for two months
 # the sawmills stand idle and a north storehouse empties its wood (Z:62-63, Z:67).
 steps.append({"day": 433, "bribe": True})
-steps.append({"day": 1521, "surrender": True})  # Sparta's attack of year 7 (one defeat: two lose the episode, Z:172)
+steps.append({"day": 900, "every": 1, "until": 1100, "surrender": 1})  # to Sparta's attack of year 4, once: the city can pay (Z:172)
 steps.append({"day": 1, "clear": [23, 6]})
 put("fountain", 58, 7, day=2)
 steps.append({"day": 2, "later": True, "undo": True})  # a tick after the fountain went up

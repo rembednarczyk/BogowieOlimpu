@@ -188,6 +188,9 @@ inline void note_events(const std::vector<TimedEvent>& events, std::map<std::str
         } else if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
             seen["bribed"] += end->result == 1 ? 1 : 0;  // Z:137
             seen["surrendered"] += end->result == 2 ? 1 : 0;
+        } else if (const auto* gh = std::get_if<GodHelped>(&e.event)) {
+            ++seen["god_helped"];  // Z:119-122
+            ++seen["god_helped_" + gh->god];
         } else if (std::holds_alternative<UndoApplied>(e.event)) {
             ++seen["undo"];  // Z:20
         } else if (const auto* x = std::get_if<ExpeditionReturned>(&e.event)) {
@@ -229,6 +232,9 @@ inline void note_state(const Simulation& sim, std::map<std::string, std::uint32_
     for (const Ship& sh : st.military.ships) {
         seen["ship_attack_all"] += sh.order == ShipOrder::AttackAll ? 1 : 0;  // Z:142
         seen["ship_repair"] += sh.order == ShipOrder::Repair ? 1 : 0;
+    }
+    for (const Company& c : st.military.companies) {
+        seen["sparti"] += c.nation == "divine" ? 1 : 0;  // Ares's Sparti (Z:121, Z:140)
     }
     for (const Company& c : st.military.companies) {  // the generals mustered the city's own (Z:145)
         seen["auto_defend"] += st.auto_defend && st.military.invasion.active && c.lender < 0 && c.nation.empty() &&

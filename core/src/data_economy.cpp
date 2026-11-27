@@ -186,6 +186,14 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         cat.hera_stall_units = gr.value("hera_stall_units", cat.hera_stall_units);
         cat.sanctify_every_days = gr.value("sanctify_every_days", cat.sanctify_every_days);
         cat.sanctify_reach_tiles = gr.value("sanctify_reach_tiles", cat.sanctify_reach_tiles);
+        const json sp = gr.value("spontaneous_help", json::object());
+        SpontaneousParams& s = cat.spontaneous;
+        s.low_food_loads = sp.value("low_food_loads", s.low_food_loads);
+        s.very_low_food_loads = sp.value("very_low_food_loads", s.very_low_food_loads);
+        s.low_money = sp.value("low_money", s.low_money);
+        s.low_goods_loads = sp.value("low_goods_loads", s.low_goods_loads);
+        s.vacant_percent = sp.value("vacant_percent", s.vacant_percent);
+        s.request_days_left = sp.value("request_days_left", s.request_days_left);
         const json wrath = gr.value("wrath_numbers", json::object());
         for (const auto& [k, v] : wrath.items()) {
             cat.wrath[k] = v.get<std::int32_t>();
@@ -238,6 +246,8 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             const auto benefits = g.value("benefits", std::vector<std::string>{});
             p.oracle = std::find(benefits.begin(), benefits.end(), "oracle") != benefits.end();
             p.oracle_silent_days = rules.value("oracle_silent_days", p.oracle_silent_days);
+            const json help = g.value("spontaneous_help", json());
+            p.spontaneous = help.is_string() ? help.get<std::string>() : "";
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
     }

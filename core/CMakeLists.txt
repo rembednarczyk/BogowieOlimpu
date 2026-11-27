@@ -16,6 +16,7 @@ add_library(bo_core STATIC
     src/finance.cpp
     src/fortifications.cpp
     src/gods.cpp
+    src/god_help.cpp
     src/build_order.cpp
     src/culture.cpp
     src/tactics.cpp

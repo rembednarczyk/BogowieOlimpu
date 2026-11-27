@@ -351,3 +351,34 @@ TEST_CASE("oracle: a yearly invasion is foretold for next year once this year's 
     hermes.step(1);
     CHECK(result(hermes) == "myth.no_oracle");
 }
+
+TEST_CASE("spontaneous help: Apollo cures a plague unasked, then waits like after a prayer (Z:119-122, L-130)") {
+    auto sim = with_god("apollo");
+    sim.issue(PlaceBuilding{"common_housing", 20, 18});
+    sim.step(1);
+    const BuildingId house = sim.state().city.map.at({20, 18}).building;
+    REQUIRE(house != kNoBuilding);
+    auto sick = [&sim, house] {
+        HouseState& h = *sim.mutable_state().city.buildings.items.at(house).house;
+        h.population = std::max<std::uint32_t>(h.population, 5);
+        h.quarantine_days = 30;  // a plague in the city
+    };
+    auto helped_in = [&sim, &sick](int days) {
+        std::size_t helped = 0;
+        for (int d = 0; d < days; ++d) {
+            sick();
+            sim.run_days(1);
+            for (const auto& e : sim.drain_events()) {
+                if (const auto* h = std::get_if<GodHelped>(&e.event)) {
+                    CHECK(h->god == "apollo");
+                    ++helped;
+                }
+            }
+        }
+        return helped;
+    };
+    sim.drain_events();
+    CHECK(helped_in(static_cast<int>(kDaysPerMonth) + 1) == 1);  // once in the month, unasked
+    CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 3) == 0);  // then the god waits as after a prayer (96 days)
+    CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 4) == 1);
+}

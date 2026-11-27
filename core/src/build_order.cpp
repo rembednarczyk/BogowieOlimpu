@@ -33,6 +33,32 @@ void road_line(const json& a, std::vector<Command>& out) {
     }
 }
 
+// The steps added with the audit of the base game (2026-11-27); true when `s` was one of them.
+bool parse_city_step(const json& s, const BuildStep& base, std::vector<BuildStep>& out) {
+    BuildStep step = base;
+    if (s.contains("ask_city")) {  // {"city": i, "good": g}: goods or money asked of a city (Z:174-175)
+        const json& a = s.at("ask_city");
+        step.command = RequestFromCity{a.at("city").get<std::uint32_t>(), a.value("good", std::string("drachmas"))};
+    } else if (s.contains("bribe")) {  // pay the invaders to leave (Z:137)
+        step.command = BribeInvaders{};
+    } else if (s.contains("surrender")) {  // n: give in to city n's attack once; the rival takes tribute (Z:172)
+        step.surrender_to = s.at("surrender").get<std::int32_t>();
+        step.command = Surrender{};
+    } else if (s.contains("clear")) {  // [x, y]: trees or rubble cleared (Z:19)
+        const TilePos p = pos_of(s.at("clear"));
+        step.command = ClearLand{p.x, p.y};
+    } else if (s.contains("undo")) {  // the last placement taken back within the undo window (Z:20)
+        step.command = Undo{};
+    } else if (s.contains("industry")) {  // {"type": t, "on": bool}: an industry switched off or on (Z:62-63)
+        const json& i = s.at("industry");
+        step.command = SetIndustryEnabled{i.at("type").get<std::string>(), i.value("on", true)};
+    } else {
+        return false;
+    }
+    out.push_back(std::move(step));
+    return true;
+}
+
 // One JSON step to one or more steps (a road line or a repeated building expands).
 void parse_step(const json& s, std::vector<BuildStep>& out) {
     BuildStep base;
@@ -122,21 +148,7 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
     } else if (s.contains("gift")) {  // {"city": i, "good": g, "amount": n} (Z:176-177)
         const json& g = s.at("gift");
         add(GiftToCity{g.at("city").get<std::uint32_t>(), g.value("good", std::string("drachmas")), g.value("amount", 500U)});
-    } else if (s.contains("ask_city")) {  // {"city": i, "good": g}: goods or money asked of a city (Z:174-175)
-        const json& a = s.at("ask_city");
-        add(RequestFromCity{a.at("city").get<std::uint32_t>(), a.value("good", std::string("drachmas"))});
-    } else if (s.contains("bribe")) {  // pay the invaders to leave (Z:137)
-        add(BribeInvaders{});
-    } else if (s.contains("surrender")) {  // give in: the rival takes tribute every year (Z:137, Z:172)
-        add(Surrender{});
-    } else if (s.contains("clear")) {  // [x, y]: trees or rubble cleared (Z:19)
-        const TilePos p = pos_of(s.at("clear"));
-        add(ClearLand{p.x, p.y});
-    } else if (s.contains("undo")) {  // the last placement taken back within the undo window (Z:20)
-        add(Undo{});
-    } else if (s.contains("industry")) {  // {"type": t, "on": bool}: an industry switched off or on (Z:62-63)
-        const json& i = s.at("industry");
-        add(SetIndustryEnabled{i.at("type").get<std::string>(), i.value("on", true)});
+    } else if (parse_city_step(s, base, out)) {
     } else if (s.contains("military_help")) {  // {"city": i, "strike": bool, "target": j} (Z:174)
         const json& h = s.at("military_help");
         add(RequestMilitaryHelp{h.at("city").get<std::uint32_t>(), h.value("strike", false), h.value("target", 0U)});
@@ -198,6 +210,15 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
         }
         if (!stocked) {
             continue;
+        }
+        if (s.surrender_to >= 0) {
+            const auto& inv = sim.state().military.invasion;
+            const auto& partners = sim.state().trade.partners;
+            const auto city = static_cast<std::size_t>(s.surrender_to);
+            if (!inv.active || inv.city != s.surrender_to || city >= partners.size() ||
+                partners[city].diplomacy.player_defeats > 0) {
+                continue;  // not attacked by that city now, or beaten by it once already (two lose, Z:172)
+            }
         }
         if (s.all_ships) {
             const auto order = std::get<SetShipOrder>(s.command).order;

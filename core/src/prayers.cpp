@@ -85,6 +85,19 @@ bool grant_now(WorldState& st, const DataCatalog& catalog, const std::string& ef
 
 }  // namespace
 
+bool grant_blessing(WorldState& st, const DataCatalog& catalog, const std::string& effect) {
+    if (effect == "defeats_next_invading_army") {
+        st.zeus_guard = true;  // Z:119
+    } else if (effect == "accompanies_army_abroad") {
+        st.ares_with_army = true;  // Z:121
+    } else if (effect == "talos_defends_few_months") {
+        st.talos_days = catalog.talos_days;  // Z:120
+    } else {
+        return grant_now(st, catalog, effect);
+    }
+    return true;
+}
+
 std::int32_t prayer_chance(const SanctuaryState& s, const DataCatalog& catalog) {
     const std::int32_t days = s.days_since_sacrifice;
     const std::int32_t full = catalog.prayer_chance_full_days;
@@ -114,21 +127,12 @@ std::string pray(WorldState& st, const DataCatalog& catalog, BuildingId id) {
     }
     const SanctuaryParams& p = catalog.sanctuaries.at(it->second.type);
     const std::string& effect = p.prayer;
-    const bool later = effect == "defeats_next_invading_army" || effect == "accompanies_army_abroad" ||
-                       effect == "talos_defends_few_months";
     const auto roll = static_cast<std::int32_t>(st.rng.stream(RngStream::Gods).next_u32() % 100U);
     if (roll >= prayer_chance(s, catalog)) {
         s.prayer_cooldown = static_cast<std::uint16_t>(p.prayer_cooldown_days / 2);
         return "myth.prayer_denied";  // the god did not listen this time (Z:132)
     }
-    if (effect == "defeats_next_invading_army") {
-        st.zeus_guard = true;  // Z:119
-    } else if (effect == "accompanies_army_abroad") {
-        st.ares_with_army = true;  // Z:121
-    } else if (effect == "talos_defends_few_months") {
-        st.talos_days = catalog.talos_days;  // Z:120
-    }
-    if (!later && !grant_now(st, catalog, effect)) {
+    if (!grant_blessing(st, catalog, effect)) {
         return "myth.no_room_for_gift";  // nothing to give now: no room, no request, no site; no cooldown
     }
     s.prayer_cooldown = static_cast<std::uint16_t>(p.prayer_cooldown_days);

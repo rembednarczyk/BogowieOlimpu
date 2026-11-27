@@ -15,6 +15,7 @@
  },
  "prayer_cooldown_days_src": "[ZAŁOŻENIE L-053] kolejność z S-004 trivia, wartości do strojenia",
  "oracle_silent_days": 192,
+ "spontaneous_help": {"low_food_loads": 8, "very_low_food_loads": 2, "low_money": 500, "low_goods_loads": 2, "vacant_percent": 50, "request_days_left": 16, "src": "Z:119-122 i 10-mitologia.md: bóg z własnej inicjatywy daje to, co daje modlitwa, gdy widzi problem; [ZAŁOŻENIE L-130] progi, sprawdzanie raz w miesiącu, ta sama przerwa co po modlitwie"},
  "oracle_src": "Z:124: Consult Oracle daje przepowiednię i milczy, jeśli niedawno przepowiadała; S-008 eZeus: przepowiednie zapowiadają nadchodzące zdarzenia (najazd, potwór); [ZAŁOŻENIE L-126] milczy rok, zapowiada najbliższe zaplanowane zdarzenie groźne scenariusza",
  "prayer_goods_loads": 24,
  "prayer_goods_loads_src": "S-004 trivia: Artemis 24 ładunki wieprzowiny; [ZAŁOŻENIE L-112] tyle samo dla innych darów",

@@ -27,6 +27,7 @@ struct BuildStep {
     std::map<std::string, std::uint32_t> when;  // loads in the city's storage needed first
     Command command;
     std::optional<TilePos> at;  // building commands: a tile of the building, resolved when due
+    std::int32_t surrender_to = -1;  // Surrender: only while this city attacks, and only before a first defeat
     bool later = false;  // issued a tick into the day, after the day's other steps took effect (e.g. Undo, Z:20)
 };
 

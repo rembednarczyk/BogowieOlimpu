@@ -314,6 +314,8 @@ func _handle_events(events: Array) -> void:
 				demo_note = "bunt: %s" % sim.get_cities()[e["city"]]["id"]
 			"city_gift":
 				demo_note = "dar od %s: %d dr" % [sim.get_cities()[e["city"]]["id"], e["amount"]]
+			"god_helped":  # Z:119-122: a blessing without a prayer
+				demo_note = tr("msg.god_helped") % tr("god.%s" % e["god"])
 			"god_attacked":
 				demo_note = "gniew boga: %s%s" % [e["god"], " (odparty)" if e["repelled"] else ""]
 			"disaster":

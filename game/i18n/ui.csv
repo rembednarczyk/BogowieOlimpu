@@ -102,6 +102,7 @@ god.demeter,Demeter,Demeter
 god.athena,Atena,Athena
 god.artemis,Artemida,Artemis
 god.apollo,Apollo,Apollo
+msg.god_helped,%s pomaga miastu bez modlitwy,%s helps the city unasked
 god.atlas,Atlas,Atlas
 god.ares,Ares,Ares
 god.hephaestus,Hefajstos,Hephaestus

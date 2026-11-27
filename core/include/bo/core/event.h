@@ -207,6 +207,10 @@ struct QuestCompleted {  // D5: the hero is back; the god grants a statue (Z:156
     std::string god;
 };
 
+struct GodHelped {  // a god gave its blessing without a prayer (Z:119-122, L-130)
+    std::string god;
+};
+
 struct GodAttacked {  // D5: a hostile god came (Z:125); repelled by a god with a sanctuary (Z:119, Z:122)
     std::string god;
     bool repelled = false;
@@ -218,7 +222,8 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
                            TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, GamesHeld, CityRebelled, CityGift,
                            CityRequestReceived, RequestClosed, EpisodeWon, MilitaryHelpGiven, OracleSpoke,
-                           GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
+                           GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted,
+                           GodHelped>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

@@ -255,6 +255,9 @@ static void run_trade(Simulation& sim) {
 static void run_mythology(Simulation& sim) {
     const MythEvents ev = advance_sanctuaries(sim.mutable_state(), sim.catalog());
     advance_gods(sim.mutable_state(), sim.catalog());
+    for (const std::string& god : advance_god_help(sim.mutable_state(), sim.catalog())) {
+        sim.emit(GodHelped{god});  // Z:119-122
+    }
     for (const WalkerId id : ev.spawned) {
         sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});
     }

@@ -45,7 +45,7 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `military_help: {"city": n, "strike": bool, "target": m}` | prośba o pomoc obronną (tylko w czasie najazdu) albo o uderzenie miasta n na miasto m (Z:174, L-125) |
 | `ask_city: {"city": n, "good": towar}` | prośba do miasta o towar, który wytwarza, albo o pieniądze (Z:174-175) |
 | `man_towers: bool`, `auto_defend: bool` | Man All (Z:146); samoczynna obrona, włączana tylko poza walką (Z:145, L-129) |
-| `bribe: true`, `surrender: true` | przekup trwający najazd albo poddaj się (rywal bierze trybut co rok, Z:137, Z:172) |
+| `bribe: true`, `surrender: n` | przekup trwający najazd; poddaj się atakującemu miastu n, tylko raz (rywal bierze trybut co rok, Z:137, Z:172) |
 | `clear: [x, y]`, `undo: true` | wytnij las z kafla (Z:19); cofnij ostatnią budowę w oknie jednego dnia (Z:20, L-035) |
 | `industry: {"type": t, "on": bool}` | wyłącz albo włącz branżę (Z:62-63) |
 
