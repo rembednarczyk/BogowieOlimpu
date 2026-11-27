@@ -86,6 +86,8 @@ Wzorce, które w tym projekcie są domyślne:
 
 **Wytyczna. Test niezmienników z "chaotycznym burmistrzem".** Losowo stawia, burzy, zmienia rozkazy magazynów, podatki i płace. Sprawdzamy: brak NaN, brak ujemnych zapasów, populacja ≤ pojemność, każdy doręczyciel ma cel albo status "utknął", determinizm.
 
+**Zasada. Co wymagało sondy, staje się kontrolą (R-016).** Niezmiennik, próg zdrowia, kontrola statyczna, test regresji albo zapadka; plan i inwentarz w `docs/PLAN-ODPORNOSCI.md`.
+
 **Zasada. Dowód poprawki: test pada bez niej i przechodzi z nią.**
 
 **Zasada. Kontrola liczy niezależnie od poprawki** (nie karmi się tymi samymi liczbami).

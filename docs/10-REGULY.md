@@ -147,3 +147,11 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Wpływ na: `docs/07-TECHNOLOGIA.md`, `docs/SILNIK.md`, shadery i materiały (muszą działać w rendererze Mobile).
 - Historia: 2026-11-26 utworzona
 
+
+### R-016 [PROCES] Co wymagało sondy, staje się kontrolą
+- Status: obowiązuje
+- Źródło: decyzja właściciela 2026-11-27 („wszystko, co kosztuje sondowanie, powinno stawać się kandydatami do determinizmu”)
+- Treść: Każde pytanie o stan symulacji, na które odpowiedź wymagała sondy (zmienna `BO_DEMO_*`, program na zapisie, ręczny przegląd raportu lub logu), w tym samym zadaniu zamienia się w kontrolę automatyczną: niezmiennik, próg zdrowia, kontrolę statyczną, test regresji albo zapadkę. Wyjątek tylko z wpisem i uzasadnieniem w `docs/PLAN-ODPORNOSCI.md` rozdz. 3.
+- Uzasadnienie: demo są deterministyczne, ale chaotyczne; bez kontroli ten sam problem wraca po każdej zmianie i znów kosztuje sondowanie.
+- Wpływ na: `docs/PLAN-ODPORNOSCI.md`, `docs/PRAKTYKI.md` rozdz. 4-6, bramki demo, `core/src/invariants.cpp`, `core/src/health.cpp`.
+- Historia: 2026-11-27 utworzona

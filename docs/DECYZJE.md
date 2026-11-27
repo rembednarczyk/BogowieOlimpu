@@ -73,6 +73,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Proces
 
+### 2026-11-27: Sonda staje się kontrolą (R-016), plan odporności
+- Decyzja: każdy problem znaleziony sondą zamienia się w kontrolę automatyczną; plan wdrożenia warstw (niezmienniki, ciche porażki, progi zdrowia, kontrole statyczne, test losowy, wiele ziaren, narzędzie sond, zapadki, determinizm między platformami) w `docs/PLAN-ODPORNOSCI.md`, etapy E1-E7.
+- Powód: przebiegi demo z 2026-11-27 kosztowały kilkadziesiąt sond; inwentarz 30 przypadków w planie, rozdz. 3.
+- Cytat właściciela: „wszystko, co kosztuje sondowanie powinno stawać się kandydatami do determinizmu”.
+- Niesprawdzone: koszt czasu bramek po dodaniu niezmienników (szacunek 10-20 %).
+
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"
 - Decyzja: postacie wykonujące zadania budynków (ang. walkers) nazywamy w dokumentacji "spacerujący" (losowy, celowy, dwufazowy). W kodzie zostaje angielskie `walker`.
 - Cytat właściciela: "termin chodzicy zamień na spacerujący".

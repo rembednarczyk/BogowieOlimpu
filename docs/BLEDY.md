@@ -26,7 +26,13 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 
 ## Otwarte
 
-Brak otwartych błędów (stan 2026-11-26).
+### B-023 [S2] Dane w postaci obiektu po cichu dają wartość domyślną
+- Status: niepotwierdzone
+- Miejsce i liczba wystąpień: `data/production.json` fishery `max_storage_distance: {"close": 25, "dist20": 40}`; sonda pokazała zasięg 300 (domyślny) zamiast 25 albo 40.
+- Dowód: sonda na zapisie demo bogów (`catalog.production.at("fishery").max_storage_distance == 300`).
+- Test "co dziś pada": do napisania (E3 planu odporności): ładowanie pola o złym typie daje błąd, nie wartość domyślną.
+- Przyczyna: do zbadania; podejrzenie `value(..., default)` przy polu, które nie jest liczbą.
+
 
 ## Naprawione
 
