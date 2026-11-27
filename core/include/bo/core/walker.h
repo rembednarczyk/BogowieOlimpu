@@ -36,7 +36,8 @@ enum class WalkerJob : std::uint8_t {
     None = 0, Deliver, Fetch, Shear, Tend, Harvest, Extract, Hunt, Fish, Crime, Extinguish, Trade, Settle, Prowl, Soldier, Invade,
     Supply, Build, Sacrifice,  // D1: carts to a sanctuary site, artisans, priests
     Monster, Hero,             // D5: a monster in the city and the hero who hunts it
-    Perform                    // B-008: a performer on the way from a school to a venue
+    Perform,                   // B-008: a performer on the way from a school to a venue
+    Ship                       // a player's trireme (Z:141-144)
 };
 
 struct Walker {
@@ -75,6 +76,7 @@ struct Walker {
     // Combat (D3 stage 2): soldiers and invaders; an invader's nation is in `variant`, its unit in `type`.
     std::int32_t hp = 0;
     std::uint16_t cooldown = 0;  // ticks until the next blow or shot
+    std::uint16_t aboard = 0;    // soldiers on an invaders' transport (Z:144; since v39)
 };
 
 struct WalkerStore {

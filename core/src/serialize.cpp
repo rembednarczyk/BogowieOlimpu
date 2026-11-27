@@ -92,6 +92,12 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.str(cmd.nation);
                 w.u32(cmd.soldiers);
                 w.i32(cmd.city);  // since v21
+                w.u8(cmd.by_sea ? 1 : 0);  // since v39
+            } else if constexpr (std::is_same_v<T, SetShipOrder>) {
+                w.u32(cmd.ship);
+                w.u8(cmd.order);
+                w.i32(cmd.x);
+                w.i32(cmd.y);
             } else if constexpr (std::is_same_v<T, GiftToCity>) {
                 w.u32(cmd.city);
                 w.str(cmd.good);
@@ -173,6 +179,16 @@ bool read_dispatch(ByteReader& r, Command& out) {
     return true;
 }
 
+// A trireme order (index 30, since v39, Z:142).
+bool read_ship_order(ByteReader& r, Command& out) {
+    SetShipOrder c;
+    if (!r.u32(c.ship) || !r.u8(c.order) || !r.i32(c.x) || !r.i32(c.y)) {
+        return false;
+    }
+    out = c;
+    return true;
+}
+
 // Commands of modules D (army, invasions, gods, world), indices 13 and up.
 bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std::uint32_t version) {
     switch (index) {
@@ -195,9 +211,11 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
         }
         case 16: {
             StartInvasion c;
-            if (!r.str(c.nation) || !r.u32(c.soldiers) || (version >= 21 && !r.i32(c.city))) {
+            std::uint8_t sea = 0;
+            if (!r.str(c.nation) || !r.u32(c.soldiers) || (version >= 21 && !r.i32(c.city)) || (version >= 39 && !r.u8(sea))) {
                 return false;
             }
+            c.by_sea = sea != 0;
             out = c;
             return true;
         }
@@ -282,7 +300,7 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             return true;
         }
         default:
-            return false;
+            return index == 30 && read_ship_order(r, out);
     }
 }
 

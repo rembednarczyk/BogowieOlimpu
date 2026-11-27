@@ -12,6 +12,7 @@
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
+#include "bo/core/naval.h"
 #include "bo/core/risks.h"
 #include "bo/core/sanctuary.h"
 #include "bo/core/trade.h"
@@ -308,7 +309,8 @@ static void run_scenario(Simulation& sim) {
     for (std::size_t i = 0; i < ev.invasions.size(); ++i) {
         CombatEvents combat;
         const std::string err =
-            start_invasion(st, sim.catalog(), ev.invasions[i].first, ev.invasions[i].second, combat, ev.invasion_cities[i]);
+            start_invasion(st, sim.catalog(), ev.invasions[i].first, ev.invasions[i].second, combat, ev.invasion_cities[i],
+                           ev.invasion_by_sea[i]);
         if (err.empty()) {
             sim.emit(InvasionStarted{ev.invasions[i].first, static_cast<std::uint32_t>(combat.spawned.size()),
                                      bribe_cost(st, sim.catalog())});
@@ -371,6 +373,9 @@ static void run_military(Simulation& sim) {
     update_companies(sim.mutable_state());
     recover_morale(sim.mutable_state());
     form_companies(sim.mutable_state(), sim.catalog());
+    CombatEvents fleet;
+    advance_fleet(sim.mutable_state(), sim.catalog(), fleet);  // triremes launched, repaired (Z:141-142)
+    sim.emit_combat(fleet);
 }
 
 const std::vector<DailySystem>& daily_schedule() {

@@ -365,7 +365,7 @@ void handle_arrivals(WorldState& st, const DataCatalog& catalog) {
             w.job == WalkerJob::Trade || w.job == WalkerJob::Settle || w.job == WalkerJob::Prowl ||
             w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade || w.job == WalkerJob::Supply ||
             w.job == WalkerJob::Build || w.job == WalkerJob::Sacrifice || w.job == WalkerJob::Monster ||
-            w.job == WalkerJob::Hero || w.job == WalkerJob::Perform) {
+            w.job == WalkerJob::Hero || w.job == WalkerJob::Perform || w.job == WalkerJob::Ship) {
             continue;
         }
         const auto target = st.city.buildings.items.find(w.target);

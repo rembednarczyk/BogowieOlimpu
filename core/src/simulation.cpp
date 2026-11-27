@@ -11,6 +11,7 @@
 #include "bo/core/gods.h"
 #include "bo/core/hash.h"
 #include "bo/core/housing.h"
+#include "bo/core/naval.h"
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
@@ -324,6 +325,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
                    [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
                    [&](const SetCompanyTactic&) { apply_stock_command(command, index); },  // Z:138-139
+                   [&](const SetShipOrder&) { apply_combat_command(command, index); },     // Z:142
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});
@@ -394,10 +396,12 @@ void Simulation::apply_combat_command(const Command& command, std::uint32_t inde
     CombatEvents ev;
     std::string err;
     if (const auto* c = std::get_if<StartInvasion>(&command)) {
-        err = start_invasion(state_, catalog_, c->nation, c->soldiers, ev, c->city);
+        err = start_invasion(state_, catalog_, c->nation, c->soldiers, ev, c->city, c->by_sea);
         if (err.empty()) {
             emit(InvasionStarted{c->nation, static_cast<std::uint32_t>(ev.spawned.size()), bribe_cost(state_, catalog_)});
         }
+    } else if (const auto* o = std::get_if<SetShipOrder>(&command)) {
+        err = set_ship_order(state_, catalog_, o->ship, o->order, {o->x, o->y});
     } else if (std::holds_alternative<BribeInvaders>(command)) {
         err = bribe_invaders(state_, catalog_, ev);
     } else {

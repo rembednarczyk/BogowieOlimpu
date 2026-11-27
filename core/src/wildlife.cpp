@@ -15,6 +15,8 @@ std::string prey_good(const std::string& prey) { return prey == "deer" ? "meat" 
 
 TileFeature feature_of(const std::string& prey) { return prey == "deer" ? TileFeature::DeerSpawn : TileFeature::BoarSpawn; }
 
+}  // namespace
+
 // The water tile next to a coast building on its water side (rotation, set by place_on_coast).
 std::optional<TilePos> mooring(const CityState& city, const Building& b) {
     const auto d = static_cast<Dir>(b.rotation);
@@ -35,6 +37,8 @@ std::optional<TilePos> mooring(const CityState& city, const Building& b) {
     }
     return std::nullopt;
 }
+
+namespace {
 
 WalkerId spawn_at(WorldState& st, const DataCatalog& catalog, const std::string& type, BuildingId home, TilePos from,
                   TilePos to, PathMode mode) {

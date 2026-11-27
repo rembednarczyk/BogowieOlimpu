@@ -36,7 +36,7 @@ struct ScenarioEvent {
     std::uint32_t month = 0;
     bool repeat = false;
     std::int32_t city = -1;
-    std::string good;      // request, gift ("drachmas": money)
+    std::string good;      // request, gift ("drachmas": money); invasion: "sea" by sea (Z:144)
     std::string nation;    // invasion
     std::string relation;  // relation
     std::uint32_t amount = 0;  // loads, drachmas, soldiers
@@ -102,6 +102,7 @@ struct ScenarioEvents {
     std::vector<std::pair<std::uint32_t, bool>> closed;  // city, fulfilled (false: withdrawn)
     std::vector<std::pair<std::string, std::uint32_t>> invasions;  // nation, soldiers (city in `invasion_cities`)
     std::vector<std::int32_t> invasion_cities;
+    std::vector<bool> invasion_by_sea;  // Z:144: in transports
     std::vector<const ScenarioEvent*> god_attacks;  // fired this day (pointers into ScenarioState::events)
     std::vector<const ScenarioEvent*> disasters;
     std::vector<const ScenarioEvent*> monsters;  // monster id in `nation`, strength in `amount`, target in `good`

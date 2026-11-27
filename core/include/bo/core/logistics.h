@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "bo/core/data.h"
@@ -38,6 +39,9 @@ void unload_at_home(WorldState& state, const DataCatalog& catalog, const Walker&
 
 // Peddler visit (doc 06): every house in the 5x5 square around `w` gets the goods its current or next level
 // needs from the stalls of the peddler's agora, up to the house target (L-100).
+// The water tile next to a coast building on its water side (fisheries, wharves), if any.
+std::optional<TilePos> mooring(const CityState& city, const Building& b);
+
 void peddler_sells(WorldState& state, const DataCatalog& catalog, const Walker& w);
 
 // Stage 2 (husbandry.cpp): animals ready for shearing or milking, orchards ripening from pruner visits and

@@ -265,6 +265,15 @@
    "src": "P:19"
   }
  ],
+ "naval_rules": {
+  "transport_soldiers": 32,
+  "transport_soldiers_src": "S-008 eZeus (einvasionhandler.h: 4 x 8 żołnierzy na transport; zatopiony transport traci żołnierzy)",
+  "transports_per_warship": 2,
+  "repair_below_percent": 30,
+  "repair_hp_per_day": 30,
+  "attack_all_engage_tiles": 200,
+  "src": "Z:141-144 (rozkazy, naprawa, priorytety celów); [ZAŁOŻENIE L-124] jeden okręt wroga na 2 transporty, kapitan wraca na naprawę poniżej 30 % kadłuba, naprawa 30 punktów dziennie przy stoczni, Defend Location walczy na zasięg pocisku, Attack All bez limitu; desant na wodzie najbliżej celu najeźdźców, przy lądzie"
+ },
  "tactics_rules": {
   "defensive": {
    "engage_tiles": 2,

@@ -233,6 +233,15 @@ struct TacticsParams {
     std::int32_t skirmish_retreat = 3;
 };
 
+// Fleets (data/military.json naval_rules; Z:141-144) [ZAŁOŻENIE, L-124].
+struct NavalParams {
+    std::uint32_t transport_soldiers = 32;
+    std::uint32_t transports_per_warship = 2;
+    std::int32_t repair_below_percent = 30;
+    std::int32_t repair_hp_per_day = 30;
+    std::int32_t attack_all_engage = 200;
+};
+
 struct GamesParams {
     std::vector<GameParams> games;
     std::uint32_t end_month = 7;  // 0-based: August
@@ -379,6 +388,7 @@ struct DataCatalog {
     MonumentParams monuments;
     GamesParams games;
     TacticsParams tactics;
+    NavalParams naval;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

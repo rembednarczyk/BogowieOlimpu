@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "bo/core/military.h"
+#include "bo/core/naval.h"
 #include "bo/core/path.h"
 #include "bo/core/state.h"
 #include "bo/core/walker.h"
@@ -33,12 +34,14 @@ const UnitStats* stats_of(const DataCatalog& catalog, const Walker& w) {
 
 bool fighter(const Walker& w) {
     const bool armed = w.job == WalkerJob::Soldier || w.job == WalkerJob::Invade || w.job == WalkerJob::Monster ||
-                       w.job == WalkerJob::Hero;
+                       w.job == WalkerJob::Hero || w.job == WalkerJob::Ship;
     return armed && w.phase != WalkerPhase::Done && w.hp > 0;
 }
 
-// Sides: the city (soldiers, heroes) against invaders and monsters.
-bool defends(const Walker& w) { return w.job == WalkerJob::Soldier || w.job == WalkerJob::Hero; }
+// Sides: the city (soldiers, heroes, triremes) against invaders and monsters.
+bool defends(const Walker& w) {
+    return w.job == WalkerJob::Soldier || w.job == WalkerJob::Hero || w.job == WalkerJob::Ship;
+}
 
 // The invaders' goal: the Palace (Z:137); without one, the building nearest to where they came in [ZAŁOŻENIE].
 std::optional<BuildingId> goal_of(const CityState& city, TilePos from) {
@@ -67,7 +70,7 @@ std::int32_t distance_to(const Building& b, TilePos p) {
 }
 
 bool route(CityState& city, Walker& w, TilePos to, BuildingId goal) {
-    PathRequest req{w.tile, to, defends(w) ? PathMode::Walkable : PathMode::Hostile};
+    PathRequest req{w.tile, to, is_ship(w) ? PathMode::Water : defends(w) ? PathMode::Walkable : PathMode::Hostile};
     req.goal_building = goal;
     auto path = find_path(city, req);
     if (!path) {
@@ -233,8 +236,31 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
 
 using namespace combat_detail;
 
+WalkerId combat_detail::spawn_invader(WorldState& st, const DataCatalog& catalog, const std::string& unit, TilePos at,
+                                      CombatEvents& ev) {
+    const std::string& nation = st.military.invasion.nation;
+    const UnitStats& s = catalog.combat.nations.at(nation).units.at(unit);
+    Walker w;
+    w.id = st.walkers.next_id++;
+    w.type = unit;
+    w.variant = nation;
+    w.job = WalkerJob::Invade;
+    w.tile = at;
+    w.speed_raw = s.speed_raw;
+    w.hp = s.hp;
+    const auto goal = goal_of(st.city, at);
+    w.target = goal.value_or(kNoBuilding);
+    if (!goal || is_ship(w) || !route(st.city, w, st.city.buildings.items.at(*goal).origin, *goal)) {
+        stand(w);
+    }
+    const WalkerId id = w.id;
+    ev.spawned.push_back(id);
+    st.walkers.items.emplace(id, std::move(w));
+    return id;
+}
+
 std::string start_invasion(WorldState& st, const DataCatalog& catalog, const std::string& nation,
-                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city) {
+                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city, bool by_sea) {
     const auto n = catalog.combat.nations.find(nation);
     if (st.military.invasion.active || n == catalog.combat.nations.end() || n->second.composition.empty()) {
         return "military.bad_invasion";
@@ -248,36 +274,27 @@ std::string start_invasion(WorldState& st, const DataCatalog& catalog, const std
         }
     }
     const auto goal = goal_of(st.city, origin.value_or(TilePos{}));
-    if (!origin || !goal) {
+    if ((!origin && !by_sea) || !goal) {
         return "military.no_invasion_point";
     }
     soldiers = std::min(soldiers, static_cast<std::uint32_t>(catalog.combat.max_invasion));
     Invasion& inv = st.military.invasion;
+    inv = Invasion{};
     inv.active = true;
     inv.nation = nation;
-    inv.origin = *origin;
+    inv.origin = origin.value_or(TilePos{});
     inv.city = city;
-    const Building& target = st.city.buildings.items.at(*goal);
+    if (by_sea) {  // Z:144: in transports with warships (naval.cpp)
+        const std::string err = start_sea_invasion(st, catalog, soldiers, *goal, ev);
+        if (!err.empty()) {
+            inv = Invasion{};
+        }
+        return err;
+    }
     for (std::size_t k = 0; k < n->second.composition.size() && k < n->second.composition_units.size(); ++k) {
-        const std::string& unit = n->second.composition_units[k];
-        const UnitStats& s = n->second.units.at(unit);
         const auto count = soldiers * static_cast<std::uint32_t>(n->second.composition[k]) / 100;  // rounded down
         for (std::uint32_t i = 0; i < count; ++i) {
-            Walker w;
-            w.id = st.walkers.next_id++;
-            w.type = unit;
-            w.variant = nation;
-            w.job = WalkerJob::Invade;
-            w.tile = *origin;
-            w.speed_raw = s.speed_raw;
-            w.hp = s.hp;
-            w.target = *goal;
-            if (!route(st.city, w, target.origin, *goal)) {
-                stand(w);
-            }
-            inv.invaders.push_back(w.id);
-            ev.spawned.push_back(w.id);
-            st.walkers.items.emplace(w.id, std::move(w));
+            inv.invaders.push_back(spawn_invader(st, catalog, n->second.composition_units[k], *origin, ev));
         }
     }
     return {};
@@ -340,6 +357,7 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
     const bool rechase = st.time.tick() % 15 == 0;  // re-aim chases once a tile [ZAŁOŻENIE, L-110]
     divine_help(st);
     towers_shoot(st, catalog, fighters);
+    land_transports(st, catalog, ev);
     for (const WalkerId id : fighters) {
         Walker& w = items.at(id);
         if (!fighter(w)) {
@@ -350,10 +368,20 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
             continue;
         }
         w.cooldown = static_cast<std::uint16_t>(w.cooldown > 0 ? w.cooldown - 1 : 0);
+        if (is_ship(w)) {  // on the water: by the fleet's priorities (Z:144); transports only sail
+            const std::int32_t reach = ship_engage(st, catalog, w, *s);
+            const auto target = is_transport(w) || reach < 0 ? std::nullopt : naval_foe(st, catalog, w, fighters, reach);
+            if (target) {
+                fight(st, catalog, w, *s, nullptr, *target, rechase);
+            } else if (w.job == WalkerJob::Ship) {
+                ship_idle(st, w);
+            }
+            continue;
+        }
         std::optional<std::pair<std::int32_t, WalkerId>> foe;
         for (const WalkerId oid : fighters) {
             const Walker& o = items.at(oid);
-            if (fighter(o) && defends(o) != defends(w)) {
+            if (fighter(o) && defends(o) != defends(w) && !is_ship(o)) {  // soldiers do not fight ships [L-124]
                 const std::int32_t d = chebyshev(w.tile, o.tile);
                 if (!foe || d < foe->first) {
                     foe = std::make_pair(d, oid);
@@ -410,8 +438,12 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
                                       return it == items.end() || it->second.phase == WalkerPhase::Done;
                                   }),
                    inv_list.end());
-    if (inv_list.empty()) {
-        end_invasion(st, 0, ev);
+    const auto fights_on = [&items](WalkerId i) {  // ships alone do not hold a city [ZAŁOŻENIE, L-124]
+        const Walker& w = items.at(i);
+        return !is_ship(w) || (is_transport(w) && w.aboard > 0);
+    };
+    if (std::none_of(inv_list.begin(), inv_list.end(), fights_on)) {
+        end_invasion(st, 0, ev);  // the ships sail away (end_invasion routes them to the sea entry)
     }
 }
 

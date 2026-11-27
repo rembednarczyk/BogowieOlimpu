@@ -429,6 +429,7 @@ void write_walkers(ByteWriter& w, const WalkerStore& s) {
         w.u8(k.ignores_roadblocks ? 1 : 0);  // since v13
         w.i32(k.hp);                         // since v18
         w.u32(k.cooldown);
+        w.u32(k.aboard);  // since v39
     }
 }
 
@@ -453,7 +454,7 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
                         r.u32(k.random_counter) && (version < 3 || r.u8(north)) &&
                         (version < 5 || r.u8(k.coverage_days));
         std::uint8_t job = 0;
-        if (ok && version >= 7 && (!r.u8(job) || job > static_cast<std::uint8_t>(WalkerJob::Perform) || !r.u32(k.target) || !read_counts(r, k.cargo))) {
+        if (ok && version >= 7 && (!r.u8(job) || job > static_cast<std::uint8_t>(WalkerJob::Ship) || !r.u32(k.target) || !read_counts(r, k.cargo))) {
             return false;
         }
         if (ok && version >= 10 &&
@@ -469,10 +470,13 @@ bool read_walkers(ByteReader& r, WalkerStore& s, std::uint32_t version) {
         }
         k.ignores_roadblocks = ignores != 0;
         std::uint32_t cooldown = 0;
-        if (ok && version >= 18 && (!r.i32(k.hp) || !r.u32(cooldown) || cooldown > 0xFFFF)) {
+        std::uint32_t aboard = 0;
+        if (ok && ((version >= 18 && (!r.i32(k.hp) || !r.u32(cooldown) || cooldown > 0xFFFF)) ||
+                   (version >= 39 && (!r.u32(aboard) || aboard > 0xFFFF)))) {
             return false;
         }
         k.cooldown = static_cast<std::uint16_t>(cooldown);
+        k.aboard = static_cast<std::uint16_t>(aboard);
         k.job = static_cast<WalkerJob>(job);
         if (!ok) {
             return false;

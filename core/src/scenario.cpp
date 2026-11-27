@@ -102,6 +102,7 @@ void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, Sc
     if (e.type == "invasion") {
         ev.invasions.emplace_back(e.nation, e.amount);
         ev.invasion_cities.push_back(e.city);
+        ev.invasion_by_sea.push_back(e.good == "sea");
     } else if (e.type == "request" && has_city) {
         const std::uint64_t today = st.time.tick() / kTicksPerDay;
         st.scenario.requests.push_back(CityRequest{static_cast<std::uint32_t>(e.city), e.good, e.amount,
@@ -209,7 +210,7 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             ev.month = e.value("month", 0U);
             ev.repeat = e.value("repeat", false) && ev.type != "monster";  // monsters never repeat (doc 23)
             ev.city = city_index(cfg.trade_partners, e);
-            ev.good = e.value("good", "");
+            ev.good = ev.type == "invasion" && e.value("by_sea", false) ? "sea" : e.value("good", "");
             ev.nation = e.value("nation", "");
             ev.relation = e.value("relation", "");
             ev.amount = e.value("amount", 0U);

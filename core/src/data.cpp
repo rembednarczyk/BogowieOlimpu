@@ -225,6 +225,29 @@ void load_housing(const json& housing, DataCatalog& cat) {
     }
 }
 
+// Tactics (Z:138-139, L-110) and fleets (Z:141-144, L-124) from data/military.json.
+void load_army_rules(const std::map<std::string, json>& docs, DataCatalog& cat) {
+    if (docs.count("military.json") != 0 && docs.at("military.json").contains("tactics_rules")) {
+        const json& t = docs.at("military.json").at("tactics_rules");
+        TacticsParams& tp = cat.tactics;
+        tp.defensive_engage = t.at("defensive").value("engage_tiles", tp.defensive_engage);
+        tp.defensive_armor = t.at("defensive").value("armor_bonus", tp.defensive_armor);
+        tp.offensive_engage = t.at("offensive").value("engage_tiles", tp.offensive_engage);
+        tp.special_engage = t.at("special").value("engage_tiles", tp.special_engage);
+        tp.wedge_attack_percent = t.at("special").value("wedge_attack_percent", tp.wedge_attack_percent);
+        tp.skirmish_retreat = t.at("special").value("skirmish_retreat_tiles", tp.skirmish_retreat);
+    }
+    if (docs.count("military.json") != 0 && docs.at("military.json").contains("naval_rules")) {
+        const json& n = docs.at("military.json").at("naval_rules");
+        NavalParams& np = cat.naval;
+        np.transport_soldiers = n.value("transport_soldiers", np.transport_soldiers);
+        np.transports_per_warship = n.value("transports_per_warship", np.transports_per_warship);
+        np.repair_below_percent = n.value("repair_below_percent", np.repair_below_percent);
+        np.repair_hp_per_day = n.value("repair_hp_per_day", np.repair_hp_per_day);
+        np.attack_all_engage = n.value("attack_all_engage_tiles", np.attack_all_engage);
+    }
+}
+
 void validate(const std::map<std::string, json>& docs, std::vector<std::string>& errors) {
     const auto& buildings = docs.at("buildings.json");
     const auto& housing = docs.at("housing.json");
@@ -403,16 +426,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         load_combat(docs, cat.combat);
         load_world(docs, cat.world);
         detail::load_games(docs, cat.games);
-        if (docs.count("military.json") != 0 && docs.at("military.json").contains("tactics_rules")) {
-            const json& t = docs.at("military.json").at("tactics_rules");
-            TacticsParams& tp = cat.tactics;
-            tp.defensive_engage = t.at("defensive").value("engage_tiles", tp.defensive_engage);
-            tp.defensive_armor = t.at("defensive").value("armor_bonus", tp.defensive_armor);
-            tp.offensive_engage = t.at("offensive").value("engage_tiles", tp.offensive_engage);
-            tp.special_engage = t.at("special").value("engage_tiles", tp.special_engage);
-            tp.wedge_attack_percent = t.at("special").value("wedge_attack_percent", tp.wedge_attack_percent);
-            tp.skirmish_retreat = t.at("special").value("skirmish_retreat_tiles", tp.skirmish_retreat);
-        }
+        load_army_rules(docs, cat);
         for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
             const std::string id = m.value("id", "");
             if (id == "population" && m.contains("thresholds")) {

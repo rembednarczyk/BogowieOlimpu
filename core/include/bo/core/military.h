@@ -56,17 +56,35 @@ struct Invasion {
     std::vector<WalkerId> invaders;
     TilePos origin{0, 0};  // where they came in and where they leave
     std::int32_t city = -1;  // the partner city that sent them (D4), -1: none (since v21)
+    // By sea (Z:144; since v39): transports land the soldiers at `landing` (water by the shore), warships escort.
+    bool by_sea = false;
+    TilePos landing{0, 0};
     friend bool operator==(const Invasion& a, const Invasion& b) {
         return a.active == b.active && a.nation == b.nation && a.invaders == b.invaders && a.origin == b.origin &&
-               a.city == b.city;
+               a.city == b.city && a.by_sea == b.by_sea && a.landing == b.landing;
+    }
+};
+
+// Trireme orders (Z:142-143). Stored in saves: append only.
+enum class ShipOrder : std::uint8_t { Defend = 0, AttackAll, Repair };
+
+// A player's warship (Z:141-144; since v39): one per wharf, the walker on the water, its post.
+struct Ship {
+    WalkerId walker = kNoWalker;
+    BuildingId wharf = kNoBuilding;
+    ShipOrder order = ShipOrder::Defend;
+    TilePos station{0, 0};  // Defend Location: where it holds; the wharf's mooring at first
+    friend bool operator==(const Ship& a, const Ship& b) {
+        return a.walker == b.walker && a.wharf == b.wharf && a.order == b.order && a.station == b.station;
     }
 };
 
 struct MilitaryState {
     std::vector<Company> companies;
     Invasion invasion;  // since v18
+    std::vector<Ship> ships;  // since v39
     friend bool operator==(const MilitaryState& a, const MilitaryState& b) {
-        return a.companies == b.companies && a.invasion == b.invasion;
+        return a.companies == b.companies && a.invasion == b.invasion && a.ships == b.ships;
     }
 };
 
@@ -99,9 +117,10 @@ struct CombatEvents {
 };
 
 // Invaders of `nation` enter at the invasion point (map symbol 'i'; else the land entry): `soldiers` split by
-// the nation's composition, rounded down (doc 22), at most 256. They march on the Palace.
+// the nation's composition, rounded down (doc 22), at most 256. They march on the Palace. By sea (Z:144): see
+// start_sea_invasion (naval.h).
 std::string start_invasion(WorldState& state, const DataCatalog& catalog, const std::string& nation,
-                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city = -1);
+                           std::uint32_t soldiers, CombatEvents& ev, std::int32_t city = -1, bool by_sea = false);
 // Bribe (doc 22): 100 dr a foot soldier, 200 a mounted one, x the difficulty percent; they walk away.
 std::int64_t bribe_cost(const WorldState& state, const DataCatalog& catalog);
 

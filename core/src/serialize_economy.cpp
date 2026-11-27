@@ -160,6 +160,17 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
     w.i32(inv.origin.x);
     w.i32(inv.origin.y);
     w.i32(inv.city);  // since v21
+    w.u8(inv.by_sea ? 1 : 0);  // since v39
+    w.i32(inv.landing.x);
+    w.i32(inv.landing.y);
+    w.u32(static_cast<std::uint32_t>(m.ships.size()));
+    for (const Ship& sh : m.ships) {
+        w.u32(sh.walker);
+        w.u32(sh.wharf);
+        w.u8(static_cast<std::uint8_t>(sh.order));
+        w.i32(sh.station.x);
+        w.i32(sh.station.y);
+    }
 }
 
 bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
@@ -222,7 +233,28 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
             return false;
         }
     }
-    return r.i32(inv.origin.x) && r.i32(inv.origin.y) && (version < 21 || r.i32(inv.city));
+    if (!r.i32(inv.origin.x) || !r.i32(inv.origin.y) || (version >= 21 && !r.i32(inv.city))) {
+        return false;
+    }
+    if (version < 39) {
+        return true;
+    }
+    std::uint8_t sea = 0;
+    std::uint32_t ships = 0;
+    if (!r.u8(sea) || !r.i32(inv.landing.x) || !r.i32(inv.landing.y) || !r.u32(ships) || ships > 256) {
+        return false;
+    }
+    inv.by_sea = sea != 0;
+    m.ships.resize(ships);
+    for (Ship& sh : m.ships) {
+        std::uint8_t order = 0;
+        if (!r.u32(sh.walker) || !r.u32(sh.wharf) || !r.u8(order) || order > static_cast<std::uint8_t>(ShipOrder::Repair) ||
+            !r.i32(sh.station.x) || !r.i32(sh.station.y)) {
+            return false;
+        }
+        sh.order = static_cast<ShipOrder>(order);
+    }
+    return true;
 }
 
 // World (D4): diplomacy per partner, expeditions abroad, the lost episode (since v21).
