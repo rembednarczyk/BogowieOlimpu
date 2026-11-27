@@ -236,6 +236,9 @@ ui.hippodrome_open,tor niezamknięty,the track is not closed
 goal.hippodrome,Działający hipodrom: %d stadiów,Working hippodrome: %d stades
 ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
 ui.demo_greek,Demo: Grecja,Demo: Greece
+ui.demo_gods,Demo: bogowie,Demo: the gods
+msg.adventure_won,Przygoda wygrana,Adventure won
 scenario.demo_atlantis.name,Atlantyda,Atlantis
+scenario.demo_gods.name,Bogowie,The gods
 tab.science,Nauka,Science
 ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"

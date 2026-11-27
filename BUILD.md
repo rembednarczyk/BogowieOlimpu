@@ -36,7 +36,7 @@ godot --headless --path game --script res://tests/test_simulation.gd
 godot --headless --path game --script res://tests/test_ui.gd
 ```
 
-Demo i bramka całej rozgrywki: `python3 tools/make_demo.py` generuje `scenarios/demo.json` i `scenarios/demo_build.json`; test "demo gate" w `core/tests/test_demo.cpp` musi wygrać demo przed 7. rokiem i pokazać każdą mechanikę z listy `kMechanics` (bieg do 10 lat; mapa 120×60, dzielnica wschodnia od dnia 960). Demo Atlantydy: `python3 tools/make_demo_atlantis.py`, test "demo gate: Atlantis" (`core/tests/test_demo_atlantis.cpp`, do 8 lat, `BO_DEMO_LOG=1` raport co pół roku). Raport roczny przy strojeniu:
+Demo i bramka całej rozgrywki: `python3 tools/make_demo.py` generuje `scenarios/demo.json` i `scenarios/demo_build.json`; test "demo gate" w `core/tests/test_demo.cpp` musi wygrać demo przed 7. rokiem i pokazać każdą mechanikę z listy `kMechanics` (bieg do 10 lat; mapa 120×60, dzielnica wschodnia od dnia 960). Demo bogów (przygoda z kolonią, DECYZJE 2026-11-27): `python3 tools/make_demo_gods.py`, test "demo gate: gods" (`core/tests/test_demo_gods.cpp`, oba epizody i zwycięstwo, `BO_DEMO_LOG=1` raport co pół roku, `BO_DEMO_HOUSE`, `BO_DEMO_INV`, `BO_DEMO_SAVE_AT`). Demo Atlantydy: `python3 tools/make_demo_atlantis.py`, test "demo gate: Atlantis" (`core/tests/test_demo_atlantis.cpp`, do 8 lat, `BO_DEMO_LOG=1` raport co pół roku). Raport roczny przy strojeniu:
 
 ```bash
 BO_DEMO_LOG=1 ./build/core/bo_core_tests -tc="demo gate*"

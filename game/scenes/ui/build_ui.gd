@@ -347,7 +347,8 @@ func refresh_report() -> void:
 	settings.add_child(inst)
 	settings.add_child(_button("ui.save", func(): game.save_game(); report_note = tr("ui.saved"); refresh_report(), Vector2(140, CELL.y)))
 	settings.add_child(_button("ui.new_game", func(): game.new_game(), Vector2(160, CELL.y)))
-	var other: String = "atlantis" if game.demo == "greek" else "greek"
+	var order: Array = game.DEMO_ORDER
+	var other: String = order[(order.find(game.demo) + 1) % order.size()]
 	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
 	report_box.add_child(settings)

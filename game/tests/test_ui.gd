@@ -208,6 +208,16 @@ func _process(_d: float) -> bool:
 	atl._handle_events(atl.sim.drain_events())
 	check(atl.sim.get_tile(18, 25)["road"], "the crosswalk's tiles are road")
 	check(plain == 0 and raised.call(stade) == 4, "the stade is drawn again with a 4-tile walkway above the track")
+
+	# The gods' demo (DECYZJE.md 2026-11-27): an adventure, the parent city's autopilot first, then the colony's.
+	var gods = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
+	gods.use_save = false
+	gods.demo = "gods"
+	root.add_child(gods)
+	var ad: Dictionary = gods.sim.get_adventure()
+	check(ad.get("id", "") == "demo_gods" and ad["steps"] == 3 and not ad["in_colony"], "the gods' adventure starts in the parent city")
+	check(gods.sim.get_map_width() == 92 and gods._build_order().ends_with("demo_gods_build.json"), "its map and autopilot")
+	check(gods.DEMO_ORDER[(gods.DEMO_ORDER.find("atlantis") + 1) % 3] == "gods", "the demo button goes Greece, Atlantis, gods")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

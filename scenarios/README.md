@@ -16,7 +16,7 @@ Pliki JSON czytane przez `bo::core::parse_scenario` (`core/src/scenario.cpp`). S
 
 Pole `steps` zamienia plik w przygodę: lista kroków `{"type": "parent", "goals", "events"}` (kolejny epizod w tym samym mieście macierzystym; zadania, prośby i pomniki przechodzą dalej), `{"type": "colony", "colonies": [...]}` (gracz wybiera jedną z nieużytych kolonii; każda to pełny plik epizodu z własną mapą, a jej `id` to miasto z listy `cities` miasta macierzystego, które po epizodzie dostaje stan `colony`) i `{"type": "victory"}` na końcu. Pierwszy krok musi być `parent`. Plik bez `steps` to przygoda z jednym epizodem. Przykład: `example_adventure.json`.
 
-Plik `demo.json` to scena demo z `game/scenes/boot.gd`; narzędzie `tools/sync_game_data.py` kopiuje katalog do `game/scenarios/`.
+Pliki `demo.json` (Grecja), `demo_atlantis.json` (Atlantyda) i `demo_gods.json` (przygoda bogów: miasto macierzyste i kolonia, autopiloty `demo_gods_build.json` i `demo_gods_colony_build.json`) to sceny demo z `game/scenes/boot.gd`; narzędzie `tools/sync_game_data.py` kopiuje katalog do `game/scenarios/`.
 
 ## Kolejność budowy (autopilot, `demo_build.json`)
 

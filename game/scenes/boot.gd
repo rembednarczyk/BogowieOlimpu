@@ -76,7 +76,11 @@ var use_save := true  # tests and the screenshot harness switch it off
 const DEMO_CFG := "user://demo.cfg"
 const DEMOS := {"greek": ["res://scenarios/demo.json", "res://scenarios/demo_build.json", "user://autosave.bo"],
 	"atlantis": ["res://scenarios/demo_atlantis.json", "res://scenarios/demo_atlantis_build.json",
-		"user://autosave_atlantis.bo"]}
+		"user://autosave_atlantis.bo"],
+	# The gods' adventure (doc 23): the parent city, then its colony, each with its own autopilot.
+	"gods": ["res://scenarios/demo_gods.json", "res://scenarios/demo_gods_build.json", "user://autosave_gods.bo",
+		"res://scenarios/demo_gods_colony_build.json"]}
+const DEMO_ORDER := ["greek", "atlantis", "gods"]
 var demo := "greek"
 
 static func chosen_demo() -> String:
@@ -96,11 +100,11 @@ func _ready() -> void:
 	demo = chosen_demo() if use_save else demo
 	if save_path == "user://autosave.bo":  # tests set their own
 		save_path = DEMOS[demo][2]
-	var err: String = sim.start_scenario("res://data", DEMOS[demo][0])
+	var err: String = _start_demo()
 	if err != "":
 		push_error(err)
 	var restored := use_save and _load_game()
-	var order_err: String = sim.load_build_order(DEMOS[demo][1])  # after a load: days to come
+	var order_err: String = sim.load_build_order(_build_order())  # after a load: days to come
 	if order_err != "":
 		push_error(order_err)
 	if not restored:
@@ -122,6 +126,31 @@ func _ready() -> void:
 	_rebuild_tiles()
 	_update_label()
 
+func _adventure() -> bool:
+	return DEMOS[demo].size() > 3
+
+func _start_demo() -> String:
+	return sim.start_adventure("res://data", DEMOS[demo][0]) if _adventure() else \
+		sim.start_scenario("res://data", DEMOS[demo][0])
+
+# The autopilot of the episode being played: the colony has its own (scenarios/README.md).
+func _build_order() -> String:
+	return DEMOS[demo][3] if _adventure() and sim.get_adventure().get("in_colony", false) else DEMOS[demo][1]
+
+# A won episode of the adventure: on to the next (the demo founds the first colony offered); the new map comes
+# with a fresh scene from the save.
+func _next_episode() -> void:
+	var next: String = sim.continue_adventure()
+	if next == "choose_colony":
+		var choices: PackedStringArray = sim.get_adventure()["colony_choices"]
+		if choices.is_empty() or sim.found_colony(choices[0]) != "":
+			return
+	if next == "victory":
+		demo_note = tr("msg.adventure_won")
+		return
+	save_game()
+	get_tree().reload_current_scene()
+
 # Save and autosave (06-MOBILE-UX: pause and autosave when leaving the app): the whole state in one file.
 func save_game() -> void:
 	if not use_save:
@@ -135,11 +164,11 @@ func _load_game() -> bool:
 		return false
 	var demo_size := Vector2i(sim.get_map_width(), sim.get_map_height())
 	var err: String = sim.load(FileAccess.get_file_as_bytes(save_path))
-	if err == "" and Vector2i(sim.get_map_width(), sim.get_map_height()) != demo_size:
+	if err == "" and not _adventure() and Vector2i(sim.get_map_width(), sim.get_map_height()) != demo_size:
 		err = "a save of an older demo map"  # the autopilot builds on the current map only
 	if err != "" and err != "save.data_version_mismatch":
 		push_warning("save not loaded: " + err)
-		sim.start_scenario("res://data", DEMOS[demo][0])
+		_start_demo()
 		return false
 	return true
 
@@ -304,6 +333,8 @@ func _handle_events(events: Array) -> void:
 			"request_closed", "city_request", "episode_won", "episode_lost", "debt_notice":
 				if ui != null and ui.report.visible:
 					ui.refresh_report()
+				if e["type"] == "episode_won" and _adventure():
+					_next_episode.call_deferred()
 			"games_held":
 				demo_note = "igrzyska %s: %s%s" % [e["game"], "wygrane" if e["won"] else ("przegrane" if e["invited"] else "bez zaproszenia"),
 					", miasto gospodarzem" if e["hosted"] else (", prawo do organizacji przepadło" if e["right_lost"] else "")]

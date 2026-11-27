@@ -4,6 +4,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Trzecie demo, przygoda bogów
+- Decyzja: ośmiu bogów, na których demo greckie nie ma miejsca (limit 4 sanktuariów na miasto, `data/gods_rules.json`), pokazuje przygoda `scenarios/demo_gods.json` z dwoma epizodami: miasto macierzyste (Zeus, Hades, Posejdon, Demeter; morze, triera, najazdy lądowy i morski, atak wrogiego boga) i kolonia (Artemida, Hefajstos, Afrodyta, Dionizos; wilki, Amazonki). Generator `tools/make_demo_gods.py`, autopilot dla każdego epizodu, bramka "demo gate: gods" (`core/tests/test_demo_gods.cpp`), wybór w menu gry (Grecja, Atlantyda, bogowie). Niepełną załogę triery (Z:141) pokazuje miasto macierzyste: samoczynna obrona wyprowadza motłoch z chat, motłoch zabiera robotników, załodze brakuje rąk.
+- Powód: zasada właściciela (demo pokazuje każdą mechanikę podstawy) i jego zgoda z 2026-11-27 („zgadzam się, robimy te dwa punkty do decyzji”). Przygoda pokazuje przy okazji kolonię i przejście między epizodami (doc 23, L-119).
+- Odrzucone: kolonia z Posejdonem i Hadesem (za mało rąk na cztery duże sanktuaria; podział odwrócony).
+- Niesprawdzone: przejście do kolonii w samej grze (autopilot wybiera pierwszą kolonię, zapis i przeładowanie sceny); rdzeń sprawdza je w bramce.
+
 ### 2026-11-27: Drugie demo dla Atlantydy
 - Decyzja: mechaniki atlantydzkie (nauka zamiast kultury, hipodrom, później piramidy i budynki nauki) pokazuje osobne małe demo `scenarios/demo_atlantis.json` z własnym autopilotem (`tools/make_demo_atlantis.py`) i bramką "demo gate: Atlantis" (`core/tests/test_demo_atlantis.cpp`).
 - Powód: budynki atlantydzkie wolno stawiać tylko w mieście atlantydzkim (P:16-17), a zasada właściciela wymaga, żeby demo pokazywało każdą mechanikę. Demo greckie zostaje bez zmian.
