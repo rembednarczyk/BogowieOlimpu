@@ -1,4 +1,6 @@
 // Module D5 stage 2: hostile gods and disasters (docs/gameplay/10, 21, 23; Z:119-127; L-054b, L-115).
+#include <algorithm>
+
 #include "bo/core/labour.h"
 #include "bo/core/sanctuary.h"
 #include "bo/core/scenario.h"
@@ -151,4 +153,137 @@ TEST_CASE("disasters destroy what stands within the radius; an earthquake leaves
     const auto wave = disaster(flood.mutable_state(), "tidal_wave", {21, 19}, 1);
     CHECK_FALSE(wave.removed.empty());
     CHECK(flood.state().city.map.at({21, 20}).road);
+}
+
+namespace {
+// A bare building of `type` in the state (no tiles): enough for curses, which look at the type only.
+BuildingId add_bare(Simulation& sim, const std::string& type) {
+    auto& items = sim.mutable_state().city.buildings;
+    Building b;
+    b.id = items.next_id++;
+    b.type = type;
+    const BuildingId id = b.id;
+    items.items.emplace(id, std::move(b));
+    return id;
+}
+// A walker out on the streets (a water carrier), for the gods who take them.
+WalkerId add_walker(Simulation& sim) {
+    Walker w;
+    w.id = sim.state().walkers.next_id;
+    w.type = "water_bearer";
+    w.job = WalkerJob::None;
+    w.tile = {22, 20};
+    sim.mutable_state().walkers.next_id++;
+    sim.mutable_state().walkers.items.emplace(w.id, w);
+    return w.id;
+}
+std::size_t walkers_of(const Simulation& sim, WalkerJob job) {
+    std::size_t n = 0;
+    for (const auto& [id, w] : sim.state().walkers.items) {
+        n += w.job == job && w.phase != WalkerPhase::Done ? 1 : 0;
+    }
+    return n;
+}
+}  // namespace
+
+TEST_CASE("Poseidon curses the fishermen and the wharves and keeps the trade ships away (Z:126)") {
+    auto sim = city();
+    const BuildingId fishery = add_bare(sim, "fishery");
+    const BuildingId wharf = add_bare(sim, "trireme_wharf");
+    const WrathEvents ev = god_attack(sim.mutable_state(), sim.catalog(), "poseidon");
+    CHECK_FALSE(ev.repelled);
+    CHECK(sim.state().city.buildings.items.at(fishery).cursed_days == 45);
+    CHECK(sim.state().city.buildings.items.at(wharf).cursed_days == 45);
+    CHECK(sim.state().ship_curse_days == 45);
+    CHECK(sim.state().caravan_curse_days == 0);  // caravans still come
+}
+
+TEST_CASE("Hades takes the walkers off the streets and curses the foundries and the mint (Z:126)") {
+    auto sim = city();
+    const WalkerId carrier = add_walker(sim);
+    const BuildingId mint = add_bare(sim, "mint");
+    const BuildingId foundry = add_bare(sim, "foundry");
+    const WrathEvents ev = god_attack(sim.mutable_state(), sim.catalog(), "hades");
+    CHECK(std::find(ev.walkers_gone.begin(), ev.walkers_gone.end(), carrier) != ev.walkers_gone.end());
+    for (const auto& [id, w] : sim.state().walkers.items) {
+        if (w.job != WalkerJob::Soldier && w.job != WalkerJob::Invade && w.job != WalkerJob::Prowl) {
+            CHECK(w.phase == WalkerPhase::Done);
+        }
+    }
+    CHECK(sim.state().city.buildings.items.at(mint).cursed_days == 45);
+    CHECK(sim.state().city.buildings.items.at(foundry).cursed_days == 45);
+}
+
+TEST_CASE("Athena curses the olive presses and the growers (Z:126)") {
+    auto sim = city();
+    const BuildingId press = add_bare(sim, "olive_press");
+    const BuildingId lodge = add_bare(sim, "growers_lodge");
+    const BuildingId winery = find(sim, "winery").id;
+    god_attack(sim.mutable_state(), sim.catalog(), "athena");
+    CHECK(sim.state().city.buildings.items.at(press).cursed_days == 45);
+    CHECK(sim.state().city.buildings.items.at(lodge).cursed_days == 45);
+    CHECK(sim.state().city.buildings.items.at(winery).cursed_days == 0);  // not hers
+}
+
+TEST_CASE("Artemis kills the hunters, fills the wolves' dens and sends her Amazons (Z:126)") {
+    auto sim = city();
+    Walker hunter;
+    hunter.id = sim.state().walkers.next_id;
+    hunter.type = "hunter";
+    hunter.job = WalkerJob::Hunt;
+    sim.mutable_state().walkers.next_id++;
+    sim.mutable_state().walkers.items.emplace(hunter.id, hunter);
+    sim.mutable_state().city.spawns[0] = SpawnState{};
+    sim.mutable_state().city.spawns[0].animals = 1;
+    const WrathEvents ev = god_attack(sim.mutable_state(), sim.catalog(), "artemis");
+    CHECK(walkers_of(sim, WalkerJob::Hunt) == 0);
+    CHECK(std::find(ev.walkers_gone.begin(), ev.walkers_gone.end(), hunter.id) != ev.walkers_gone.end());
+    CHECK(sim.state().city.spawns.at(0).animals == sim.catalog().wolves.pack);
+    CHECK(ev.invasion_nation == "amazon");
+    CHECK(ev.invasion_soldiers == 16);
+}
+
+TEST_CASE("Apollo strikes three houses with the plague (Z:126)") {
+    auto sim = city(bo::test::catalog());  // the isolated catalog keeps risks out of reach of a 16-bit counter
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        if (b.house) {
+            b.house->population = 10;
+        }
+    }
+    god_attack(sim.mutable_state(), sim.catalog(), "apollo");
+    std::size_t sick = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        sick += b.house && b.disease_counter >= sim.catalog().risks.disease_threshold ? 1 : 0;
+    }
+    CHECK(sick == 3);
+}
+
+TEST_CASE("Aphrodite takes the walkers and a tenth of every house's people (Z:126)") {
+    auto sim = city();
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        if (b.house) {
+            b.house->population = 20;
+        }
+    }
+    const WalkerId carrier = add_walker(sim);
+    const WrathEvents ev = god_attack(sim.mutable_state(), sim.catalog(), "aphrodite");
+    std::size_t houses = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        if (b.house) {
+            CHECK(b.house->population == 18);
+            ++houses;
+        }
+    }
+    CHECK(houses == 4);
+    CHECK(std::find(ev.walkers_gone.begin(), ev.walkers_gone.end(), carrier) != ev.walkers_gone.end());
+}
+
+TEST_CASE("Dionysus takes the walkers and curses the wineries and the vines (Z:127)") {
+    auto sim = city();
+    const WalkerId carrier = add_walker(sim);
+    const BuildingId vine = add_bare(sim, "grapevine");
+    const WrathEvents ev = god_attack(sim.mutable_state(), sim.catalog(), "dionysus");
+    CHECK(std::find(ev.walkers_gone.begin(), ev.walkers_gone.end(), carrier) != ev.walkers_gone.end());
+    CHECK(sim.state().city.buildings.items.at(vine).cursed_days == 45);
+    CHECK(find(sim, "winery").cursed_days == 45);
 }
