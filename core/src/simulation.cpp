@@ -328,15 +328,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
                    [&](const SetCompanyTactic&) { apply_stock_command(command, index); },  // Z:138-139
                    [&](const SetShipOrder&) { apply_combat_command(command, index); },     // Z:142
-                   [&](const SetIndustryEnabled& c) {
-                       if (catalog_.buildings.count(c.type) == 0) {
-                           emit(CommandRejected{index, "labour.unknown_industry"});
-                       } else if (c.enabled) {
-                           state_.labour.disabled_types.erase(c.type);
-                       } else {
-                           state_.labour.disabled_types.insert(c.type);
-                       }
-                   },
+                   [&](const SetIndustryEnabled&) { apply_stock_command(command, index); },
                },
                command);
 }
@@ -420,6 +412,14 @@ void Simulation::apply_stock_command(const Command& command, std::uint32_t index
             state_.stockpiled.insert(c->good);
         } else {
             state_.stockpiled.erase(c->good);
+        }
+    } else if (const auto* c = std::get_if<SetIndustryEnabled>(&command)) {
+        if (catalog_.buildings.count(c->type) == 0) {
+            emit(CommandRejected{index, "labour.unknown_industry"});
+        } else if (c->enabled) {
+            state_.labour.disabled_types.erase(c->type);
+        } else {
+            state_.labour.disabled_types.insert(c->type);
         }
     } else if (const auto* t = std::get_if<SetCompanyTactic>(&command)) {
         if (t->company >= state_.military.companies.size() || t->tactic > 2) {

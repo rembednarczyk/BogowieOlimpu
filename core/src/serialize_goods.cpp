@@ -201,15 +201,13 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
         t.days_since_sacrifice = static_cast<std::uint16_t>(days);
         std::uint32_t pray = 0;
         std::uint32_t bless = 0;
-        if (version >= 20 && (!r.u32(pray) || !r.u32(bless) || pray > 0xFFFF || bless > 0xFFFF)) {
+        std::uint32_t silent = 0;  // since v41
+        if ((version >= 20 && (!r.u32(pray) || !r.u32(bless) || pray > 0xFFFF || bless > 0xFFFF)) ||
+            (version >= 41 && (!r.u32(silent) || silent > 0xFFFF))) {
             return false;
         }
         t.prayer_cooldown = static_cast<std::uint16_t>(pray);
         t.days_to_sanctify = static_cast<std::uint16_t>(bless);
-        std::uint32_t silent = 0;
-        if (version >= 41 && (!r.u32(silent) || silent > 0xFFFF)) {
-            return false;
-        }
         t.oracle_silent = static_cast<std::uint16_t>(silent);
         b.sanctuary = std::move(t);
     }
