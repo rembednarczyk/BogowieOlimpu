@@ -21,6 +21,7 @@ struct MythEvents {
     std::vector<WalkerId> spawned;
     std::vector<BuildingId> removed;    // animals sacrificed
     std::vector<BuildingId> completed;  // sanctuaries finished today
+    std::vector<BuildingId> planted;    // the groves of the gods (Athena, Dionysus; L-131)
 };
 
 // Daily: guilds send an artisan to the nearest unfinished sanctuary; storehouses send carts with 4 loads of

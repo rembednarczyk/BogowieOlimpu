@@ -1,4 +1,5 @@
 #include "bo/core/logistics.h"
+#include "bo/core/blessings.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -113,6 +114,7 @@ bool ship_one(WorldState& st, const DataCatalog& catalog, BuildingId id, const s
             return false;
         }
         Walker& walker = st.walkers.items.at(w);
+        walker.speed_raw = blessed_speed(city, catalog, walker.speed_raw);  // Hermes (Z:122)
         walker.job = WalkerJob::Deliver;
         walker.target = best->second;
         walker.cargo[good] = 1;  // a production deliveryman carries one load (doc 19)
@@ -157,6 +159,7 @@ WalkerId send_storage_walker(WorldState& st, const DataCatalog& catalog, Buildin
         spawn_destination_walker(city, st.walkers, catalog, "deliveryman", from, *city.buildings.items.at(to).road_access);
     if (w != kNoWalker) {
         Walker& walker = st.walkers.items.at(w);
+        walker.speed_raw = blessed_speed(city, catalog, walker.speed_raw);  // Hermes (Z:122)
         walker.job = job;
         walker.target = to;
         city.buildings.items.at(from).storage->deliveryman = w;
@@ -314,6 +317,7 @@ void dispatch_storage_push(WorldState& st, const DataCatalog& catalog, BuildingI
             return;
         }
         Walker& walker = st.walkers.items.at(w);
+        walker.speed_raw = blessed_speed(city, catalog, walker.speed_raw);  // Hermes (Z:122)
         walker.job = WalkerJob::Deliver;
         walker.target = best->second;
         walker.cargo[good] = n;

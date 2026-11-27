@@ -1,4 +1,5 @@
 // Module D1 stage 1: sanctuary construction and sacrifices (docs/gameplay/10, 21; Z:116-118, Z:124; L-052, L-111).
+#include "bo/core/blessings.h"
 #include "bo/core/sanctuary.h"
 
 #include <algorithm>
@@ -179,6 +180,9 @@ void build(WorldState& st, const DataCatalog& catalog, BuildingId site_id, MythE
     }
     s.complete = true;
     ev.completed.push_back(site_id);
+    for (const BuildingId id : plant_grove(st.city, catalog, st.difficulty, site_id)) {
+        ev.planted.push_back(id);  // Athena's olives, Dionysus's vines (L-131)
+    }
     for (const WalkerId id : artisans) {
         Walker& w = st.walkers.items.at(id);
         w.job = WalkerJob::None;

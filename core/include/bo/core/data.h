@@ -219,6 +219,17 @@ struct SanctuaryParams {
                             // no god, no priests, no limit of four
     std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
     std::string spontaneous;                        // gods.json spontaneous_help condition (Z:119-122, L-130)
+    std::string grove;                              // plant of the god's grove: olive_tree, grapevine (L-131)
+};
+
+// Lasting gifts of the gods (data/gods_rules.json blessings; Z:119-122) [ZAŁOŻENIE, L-131].
+struct BlessingParams {
+    std::int32_t athena_attack_percent = 125;
+    std::int32_t hermes_interval_percent = 67;
+    std::int32_t hermes_speed_percent = 150;
+    std::int32_t dragon_every_days = 8;
+    std::int32_t grove_plants = 4;
+    std::int32_t grove_reach = 3;
 };
 
 // When a god helps without a prayer (data/gods_rules.json spontaneous_help; Z:119-122) [ZAŁOŻENIE, L-130].
@@ -431,6 +442,7 @@ struct DataCatalog {
     std::int32_t sanctify_every_days = 16;               // [ZAŁOŻENIE, L-112]
     std::int32_t sanctify_reach_tiles = 40;              // [ZAŁOŻENIE, L-112]
     SpontaneousParams spontaneous;                       // [ZAŁOŻENIE, L-130]
+    BlessingParams blessings;                            // [ZAŁOŻENIE, L-131]
     std::map<std::string, std::int32_t> wrath;           // gods_rules.json wrath_numbers [ZAŁOŻENIE, L-115]
     std::map<std::string, std::int32_t> monster_numbers;  // gods_rules.json monster_numbers [ZAŁOŻENIE, L-116]
     std::map<std::string, std::string> monster_slayer;    // monsters.json: monster -> hero (Z:130)

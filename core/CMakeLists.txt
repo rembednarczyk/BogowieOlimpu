@@ -4,6 +4,7 @@ add_library(bo_core STATIC
     src/agora.cpp
     src/appeal.cpp
     src/auto_defend.cpp
+    src/blessings.cpp
     src/city.cpp
     src/data.cpp
     src/data_economy.cpp

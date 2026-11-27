@@ -1,6 +1,7 @@
 // Module D1 stage 2: blessings, sanctification, prayers (docs/gameplay/10, 21; Z:119-124; L-053, L-112).
 #include <optional>
 
+#include "bo/core/blessings.h"
 #include "bo/core/gods.h"
 #include "bo/core/migration.h"
 #include "bo/core/sanctuary.h"
@@ -381,4 +382,73 @@ TEST_CASE("spontaneous help: Apollo cures a plague unasked, then waits like afte
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) + 1) == 1);  // once in the month, unasked
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 3) == 0);  // then the god waits as after a prayer (96 days)
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 4) == 1);
+}
+
+TEST_CASE("Athena: the city's soldiers strike harder; her grove of four olive trees grows by the sanctuary (Z:120, L-131)") {
+    auto plain = with_god("");
+    auto sim = with_god("athena");
+    Walker soldier;
+    soldier.job = WalkerJob::Soldier;
+    Walker invader;
+    invader.job = WalkerJob::Invade;
+    CHECK(blessed_attack(plain.state(), plain.catalog(), soldier, 8) == 8);
+    CHECK(blessed_attack(sim.state(), sim.catalog(), soldier, 8) == 10);  // 125 %
+    CHECK(blessed_attack(sim.state(), sim.catalog(), invader, 8) == 8);   // only the city's own
+    std::size_t trees = 0;
+    for (const auto& [id, b] : sim.state().city.buildings.items) {
+        if (b.type == "olive_tree") {
+            ++trees;
+            CHECK(sim.state().city.map.at(b.origin).terrain == Terrain::Meadow);
+        }
+    }
+    CHECK(trees == 4);
+}
+
+TEST_CASE("Hermes: traders come more often and walk faster, and so do the deliverymen (Z:122, L-131)") {
+    auto plain = with_god("");
+    auto sim = with_god("hermes");
+    CHECK(blessed_trader_interval(plain.state().city, plain.catalog(), 30) == 30);
+    CHECK(blessed_trader_interval(sim.state().city, sim.catalog(), 30) == 20);
+    CHECK(blessed_speed(plain.state().city, plain.catalog(), 1000) == 1000);
+    CHECK(blessed_speed(sim.state().city, sim.catalog(), 1000) == 1500);
+}
+
+TEST_CASE("Ares: his dragon eats an invader every eight days (Z:121, L-131)") {
+    auto sim = with_god("ares");
+    sim.mutable_state().city.map.at({59, 20}).feature = static_cast<std::uint8_t>(TileFeature::InvasionPoint);
+    sim.issue(StartInvasion{"greek", 20});
+    sim.step(1);
+    REQUIRE(sim.state().military.invasion.active);
+    auto fallen = [&sim] {
+        std::size_t n = 0;
+        for (const WalkerId id : sim.state().military.invasion.invaders) {
+            n += sim.state().walkers.items.at(id).hp <= 0 ? 1 : 0;
+        }
+        return n;
+    };
+    const auto every = static_cast<std::uint64_t>(sim.catalog().blessings.dragon_every_days);
+    auto& st = sim.mutable_state();
+    if (st.time.total_days() % every == 0) {
+        sim.run_days(1);
+    }
+    feed_dragon(st, sim.catalog());  // not the dragon's day
+    CHECK(fallen() == 0);
+    while (st.time.total_days() % every != 0) {
+        for (std::uint64_t t = 0; t < kTicksPerDay; ++t) st.time.advance();
+    }
+    feed_dragon(st, sim.catalog());
+    CHECK(fallen() == 1);
+    auto none = with_god("athena");  // no Ares, no dragon
+    none.mutable_state().city.map.at({59, 20}).feature = static_cast<std::uint8_t>(TileFeature::InvasionPoint);
+    none.issue(StartInvasion{"greek", 20});
+    none.step(1);
+    while (none.state().time.total_days() % every != 0) {
+        for (std::uint64_t t = 0; t < kTicksPerDay; ++t) none.mutable_state().time.advance();
+    }
+    feed_dragon(none.mutable_state(), none.catalog());
+    std::size_t n = 0;
+    for (const WalkerId id : none.state().military.invasion.invaders) {
+        n += none.state().walkers.items.at(id).hp <= 0 ? 1 : 0;
+    }
+    CHECK(n == 0);
 }

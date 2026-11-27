@@ -194,6 +194,14 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         s.low_goods_loads = sp.value("low_goods_loads", s.low_goods_loads);
         s.vacant_percent = sp.value("vacant_percent", s.vacant_percent);
         s.request_days_left = sp.value("request_days_left", s.request_days_left);
+        const json bl = gr.value("blessings", json::object());
+        BlessingParams& b = cat.blessings;
+        b.athena_attack_percent = bl.value("athena_attack_percent", b.athena_attack_percent);
+        b.hermes_interval_percent = bl.value("hermes_interval_percent", b.hermes_interval_percent);
+        b.hermes_speed_percent = bl.value("hermes_speed_percent", b.hermes_speed_percent);
+        b.dragon_every_days = bl.value("dragon_every_days", b.dragon_every_days);
+        b.grove_plants = bl.value("grove_plants", b.grove_plants);
+        b.grove_reach = bl.value("grove_reach", b.grove_reach);
         const json wrath = gr.value("wrath_numbers", json::object());
         for (const auto& [k, v] : wrath.items()) {
             cat.wrath[k] = v.get<std::int32_t>();
@@ -248,6 +256,8 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.oracle_silent_days = rules.value("oracle_silent_days", p.oracle_silent_days);
             const json help = g.value("spontaneous_help", json());
             p.spontaneous = help.is_string() ? help.get<std::string>() : "";
+            const auto has = [&benefits](const char* b) { return std::find(benefits.begin(), benefits.end(), b) != benefits.end(); };
+            p.grove = has("sacred_olive_grove") ? "olive_tree" : has("grapevine_grove") ? "grapevine" : "";
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
     }

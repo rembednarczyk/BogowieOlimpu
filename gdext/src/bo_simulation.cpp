@@ -157,6 +157,11 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["god"] = String(e.god.c_str());
                        d["repelled"] = e.repelled;
                    },
+                   [&d](const bo::core::GodBlessing& e) {  // L-131
+                       d["type"] = "god_blessing";
+                       d["god"] = String(e.god.c_str());
+                       d["kind"] = String(e.kind.c_str());
+                   },
                    [&d](const bo::core::GodHelped& e) {  // Z:119-122
                        d["type"] = "god_helped";
                        d["god"] = String(e.god.c_str());

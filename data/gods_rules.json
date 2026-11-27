@@ -15,6 +15,7 @@
  },
  "prayer_cooldown_days_src": "[ZAŁOŻENIE L-053] kolejność z S-004 trivia, wartości do strojenia",
  "oracle_silent_days": 192,
+ "blessings": {"athena_attack_percent": 125, "hermes_interval_percent": 67, "hermes_speed_percent": 150, "dragon_every_days": 8, "grove_plants": 4, "grove_reach": 3, "src": "Z:119-122 i 10-mitologia.md: silniejsi żołnierze i święty gaj Ateny, winnica Dionizosa, szybsze i częstsze karawany, statki i doręczyciele Hermesa, smok Aresa zjada czasem najeźdźcę lub wilka; [ZAŁOŻENIE L-131] wszystkie liczby; gaj 4 roślin (benefit 4_plants_in_grove) na wolnym terenie do 3 kafli od sanktuarium, zamienionym na łąkę"},
  "spontaneous_help": {"low_food_loads": 8, "very_low_food_loads": 2, "low_money": 500, "low_goods_loads": 2, "vacant_percent": 50, "request_days_left": 16, "src": "Z:119-122 i 10-mitologia.md: bóg z własnej inicjatywy daje to, co daje modlitwa, gdy widzi problem; [ZAŁOŻENIE L-130] progi, sprawdzanie raz w miesiącu, ta sama przerwa co po modlitwie"},
  "oracle_src": "Z:124: Consult Oracle daje przepowiednię i milczy, jeśli niedawno przepowiadała; S-008 eZeus: przepowiednie zapowiadają nadchodzące zdarzenia (najazd, potwór); [ZAŁOŻENIE L-126] milczy rok, zapowiada najbliższe zaplanowane zdarzenie groźne scenariusza",
  "prayer_goods_loads": 24,

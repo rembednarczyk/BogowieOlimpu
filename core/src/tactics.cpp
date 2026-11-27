@@ -1,6 +1,7 @@
 // Tactics, strength at the Palace and the gods' help in battle (Z:119-120, Z:138-139, Z:144; L-110).
 #include <algorithm>
 
+#include "bo/core/blessings.h"
 #include "combat_internal.h"
 
 namespace bo::core::combat_detail {
@@ -80,8 +81,8 @@ void fight(WorldState& st, const DataCatalog& catalog, Walker& w, const UnitStat
     if (foe.first <= 1 && s.attack > 0) {
         stand(w);
         if (w.cooldown == 0 && os) {
-            const std::int32_t attack =
-                special && w.type == "hoplite" ? s.attack * catalog.tactics.wedge_attack_percent / 100 : s.attack;
+            const std::int32_t attack = blessed_attack(
+                st, catalog, w, special && w.type == "hoplite" ? s.attack * catalog.tactics.wedge_attack_percent / 100 : s.attack);
             o.hp -= std::max(0, attack - armor_of(st, catalog, o, *os));
             w.cooldown = static_cast<std::uint16_t>(s.melee_rate);
             if (special && w.type == "horseman") {
@@ -91,7 +92,7 @@ void fight(WorldState& st, const DataCatalog& catalog, Walker& w, const UnitStat
     } else if (s.missile_attack > 0 && foe.first <= s.missile_range) {
         stand(w);
         if (w.cooldown == 0 && os) {
-            o.hp -= std::max(0, s.missile_attack - os->armor_vs_missiles);
+            o.hp -= std::max(0, blessed_attack(st, catalog, w, s.missile_attack) - os->armor_vs_missiles);
             w.cooldown = static_cast<std::uint16_t>(s.missile_rate);
         }
     } else if (rechase || w.phase == WalkerPhase::AtTarget) {

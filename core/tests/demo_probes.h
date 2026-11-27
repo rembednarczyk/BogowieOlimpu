@@ -188,6 +188,8 @@ inline void note_events(const std::vector<TimedEvent>& events, std::map<std::str
         } else if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
             seen["bribed"] += end->result == 1 ? 1 : 0;  // Z:137
             seen["surrendered"] += end->result == 2 ? 1 : 0;
+        } else if (const auto* gb = std::get_if<GodBlessing>(&e.event)) {
+            ++seen[gb->god + "_" + gb->kind];  // athena_grove, ares_dragon (L-131)
         } else if (const auto* gh = std::get_if<GodHelped>(&e.event)) {
             ++seen["god_helped"];  // Z:119-122
             ++seen["god_helped_" + gh->god];

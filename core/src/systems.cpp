@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "bo/core/appeal.h"
 #include "bo/core/auto_defend.h"
+#include "bo/core/blessings.h"
 #include "bo/core/culture.h"
 #include "bo/core/games.h"
 #include "bo/core/finance.h"
@@ -267,6 +268,11 @@ static void run_mythology(Simulation& sim) {
     for (const BuildingId id : ev.completed) {
         sim.emit(SanctuaryCompleted{id});
     }
+    for (const BuildingId id : ev.planted) {
+        const Building& b = sim.state().city.buildings.items.at(id);
+        sim.emit(BuildingPlaced{id, b.type, b.origin.x, b.origin.y, b.width, b.height});
+        sim.emit(GodBlessing{b.type == "olive_tree" ? "athena" : "dionysus", "grove"});
+    }
 }
 
 // D4: expeditions, request cooldowns, yearly tribute.
@@ -392,6 +398,9 @@ static void run_military(Simulation& sim) {
     CombatEvents fleet;
     advance_fleet(sim.mutable_state(), sim.catalog(), fleet);  // triremes launched, repaired (Z:141-142)
     advance_auto_defend(sim.mutable_state(), sim.catalog(), fleet);  // the generals and admirals (Z:145)
+    if (feed_dragon(sim.mutable_state(), sim.catalog())) {  // Ares's dragon (Z:121)
+        sim.emit(GodBlessing{"ares", "dragon"});
+    }
     sim.emit_combat(fleet);
 }
 

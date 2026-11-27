@@ -1,3 +1,4 @@
+#include "bo/core/blessings.h"
 #include "bo/core/trade.h"
 
 #include <algorithm>
@@ -74,7 +75,7 @@ WalkerId spawn_trader(WorldState& st, const DataCatalog& catalog, BuildingId id,
     w.type = type;
     w.home = id;
     w.tile = from;
-    w.speed_raw = t->second.speed_raw;
+    w.speed_raw = blessed_speed(st.city, catalog, t->second.speed_raw);  // Hermes (Z:122)
     w.path = std::move(*path);
     w.phase = WalkerPhase::Routed;
     w.job = WalkerJob::Trade;
@@ -136,7 +137,8 @@ TradeEvents dispatch_traders(WorldState& st, const DataCatalog& catalog) {
             continue;  // a god's curse: no merchants come (Z:125-127)
         }
         ++t.days_since_trader;
-        const std::uint32_t interval = sea ? catalog.trade.ship_interval_days : catalog.trade.caravan_interval_days;
+        const std::uint32_t interval = blessed_trader_interval(
+            st.city, catalog, sea ? catalog.trade.ship_interval_days : catalog.trade.caravan_interval_days);  // Hermes
         if (t.days_since_trader < interval || st.walkers.items.count(t.trader) != 0 ||
             tw.traders_today >= catalog.trade.max_new_traders_per_day) {
             continue;
