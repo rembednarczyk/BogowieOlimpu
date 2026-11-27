@@ -356,6 +356,10 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
         MESSAGE("refused: " << r);
     }
     CHECK(run.refused.empty());
+    for (const auto& c : cut_off(*run.sim)) {
+        MESSAGE("cut off from the land entry: " << c);  // B-021
+    }
+    CHECK(cut_off(*run.sim).empty());
     const WorldState& st = run.sim->state();
     CHECK(houses_at(st, run.sim->catalog(), false, 4) >= 10);  // Tenement needs 35 culture points (B-008)
     CHECK(houses_at(st, run.sim->catalog(), true, 0) >= 2);

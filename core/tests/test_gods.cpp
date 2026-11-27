@@ -354,3 +354,29 @@ TEST_CASE("spontaneous help: Apollo cures a plague unasked, then waits like afte
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 3) == 0);  // then the god waits as after a prayer (96 days)
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 4) == 1);
 }
+
+TEST_CASE("B-022: artisans build where the stone is, not idle at the nearest empty site (Z:117)") {
+    std::vector<std::string> rows(40, std::string(60, '.'));
+    rows[20] = std::string(60, '=');
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{11, Difficulty::Hero, 30000, rows, true});
+    sim.issue(PlaceBuilding{"storehouse", 50, 17});
+    sim.step(1);
+    sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({50, 17}).building).storage->loads["marble"] = 60;
+    const auto h = [](const char* t) { return bo::test::catalog().building_stats.at(t).footprint->height; };
+    sim.issue(PlaceBuilding{"sanctuary_dionysus", 2, 20 - h("sanctuary_dionysus")});   // near the guild, no stone
+    sim.issue(PlaceBuilding{"sanctuary_hermes", 30, 20 - h("sanctuary_hermes")});       // farther, stone delivered
+    sim.issue(PlaceBuilding{"artisans_guild", 14, 18});
+    sim.step(1);
+    BuildingId far = kNoBuilding;
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        if (b.type == "sanctuary_hermes") {
+            far = id;
+            b.sanctuary->on_site["marble"] = b.sanctuary->needed["marble"];
+        }
+    }
+    REQUIRE(far != kNoBuilding);
+    sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({50, 17}).building).storage->loads.clear();
+    const auto before = sim.state().city.buildings.items.at(far).sanctuary->needed.at("marble");
+    sim.run_days(30);
+    CHECK(sim.state().city.buildings.items.at(far).sanctuary->needed.at("marble") < before);  // stalled before the fix
+}

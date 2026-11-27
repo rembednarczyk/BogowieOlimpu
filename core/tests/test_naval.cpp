@@ -356,3 +356,24 @@ TEST_CASE("fleet: a crew takes the free workers there are; short-handed a ship i
     CHECK(copy->state().military.ships[0].hands == 6);
     CHECK(copy->state_hash() == sim.state_hash());
 }
+
+TEST_CASE("B-021 probe: a storehouse with Get orders supplies the wharf with wood and armour on its road (Z:141)") {
+    auto sim = sea_city();
+    sim.issue(PlaceBuilding{"storehouse", 14, 5});
+    sim.step(1);
+    const BuildingId s = sim.state().city.map.at({14, 5}).building;
+    REQUIRE(s != kNoBuilding);
+    sim.issue(SetStorageOrder{s, "wood", 1, 4});
+    sim.issue(SetStorageOrder{s, "armor", 1, 4});
+    sim.step(1);
+    auto& store = *sim.mutable_state().city.buildings.items.at(s).storage;
+    store.loads["wood"] = 4;
+    store.loads["armor"] = 4;
+    sim.run_days(10);
+    const Building& wharf = sim.state().city.buildings.items.at(wharf_of(sim));
+    const auto units = [&wharf](const char* g) {
+        const auto it = wharf.producer->units.find(g);
+        return it == wharf.producer->units.end() ? 0U : it->second;
+    };
+    CHECK(units("wood") + units("armor") + wharf.producer->progress + wharf.producer->output_loads > 0);
+}

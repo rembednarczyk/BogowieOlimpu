@@ -10,6 +10,7 @@
 #include "bo/core/migration.h"
 #include "bo/core/scenario.h"
 #include "bo/core/simulation.h"
+#include "demo_probes.h"
 #include "doctest/doctest.h"
 #include "helpers.h"
 
@@ -127,4 +128,8 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     CHECK(sciences);  // and astronomers, inventors, curators in one house (P:10-12)
     CHECK(racing);   // the hippodrome with its horses (P:13-15)
     CHECK(crosswalk);  // a crosswalk over it (P:14)
+    for (const auto& c : bo::test::demo::cut_off(sim)) {
+        MESSAGE("cut off from the land entry: " << c);  // B-021
+    }
+    CHECK(bo::test::demo::cut_off(sim).empty());
 }

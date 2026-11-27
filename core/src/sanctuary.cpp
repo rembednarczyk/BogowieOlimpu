@@ -47,6 +47,42 @@ std::optional<BuildingId> nearest_by_road(const CityState& city, TilePos from, P
     return best->second;
 }
 
+int phase_of(const DataCatalog& catalog, const Building& site);
+
+// The materials an artisan works with in the site's phase (S-005): tiles of marble, then marble and wood, then
+// the sculptures; a monument takes any (L-128).
+std::vector<const char*> phase_goods(const DataCatalog& catalog, const Building& site) {
+    if (catalog.sanctuaries.at(site.type).monument) {
+        return {"marble", "orichalc", "wood", "sculpture"};
+    }
+    const int phase = phase_of(catalog, site);
+    return phase == 1 ? std::vector<const char*>{"marble"}
+           : phase == 2 ? std::vector<const char*>{"marble", "wood"}
+                        : std::vector<const char*>{"sculpture"};
+}
+
+// B-022: something to build on the site now (its phase's material delivered).
+bool has_work(const DataCatalog& catalog, const Building& site) {
+    if (!site.sanctuary || site.sanctuary->complete) {
+        return false;
+    }
+    const SanctuaryState& s = *site.sanctuary;
+    for (const char* good : phase_goods(catalog, site)) {
+        const auto need = s.needed.find(good);
+        const auto have = s.on_site.find(good);
+        if (need != s.needed.end() && need->second > 0 && have != s.on_site.end() && have->second > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool work_elsewhere(const WorldState& st, const DataCatalog& catalog, BuildingId except) {
+    return std::any_of(st.city.buildings.items.begin(), st.city.buildings.items.end(), [&](const auto& kv) {
+        return kv.first != except && kv.second.road_access && has_work(catalog, kv.second);
+    });
+}
+
 void dispatch_artisans(WorldState& st, const DataCatalog& catalog, MythEvents& ev) {
     for (auto& [gid, g] : st.city.buildings.items) {
         if (g.type != "artisans_guild" || !g.road_access || g.staffing_percent == 0) {
@@ -55,8 +91,12 @@ void dispatch_artisans(WorldState& st, const DataCatalog& catalog, MythEvents& e
         const bool busy = std::any_of(st.walkers.items.begin(), st.walkers.items.end(), [gid = gid](const auto& kv) {
             return kv.second.home == gid && kv.second.job == WalkerJob::Build;
         });
-        const auto site = nearest_by_road(st.city, *g.road_access,
-                                          [](const Building& b) { return b.sanctuary && !b.sanctuary->complete; });
+        // B-022: the nearest site with its stone delivered; only when none has any, the nearest site to wait at.
+        auto site = nearest_by_road(st.city, *g.road_access, [&catalog](const Building& b) { return has_work(catalog, b); });
+        if (!site) {
+            site = nearest_by_road(st.city, *g.road_access,
+                                   [](const Building& b) { return b.sanctuary && !b.sanctuary->complete; });
+        }
         if (busy || !site) {
             continue;
         }
@@ -149,19 +189,23 @@ void build(WorldState& st, const DataCatalog& catalog, BuildingId site_id, MythE
     }
     const auto artisans = walkers_for(st, WalkerJob::Build, site_id);
     bool one_at_work = false;
+    // B-022: with nothing to build here and stone waiting on another site, the idle artisans go back to their
+    // guild, which sends them where the work is.
+    const bool leave = !has_work(catalog, site) && work_elsewhere(st, catalog, site_id);
     for (const WalkerId id : artisans) {
         Walker& w = st.walkers.items.at(id);
         const bool monument = catalog.sanctuaries.at(site.type).monument;
         const int phase = monument ? 0 : phase_of(catalog, site);
+        if (w.phase == WalkerPhase::AtTarget && (leave || (phase == 2 && one_at_work && work_elsewhere(st, catalog, site_id)))) {
+            w.job = WalkerJob::None;
+            send_home(st.city, w);
+            continue;
+        }
         if (w.phase != WalkerPhase::AtTarget || (phase == 2 && one_at_work)) {
             continue;  // phase 2: one artisan only (S-005)
         }
         one_at_work = true;
-        const std::vector<const char*> goods =
-            monument     ? std::vector<const char*>{"marble", "orichalc", "wood", "sculpture"}  // any, a load a day [L-128]
-            : phase == 1 ? std::vector<const char*>{"marble"}
-            : phase == 2 ? std::vector<const char*>{"marble", "wood"}
-                         : std::vector<const char*>{"sculpture"};
+        const std::vector<const char*> goods = phase_goods(catalog, site);  // a monument: any, a load a day [L-128]
         for (const char* good : goods) {
             if (s.needed[good] > 0 && s.on_site[good] > 0) {
                 --s.needed[good];

@@ -30,6 +30,19 @@ Brak otwartych błędów (stan 2026-11-26).
 
 ## Naprawione
 
+### B-022 [S2] Rzemieślnicy czekali bez końca na placu bez materiału, gdy inne sanktuarium miało go na miejscu
+- Status: naprawione
+- Miejsce i liczba wystąpień: demo bogów: Zeus z kompletem materiałów na placu od dnia ok. 400 bez postępu; wcześniej Afrodyta (marmur, drewno i rzeźby na placu) i Demeter.
+- Dowód: `BO_DEMO_HOUSE` na placu i gildii: `on_site marble 97 ... sculpture 22 ... wood 28` bez zmian przez lata, rzemieślnik gildii stoi przy innym placu.
+- Test "co dziś pada": "B-022: artisans build where the stone is, not idle at the nearest empty site (Z:117)" (`core/tests/test_gods.cpp`), pada bez poprawki.
+- Przyczyna: gildia wysyłała rzemieślnika na najbliższy niedokończony plac, a ten czekał tam, aż przyjdzie materiał. Teraz gildia wybiera najbliższy plac z materiałem na bieżącą fazę, a bezczynny rzemieślnik wraca, jeśli inny plac ma pracę (`core/src/sanctuary.cpp` `has_work`) [ZAŁOŻENIE: Z:117 nie opisuje wyboru placu].
+
+### B-021 [S3] Magazyn z rozkazem Get nie zasilał stoczni obok (odrzucone: błąd układu demo, nie rdzenia)
+- Status: odrzucone 2026-11-27
+- Miejsce: demo bogów, magazyn (55,43) i stocznia (61,47), potem magazyn (49,43) i stocznia (39,47).
+- Dowód: testy "B-021 probe" (`core/tests/test_goods.cpp`, `core/tests/test_naval.cpp`): magazyn z rozkazem Get zasila warsztat i stocznię przy wspólnej drodze. W demo droga brzegowa była odcięta od sieci, potem stocznia leżała poza zasięgiem 40 kafli (objazd ok. 47).
+- Co zostaje: kontrola `cut_off` w bramkach demo (`core/tests/demo_probes.h`): każdy budynek z dostępem do drogi musi być połączony drogą z punktem wejścia, a mapa musi go mieć; test "B-021: the demo gates find a building whose road does not reach the land entry". Kontrola wykryła, że w obu mapach demo bogów droga zasłaniała znacznik wejścia 'E' (poprawione w `tools/make_demo_gods.py`).
+
 ### B-020 [S1] Awaria symulacji przy rozkazie dla kompanii, której żołnierz zniknął tego dnia z mapy
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo greckie z przekupieniem najazdu (dzień 433) i z Auto-Defend: wyjątek `std::out_of_range` w `soldier_killed` (combat.cpp) i `send_company_home` (military.cpp).

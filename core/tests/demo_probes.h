@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
 #include "bo/core/naval.h"
+#include "bo/core/path.h"
 #include "bo/core/simulation.h"
 #include "bo/core/storage.h"
 
@@ -343,6 +345,29 @@ inline void probe_tile(const Simulation& sim, std::uint64_t day) {
             }
         }
     }
+}
+
+// Buildings whose road does not lead to the land entry (B-021): their walkers and carts can never reach the
+// rest of the city. "type x,y" each; a demo map must have none.
+inline std::vector<std::string> cut_off(const Simulation& sim) {
+    const CityState& city = sim.state().city;
+    std::vector<TilePos> entry;
+    for (std::size_t i = 0; i < city.map.size(); ++i) {
+        if (city.map.tiles()[i].feature == static_cast<std::uint8_t>(TileFeature::LandEntry)) {
+            entry.push_back(city.map.pos(i));
+        }
+    }
+    std::vector<std::string> out;
+    if (entry.empty()) {
+        return {"no land entry on the map"};
+    }
+    const auto dist = road_distances(city, entry, PathMode::Road);
+    for (const auto& [id, b] : city.buildings.items) {
+        if (b.road_access && dist[city.map.index(*b.road_access)] == std::numeric_limits<std::uint32_t>::max()) {
+            out.push_back(b.type + " " + std::to_string(b.origin.x) + "," + std::to_string(b.origin.y));
+        }
+    }
+    return out;
 }
 
 inline void trace_invasion(const Simulation& sim, std::uint64_t day) {  // BO_DEMO_INV=1

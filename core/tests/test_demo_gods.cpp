@@ -107,12 +107,16 @@ TEST_CASE("demo gate: gods, the autopilot plays both episodes of the gods' adven
     std::map<std::string, std::uint32_t> seen;
     std::vector<std::string> refused;
     const std::uint64_t parent_days = play(*sim, order_of("demo_gods_build.json"), 8, seen, refused);
+    std::vector<std::string> cut = cut_off(*sim);  // B-021: every building's road leads to the land entry
     CHECK(parent_days > 0);
     REQUIRE(advance_adventure(*adventure, run, sim) == NextEpisode::ChooseColony);
     const auto choices = colony_choices(*adventure, run);
     REQUIRE(choices.size() == 1);
     REQUIRE(found_colony(bo::test::catalog(), *adventure, run, choices.front(), sim).empty());
     const std::uint64_t colony_days = play(*sim, order_of("demo_gods_colony_build.json"), 8, seen, refused);
+    for (const auto& c : cut_off(*sim)) {
+        cut.push_back("colony " + c);
+    }
     CHECK(colony_days > 0);
     NextEpisode next = advance_adventure(*adventure, run, sim);
     if (next == NextEpisode::BackToParent) {
@@ -130,6 +134,10 @@ TEST_CASE("demo gate: gods, the autopilot plays both episodes of the gods' adven
         MESSAGE("refused: " << r);
     }
     CHECK(refused.empty());
+    for (const auto& c : cut) {
+        MESSAGE("cut off from the land entry: " << c);
+    }
+    CHECK(cut.empty());
     CHECK(seen["sanctuary"] == 8);
     for (const char* m : kGodsMechanics) {
         CHECK_MESSAGE((seen.count(m) > 0 && seen.at(m) > 0), "the gods' demo never showed: " << std::string(m));

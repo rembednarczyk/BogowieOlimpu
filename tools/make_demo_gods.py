@@ -81,22 +81,27 @@ for x in (8, 10, 30, 32):
     P.grid[52][x] = "f"                # fishing grounds (Z:47)
 for x in (20, 22):
     P.grid[52][x] = "u"                # urchins (Z:47)
-P.grid[6][0] = "E"                     # land entry: caravans, immigrants (Z:17)
 P.hroad(6)
 for y in (24, 30, 36, 42):
     P.hroad(y)
 P.hroad(47, 0, 38); P.hroad(47, 43, 60)  # the shore street: fisheries on rows 48-49 by the water (Z:47)
 P.vroad(25, 42, 47); P.vroad(48, 42, 47)  # joined to the town: catches and timber reach the stores
+P.hroad(46, 38, 43)                       # round the wharf: its supplies come 40 tiles at most (B-021)
 for x in (25, 48, 71, 90):
     P.vroad(x, 6, 42)
 P.grid[27][91] = "i"                   # invasion point (doc 23), off the streets
+P.grid[6][0] = "E"                     # land entry: caravans, immigrants (Z:17); after the roads, or one hides it
 P.step(day=0, auto_defend=True)
+P.step(day=0, wage=5)                   # very high wages: more of the people work (Z:59-60, difficulty.json)
 P.put("palace", 40, 0)                  # taxes, the army, the wharf's crews need it (Z:96, Z:135, Z:141)
-P.put("trading_post", 0, 37); P.step(day=1, at=[0, 37], trade_partner=0)
-P.imports(1, [0, 37], [("marble", 12), ("wood", 8), ("sculpture", 4), ("armor", 2), ("wheat", 6)])  # 32 loads
-P.imports(100, [0, 37], [("armor", 0)])  # armour enough for the trireme's marines (Z:141)
-for x in (5, 9, 13):
-    P.put("storehouse", x, 37)
+P.put("maintenance_office", 50, 4); P.put("watchpost", 52, 4)  # a burnt Palace: no army, no taxes (Z:89-90)
+P.put("infirmary", 55, 2)               # the plague spreads in a crowded city (Z:84-85)
+P.put("trading_post", 2, 2); P.step(day=1, at=[2, 2], trade_partner=0)  # by the land entry: the caravans come in there (Z:17)
+for x in (7, 10, 13):
+    P.put("storehouse", x, 3)  # the sites' stone close at hand
+P.put("maintenance_office", 17, 4); P.put("watchpost", 19, 4)  # or the post burns (Z:89-90)
+P.imports(1, [2, 2], [("marble", 12), ("wood", 8), ("sculpture", 4), ("armor", 2), ("wheat", 6)])  # 32 loads
+P.imports(100, [2, 2], [("armor", 0)])  # armour enough for the trireme's marines (Z:141)
 P.put("granary", 17, 37); P.put("granary", 21, 37)
 for x in (17, 21):  # room for fish and urchins too (Z:66-67, B-019)
     for good in ("wheat", "carrots"):
@@ -112,9 +117,11 @@ P.put("drama_school", 60, 37); P.put("theater", 63, 37); P.put("podium", 68, 37)
 for x in (33, 55, 78):
     P.put("podium", x, 22)
 for x in range(0, 60, 3):
-    if x not in (9, 12, 24, 39, 42, 45, 48):
+    if x not in (9, 12, 24, 39, 42, 45, 48, 51):
         P.put("wheat_farm" if x % 2 else "carrot_farm", x, 43)
 P.put("granary", 9, 43)  # by the shore: a catch goes 25 tiles at most (production.json fishery)
+P.put("storehouse", 49, 43)  # armour for the wharf within its 40 tiles (production.json trireme_wharf)
+P.step(day=1, at=[49, 43], storage_order={"good": "armor", "kind": 1, "limit": 4})
 P.put("timber_mill", 45, 43)  # its wood goes to a wharf in need first (buildings.json delivery_priority)
 P.put("carding_shed", 60, 43)            # the shepherd keeps the sheep the priests take (Z:45, Z:124)
 P.put("carding_shed", 12, 40)            # and a flock in the west for Zeus's priests: the east is far
@@ -136,8 +143,10 @@ P.put("fountain", 0, 28); P.put("maintenance_office", 2, 28); P.put("watchpost",
 services(P, 22, 27, 47); services(P, 22, 49, 70); services(P, 22, 72, 89)
 # Distribution first: a granary takes food only when fully staffed (Z:66); the sawmill and the wharf build the
 # trireme (Z:141), the guilds the sanctuaries.
-P.priorities(0, [4, 4, 5, 4, 3, 4, 4, 4])
-P.priorities(600, [4, 1, 5, 4, 3, 4, 4, 2])
+# Distribution first: a granary takes food only when fully staffed (Z:66); at equal priority the upkeep fills
+# first (S-010), the rest share what is left (Z:60-62).
+P.priorities(0, [4, 4, 5, 5, 3, 4, 4, 4])    # distribution and upkeep full; the rest share (Z:60-62)
+P.priorities(950, [4, 4, 5, 5, 3, 5, 5, 5])  # then culture for hovels and the wharf: rabble and crews (Z:136, Z:141)
 # The sanctuaries, the biggest first: each needs its first marble in the storehouses (Z:116).
 SANCT = 30
 P.put("sanctuary_zeus", 1, 7, day=SANCT, retry=True, when={"marble": 48})
@@ -149,7 +158,7 @@ parent = {
     "name_key": "scenario.demo_gods.name",
     "note": "Demo bogów (Z:116-122, doc 23), generowane przez tools/make_demo_gods.py.",
     "seed": 20261128,
-    "treasury": 90000,
+    "treasury": 150000,  # four big sanctuaries of imported stone (Z:116-117)
     "difficulty": "M",
     "map": P.rows(),
     "cities": [QUARRY_CITY, {"id": "sparta", "relation": "rival", "opinion": 40, "military": 1, "economy": 2,
@@ -168,17 +177,20 @@ parent_events = [
 C = City(64, 46)
 C.fill(0, 34, 63, 45, ",")              # meadow: farms, sheep, the wolves' hunting ground (Z:43-45)
 C.grid[44][62] = "w"                   # the wolves' den (Z:45)
-C.grid[4][0] = "E"
 C.hroad(4)
+C.grid[4][0] = "E"                     # after the road, or the road hides it
 for y in (16, 22, 28, 33):
     C.hroad(y)
 for x in (17, 32, 48, 62):
     C.vroad(x, 4, 33)
 C.step(day=0, auto_defend=True)
 C.put("palace", 50, 34)                 # the Amazons' standards stand by it (Z:135, Z:140)
-C.put("trading_post", 0, 29); C.step(day=1, at=[0, 29], trade_partner=1)  # Megara (0 is the parent city)
-C.imports(1, [0, 29], [("marble", 12), ("wood", 8), ("sculpture", 4), ("wheat", 8)])
-C.imports(SANCT + 600, [0, 29], [("marble", 0), ("wood", 0), ("sculpture", 0), ("wheat", 24)])  # grain at last
+C.put("trading_post", 2, 0); C.step(day=1, at=[2, 0], trade_partner=1)  # by the land entry (Z:17)
+for x in (7, 10):
+    C.put("storehouse", x, 1)
+C.put("maintenance_office", 14, 2); C.put("watchpost", 16, 2)  # Megara (0 is the parent city)
+C.imports(1, [2, 0], [("marble", 12), ("wood", 8), ("sculpture", 4), ("wheat", 8)])
+C.imports(SANCT + 600, [2, 0], [("marble", 0), ("wood", 0), ("sculpture", 0), ("wheat", 24)])  # grain at last
 C.put("storehouse", 4, 29); C.put("storehouse", 7, 29); C.put("granary", 10, 29)
 C.put("artisans_guild", 14, 29); C.put("artisans_guild", 18, 29)
 C.put("common_agora", 24, 28, rot=1); C.put("food_vendor_stall", 24, 29, day=1)

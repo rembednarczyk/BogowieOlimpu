@@ -4,6 +4,7 @@
 #include "bo/core/simulation.h"
 #include "bo/core/storage.h"
 #include "doctest/doctest.h"
+#include "demo_probes.h"
 #include "helpers.h"
 
 using namespace bo::core;
@@ -326,4 +327,32 @@ TEST_CASE("Not Buying: the stall sends no vendor; both orders survive a save (Z:
     CHECK(copy->state().stockpiled.count("olive_oil") == 1);
     copy->run_days(4);
     CHECK(copy->state().city.buildings.items.at(stall).stall->not_buying == false);
+}
+
+TEST_CASE("B-021 probe: a storehouse with a Get order still supplies a workshop on its road (Z:67)") {
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
+    sim.issue(PlaceBuilding{"storehouse", 10, 3});
+    sim.issue(PlaceBuilding{"sculpture_studio", 20, 4});
+    sim.step(1);
+    const BuildingId s = sim.state().city.map.at({10, 3}).building;
+    sim.issue(SetStorageOrder{s, "bronze", 1, 4});  // Get: nobody else has bronze to give
+    sim.step(1);
+    at(sim, {10, 3}).storage->loads["bronze"] = 4;
+    sim.run_days(10);
+    const Building& studio = at(sim, {20, 4});
+    CHECK(studio.producer->input_loads + studio.producer->units.count("bronze") > 0);
+    CHECK(at(sim, {10, 3}).storage->loads["bronze"] < 4);
+}
+
+TEST_CASE("B-021: the demo gates find a building whose road does not reach the land entry") {
+    auto rows = valley();
+    rows[6][0] = 'E';
+    rows[12] = std::string(40, '=');  // a street of its own, joined to nothing
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, rows, true});
+    sim.issue(PlaceBuilding{"storehouse", 10, 3});
+    sim.issue(PlaceBuilding{"storehouse", 20, 9});
+    sim.step(1);
+    const auto cut = bo::test::demo::cut_off(sim);
+    REQUIRE(cut.size() == 1);
+    CHECK(cut.front() == "storehouse 20,9");
 }
