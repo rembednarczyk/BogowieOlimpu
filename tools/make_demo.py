@@ -68,7 +68,7 @@ world = [
                "wine": [120, 24], "armor": [150, 12]},
      "buys": {"bronze": [110, 16], "wood": [70, 16], "drachmas_note": [0, 0]}},
     {"id": "sparta", "relation": "rival", "opinion": 20, "military": 3, "economy": 2, "sells": {}, "buys": {}},
-    {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 85, "military": 2, "economy": 3,
+    {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 95, "military": 2, "economy": 3,
      "sells": {"wine": [110, 24], "fish": [40, 24]}, "buys": {"olive_oil": [160, 12], "sculpture": [260, 8]}},
 ]
 # Argos: a vassal that dislikes the player and rises after a year (L-121); Rhodes above is fond of the player
@@ -341,6 +341,7 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # horsemen (Z:136). Apollo's Oracle foretells (Z:124). Two agoras, a granary and a storehouse for the estate
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
+steps.append({"day": EAST, "tax": 4})  # High: the district is dear (Z:97)
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})
 for y in (29, 37):
     steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
@@ -399,10 +400,9 @@ steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachm
 steps.append({"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3}})  # then home: companies form only when all are in (Z:140)
 
 # Military help (Z:174): Rhodes lends companies against the landing of year 5 (asked every day of the
-# invasion, refused when there is none); later, with gifts first, Rhodes strikes Sparta.
+# invasion, refused when there is none); a year before, Rhodes, who adores the player, strikes Sparta.
 steps.append({"day": 5 * 192 + 9 * 16, "every": 1, "until": 5 * 192 + 11 * 16, "military_help": {"city": 2}})
-steps.append({"day": 6 * 192, "every": 32, "until": 1300, "gift": {"city": 2, "good": "drachmas", "amount": 500}})
-steps.append({"day": 6 * 192, "every": 32, "until": 1400, "military_help": {"city": 2, "strike": True, "target": 1}})
+steps.append({"day": 4 * 192, "every": 32, "until": 4 * 192 + 64, "military_help": {"city": 2, "strike": True, "target": 1}})
 
 # City requests (Z:161): goods from storage, troops from the companies at home; tried twice a month.
 steps.append({"day": 64, "every": 8, "fulfill_requests": True})

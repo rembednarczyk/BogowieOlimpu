@@ -191,7 +191,7 @@
    "id": "rhodes",
    "relation": "ally",
    "by_sea": true,
-   "opinion": 85,
+   "opinion": 95,
    "military": 2,
    "economy": 3,
    "sells": {
