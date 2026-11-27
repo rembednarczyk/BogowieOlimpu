@@ -104,7 +104,9 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       // From the audit of the base game (2026-11-27): what the demo showed unchecked.
                                       "auto_defend", "import", "export", "request_fulfilled", "army_won_abroad",
                                       "hero_slew", "wolves", "taxes", "sanctified", "plague", "collapse", "games_won",
-                                      "culture_philosopher", "culture_athlete", "culture_actor", "culture_competitor"};
+                                      "culture_philosopher", "culture_athlete", "culture_actor", "culture_competitor",
+                                      "tribute", "gift_sent", "goods_asked", "wages_set", "industry_off",
+                                      "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     const auto one = [&seen](const std::string& m) {
@@ -134,12 +136,24 @@ DemoRun run_demo(std::uint64_t years) {
         for (const auto& c : cmds) {
             sim.issue(c);
         }
-        sim.run_days(1);
+        sim.step(1);
+        for (const auto& c : due_commands(run.order, sim, day, true)) {  // a tick into the day (BuildStep::later)
+            sim.issue(c);
+        }
+        sim.step(kTicksPerDay - 1);
         const auto events = sim.drain_events();
         count_events(events, run.seen);
         note_events(events, run.seen);
         note_state(sim, run.seen);
         trace_invasion(sim, day);
+        if (std::getenv("BO_DEMO_REJECT") != nullptr) {  // every refused command with its day
+            for (const auto& e : events) {
+                if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+                    std::printf("day %llu rejected %u: %s\n", static_cast<unsigned long long>(day), r->command_index,
+                                r->reason_key.c_str());
+                }
+            }
+        }
         for (const auto& e : events) {
             if (const auto* g = std::get_if<GamesHeld>(&e.event)) {
                 run.seen[g->invited ? "games_invited" : "games_not_invited"] += 1;  // Z:110-112
@@ -352,7 +366,9 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(run.won_day < 7 * kDaysPerMonth * kMonthsPerYear);
     CHECK(std::any_of(st.military.companies.begin(), st.military.companies.end(),
                       [](const Company& c) { return c.nation == "divine"; }));  // Ares's Sparti (Z:140)
-    CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);  // the earthquake of year 3 (demo.json) cracked the land
+    CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);
+    CHECK(st.city.map.at({23, 6}).terrain != Terrain::Forest);  // cleared on day 1 (Z:19)
+    CHECK(st.city.map.at({58, 7}).building == kNoBuilding);   // the fountain of day 2 undone (Z:20)  // the earthquake of year 3 (demo.json) cracked the land
     // A healthy city at the end: work for nine in ten workers, people content (Z:159-160).
     CHECK(st.labour.employed * 10 >= st.labour.workforce * 9);
     CHECK(st.migration.popularity >= 70);

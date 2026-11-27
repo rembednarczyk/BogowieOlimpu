@@ -40,6 +40,7 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
     base.retry = s.value("retry", false);
     base.every = s.value("every", std::uint64_t{0});
     base.until = s.value("until", std::uint64_t{0});
+    base.later = s.value("later", false);
     const json when = s.value("when", json::object());  // a named copy: items() of a temporary dangles
     for (const auto& [good, n] : when.items()) {
         base.when[good] = n.get<std::uint32_t>();
@@ -121,6 +122,19 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
     } else if (s.contains("gift")) {  // {"city": i, "good": g, "amount": n} (Z:176-177)
         const json& g = s.at("gift");
         add(GiftToCity{g.at("city").get<std::uint32_t>(), g.value("good", std::string("drachmas")), g.value("amount", 500U)});
+    } else if (s.contains("ask_city")) {  // {"city": i, "good": g}: goods or money asked of a city (Z:174-175)
+        const json& a = s.at("ask_city");
+        add(RequestFromCity{a.at("city").get<std::uint32_t>(), a.value("good", std::string("drachmas"))});
+    } else if (s.contains("bribe")) {  // pay the invaders to leave (Z:137)
+        add(BribeInvaders{});
+    } else if (s.contains("clear")) {  // [x, y]: trees or rubble cleared (Z:19)
+        const TilePos p = pos_of(s.at("clear"));
+        add(ClearLand{p.x, p.y});
+    } else if (s.contains("undo")) {  // the last placement taken back within the undo window (Z:20)
+        add(Undo{});
+    } else if (s.contains("industry")) {  // {"type": t, "on": bool}: an industry switched off or on (Z:62-63)
+        const json& i = s.at("industry");
+        add(SetIndustryEnabled{i.at("type").get<std::string>(), i.value("on", true)});
     } else if (s.contains("military_help")) {  // {"city": i, "strike": bool, "target": j} (Z:174)
         const json& h = s.at("military_help");
         add(RequestMilitaryHelp{h.at("city").get<std::uint32_t>(), h.value("strike", false), h.value("target", 0U)});
@@ -164,9 +178,12 @@ std::optional<BuildOrder> parse_build_order(const std::string& json_text, std::s
     }
 }
 
-std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim, std::uint64_t day) {
+std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim, std::uint64_t day, bool later) {
     std::vector<Command> out;
     for (const BuildStep& s : order.steps) {
+        if (s.later != later) {
+            continue;
+        }
         const auto* place = std::get_if<PlaceBuilding>(&s.command);
         const bool due = s.day == day || (s.retry && place != nullptr && s.day < day && !stands(sim, *place)) ||
                          (s.every > 0 && day > s.day && (day - s.day) % s.every == 0 && (s.until == 0 || day <= s.until));

@@ -71,9 +71,10 @@ world = [
     {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 95, "military": 2, "economy": 3,
      "sells": {"wine": [110, 24], "fish": [40, 24]}, "buys": {"olive_oil": [160, 12], "sculpture": [260, 8]}},
 ]
-# Argos: a vassal that dislikes the player and rises after a year (L-121); Rhodes above is fond of the player
-# and sends a goodwill gift after two years.
-world.append({"id": "argos", "relation": "vassal", "by_sea": True, "opinion": 25, "military": 1, "economy": 2, "tribute": 300,
+# Argos: a vassal just willing to pay tribute (Z:172) until the requests for help of year 4 sour it (doc 24:
+# -10 a request); it stops paying and rises a year later (L-121). Rhodes above is fond of the player and sends a
+# goodwill gift after two years.
+world.append({"id": "argos", "relation": "vassal", "by_sea": True, "opinion": 31, "military": 1, "economy": 2, "tribute": 300,
               "sells": {}, "buys": {}})
 for c in world:
     c["buys"].pop("drachmas_note", None)
@@ -351,6 +352,7 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
 steps.append({"day": EAST, "tax": 4})  # High: the district is dear (Z:97)
+steps.append({"day": EAST, "wage": 4})  # High wages: more of the people work (Z:59-60, doc 22)
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})
 for y in (29, 37):
     steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
@@ -419,6 +421,21 @@ steps.append({"day": 64, "every": 8, "fulfill_requests": True})
 # Prayers (Z:124): Ares marches with the next army abroad; the god may refuse (Z:132, L-053). Goods (Athena: 24
 # loads) would fill the storehouses that keep the sculptures for Perseus; Hermes finds no request left open.
 steps.append({"day": 1000, "every": 48, "pray": [37, 37]})
+
+# The rest of the base game's commands (audit 2026-11-27): the first, small invasion of Sparta is bought off
+# (Z:137); a corner of the forest cleared and a fountain placed by mistake taken back (Z:19-20); wine asked of
+# Corinth (Z:174-175); after the war with Argos a gift brings its tribute back (Z:172, Z:176); for two months
+# the sawmills stand idle and a north storehouse empties its wood (Z:62-63, Z:67).
+steps.append({"day": 433, "bribe": True})
+steps.append({"day": 1, "clear": [23, 6]})
+put("fountain", 58, 7, day=2)
+steps.append({"day": 2, "later": True, "undo": True})  # a tick after the fountain went up
+steps.append({"day": 1120, "ask_city": {"city": 0, "good": "wine"}})  # after Rhodes helped against the landing: -10 opinion everywhere (doc 24)
+steps.append({"day": 1530, "gift": {"city": 3, "good": "drachmas", "amount": 1000}})
+steps.append({"day": 1250, "industry": {"type": "timber_mill", "on": False}})
+steps.append({"day": 1282, "industry": {"type": "timber_mill", "on": True}})
+steps.append({"day": 1250, "at": [23, 8], "storage_order": {"good": "wood", "kind": 2, "limit": 0}})
+steps.append({"day": 1282, "at": [23, 8], "storage_order": {"good": "wood", "kind": 0, "limit": 32}})
 
 # Perseus (doc 21): summoned when the hall's needs are met, then sent on Hermes's quest.
 steps.append({"day": MYTH, "every": 16, "summon_hero": [64, 12]})

@@ -1,4 +1,6 @@
 // Module D3 stage 2: invasions, bribe, surrender, combat, morale (docs/gameplay/11, 22, 24; Z:137-144; L-110).
+#include <algorithm>
+
 #include "bo/core/migration.h"
 #include "bo/core/military.h"
 #include "bo/core/serialize.h"
@@ -432,4 +434,44 @@ TEST_CASE("B-018: a company whose soldiers all fell is at home again and forms a
     sim.issue(MusterCompany{0});  // and can be called again
     sim.step(1);
     CHECK(rejection(sim).empty());
+}
+
+TEST_CASE("B-020: a company breaks ranks while one of its soldiers is already gone from the map (Z:140)") {
+    auto sim = city(true);
+    fill_hovels(sim);
+    run_battle(sim, 2);
+    REQUIRE_FALSE(sim.state().military.companies.empty());
+    sim.issue(MusterCompany{0});
+    run_battle(sim, 8);
+    sim.issue(StartInvasion{"greek", 40});
+    sim.step(1);
+    sim.mutable_state().military.companies[0].morale = 30;  // one more death breaks it
+    const WalkerId gone = sim.state().walkers.next_id + 1000;  // left the map earlier today (sent home, bribed)
+    bool fled = false;
+    for (int t = 0; t < 30 * static_cast<int>(kTicksPerDay) && !fled; ++t) {
+        auto& soldiers = sim.mutable_state().military.companies[0].soldiers;
+        if (std::find(soldiers.begin(), soldiers.end(), gone) == soldiers.end()) {
+            soldiers.push_back(gone);  // the daily tidy-up has not run yet
+        }
+        sim.step(1);  // threw std::out_of_range before the fix
+        fled = sim.state().military.companies[0].fled;
+    }
+    CHECK(fled);
+}
+
+TEST_CASE("B-020: a company is moved and sent home while one of its soldiers is already gone (Z:137-139)") {
+    auto sim = city(true);
+    fill_hovels(sim);
+    run_battle(sim, 2);
+    REQUIRE_FALSE(sim.state().military.companies.empty());
+    sim.issue(MusterCompany{0});
+    run_battle(sim, 8);
+    auto& soldiers = sim.mutable_state().military.companies[0].soldiers;
+    soldiers.push_back(sim.state().walkers.next_id + 1000);  // left the map earlier today
+    sim.issue(MoveCompany{0, 25, 10});
+    sim.step(1);  // threw std::out_of_range before the fix
+    sim.mutable_state().military.companies[0].soldiers.push_back(sim.state().walkers.next_id + 1000);
+    sim.issue(SendCompanyHome{0});
+    sim.step(1);
+    CHECK(sim.state().military.companies[0].status == CompanyStatus::GoingHome);
 }

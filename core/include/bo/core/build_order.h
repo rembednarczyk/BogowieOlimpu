@@ -27,6 +27,7 @@ struct BuildStep {
     std::map<std::string, std::uint32_t> when;  // loads in the city's storage needed first
     Command command;
     std::optional<TilePos> at;  // building commands: a tile of the building, resolved when due
+    bool later = false;  // issued a tick into the day, after the day's other steps took effect (e.g. Undo, Z:20)
 };
 
 struct BuildOrder {
@@ -36,7 +37,9 @@ struct BuildOrder {
 // Parses the build order format (scenarios/README.md). Empty optional and `error` set on bad input.
 std::optional<BuildOrder> parse_build_order(const std::string& json_text, std::string& error);
 
-// Commands due on day `day` (0-based from the start of the game).
-std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim, std::uint64_t day);
+// Commands due on day `day` (0-based from the start of the game): `later` false, those for the start of the day;
+// true, those for a tick later (BuildStep::later).
+std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim, std::uint64_t day,
+                                  bool later = false);
 
 }  // namespace bo::core

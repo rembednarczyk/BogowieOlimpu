@@ -43,7 +43,12 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `demolish: [x, y]`, `oracle: [x, y]` | rozbiórka budynku z kafla; zapytaj wyrocznię sanktuarium z kafla (Z:124) |
 | `gift: {"city": n, "good": towar, "amount": n}` | dar dla miasta (`drachmas`: pieniądze, Z:176-177) |
 | `military_help: {"city": n, "strike": bool, "target": m}` | prośba o pomoc obronną (tylko w czasie najazdu) albo o uderzenie miasta n na miasto m (Z:174, L-125) |
+| `ask_city: {"city": n, "good": towar}` | prośba do miasta o towar, który wytwarza, albo o pieniądze (Z:174-175) |
+| `man_towers: bool`, `auto_defend: bool` | Man All (Z:146); samoczynna obrona, włączana tylko poza walką (Z:145, L-129) |
+| `bribe: true` | przekup trwający najazd (Z:137) |
+| `clear: [x, y]`, `undo: true` | wytnij las z kafla (Z:19); cofnij ostatnią budowę w oknie jednego dnia (Z:20, L-035) |
+| `industry: {"type": t, "on": bool}` | wyłącz albo włącz branżę (Z:62-63) |
 
-Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`), `until: dzień` (z `every`: ostatni dzień).
+Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`), `until: dzień` (z `every`: ostatni dzień), `later: true` (tick po pozostałych krokach dnia, np. Undo po budowie z tego samego dnia).
 
 Kroki są bezstanowe: krok wykonuje się w swoim dniu, więc wczytana gra prowadzi demo dalej od bieżącego dnia (`BoSimulation.load_build_order` po wczytaniu zapisu).

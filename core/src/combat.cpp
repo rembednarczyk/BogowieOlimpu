@@ -226,7 +226,11 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
     c->status = CompanyStatus::Fleeing;
     const auto palace = goal_of(st.city, w.tile);
     for (const WalkerId id : c->soldiers) {
-        Walker& s = st.walkers.items.at(id);
+        const auto it = st.walkers.items.find(id);
+        if (it == st.walkers.items.end()) {
+            continue;  // B-020: already gone from the map (the company's list is tidied once a day)
+        }
+        Walker& s = it->second;
         s.job = WalkerJob::None;
         const Building* p = palace ? &st.city.buildings.items.at(*palace) : nullptr;
         if (s.id == w.id || !p || !p->road_access || !route(st.city, s, *p->road_access)) {

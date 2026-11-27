@@ -30,6 +30,13 @@ Brak otwartych błędów (stan 2026-11-26).
 
 ## Naprawione
 
+### B-020 [S1] Awaria symulacji przy rozkazie dla kompanii, której żołnierz zniknął tego dnia z mapy
+- Status: naprawione
+- Miejsce i liczba wystąpień: demo greckie z przekupieniem najazdu (dzień 433) i z Auto-Defend: wyjątek `std::out_of_range` w `soldier_killed` (combat.cpp) i `send_company_home` (military.cpp).
+- Dowód: `gdb -ex "catch throw"` na bramce demo, `map::at` dla identyfikatora usuniętego piechura.
+- Test "co dziś pada": "B-020: a company breaks ranks while one of its soldiers is already gone from the map (Z:140)" i "B-020: a company is moved and sent home while one of its soldiers is already gone (Z:137-139)" (`core/tests/test_combat.cpp`); pierwszy pada bez poprawki z `map::at`.
+- Przyczyna: lista żołnierzy kompanii czyszczona raz dziennie (`update_companies`), a rozkazy i ucieczka sięgały po nieistniejące postacie. Teraz każdy rozkaz czyści listę (`prune_soldiers`), a ucieczka pomija brakujących.
+
 ### B-019 [S2] Łowiska, przystań jeżowców i chata łowców dzików w demo nic nie dawały
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo greckie, przez całe 10 lat; 4 łowiska i przystań z obsadą 0 %, chata z 4 ładunkami bez odbiorcy.

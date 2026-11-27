@@ -193,10 +193,17 @@ void form_companies(WorldState& st, const DataCatalog& catalog) {
     m.companies = std::move(formed);
 }
 
+// B-020: soldiers who left the map today (fallen, sent home, bribed away) are still on the list until the daily
+// tidy-up; every order to a company tidies it first.
+static void prune_soldiers(const WorldState& st, Company& c) {
+    auto& s = c.soldiers;
+    s.erase(std::remove_if(s.begin(), s.end(), [&st](WalkerId w) { return st.walkers.items.count(w) == 0; }), s.end());
+}
+
 void update_companies(WorldState& st) {
     for (Company& c : st.military.companies) {
+        prune_soldiers(st, c);
         auto& s = c.soldiers;
-        s.erase(std::remove_if(s.begin(), s.end(), [&st](WalkerId w) { return st.walkers.items.count(w) == 0; }), s.end());
         if (c.status == CompanyStatus::Marching && !s.empty() &&
             std::all_of(s.begin(), s.end(), [&st](WalkerId w) { return st.walkers.items.at(w).phase == WalkerPhase::AtTarget; })) {
             c.status = CompanyStatus::Still;
@@ -327,6 +334,7 @@ std::string move_company(WorldState& st, std::uint32_t index, TilePos to) {
         return "military.bad_move";
     }
     Company& c = st.military.companies[index];
+    prune_soldiers(st, c);
     c.standard = to;
     if (c.status == CompanyStatus::Marching || c.status == CompanyStatus::Still || c.status == CompanyStatus::Fighting) {
         for (const WalkerId id : c.soldiers) {
@@ -346,6 +354,7 @@ std::string send_company_home(WorldState& st, std::uint32_t index) {
         return "military.bad_company";
     }
     Company& c = st.military.companies[index];
+    prune_soldiers(st, c);
     for (const WalkerId id : c.soldiers) {
         Walker& w = st.walkers.items.at(id);
         w.job = WalkerJob::None;  // a routed walker without a job is removed on arrival

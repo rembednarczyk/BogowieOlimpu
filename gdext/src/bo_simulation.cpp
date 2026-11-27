@@ -336,6 +336,10 @@ int64_t BoSimulation::apply_build_order() {
             sim_->issue(std::move(c));
             ++n;
         }
+        for (auto& c : bo::core::due_commands(*build_order_, *sim_, day, true)) {  // a tick later (BuildStep::later)
+            sim_->issue_at(sim_->state().time.tick() + 1, c);
+            ++n;
+        }
     }
     build_order_day_ = today;
     return n;

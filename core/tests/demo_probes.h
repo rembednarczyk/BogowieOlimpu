@@ -184,6 +184,10 @@ inline void note_events(const std::vector<TimedEvent>& events, std::map<std::str
             seen["request_fulfilled"] += r->fulfilled ? 1 : 0;  // Z:161-164
         } else if (const auto* tr = std::get_if<TributePaid>(&e.event)) {
             seen["tribute"] += tr->amount > 0 ? 1 : 0;  // Z:172
+        } else if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
+            seen["bribed"] += end->result == 1 ? 1 : 0;  // Z:137
+        } else if (std::holds_alternative<UndoApplied>(e.event)) {
+            ++seen["undo"];  // Z:20
         } else if (const auto* x = std::get_if<ExpeditionReturned>(&e.event)) {
             seen["army_won_abroad"] += x->won ? 1 : 0;  // Z:177-178
         } else if (const auto* g = std::get_if<GodAttacked>(&e.event)) {
@@ -212,6 +216,18 @@ inline void note_state(const Simulation& sim, std::map<std::string, std::uint32_
                                               ? 1 : 0;
     }
     seen["taxes"] += st.finance.last_year.taxes > 0 ? 1 : 0;  // Z:95-97
+    seen["wages_set"] += st.finance.wage_rate != WageRate::Normal ? 1 : 0;  // Z:59-60
+    seen["industry_off"] += st.labour.disabled_types.empty() ? 0 : 1;  // Z:62-63
+    for (const TradePartner& p : st.trade.partners) {
+        seen["gift_sent"] += p.diplomacy.gift_units_this_year.empty() ? 0 : 1;  // Z:176
+    }
+    for (const PendingDelivery& d : st.deliveries) {
+        seen["goods_asked"] += d.good != "drachmas" ? 1 : 0;  // Z:174-175
+    }
+    for (const Ship& sh : st.military.ships) {
+        seen["ship_attack_all"] += sh.order == ShipOrder::AttackAll ? 1 : 0;  // Z:142
+        seen["ship_repair"] += sh.order == ShipOrder::Repair ? 1 : 0;
+    }
     for (const Company& c : st.military.companies) {  // the generals mustered the city's own (Z:145)
         seen["auto_defend"] += st.auto_defend && st.military.invasion.active && c.lender < 0 && c.nation.empty() &&
                                        c.status != CompanyStatus::AtHome && c.status != CompanyStatus::ServingAbroad
@@ -225,6 +241,11 @@ inline void note_state(const Simulation& sim, std::map<std::string, std::uint32_
             }
         }
         seen["sanctified"] += b.sanctified ? 1 : 0;  // doc 21
+        if (b.storage) {
+            for (const auto& [good, o] : b.storage->orders) {
+                seen["storage_empty"] += o.kind == StorageOrderKind::Empty ? 1 : 0;  // Z:67
+            }
+        }
     }
 }
 

@@ -219,7 +219,7 @@
    "id": "argos",
    "relation": "vassal",
    "by_sea": true,
-   "opinion": 25,
+   "opinion": 31,
    "military": 1,
    "economy": 2,
    "tribute": 300,
