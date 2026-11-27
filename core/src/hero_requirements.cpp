@@ -11,6 +11,7 @@
 #include "bo/core/culture.h"
 #include "bo/core/games.h"
 #include "bo/core/gods.h"
+#include "bo/core/hippodrome.h"
 #include "bo/core/housing.h"
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
@@ -171,7 +172,40 @@ std::int64_t horses_in_city(const WorldState& st) {
 std::int64_t triremes(const WorldState& st) { return static_cast<std::int64_t>(st.military.ships.size()); }
 
 // One requirement of heroes.json (doc 21), without its note in brackets.
+// A Museum staffed, on a road and in a performance (L-120): Atalanta's demand in Atlantis (P:24).
+bool working_museum(const CityState& city) {
+    return std::any_of(city.buildings.items.begin(), city.buildings.items.end(), [](const auto& kv) {
+        const Building& b = kv.second;
+        return b.type == "museum" && b.staffing_percent > 0 && b.road_access && b.performing_days > 0;
+    });
+}
+
+// In Atlantis some demands differ (heroes.json "(Atl: ...)", P:24-25): the hippodrome for the games, the
+// observatories for the gymnasiums, the museum for the stadium, orichalc for bronze. Science, spearmen,
+// charioteers and frigates count already by role. nullopt when the demand is the same.
+std::optional<bool> atlantean_requirement(const WorldState& st, const DataCatalog& catalog, const std::string& req) {
+    if (!st.city.atlantean || req.find("(Atl: ") == std::string::npos) {
+        return std::nullopt;
+    }
+    if (req.rfind("win_any_panhellenic_game", 0) == 0) {
+        return working_hippodrome(st, catalog) > 0;
+    }
+    if (req.rfind("citywide_gymnasium_access:excellent", 0) == 0) {
+        return covered_percent(st, "astronomer") >= number(catalog, "excellent_percent", 80);
+    }
+    if (req.rfind("working_stadium", 0) == 0) {
+        return working_museum(st.city);
+    }
+    if (req.rfind("bronze:", 0) == 0) {
+        return city_stock(st.city, catalog, "orichalc") >= std::stoll(req.substr(7, req.find(' ') - 7));
+    }
+    return std::nullopt;
+}
+
 bool requirement_met(const WorldState& st, const DataCatalog& catalog, std::string req, BuildingId hall) {
+    if (const auto atl = atlantean_requirement(st, catalog, req)) {
+        return *atl;
+    }
     req = req.substr(0, req.find(" ("));
     const auto at_least = [&req](const std::string& key, std::int64_t have) {
         return req.rfind(key + ">=", 0) == 0 && have >= std::stoll(req.substr(key.size() + 2));

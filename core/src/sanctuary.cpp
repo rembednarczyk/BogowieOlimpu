@@ -1,4 +1,5 @@
 // Module D1 stage 1: sanctuary construction and sacrifices (docs/gameplay/10, 21; Z:116-118, Z:124; L-052, L-111).
+#include "bo/core/gods.h"
 #include "bo/core/blessings.h"
 #include "bo/core/sanctuary.h"
 
@@ -88,9 +89,11 @@ void dispatch_artisans(WorldState& st, const DataCatalog& catalog, MythEvents& e
         if (g.type != "artisans_guild" || !g.road_access || g.staffing_percent == 0) {
             continue;
         }
-        const bool busy = std::any_of(st.walkers.items.begin(), st.walkers.items.end(), [gid = gid](const auto& kv) {
+        // One artisan out at a time; with Atlas's blessing a guild sends two (P:22) [ZAŁOŻENIE, L-134].
+        const auto out = std::count_if(st.walkers.items.begin(), st.walkers.items.end(), [gid = gid](const auto& kv) {
             return kv.second.home == gid && kv.second.job == WalkerJob::Build;
         });
+        const bool busy = out >= (god_blesses(st.city, catalog, "atlas") ? catalog.blessings.atlas_artisans : 1);
         // B-022: the nearest site with its stone delivered; only when none has any, the nearest site to wait at.
         auto site = nearest_by_road(st.city, *g.road_access, [&catalog](const Building& b) { return has_work(catalog, b); });
         if (!site) {

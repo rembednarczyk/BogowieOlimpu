@@ -225,6 +225,9 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         b.hunt_every_days = bl.value("hunt_every_days", b.hunt_every_days);
         b.poseidon_fishing_percent = bl.value("poseidon_fishing_percent", b.poseidon_fishing_percent);
         b.aphrodite_appeal = bl.value("aphrodite_appeal", b.aphrodite_appeal);
+        b.hera_groves = bl.value("hera_groves", b.hera_groves);
+        b.atlas_stone_percent = bl.value("atlas_stone_percent", b.atlas_stone_percent);
+        b.atlas_artisans = bl.value("atlas_artisans", b.atlas_artisans);
         const json wrath = gr.value("wrath_numbers", json::object());
         for (const auto& [k, v] : wrath.items()) {
             cat.wrath[k] = v.get<std::int32_t>();
@@ -277,6 +280,9 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.initial_marble = opt_int(d.value("initial_marble", json())).value_or(0);
             p.materials["marble"] = opt_int(d.value("marble", json())).value_or(0);
             p.materials["wood"] = opt_int(d.value("wood", json())).value_or(0);
+            if (const auto ori = opt_int(d.value("orichalc", json()))) {
+                p.materials["orichalc"] = *ori;  // the Citadel of Poseidon (P:26)
+            }
             p.materials["sculpture"] = opt_int(d.value("sculptures", json())).value_or(0);
             p.sanctifies = g.value("sanctifies", std::vector<std::string>{});
             p.prayer = g.value("prayer", "");
@@ -287,7 +293,11 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             const json help = g.value("spontaneous_help", json());
             p.spontaneous = help.is_string() ? help.get<std::string>() : "";
             const auto has = [&benefits](const char* b) { return std::find(benefits.begin(), benefits.end(), b) != benefits.end(); };
-            p.grove = has("sacred_olive_grove") ? "olive_tree" : has("grapevine_grove") ? "grapevine" : "";
+            p.grove = has("sacred_olive_grove")   ? "olive_tree"
+                      : has("grapevine_grove")  ? "grapevine"
+                      : has("two_orange_groves") ? "orange_tree"
+                                                 : "";
+            p.groves = has("two_orange_groves") ? cat.blessings.hera_groves : 1;
             p.land = has("silver_ore_at_sanctuary")   ? "silver"
                      : has("copper_ore_at_sanctuary") ? "copper"
                      : has("meadow_around_sanctuary") ? "meadow"

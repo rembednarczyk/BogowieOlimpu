@@ -105,6 +105,7 @@ if(BO_BUILD_TESTS)
         tests/test_monsters.cpp
         tests/test_heroes.cpp
         tests/test_expansion_economy.cpp
+        tests/test_expansion_myth.cpp
         tests/test_combat.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp

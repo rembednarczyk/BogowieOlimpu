@@ -222,7 +222,8 @@ struct SanctuaryParams {
                             // no god, no priests, no limit of four
     std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
     std::string spontaneous;                        // gods.json spontaneous_help condition (Z:119-122, L-130)
-    std::string grove;                              // plant of the god's grove: olive_tree, grapevine (L-131)
+    std::string grove;                              // plant of the god's grove: olive_tree, grapevine, orange_tree
+    std::int32_t groves = 1;                        // Hera: two (P:21)
     std::string land;                               // what the land around becomes: silver, copper, meadow
 };
 
@@ -241,6 +242,9 @@ struct BlessingParams {
     std::int32_t hunt_every_days = 16;
     std::int32_t poseidon_fishing_percent = 67;  // of the days at sea
     std::int32_t aphrodite_appeal = 5;
+    std::int32_t hera_groves = 2;          // two orange groves (P:21), of grove_plants each
+    std::int32_t atlas_stone_percent = 150;  // stonecutters' pace (P:22)
+    std::int32_t atlas_artisans = 2;       // artisans a guild sends at a time (P:22)
 };
 
 // When a god helps without a prayer (data/gods_rules.json spontaneous_help; Z:119-122) [ZAŁOŻENIE, L-130].

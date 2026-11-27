@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "bo/core/gods.h"
 #include "bo/core/logistics.h"
 #include "bo/core/walker.h"
 
@@ -172,7 +173,12 @@ std::int64_t advance_extraction(WorldState& st, const DataCatalog& catalog) {
             const auto terrain = terrain_of(catalog.buildings.at(b.type).resource);
             if (terrain && resource_in_reach(st.city, b, *terrain, pp.source_distance) &&
                 p.output_loads < kExtractionStock) {
-                p.progress += static_cast<std::uint32_t>(pp.loads_per_year) * b.staffing_percent;
+                // Atlas's stonecutters work faster (P:22) [ZAŁOŻENIE, L-134].
+                const std::int32_t pace = god_blesses(st.city, catalog, "atlas") &&
+                                                  (b.type == "masonry_shop" || b.type == "black_marble_workshop")
+                                              ? catalog.blessings.atlas_stone_percent
+                                              : 100;
+                p.progress += static_cast<std::uint32_t>(pp.loads_per_year * pace / 100) * b.staffing_percent;
                 if (p.progress >= 100 * 192) {
                     p.progress -= 100 * 192;
                     ++p.output_loads;

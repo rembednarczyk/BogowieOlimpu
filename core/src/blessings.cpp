@@ -40,7 +40,7 @@ std::vector<BuildingId> plant_grove(CityState& city, const DataCatalog& catalog,
     const TilePos hi{s.origin.x + s.width - 1 + reach, s.origin.y + s.height - 1 + reach};
     for (std::int32_t y = lo.y; y <= hi.y; ++y) {
         for (std::int32_t x = lo.x; x <= hi.x; ++x) {
-            if (static_cast<std::int32_t>(planted.size()) >= catalog.blessings.grove_plants) {
+            if (static_cast<std::int32_t>(planted.size()) >= catalog.blessings.grove_plants * p->second.groves) {
                 return planted;
             }
             const TilePos t{x, y};

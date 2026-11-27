@@ -271,7 +271,7 @@ static void run_mythology(Simulation& sim) {
     for (const BuildingId id : ev.planted) {
         const Building& b = sim.state().city.buildings.items.at(id);
         sim.emit(BuildingPlaced{id, b.type, b.origin.x, b.origin.y, b.width, b.height});
-        sim.emit(GodBlessing{b.type == "olive_tree" ? "athena" : "dionysus", "grove"});
+        sim.emit(GodBlessing{b.type == "olive_tree" ? "athena" : b.type == "orange_tree" ? "hera" : "dionysus", "grove"});
     }
     for (const TilePos t : ev.land) {
         sim.emit(TileChanged{t.x, t.y});
