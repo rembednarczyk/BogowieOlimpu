@@ -99,6 +99,23 @@ put("sanctuary_atlas", 22, 6, day=SANCT + 60, retry=True, when={"marble": 25})
 put("sanctuary_poseidon_citadel", 39, 5, day=SANCT + 300, retry=True, when={"marble": 32})
 steps.append({"day": 600, "pray": [22, 6]})  # Atlas: the Citadel's stone comes at once (P:22)
 
+# Stage MONUMENT (P:26-28, L-128), after the Citadel: a modest pyramid set down off the road; its plank reaches
+# the street later, only then the carts come. Its building is held a while and resumed. The white marble is
+# stockpiled (Z:80), so black marble from the caravans goes in. The expansion's aesthetics round the fields.
+MONUMENT = 860
+imports(MONUMENT, [2, 0], [("marble", 0), ("black_marble", 12), ("orichalc", 8)])
+steps.append({"day": MONUMENT, "stockpile": "marble"})
+put("pyramid_modest", 30, 21, day=MONUMENT)
+steps.append({"day": MONUMENT + 30, "road": [31, 24, 31, 25]})  # the plank meets the y = 26 street
+steps.append({"day": MONUMENT + 40, "hold_building": [30, 21], "on": True})
+steps.append({"day": MONUMENT + 70, "hold_building": [30, 21], "on": False})
+x = 0
+for t, w in [("water_park", 2), ("bird_bath", 1), ("short_obelisk", 1), ("tall_obelisk", 1), ("shell_garden", 2),
+             ("sundial", 2), ("dolphin_sculpture", 3), ("orrery", 3), ("spring", 3), ("topiary", 3), ("baths", 4),
+             ("stone_circle", 4)]:
+    put(t, x, 48, day=MONUMENT)
+    x += w + 1
+
 scenario = {
     "id": "demo_atlantis_gods",
     "name_key": "scenario.demo_atlantis_gods.name",
@@ -110,14 +127,15 @@ scenario = {
     "map": ["".join(r) for r in grid],
     "cities": [
         {"id": "samos", "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
-         "sells": {"marble": [80, 300], "wood": [40, 80], "sculpture": [150, 20], "orichalc": [200, 24],
-                   "wheat": [30, 80]},
+         "sells": {"marble": [80, 300], "wood": [40, 80], "sculpture": [150, 20], "orichalc": [200, 40],
+                   "wheat": [30, 80], "black_marble": [90, 30]},
          "buys": {}},
     ],
     "events": [
         {"type": "monster", "monster": "sphinx", "strength": 1, "year": 5, "month": 0},  # Hera's (P:23)
     ],
-    "goals": [{"type": "sanctuary", "target": g} for g in ("hera", "atlas", "poseidon")],
+    "goals": [{"type": "sanctuary", "target": g} for g in ("hera", "atlas", "poseidon")] +
+             [{"type": "monument", "target": "pyramid_modest"}],
 }
 build = {"note": "Autopilot demo bogów dodatku (tools/make_demo_atlantis_gods.py). Do not edit by hand.",
          "steps": steps}

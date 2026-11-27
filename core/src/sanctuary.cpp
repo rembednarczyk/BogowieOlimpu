@@ -126,9 +126,10 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
             coming[good] += loads;
         }
     }
+    const bool monument = catalog.sanctuaries.at(site.type).monument;
     for (const char* good : kMaterials) {
-        if (st.stockpiled.count(good) != 0) {
-            continue;  // stockpiled: not for the sanctuary sites (Z:80)
+        if (st.stockpiled.count(good) != 0 && !(monument && std::string(good) == "marble")) {
+            continue;  // stockpiled: not for the sanctuary sites (Z:80); a monument may take black marble
         }
         const std::uint32_t needed = site.sanctuary->needed[good];
         const std::uint32_t have = site.sanctuary->on_site[good] + coming[good];
@@ -152,8 +153,11 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
             };
         };
         std::string load = good;
-        auto from = nearest_by_road(st.city, *site.road_access, holding(load));
-        if (!from && load == "marble" && catalog.sanctuaries.at(site.type).monument) {
+        std::optional<BuildingId> from;
+        if (st.stockpiled.count(load) == 0) {
+            from = nearest_by_road(st.city, *site.road_access, holding(load));
+        }
+        if (!from && load == "marble" && monument && st.stockpiled.count("black_marble") == 0) {
             load = "black_marble";  // a monument takes white or black marble (P:26-28) [ZAŁOŻENIE, L-128]
             from = nearest_by_road(st.city, *site.road_access, holding(load));
         }

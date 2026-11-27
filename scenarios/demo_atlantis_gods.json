@@ -87,11 +87,15 @@
     ],
     "orichalc": [
      200,
-     24
+     40
     ],
     "wheat": [
      30,
      80
+    ],
+    "black_marble": [
+     90,
+     30
     ]
    },
    "buys": {}
@@ -118,6 +122,10 @@
   {
    "type": "sanctuary",
    "target": "poseidon"
+  },
+  {
+   "type": "monument",
+   "target": "pyramid_modest"
   }
  ]
 }

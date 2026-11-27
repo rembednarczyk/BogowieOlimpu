@@ -410,3 +410,14 @@ TEST_CASE("aesthetics of the expansion: each adorns its neighbourhood (P:16-17, 
         CHECK(sim.state().city.appeal[sim.state().city.map.index({b.origin.x + b.width, b.origin.y})] > 0);
     }
 }
+
+TEST_CASE("monuments: with the white marble stockpiled a pyramid takes black marble (Z:80, P:26-28)") {
+    auto s = pyramid_site(true);
+    s.sim.mutable_state().city.buildings.items.at(s.store).storage->loads["marble"] = 30;
+    s.sim.issue(SetStockpile{"marble", true});
+    s.sim.step(1);
+    CHECK(finished_within(s, 400));
+    const auto& loads = s.sim.state().city.buildings.items.at(s.store).storage->loads;
+    CHECK(loads.at("marble") == 30);        // kept
+    CHECK(loads.at("black_marble") == 10);  // 20 went in
+}

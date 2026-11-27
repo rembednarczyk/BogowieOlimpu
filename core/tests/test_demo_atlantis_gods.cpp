@@ -37,9 +37,15 @@ constexpr const char* kGodsMechanics[] = {
     "citadel",           // the Citadel of Poseidon finished (P:26)
     "cattle_sacrifice",  // the priests take cattle (P:22, Z:124)
     "sphinx",            // Hera's monster (P:23)
+    "plank_waits",       // a monument off the road waits for its plank to reach one (P:26-28)
+    "monument_held",     // its building held (P:26-28)
+    "black_marble",      // black marble taken for it (P:26-28)
+    "pyramid",           // the pyramid finished (P:26-28)
+    "aesthetics",        // the expansion's twelve aesthetic buildings stand (P:16-17)
 };
 
-void note_gods(const Simulation& sim, std::size_t& cattle, std::map<std::string, std::uint32_t>& seen) {
+void note_gods(const Simulation& sim, std::size_t& cattle, std::uint32_t& black_before,
+               std::map<std::string, std::uint32_t>& seen) {
     const WorldState& st = sim.state();
     std::map<BuildingId, int> out;
     for (const auto& [id, w] : st.walkers.items) {
@@ -59,6 +65,26 @@ void note_gods(const Simulation& sim, std::size_t& cattle, std::map<std::string,
     }
     seen["cattle_sacrifice"] += cattle > 0 && now < cattle ? 1 : 0;
     cattle = now;
+    std::uint32_t black = 0;
+    std::size_t adorn = 0;
+    for (const auto& [id, b] : st.city.buildings.items) {
+        if (b.type == "pyramid_modest" && b.sanctuary) {
+            seen["plank_waits"] += !b.road_access && !b.sanctuary->complete ? 1 : 0;
+            seen["monument_held"] += b.sanctuary->paused ? 1 : 0;
+            seen["pyramid"] += b.sanctuary->complete ? 1 : 0;
+        }
+        if (b.storage) {
+            const auto k = b.storage->loads.find("black_marble");
+            black += k != b.storage->loads.end() ? k->second : 0;
+        }
+        for (const char* t : {"water_park", "bird_bath", "short_obelisk", "tall_obelisk", "shell_garden", "sundial",
+                              "dolphin_sculpture", "orrery", "spring", "topiary", "baths", "stone_circle"}) {
+            adorn += b.type == t ? 1 : 0;
+        }
+    }
+    seen["aesthetics"] += adorn == 12 ? 1 : 0;
+    seen["black_marble"] += black_before > black && black_before > 0 ? 1 : 0;  // taken out of store
+    black_before = black;
 }
 
 }  // namespace
@@ -78,6 +104,7 @@ TEST_CASE("demo gate: Atlantean gods, the autopilot builds Hera's, Atlas's and P
     const char* years = std::getenv("BO_DEMO_YEARS");
     const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 8) * kDaysPerMonth * kMonthsPerYear;
     std::size_t cattle = 0;
+    std::uint32_t black = 0;
     for (std::uint64_t day = 0; day < cap; ++day) {
         for (const auto& c : due_commands(*order, sim, day)) {
             sim.issue(c);
@@ -100,7 +127,7 @@ TEST_CASE("demo gate: Atlantean gods, the autopilot builds Hera's, Atlas's and P
                 std::printf("day %llu: sanctuary completed\n", static_cast<unsigned long long>(day));
             }
         }
-        note_gods(sim, cattle, seen);
+        note_gods(sim, cattle, black, seen);
         if (log && day % 96 == 95) {
             const WorldState& st = sim.state();
             std::printf("day %llu: pop %u treasury %lld workers %u/%u companies %zu ships %zu goals",
