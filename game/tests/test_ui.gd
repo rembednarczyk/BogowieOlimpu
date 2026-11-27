@@ -217,7 +217,13 @@ func _process(_d: float) -> bool:
 	var ad: Dictionary = gods.sim.get_adventure()
 	check(ad.get("id", "") == "demo_gods" and ad["steps"] == 3 and not ad["in_colony"], "the gods' adventure starts in the parent city")
 	check(gods.sim.get_map_width() == 92 and gods._build_order().ends_with("demo_gods_build.json"), "its map and autopilot")
-	check(gods.DEMO_ORDER[(gods.DEMO_ORDER.find("atlantis") + 1) % 3] == "gods", "the demo button goes Greece, Atlantis, gods")
+	check(gods.DEMO_ORDER == ["greek", "atlantis", "gods", "atlantis_army"], "the demo button goes Greece, Atlantis, gods, army")
+	# The Atlantean army demo (P:15-19): its own city by the sea, Atlantean.
+	var army = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
+	army.use_save = false
+	army.demo = "atlantis_army"
+	root.add_child(army)
+	check(army.sim.get_map_width() == 72 and army._build_order().ends_with("demo_atlantis_army_build.json"), "the army demo's map and autopilot")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

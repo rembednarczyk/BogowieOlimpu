@@ -103,6 +103,7 @@ god.athena,Atena,Athena
 god.artemis,Artemida,Artemis
 god.apollo,Apollo,Apollo
 msg.god_helped,%s pomaga miastu bez modlitwy,%s helps the city unasked
+msg.walker_petrified,Potwór zamienił mieszkańca w kamień,A monster turned a citizen to stone
 god.atlas,Atlas,Atlas
 god.ares,Ares,Ares
 god.hephaestus,Hefajstos,Hephaestus
@@ -237,8 +238,10 @@ goal.hippodrome,Działający hipodrom: %d stadiów,Working hippodrome: %d stades
 ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
 ui.demo_greek,Demo: Grecja,Demo: Greece
 ui.demo_gods,Demo: bogowie,Demo: the gods
+ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
 msg.adventure_won,Przygoda wygrana,Adventure won
 scenario.demo_atlantis.name,Atlantyda,Atlantis
 scenario.demo_gods.name,Bogowie,The gods
+scenario.demo_atlantis_army.name,Wojsko Atlantydy,The Atlantean army
 tab.science,Nauka,Science
 ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"

@@ -79,8 +79,11 @@ const DEMOS := {"greek": ["res://scenarios/demo.json", "res://scenarios/demo_bui
 		"user://autosave_atlantis.bo"],
 	# The gods' adventure (doc 23): the parent city, then its colony, each with its own autopilot.
 	"gods": ["res://scenarios/demo_gods.json", "res://scenarios/demo_gods_build.json", "user://autosave_gods.bo",
-		"res://scenarios/demo_gods_colony_build.json"]}
-const DEMO_ORDER := ["greek", "atlantis", "gods"]
+		"res://scenarios/demo_gods_colony_build.json"],
+	# The expansion's army (tools/make_demo_atlantis_army.py, P:15-19): its own city by the sea.
+	"atlantis_army": ["res://scenarios/demo_atlantis_army.json", "res://scenarios/demo_atlantis_army_build.json",
+		"user://autosave_atlantis_army.bo"]}
+const DEMO_ORDER := ["greek", "atlantis", "gods", "atlantis_army"]
 var demo := "greek"
 
 static func chosen_demo() -> String:
@@ -345,6 +348,8 @@ func _handle_events(events: Array) -> void:
 				demo_note = "bunt: %s" % sim.get_cities()[e["city"]]["id"]
 			"city_gift":
 				demo_note = "dar od %s: %d dr" % [sim.get_cities()[e["city"]]["id"], e["amount"]]
+			"walker_petrified":  # Z:128: Medusa's gaze
+				demo_note = tr("msg.walker_petrified")
 			"god_helped":  # Z:119-122: a blessing without a prayer
 				demo_note = tr("msg.god_helped") % tr("god.%s" % e["god"])
 			"god_attacked":
