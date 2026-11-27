@@ -275,3 +275,98 @@ TEST_CASE("tactics: the order is kept in the company and in the save (Z:138)") {
     REQUIRE(copy.has_value());
     CHECK(copy->state().military.companies[0].tactic == Tactic::Special);
 }
+
+TEST_CASE("B-017: the companies formed anew each day keep the order the player gave them (Z:138)") {
+    auto sim = city(true);
+    fill_hovels(sim);
+    for (int day = 0; day < 2; ++day) {
+        keep_hovels(sim);
+        sim.run_days(1);
+    }
+    REQUIRE(!sim.state().military.companies.empty());
+    sim.issue(SetCompanyTactic{0, 1});
+    for (int day = 0; day < 3; ++day) {  // the companies at home are formed again every day
+        keep_hovels(sim);
+        sim.run_days(1);
+    }
+    CHECK(sim.state().military.companies[0].tactic == Tactic::Offensive);
+}
+
+namespace {
+
+// A lone soldier of `unit` with `tactic`, `gap` tiles east of a standing invader; his standard `standard_gap`
+// tiles east of the invader.
+struct Duel {
+    Simulation sim;
+    WalkerId soldier = kNoWalker;
+    WalkerId enemy = kNoWalker;
+};
+
+Duel duel(const std::string& unit, Tactic tactic, std::int32_t gap, std::int32_t standard_gap) {
+    Duel d{city(true)};
+    d.sim.issue(StartInvasion{"greek", 2});
+    d.sim.step(1);
+    REQUIRE(!d.sim.state().military.invasion.invaders.empty());
+    auto& st = d.sim.mutable_state();
+    for (const WalkerId id : st.military.invasion.invaders) {
+        st.walkers.items.at(id).speed_raw = 0;
+    }
+    d.enemy = st.military.invasion.invaders.front();
+    Walker& enemy = st.walkers.items.at(d.enemy);
+    enemy.hp = 100000;  // it must outlast the test
+    const UnitStats& s = d.sim.catalog().combat.nations.at("player_greek").units.at(unit);
+    Walker w;
+    w.id = st.walkers.next_id++;
+    w.type = unit;
+    w.job = WalkerJob::Soldier;
+    w.phase = WalkerPhase::AtTarget;
+    w.tile = {enemy.tile.x + gap, enemy.tile.y};
+    w.hp = 100000;
+    w.speed_raw = s.speed_raw;
+    Company c;
+    c.unit = unit;
+    c.status = CompanyStatus::Still;
+    c.standard = {enemy.tile.x + standard_gap, enemy.tile.y};
+    c.soldiers.push_back(w.id);
+    c.tactic = tactic;
+    d.soldier = w.id;
+    st.walkers.items.emplace(w.id, w);
+    st.military.companies.push_back(c);
+    return d;
+}
+
+std::int32_t gap(const Duel& d) {
+    const auto& items = d.sim.state().walkers.items;
+    const TilePos a = items.at(d.soldier).tile;
+    const TilePos b = items.at(d.enemy).tile;
+    return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y));
+}
+
+}  // namespace
+
+TEST_CASE("special tactics: rabble skirmish, stepping back from an enemy at hand to throw again (Z:139)") {
+    auto special = duel("rabble", Tactic::Special, 1, 1);
+    auto defensive = duel("rabble", Tactic::Defensive, 1, 1);
+    special.sim.step(60);
+    defensive.sim.step(60);
+    CHECK(gap(special) > 1);
+    CHECK(gap(defensive) <= 1);
+}
+
+TEST_CASE("special tactics: hoplites in a wedge strike harder than in an offensive line (Z:139)") {
+    auto wedge = duel("hoplite", Tactic::Special, 1, 1);
+    auto line = duel("hoplite", Tactic::Offensive, 1, 1);
+    wedge.sim.step(200);
+    line.sim.step(200);
+    const auto hp = [](const Duel& d) { return d.sim.state().walkers.items.at(d.enemy).hp; };
+    CHECK(hp(wedge) < hp(line));
+}
+
+TEST_CASE("special tactics: horsemen harass, riding back to their standard after a blow (Z:139)") {
+    auto harass = duel("horseman", Tactic::Special, 1, 5);
+    auto charge = duel("horseman", Tactic::Offensive, 1, 5);
+    harass.sim.step(10);
+    charge.sim.step(10);
+    CHECK(gap(harass) > 1);
+    CHECK(gap(charge) <= 1);
+}

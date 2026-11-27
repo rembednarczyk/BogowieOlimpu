@@ -30,7 +30,19 @@ Brak otwartych błędów (stan 2026-11-26).
 
 ## Naprawione
 
-Od najnowszego. Źródła zgłoszeń: B-002 do B-007 agent weryfikujący, B-008 do B-011 agent przeglądu referencji, B-012 do B-015 przebudowa demo i autopilot.
+Od najnowszego. Źródła zgłoszeń: B-002 do B-007 agent weryfikujący, B-008 do B-011 agent przeglądu referencji, B-012 do B-015 przebudowa demo i autopilot, B-016 i B-017 testy taktyk i bramka demo.
+
+### B-017 [S2] Rozkaz taktyki ginął przy codziennym przeformowaniu kompanii
+- Status: naprawione: kompania zachowuje taktykę, nowa kompania bierze taktykę kompanii tego samego rodzaju; test "B-017" w `core/tests/test_combat.cpp` (pada bez poprawki)
+- Miejsce: `core/src/military.cpp` (`form_companies`).
+- Dowód: w demo po rozkazie z dnia 1000 żadna kompania nie miała taktyki innej niż obronna (licznik `tactics_set` 0); bramka tego nie złapała, bo liczyła klucz z zerem jako pokazaną mechanikę (poprawione w `core/tests/test_demo.cpp`).
+- Referencja: rozkaz taktyki należy do kompanii (Z:138, `docs/gameplay/11-wojsko.md`).
+
+### B-016 [S3] Jeźdźcy w taktyce specjalnej stali przy wrogu zamiast nękać
+- Status: naprawione: jeździec po ciosie jedzie do miejsca przy sztandarze, póki ładuje następny cios; test "special tactics: horsemen harass" w `core/tests/test_combat.cpp` (pada bez poprawki)
+- Miejsce: `core/src/tactics.cpp` (`fight`).
+- Dowód: po ciosie trasa powrotu była kasowana w następnym ticku przez `stand`, bo wróg wciąż stał obok; jeździec zostawał na 1 pole.
+- Referencja: nękanie, atak i odwrót jeźdźców (Z:139, `docs/gameplay/11-wojsko.md`).
 
 ### B-015 [S2] Pałac padał, gdy najeźdźca do niego doszedł, bez porównania sił
 - Status: naprawione: pałac pada tylko przed armią silniejszą od wojska gracza w polu (suma zdrowia razy atak, [ZAŁOŻENIE, L-110]); słabsi najeźdźcy walczą dalej pod pałacem; test "B-015" w `core/tests/test_fortifications.cpp` (pada bez poprawki)

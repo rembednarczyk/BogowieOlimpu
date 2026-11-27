@@ -168,6 +168,12 @@ void form_companies(WorldState& st, const DataCatalog& catalog) {
             const bool kept = i < m.companies.size() && free_land(st.city, m.companies[i].standard);
             formed[i].standard = kept ? m.companies[i].standard : (i < sites.size() ? sites[i] : st.city.buildings.items.at(*palace).origin);
             formed[i].morale = i < m.companies.size() ? m.companies[i].morale : 100;
+            // The player's order stays with the company (Z:138); a new one takes the order of its kind (B-017).
+            const auto same = [&f = formed[i]](const Company& o) { return o.unit == f.unit && o.nation == f.nation; };
+            const auto old = i < m.companies.size() && same(m.companies[i])
+                                 ? m.companies.begin() + static_cast<std::ptrdiff_t>(i)
+                                 : std::find_if(m.companies.begin(), m.companies.end(), same);
+            formed[i].tactic = old != m.companies.end() ? old->tactic : Tactic::Defensive;
         }
     }
     m.companies = std::move(formed);

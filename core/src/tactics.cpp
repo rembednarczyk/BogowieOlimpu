@@ -74,6 +74,9 @@ void fight(WorldState& st, const DataCatalog& catalog, Walker& w, const UnitStat
             return;  // skirmish: out of reach, then throw again
         }
     }
+    if (special && w.type == "horseman" && w.cooldown > 0 && w.phase != WalkerPhase::AtTarget) {
+        return;  // harass: still riding back to the standard after the last blow
+    }
     if (foe.first <= 1 && s.attack > 0) {
         stand(w);
         if (w.cooldown == 0 && os) {

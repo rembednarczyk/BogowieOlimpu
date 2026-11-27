@@ -233,7 +233,10 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
-    return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) { return seen.count(m) != 0; });
+    return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
+        const auto it = seen.find(m);  // a tally can hold a zero: seen means at least once
+        return it != seen.end() && it->second > 0;
+    });
 }
 
 DemoRun run_demo(std::uint64_t years) {
@@ -388,6 +391,6 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
     CHECK(st.labour.employed * 10 >= st.labour.workforce * 9);
     CHECK(st.migration.popularity >= 70);
     for (const char* m : kMechanics) {
-        CHECK_MESSAGE(run.seen.count(m) > 0, "the demo never showed: " << std::string(m));
+        CHECK_MESSAGE((run.seen.count(m) > 0 && run.seen.at(m) > 0), "the demo never showed: " << std::string(m));
     }
 }
