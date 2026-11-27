@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""Guards for the building models (docs/ASSETY.md, R-017), without Blender:
+  - every game/models/*.glb has a provenance entry, and every entry a file;
+  - one mesh with one primitive (one draw call), with POSITION, NORMAL, TEXCOORD_0 (palette), TEXCOORD_1 (pivot)
+    and COLOR_0 (the masks of the building's parameters);
+  - the mesh lies on the ground inside its footprint from data/building_stats.json (x 0..w, z 0..h, y >= 0);
+  - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader.
+Exit code 1 on any violation. Usage: python3 tools/checks/check_models.py [repo_root]
+"""
+import json
+import pathlib
+import re
+import struct
+import sys
+
+EPS = 1e-3
+
+
+def glb_json(path):
+    data = path.read_bytes()
+    magic, _version, _length = struct.unpack_from("<III", data, 0)
+    if magic != 0x46546C67:
+        raise ValueError("not a glb")
+    chunk_len, chunk_type = struct.unpack_from("<II", data, 12)
+    if chunk_type != 0x4E4F534A:
+        raise ValueError("first chunk is not JSON")
+    return json.loads(data[20:20 + chunk_len])
+
+
+def footprint(root, building):
+    if building == "common_housing":
+        return 2, 2
+    stats = {o["id"]: o for o in json.loads((root / "data" / "building_stats.json").read_text())}
+    w, h = stats[building]["size"].replace("×", "x").split("x")[:2]
+    return int(w), int("".join(c for c in h if c.isdigit()))
+
+
+def palette_blender(root):
+    text = (root / "tools" / "blender" / "bo_asset.py").read_text()
+    body = text[text.index("PALETTE = ["):text.index("]\nPALETTE_INDEX")]
+    return re.findall(r'\("(\w+)", \(([\d., ]+)\)\)', body)
+
+
+def palette_shader(root):
+    text = (root / "game" / "shaders" / "building.gdshader").read_text()
+    body = text[text.index("const vec3 PALETTE"):]
+    body = body[:body.index(");")]
+    return re.findall(r"vec3\(([\d., ]+)\),?\s*// (\w+)", body)
+
+
+def main():
+    root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")
+    errors = []
+    models = root / "game" / "models"
+    provenance = json.loads((models / "provenance.json").read_text())
+    files = sorted(p.name for p in models.glob("*.glb"))
+    for name in files:
+        if name not in provenance:
+            errors.append(f"{name}: no provenance entry (R-017)")
+    for name in provenance:
+        if name not in files:
+            errors.append(f"provenance.json: {name} has no file")
+    for name in files:
+        entry = provenance.get(name, {})
+        g = glb_json(models / name)
+        meshes = g.get("meshes", [])
+        if len(meshes) != 1 or len(meshes[0]["primitives"]) != 1:
+            errors.append(f"{name}: {len(meshes)} meshes; one mesh with one primitive (one draw call) expected")
+            continue
+        attrs = meshes[0]["primitives"][0]["attributes"]
+        for a in ("POSITION", "NORMAL", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0"):
+            if a not in attrs:
+                errors.append(f"{name}: no {a}")
+        if "building" not in entry:
+            continue
+        w, h = footprint(root, entry["building"])
+        acc = g["accessors"][attrs["POSITION"]]
+        lo, hi = acc["min"], acc["max"]
+        if lo[0] < -EPS or lo[2] < -EPS or hi[0] > w + EPS or hi[2] > h + EPS or lo[1] < -EPS:
+            errors.append(f"{name}: bounds {lo}..{hi} leave the {w}x{h} footprint or go under the ground")
+        if entry.get("footprint") != [w, h]:
+            errors.append(f"{name}: provenance footprint {entry.get('footprint')} is not {w}x{h}")
+    pb = palette_blender(root)
+    ps = palette_shader(root)
+    if [n for n, _ in pb] != [n for _, n in ps]:
+        errors.append(f"palette names differ: blender {[n for n, _ in pb]} shader {[n for _, n in ps]}")
+    else:
+        for (n, cb), (cs, _) in zip(pb, ps):
+            if [float(v) for v in cb.split(",")] != [float(v) for v in cs.split(",")]:
+                errors.append(f"palette {n}: blender ({cb}) shader ({cs})")
+    for e in errors:
+        print(e)
+    print(f"check_models: {len(files)} model(s), {len(errors)} violation(s)")
+    return 1 if errors else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

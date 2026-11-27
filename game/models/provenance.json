@@ -1,0 +1,68 @@
+{
+ "common_housing_1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata: ubita ziemia na kamiennym cokole, strzecha czterospadowa"
+ },
+ "common_housing_2.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "szałas: tynkowany dom z przybudówką, dach dwuspadowy z trzciny"
+ },
+ "fountain.glb": {
+  "building": "fountain",
+  "footprint": [
+   2,
+   2
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "fontanna: kamienny basen, słup z wylewką z brązu, woda płynie, gdy pracuje"
+ },
+ "granary.glb": {
+  "building": "granary",
+  "footprint": [
+   4,
+   4
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "spichlerz: podest z kamienia, ściany z cegły w tynku, dach z dachówki, portyk"
+ },
+ "observatory.glb": {
+  "building": "observatory",
+  "footprint": [
+   5,
+   5
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "obserwatorium atlantydzkie: kamienny bęben, kopuła i luneta obracają się, gdy pracuje"
+ },
+ "storehouse.glb": {
+  "building": "storehouse",
+  "footprint": [
+   3,
+   3
+  ],
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "magazyn: dziedziniec w kamiennym murze, wiata kryta dachówką, skrzynie i amfory"
+ }
+}

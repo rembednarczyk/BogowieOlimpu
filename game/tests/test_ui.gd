@@ -124,6 +124,22 @@ func _process(_d: float) -> bool:
 		game.sim.apply_build_order()
 		game.sim.run_days(1)
 	check(game.sim.get_companies().size() > 0, "companies formed in the demo")
+	# Building models (docs/ASSETY.md "Parametry budynku"): a model in place of the box, its look from the core.
+	game._handle_events(game.sim.drain_events())
+	game._update_looks()
+	var modelled := 0
+	var looks_ok := true
+	for b in game.sim.get_buildings():
+		var node: Node3D = game.building_nodes.get(b["id"])
+		if node == null or not node.has_meta("model"):
+			continue
+		modelled += 1
+		var mi: MeshInstance3D = node.get_node("Model")
+		var want_build := clampf(b["age_days"] / game.BUILD_VISUAL_DAYS, 0.0, 1.0)
+		looks_ok = looks_ok and is_equal_approx(mi.get_instance_shader_parameter("build"), want_build) \
+			and node.get_meta("model") == game._model_name(b["type"], b.get("house_level", 0))
+	check(modelled > 20 and looks_ok, "modelled buildings follow their age and level: %d" % modelled)
+	check(game._model("granary") != null and game._model("palace") == null, "a granary has a model, the palace keeps its box")
 	var aw = ui.army_world
 	aw.toggle_army()
 	check(aw.army.visible and aw.army_box.get_child_count() > 2, "the army panel lists the companies")

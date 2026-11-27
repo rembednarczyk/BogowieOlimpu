@@ -62,6 +62,13 @@ var touches := {}  # finger index -> position, for the pinch zoom
 var tick_accumulator := 0.0
 var tiles := MultiMeshInstance3D.new()
 var building_nodes := {}  # id -> Node3D
+# Building models (docs/ASSETY.md, tools/blender/models.py): one mesh per model, one shared material; a building
+# without a model keeps its box. Houses have a model per level: common_housing_<level>.
+const MODELS_DIR := "res://models/"
+const BUILD_VISUAL_DAYS := 4.0  # the visual building phase (O-005); the building works from the first tick
+const AGE_FULL_DAYS := 1920.0   # ten years of weathering [ZAŁOŻENIE]
+var model_meshes := {}  # model name -> Mesh, or null when there is none
+var building_material: ShaderMaterial
 var walker_nodes := {}  # id -> MeshInstance3D
 var cam := Camera3D.new()
 var cam_target := Vector3(30, 0, 24)
@@ -214,7 +221,8 @@ func _notification(what: int) -> void:
 func _restore_buildings() -> void:
 	for b in sim.get_buildings():
 		_add_building({"id": b["id"], "building_type": b["type"], "x": b["x"], "y": b["y"], "width": b["width"],
-			"height": b["height"], "parent": b["parent"]})
+			"height": b["height"], "parent": b["parent"], "age_days": b.get("age_days", 0),
+			"house_level": b.get("house_level", 0)})
 
 # Demo script: the autopilot's commands for the days that passed; a line of progress for the overlay.
 func _demo_day() -> void:
@@ -249,6 +257,7 @@ func _process(delta: float) -> void:
 			if sim.get_tick() % TICKS_PER_DAY == 0:
 				_demo_day()
 				_update_monuments()
+				_update_looks()
 				if overlay != "":
 					set_overlay(overlay)  # the columns follow the day
 				if sim.get_day_in_month() == 0:
@@ -390,7 +399,7 @@ func _handle_events(events: Array) -> void:
 
 func _tint(node: Node3D, color: Color) -> void:
 	for child in node.get_children():
-		if child is MeshInstance3D:
+		if child is MeshInstance3D and child.name != "Model":  # a model shows the fire through its shader
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = color
 			child.material_override = mat
@@ -501,6 +510,15 @@ func _add_building(e: Dictionary) -> void:
 	elif e.has("levels"):  # a monument going up layer by layer (P:26-28, L-128)
 		mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.86, 0.82, 0.70))  # stone
 		_add_layers(node, e, mat)
+	elif e["parent"] == 0 and _model(_model_name(e["building_type"], e.get("house_level", 0))) != null:
+		var mi := MeshInstance3D.new()  # the building's model, its state set by _update_looks
+		mi.name = "Model"
+		mi.mesh = _model(_model_name(e["building_type"], e.get("house_level", 0)))
+		mi.material_override = _building_material()
+		mi.position = Vector3(e["x"], 0, e["y"])
+		node.add_child(mi)
+		node.set_meta("model", _model_name(e["building_type"], e.get("house_level", 0)))
+		_set_look(mi, {"age_days": e.get("age_days", 0)})
 	else:
 		parts.append(Rect2(e["x"], e["y"], bw, bh))
 	for r in parts:
@@ -524,6 +542,61 @@ func _add_building(e: Dictionary) -> void:
 	node.set_meta("placed", e)
 	add_child(node)
 	building_nodes[e["id"]] = node
+
+# A house takes the model of its level, or of the highest level below it that has one (until every level has its
+# own); other buildings the model of their type.
+func _model_name(type: String, house_level: int) -> String:
+	if type != "common_housing":
+		return type
+	for level in range(house_level + 1, 0, -1):
+		if _model("common_housing_%d" % level) != null:
+			return "common_housing_%d" % level
+	return "common_housing_1"
+
+func _model(name: String) -> Mesh:
+	if not model_meshes.has(name):
+		var path := MODELS_DIR + name + ".glb"
+		var mesh: Mesh = null
+		if ResourceLoader.exists(path):
+			var scene: Node = (load(path) as PackedScene).instantiate()
+			for n in scene.find_children("*", "MeshInstance3D", true, false):
+				mesh = (n as MeshInstance3D).mesh
+				break
+			scene.free()
+		model_meshes[name] = mesh
+	return model_meshes[name]
+
+func _building_material() -> ShaderMaterial:
+	if building_material == null:
+		building_material = ShaderMaterial.new()
+		building_material.shader = load("res://shaders/building.gdshader")
+	return building_material
+
+# A building's look from the core's state (docs/ASSETY.md "Parametry budynku"): the building phase and the
+# weathering from its age, damage from the collapse counter, the fire's phase, the moving parts while it works.
+func _set_look(mi: MeshInstance3D, b: Dictionary) -> void:
+	var days: float = b.get("age_days", 0)
+	mi.set_instance_shader_parameter("build", clampf(days / BUILD_VISUAL_DAYS, 0.0, 1.0))
+	mi.set_instance_shader_parameter("age", clampf(days / AGE_FULL_DAYS, 0.0, 1.0))
+	var risk: float = b.get("damage_risk", 0) / 960.0  # of the threshold (data/risks.json)
+	mi.set_instance_shader_parameter("damage", 3.0 if risk >= 0.9 else (2.0 if risk >= 0.7 else (1.0 if risk >= 0.4 else 0.0)))
+	var burning: int = b.get("burning_days", 0)
+	var phase := 0.0 if burning == 0 else (1.0 if burning > 21 else (2.0 if burning > 10 else 3.0))  # 32 days a fire
+	mi.set_instance_shader_parameter("fire", phase)
+	mi.set_instance_shader_parameter("working", 1.0 if b.get("workers", 0) > 0 else 0.0)
+
+# Daily: every modelled building follows its state; a house that changed its level changes its model.
+func _update_looks() -> void:
+	for b in sim.get_buildings():
+		var node: Node3D = building_nodes.get(b["id"])
+		if node == null or not node.has_meta("model"):
+			continue
+		var mi: MeshInstance3D = node.get_node("Model")
+		var name := _model_name(b["type"], b.get("house_level", 0))
+		if name != node.get_meta("model") and _model(name) != null:
+			mi.mesh = _model(name)
+			node.set_meta("model", name)
+		_set_look(mi, b)
 
 # A monument as a stepped pyramid: `built` of its `levels` layers, each a tile narrower on every side (S-008);
 # a bare site shows its foundation only.

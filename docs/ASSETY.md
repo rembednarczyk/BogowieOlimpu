@@ -17,11 +17,14 @@ Wariant awaryjny (gdyby 3D w czasie rzeczywistym było za drogie na telefonie): 
 
 ## Konwencje potoku (wiążące dla `tools/blender/`)
 
-- 1 kafel = 1 m; wysokość kondygnacji i proporcje z architektury greckiej (`PRAKTYKI.md` rozdz. 9: kształt realistyczny, stylizacja w materiale i świetle).
+- 1 kafel = 1 jednostka = 2 m rzeczywiste (człowiek 1,8 m to 0,9 kafla, jak spacerujący w grze; działka domu 2×2 kafle to dom ok. 4×4 m); wysokość kondygnacji i proporcje z architektury greckiej (`PRAKTYKI.md` rozdz. 9: kształt realistyczny, stylizacja w materiale i świetle). Skrypty podają wymiary w metrach przez stałą `M` (`tools/blender/bo_asset.py`).
 - Front budynku w osi −Y; punkt odniesienia w narożniku obrysu; obrys zgodny z `data/building_stats.json`.
 - Postacie: wspólny szkielet humanoida; jeden zestaw "spacerujący standardowy" (chód + śmierć) dla ok. 30 typów, różnice w ubiorze i rekwizytach.
 - Towary: osobne modele ładunków (skrzynie, amfory, bele, bloki, sztaby) wspólne dla wozów, magazynów i stosów przy budynkach.
-- Każdy asset ma wpis w rejestrze pochodzenia (autor, źródło, licencja, zmiany) przed wejściem do repo.
+- Każdy asset ma wpis w rejestrze pochodzenia `game/models/provenance.json` (autor, źródło, licencja, zmiany) przed wejściem do repo (R-017).
+- Jeden budynek to jedna siatka i jeden materiał (jedno wywołanie rysowania): kolor części z palety (UV0), maski parametrów w kolorach wierzchołków, punkt obrotu części ruchomej w UV1. Pilnuje tego `tools/checks/check_models.py` (bez Blendera, w CI) razem z obrysem z `data/building_stats.json` i zgodnością palety ze shaderem.
+
+Stan (2026-11-27): `tools/blender/models.py` buduje chatę i szałas (poziomy domu 1-2), fontannę, spichlerz, magazyn i obserwatorium atlantydzkie; gra wczytuje je w miejsce brył (`boot.gd` `_model`, `_update_looks`), domy wyższych poziomów biorą najwyższy gotowy model. Zrzut stanów: `screenshot.gd ... build_view=7`.
 
 ## Parametry budynku: wiek, stan, praca (plan 2026-11-27)
 
