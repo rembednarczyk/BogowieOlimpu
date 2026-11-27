@@ -385,6 +385,7 @@
   {"day": 401, "place": "arms_vendor_stall", "x": 70, "y": 38},
   {"day": 401, "place": "wine_vendor_stall", "x": 70, "y": 40},
   {"day": 401, "place": "horse_trainer_stall", "x": 70, "y": 42},
+  {"day": 600, "place": "commemorative_monument", "x": 33, "y": 42, "retry": true},
   {"day": 520, "stockpile": "olive_oil", "on": true},
   {"day": 640, "stockpile": "olive_oil", "on": false},
   {"day": 324, "not_buying": [24, 30], "on": true},

@@ -324,6 +324,9 @@ for y0, stalls in [(32, ["food_vendor_stall", "fleece_vendor_stall", "oil_vendor
     for i, stall in enumerate(stalls):
         put(stall, 70, y0 + 2 * i, day=ELITE + 1)
 
+# A commemorative monument (Z:155-156) once the city has earned one (population, games, a slain monster...).
+put("commemorative_monument", 33, 42, day=600, retry=True)
+
 # Stockpiling (Z:80): oil kept from the stalls before the elite plots, so a load waits in storage (doc 18).
 steps.append({"day": ELITE + 120, "stockpile": "olive_oil", "on": True})
 steps.append({"day": ELITE + 240, "stockpile": "olive_oil", "on": False})
