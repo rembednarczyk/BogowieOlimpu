@@ -74,7 +74,7 @@ bool operator==(const Building& a, const Building& b) {
            a.burning_days == b.burning_days && a.trade == b.trade && a.sanctuary == b.sanctuary &&
            a.sanctified == b.sanctified && a.sanctified_base == b.sanctified_base && a.cursed_days == b.cursed_days &&
            a.hits == b.hits && a.cooldown == b.cooldown && a.performing_days == b.performing_days &&
-           a.schools == b.schools;
+           a.schools == b.schools && a.placed_day == b.placed_day;
 }
 
 std::string level_check(const CityState& city, const std::vector<TilePos>& tiles) {
@@ -250,6 +250,7 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
 
 BuildingId add_building(CityState& city, Building b) {
     b.id = city.buildings.next_id++;
+    b.placed_day = city.today;
     b.next_roam_dir = static_cast<Dir>(city.map.at(b.origin).random_byte & 3U);  // random per building (family)
     for (const TilePos p : b.tiles) {
         Tile& t = city.map.at(p);

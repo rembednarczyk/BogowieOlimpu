@@ -119,6 +119,14 @@ constexpr std::size_t kHorses = 4;   // v45: no horses at a hippodrome
 constexpr std::size_t kTakings = 16;  // v46: the hippodrome's takings, this year and last
 constexpr std::size_t kGenerals = 1;  // v48: Auto-Defend (the end of the world block)
 
+constexpr std::size_t kPlacedDays = 4;  // v51: the count of placing days, no buildings (the end of the save)
+
+// The save without the v51 placing days of an empty city: the layout of v50.
+std::vector<std::uint8_t> as_v50(std::vector<std::uint8_t> bytes) {
+    bytes.resize(bytes.size() - kPlacedDays);
+    return bytes;
+}
+
 // The save without the v48 Auto-Defend switch: the layout of v47 (v47 adds only a per-ship field).
 std::vector<std::uint8_t> as_v47(std::vector<std::uint8_t> bytes) {
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
@@ -287,38 +295,39 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
-    check_load(a.save(), 49, h);  // v50 adds only per-partner records (no partners here)
-    check_load(a.save(), 48, h);  // v49 adds only a per-sanctuary field
-    check_load(as_v47(a.save()), 47, h);
-    check_load(as_v47(a.save()), 46, h);  // v47 adds only a per-ship field
-    check_load(as_v45(a.save()), 45, h);
-    check_load(as_v44(a.save()), 44, h);
-    check_load(as_v43(a.save()), 43, h);
-    check_load(as_v42(a.save()), 42, h);
-    check_load(as_v42(a.save()), 41, h);  // v42 adds only a per-ship field
-    check_load(as_v42(a.save()), 40, h);  // v41 adds only a per-sanctuary field
-    check_load(as_v42(a.save()), 39, h);  // v40 adds only a per-company field
-    check_load(as_v38(a.save()), 38, h);
-    check_load(as_v38(a.save()), 37, h);
-    check_load(as_v36(a.save()), 36, h);
-    check_load(as_v35(a.save()), 35, h);
-    check_load(as_v34(a.save()), 34, h);
-    check_load(as_v34(a.save()), 33, h);
-    check_load(as_v32(a.save()), 32, h);
-    check_load(as_v31(a.save()), 31, h);
-    check_load(as_v30(a.save()), 30, h);
-    check_load(as_v30(a.save()), 29, h);
-    check_load(as_v28(a.save()), 28, h);
-    check_load(as_v28(a.save()), 27, h);
-    check_load(as_v26(a.save()), 26, h);
-    check_load(as_v25(a.save()), 25, h);
-    check_load(as_v23(a.save()), 23, h);
-    check_load(as_v21(a.save()), 21, h);
-    check_load(as_v20(a.save()), 20, h);
-    auto v17 = as_v20(a.save());
+    check_load(as_v50(a.save()), 50, h);
+    check_load(as_v50(a.save()), 49, h);  // v50 adds only per-partner records (no partners here)
+    check_load(as_v50(a.save()), 48, h);  // v49 adds only a per-sanctuary field
+    check_load(as_v47(as_v50(a.save())), 47, h);
+    check_load(as_v47(as_v50(a.save())), 46, h);  // v47 adds only a per-ship field
+    check_load(as_v45(as_v50(a.save())), 45, h);
+    check_load(as_v44(as_v50(a.save())), 44, h);
+    check_load(as_v43(as_v50(a.save())), 43, h);
+    check_load(as_v42(as_v50(a.save())), 42, h);
+    check_load(as_v42(as_v50(a.save())), 41, h);  // v42 adds only a per-ship field
+    check_load(as_v42(as_v50(a.save())), 40, h);  // v41 adds only a per-sanctuary field
+    check_load(as_v42(as_v50(a.save())), 39, h);  // v40 adds only a per-company field
+    check_load(as_v38(as_v50(a.save())), 38, h);
+    check_load(as_v38(as_v50(a.save())), 37, h);
+    check_load(as_v36(as_v50(a.save())), 36, h);
+    check_load(as_v35(as_v50(a.save())), 35, h);
+    check_load(as_v34(as_v50(a.save())), 34, h);
+    check_load(as_v34(as_v50(a.save())), 33, h);
+    check_load(as_v32(as_v50(a.save())), 32, h);
+    check_load(as_v31(as_v50(a.save())), 31, h);
+    check_load(as_v30(as_v50(a.save())), 30, h);
+    check_load(as_v30(as_v50(a.save())), 29, h);
+    check_load(as_v28(as_v50(a.save())), 28, h);
+    check_load(as_v28(as_v50(a.save())), 27, h);
+    check_load(as_v26(as_v50(a.save())), 26, h);
+    check_load(as_v25(as_v50(a.save())), 25, h);
+    check_load(as_v23(as_v50(a.save())), 23, h);
+    check_load(as_v21(as_v50(a.save())), 21, h);
+    check_load(as_v20(as_v50(a.save())), 20, h);
+    auto v17 = as_v20(as_v50(a.save()));
     v17.resize(v17.size() - kInvasion);
     check_load(v17, 17, h);
-    const auto current = without_military(a.save());
+    const auto current = without_military(as_v50(a.save()));
     check_load(current, 16, h);
     check_load(current, 14, h);  // v15 adds only a house field, v16 only a spawn field
     auto v13 = current;
@@ -358,7 +367,7 @@ TEST_CASE("save v15: spawn points load without the hunting wolf field (v16)") {
     a.run_days(2);  // the den gets its pack; no prey, so no wolf is out
     REQUIRE(a.state().city.spawns.size() == 1);
     REQUIRE(a.state().walkers.items.empty());
-    auto v15 = without_military(a.save());
+    auto v15 = without_military(as_v50(a.save()));
     cut(v15, kWalkersBlock + kFinance + kTrade + kMigration + kLabour, 4);  // the hunter id of the one den
     check_load(v15, 15, a.state_hash());
 }
@@ -382,4 +391,32 @@ TEST_CASE("burning days and quarantine survive a save (read in the order they ar
     REQUIRE(b.has_value());
     CHECK(b->state().city.buildings.items == a.state().city.buildings.items);
     CHECK(b->state_hash() == a.state_hash());
+}
+
+TEST_CASE("a building keeps the day it was placed through a save; a v50 save loads with day 0 (save v51, O-005)") {
+    std::vector<std::string> rows(10, std::string(20, '.'));
+    rows[5] = std::string(20, '=');
+    Simulation a(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 5000, rows});
+    a.issue(PlaceBuilding{"granary", 10, 1});
+    a.run_days(3);
+    a.issue(PlaceBuilding{"common_housing", 2, 3});
+    a.step(1);
+    std::map<std::string, std::uint32_t> days;
+    for (const auto& [id, b] : a.state().city.buildings.items) {
+        days[b.type] = b.placed_day;
+    }
+    CHECK(days["granary"] == 0);
+    CHECK(days["common_housing"] == 3);
+    std::string error;
+    auto b = Simulation::load(bo::test::catalog_isolated(), a.save(), error);
+    REQUIRE(b.has_value());
+    CHECK(b->state().city.buildings.items == a.state().city.buildings.items);
+    auto v50 = a.save();
+    v50.resize(v50.size() - 4 - 4 * a.state().city.buildings.items.size());
+    v50[4] = 50;
+    auto c = Simulation::load(bo::test::catalog_isolated(), v50, error);
+    REQUIRE(c.has_value());
+    for (const auto& [id, building] : c->state().city.buildings.items) {
+        CHECK(building.placed_day == 0);
+    }
 }

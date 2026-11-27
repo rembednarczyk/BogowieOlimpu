@@ -211,6 +211,9 @@ struct Building {
     WalkerId roaming_walker = kNoWalker;  // at most one roaming walker alive per building (doc 24)
     // Service coverage counters, e.g. "water_bearer" -> 96, decaying 1 per day (doc 24).
     std::map<std::string, std::uint8_t> coverage;
+    // The day it was placed (since v51): only the presentation reads it, for the building's age (weathering,
+    // the visual building phase, O-005; docs/ASSETY.md "Parametry budynku").
+    std::uint32_t placed_day = 0;
 };
 
 bool operator==(const Building& a, const Building& b);
@@ -255,6 +258,7 @@ struct CityState {
     // science points work in its houses as culture points (P:10-13). Since v44, saved with the world block.
     bool atlantean = false;
     std::vector<std::int32_t> appeal;    // derived (C1): recomputed daily, not saved
+    std::uint32_t today = 0;             // the day, set by the simulation every tick (not saved): placed_day
 };
 
 // Reason keys are i18n keys (docs/PRAKTYKI.md ch. 12). Empty string = success.

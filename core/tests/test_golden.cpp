@@ -86,7 +86,9 @@ TEST_CASE("golden hash") {
     // 2026-11-28: save format v49 (version field; no monument here), holding a monument's building P:26-28.
     // 2026-11-27: save format v50 (version field; no trade partners here), world map places L-135 and the
     // cities' history of interactions Z:171.
-    const std::uint64_t kGolden = 0xb3989a5589e96346ULL;
+    // 2026-11-27: save format v51 (version field; the count of placing days, no buildings here), the
+    // buildings' age for the presentation O-005.
+    const std::uint64_t kGolden = 0x119ccd9e9c17e787ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -249,7 +251,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-27: save format v48 (the Auto-Defend switch; off), Z:145.
     // 2026-11-28: save format v49 (a monument held or not; no monument here), P:26-28.
     // 2026-11-27: save format v50 (world map places and histories of interactions; no partners here), L-135, Z:171.
-    const std::uint64_t kGolden = 0x20841e1e7e9cdce9ULL;
+    // 2026-11-27: save format v51 (the day each building was placed), the buildings' age O-005; no change of play.
+    const std::uint64_t kGolden = 0x670a51b5d41b46f8ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

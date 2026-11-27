@@ -34,6 +34,8 @@ void write_monsters(ByteWriter& w, const WorldState& s);
 bool read_monsters(ByteReader& r, WorldState& s);
 void write_atlas(ByteWriter& w, const WorldState& s);  // serialize_atlas.cpp (v50)
 bool read_atlas(ByteReader& r, WorldState& s);
+void write_placed_days(ByteWriter& w, const CityState& c);  // serialize_atlas.cpp (v51)
+bool read_placed_days(ByteReader& r, CityState& c);
 void write_culture(ByteWriter& w, const Building& b);
 bool read_culture(ByteReader& r, Building& b);
 

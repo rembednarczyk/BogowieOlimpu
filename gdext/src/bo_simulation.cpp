@@ -1088,6 +1088,9 @@ Array BoSimulation::get_buildings() const {
         d["has_road_access"] = b.road_access.has_value();
         d["workers"] = static_cast<int64_t>(b.workers);
         d["burning"] = b.burning_days > 0;
+        d["burning_days"] = b.burning_days;  // the fire's phase (O-005)
+        d["placed_day"] = b.placed_day;      // the building's age for its look (docs/ASSETY.md, since v51)
+        d["age_days"] = static_cast<int64_t>(sim_->state().time.total_days()) - static_cast<int64_t>(b.placed_day);
         d["fire_risk"] = static_cast<int64_t>(b.fire_counter);      // of 960 (data/risks.json)
         d["damage_risk"] = static_cast<int64_t>(b.damage_counter);
         d["disease_risk"] = static_cast<int64_t>(b.disease_counter);

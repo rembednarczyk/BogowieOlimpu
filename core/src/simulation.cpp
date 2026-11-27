@@ -78,6 +78,7 @@ std::uint64_t Simulation::issue_at(std::uint64_t tick, const Command& command) {
 
 void Simulation::step(std::uint64_t ticks) {
     for (std::uint64_t i = 0; i < ticks; ++i) {
+        state_.city.today = static_cast<std::uint32_t>(state_.time.total_days());
         execute_due_commands();
         step_walkers();
         const std::uint32_t tick_in_day = state_.time.tick_in_day();

@@ -1,5 +1,6 @@
-// The world map block (since v50, L-135, Z:170-171): each city's place on the map and its history of
-// interactions. Written after the monsters, one record per trade partner in the partners' order.
+// The late blocks read by the presentation. The world map block (since v50, L-135, Z:170-171): each city's
+// place on the map and its history of interactions, one record per trade partner in the partners' order.
+// The buildings' placing days (since v51, O-005): the count, then one day per building in id order.
 #include "serialize_city.h"
 
 namespace bo::core {
@@ -28,6 +29,26 @@ bool read_atlas(ByteReader& r, WorldState& s) {
             if (!r.u32(h.day) || !r.str(h.what) || !r.i32(h.delta)) {
                 return false;
             }
+        }
+    }
+    return true;
+}
+
+void write_placed_days(ByteWriter& w, const CityState& c) {
+    w.u32(static_cast<std::uint32_t>(c.buildings.items.size()));
+    for (const auto& [id, b] : c.buildings.items) {
+        w.u32(b.placed_day);
+    }
+}
+
+bool read_placed_days(ByteReader& r, CityState& c) {
+    std::uint32_t n = 0;
+    if (!r.u32(n) || n != c.buildings.items.size()) {
+        return false;
+    }
+    for (auto& [id, b] : c.buildings.items) {
+        if (!r.u32(b.placed_day)) {
+            return false;
         }
     }
     return true;

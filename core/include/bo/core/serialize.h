@@ -21,7 +21,8 @@ inline constexpr std::uint32_t kSaveMagic = 0x564F5342;  // "BSOV" little-endian
 // v13: city hygiene, crime escalation per house, walkers ignoring roadblocks.
 // v14: trade partners, trade buildings and orders. v15: immigrants on the way (house reservations).
 // v50: each trade partner's place on the world map and history of interactions (L-135, Z:171).
-inline constexpr std::uint32_t kSaveFormatVersion = 50;
+// v51: the day each building was placed (presentation: its age, O-005).
+inline constexpr std::uint32_t kSaveFormatVersion = 51;
 
 class ByteWriter {
 public:

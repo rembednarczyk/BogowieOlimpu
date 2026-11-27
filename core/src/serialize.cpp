@@ -421,6 +421,7 @@ std::vector<std::uint8_t> serialize_state(const WorldState& s, std::uint64_t dat
     write_scenario(w, s.scenario);  // since v22
     write_monsters(w, s);           // since v24
     write_atlas(w, s);              // since v50: map places, histories (L-135, Z:171)
+    write_placed_days(w, s.city);   // since v51: the buildings' age (O-005)
     return w.bytes();
 }
 
@@ -482,7 +483,8 @@ std::optional<LoadedState> deserialize_state(const std::vector<std::uint8_t>& by
          (out.format_version >= 17 && !read_military(r, s.military, out.format_version)) ||
          (out.format_version >= 21 && !read_world(r, s, out.format_version)) ||
          (out.format_version >= 22 && !read_scenario(r, s.scenario, out.format_version)) ||
-         (out.format_version >= 24 && !read_monsters(r, s)) || (out.format_version >= 50 && !read_atlas(r, s)))) {
+         (out.format_version >= 24 && !read_monsters(r, s)) || (out.format_version >= 50 && !read_atlas(r, s)) ||
+         (out.format_version >= 51 && !read_placed_days(r, s.city)))) {
         error = "save.corrupt";
         return std::nullopt;
     }
