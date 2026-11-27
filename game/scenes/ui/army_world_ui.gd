@@ -13,6 +13,10 @@ var world: PanelContainer
 var world_box: VBoxContainer
 var moving: Array = []  # companies whose standards the next map tap moves (Z:137)
 var posting := -1  # the trireme whose station the next map tap sets (Z:142)
+# Groups 1-5 (docs/gameplay/11-wojsko.md, Z:137): company index -> group. A key shortcut in the reference; on a
+# phone a pick in the company's row. Presentation state, not in the save [ZAŁOŻENIE].
+const GROUPS := 5
+var group_of := {}
 
 func setup(owner_ui, root: Control) -> void:
 	ui = owner_ui
@@ -106,12 +110,14 @@ func refresh_army() -> void:
 	var companies: Array = game.sim.get_companies()
 	if companies.is_empty():
 		army_box.add_child(ui._label("  " + tr("ui.no_companies")))
-	# Alike companies (unit, god, status) in one row: twenty rows of rabble would not fit a phone screen.
+	_groups(companies)
+	# Alike companies (unit, god, status, group) in one row: twenty rows of rabble would not fit a phone screen.
 	var groups := {}
 	var order := []
 	for i in companies.size():
 		var c: Dictionary = companies[i]
-		var key := "%s|%s|%d|%s|%d" % [c["unit"], c["nation"], c["status"], c["fled"], c.get("tactic", 0)]
+		var key := "%s|%s|%d|%s|%d|%d" % [c["unit"], c["nation"], c["status"], c["fled"], c.get("tactic", 0),
+			group_of.get(i, 0)]
 		if not groups.has(key):
 			groups[key] = []
 			order.append(key)
@@ -136,12 +142,53 @@ func refresh_army() -> void:
 			tactic.add_item(tr("tactic.%d" % t))
 		tactic.select(int(c.get("tactic", 0)))
 		tactic.item_selected.connect(func(t): _each(ids, func(i): game.sim.set_company_tactic(i, t)))
+		var group := OptionButton.new()  # none, 1-5
+		group.custom_minimum_size = Vector2(110, ui.CELL.y)
+		group.add_theme_font_size_override("font_size", 18)
+		group.add_item(tr("ui.group_none"))
+		for g in GROUPS:
+			group.add_item(tr("ui.group") % (g + 1))
+		group.select(int(group_of.get(ids[0], 0)))
+		group.item_selected.connect(func(g): assign_group(ids, g))
 		_row(army_box, text, [
 			tactic,
+			group,
 			_small("ui.muster", func(): _each(ids, func(i): game.sim.muster_company(i)), home and not c["fled"]),
 			_small("ui.move", func(): start_move(ids), not home and not abroad),
 			_small("ui.go_home", func(): _each(ids, func(i): game.sim.send_company_home(i)), not home and not abroad)])
 	_ships()
+
+# One row a group in use: its orders for all its companies at once.
+func _groups(companies: Array) -> void:
+	for i in group_of.keys():
+		if i >= companies.size():
+			group_of.erase(i)  # a company gone (Z:140): its place in the list too
+	for g in range(1, GROUPS + 1):
+		var ids := group_members(g)
+		if ids.is_empty():
+			continue
+		var home := ids.filter(func(i): return companies[i]["status"] == 0 and not companies[i]["fled"])
+		var out := ids.filter(func(i): return companies[i]["status"] != 0 and companies[i]["status"] != 6)
+		_row(army_box, tr("ui.group_line") % [g, ids.size()], [
+			_small("ui.muster", func(): _each(home, func(i): game.sim.muster_company(i)), not home.is_empty()),
+			_small("ui.move", func(): start_move(out), not out.is_empty()),
+			_small("ui.go_home", func(): _each(out, func(i): game.sim.send_company_home(i)), not out.is_empty())])
+
+func assign_group(ids: Array, g: int) -> void:
+	for i in ids:
+		if g == 0:
+			group_of.erase(i)
+		else:
+			group_of[i] = g
+	refresh_army()
+
+func group_members(g: int) -> Array:
+	var ids := []
+	for i in group_of:
+		if group_of[i] == g:
+			ids.append(i)
+	ids.sort()
+	return ids
 
 # Triremes (Z:141-144): the order of each, its hull, and a new station by a tap on the water.
 func _ships() -> void:

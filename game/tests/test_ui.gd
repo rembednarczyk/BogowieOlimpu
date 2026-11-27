@@ -147,6 +147,20 @@ func _process(_d: float) -> bool:
 	game.sim.step(1)
 	var c0: Dictionary = game.sim.get_companies()[0]
 	check(c0["x"] == 40 and c0["y"] == 20, "the tap moved the standard: %s" % [c0])
+	# Groups 1-5 (Z:137): the first company in group 2, the group's row moves it by one tap.
+	aw.toggle_army()
+	aw.assign_group([0], 2)
+	check(aw.group_members(2) == [0], "the company is in group 2")
+	var grow: HBoxContainer = aw.army_box.get_child(2)
+	check((grow.get_child(0) as Label).text.contains("2"), "a row for group 2 above the companies")
+	(grow.get_child(2) as Button).pressed.emit()
+	check(aw.moving == [0] and not aw.army.visible, "the group's Move takes its companies")
+	ui.tap(Vector2i(42, 22))
+	game.sim.step(1)
+	c0 = game.sim.get_companies()[0]
+	check(c0["x"] == 42 and c0["y"] == 22, "the group moved by one tap: %s" % [c0])
+	aw.assign_group([0], 0)
+	check(aw.group_members(2).is_empty(), "the company out of the group")
 	aw.toggle_world()
 	check(aw.world.visible and aw.world_box.get_child_count() > 2, "the world panel lists the cities")
 	# The buttons themselves: the first city's row is label, Gift, the good to pick, Ask, Attack, Raid.

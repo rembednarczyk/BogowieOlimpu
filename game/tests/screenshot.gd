@@ -42,6 +42,8 @@ func _process(_delta: float) -> bool:
 		if build_view == 3:
 			node.ui.toggle_report()
 		elif build_view == 4:
+			if node.sim.get_companies().size() > 1:
+				node.ui.army_world.assign_group([0, 1], 1)  # a group row above the companies (Z:137)
 			node.ui.army_world.toggle_army()
 		elif build_view == 5:
 			node.ui.army_world.toggle_world()

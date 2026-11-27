@@ -271,3 +271,6 @@ scenario.demo_atlantis_elite.name,Elita Atlantydy,The Atlantean elite
 scenario.demo_heroes.name,Herosi,The heroes
 tab.science,Nauka,Science
 ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"
+ui.group_none,bez grupy,no group
+ui.group,grupa %d,group %d
+ui.group_line,"Grupa %d, kompanie: %d","Group %d, companies: %d"
