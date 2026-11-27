@@ -37,6 +37,9 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `dispatch: {"city": n, "raid": bool, "good": towar}` | atak albo rajd wszystkimi kompaniami z domu poza motłochem (Z:177-178) |
 | `tactics: n` | taktyka wszystkich kompanii: 0 obronna, 1 ofensywna, 2 specjalna (Z:138-139) |
 | `fulfill_requests: true` | spełnij wszystkie otwarte prośby miast (towar z magazynu, wojsko z domu) |
+| `ships: n` | rozkaz dla każdej triery: 0-3 rozkazy (obrona, atak, naprawa, patrol), 4 wezwij załogę (Z:141-142) |
+| `ship_order: [triera, rozkaz, x, y]` | rozkaz albo posterunek jednej triery (Z:142) |
+| `demolish: [x, y]`, `oracle: [x, y]` | rozbiórka budynku z kafla; zapytaj wyrocznię sanktuarium z kafla (Z:124) |
 | `gift: {"city": n, "good": towar, "amount": n}` | dar dla miasta (`drachmas`: pieniądze, Z:176-177) |
 | `military_help: {"city": n, "strike": bool, "target": m}` | prośba o pomoc obronną (tylko w czasie najazdu) albo o uderzenie miasta n na miasto m (Z:174, L-125) |
 
