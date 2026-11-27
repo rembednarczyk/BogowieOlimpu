@@ -345,6 +345,8 @@
   {"day": 320, "place": "maintenance_office", "x": 64, "y": 46},
   {"day": 320, "road": [49, 46, 49, 46]},
   {"day": 320, "place": "trireme_wharf", "x": 50, "y": 47},
+  {"day": 320, "place": "storehouse", "x": 71, "y": 46},
+  {"day": 321, "at": [71, 46], "storage_order": {"good": "wood", "kind": 1, "limit": 8}},
   {"day": 400, "place": "flower_garden", "x": 62, "y": 15},
   {"day": 400, "place": "flower_garden", "x": 68, "y": 18},
   {"day": 400, "place": "gazebo", "x": 62, "y": 17},

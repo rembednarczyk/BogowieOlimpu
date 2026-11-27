@@ -98,6 +98,8 @@ scenario = {
         {"type": "games_host", "host_year": 8, "year": 7, "month": 0},
         {"type": "request", "city": "corinth", "good": "army", "amount": 1, "year": 5, "month": 6,
          "deadline_months": 3},
+        {"type": "invasion", "city": "sparta", "nation": "greek", "amount": 16, "year": 5, "month": 9,
+         "by_sea": True},  # transports with a warship from the sea entry (Z:144); the triremes meet them
         {"type": "monster", "monster": "medusa", "strength": 1, "target": "resources", "year": 6, "month": 0},
     ],
     "goals": [
@@ -284,6 +286,8 @@ put("horse_ranch", 56, 46, day=ARMY)
 put("maintenance_office", 64, 46, day=ARMY)
 steps.append({"day": ARMY, "road": [49, 46, 49, 46]})
 put("trireme_wharf", 50, 47, day=ARMY)
+put("storehouse", 71, 46, day=ARMY)  # wood for the triremes (Z:141): the timber mills are 50 tiles away
+steps.append({"day": ARMY + 1, "at": [71, 46], "storage_order": {"good": "wood", "kind": 1, "limit": 8}})
 
 # Stage ELITE (Z:32-34): gardens raise the appeal, elite houses once their goods are in storage.
 for x, y in [(62, 15), (68, 18)]:

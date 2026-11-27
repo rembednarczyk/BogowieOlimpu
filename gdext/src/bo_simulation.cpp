@@ -562,6 +562,34 @@ void BoSimulation::set_company_tactic(int64_t company, int64_t tactic) {
     }
 }
 
+Array BoSimulation::get_ships() const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    const auto& player = catalog_->combat.nations.at("player_greek").units;
+    for (const auto& sh : sim_->state().military.ships) {
+        const auto& w = sim_->state().walkers.items.at(sh.walker);
+        Dictionary d;
+        d["order"] = static_cast<int64_t>(sh.order);
+        d["hp"] = static_cast<int64_t>(w.hp);
+        d["max_hp"] = static_cast<int64_t>(player.count(w.type) != 0 ? player.at(w.type).hp : w.hp);
+        d["x"] = w.tile.x;
+        d["y"] = w.tile.y;
+        d["station_x"] = sh.station.x;
+        d["station_y"] = sh.station.y;
+        out.append(d);
+    }
+    return out;
+}
+
+void BoSimulation::set_ship_order(int64_t ship, int64_t order, int64_t x, int64_t y) {
+    if (sim_ && ship >= 0 && order >= 0 && order <= 2) {
+        sim_->issue(bo::core::SetShipOrder{static_cast<std::uint32_t>(ship), static_cast<std::uint8_t>(order),
+                                           static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)});
+    }
+}
+
 void BoSimulation::man_towers(bool on) {
     if (sim_) {
         sim_->issue(bo::core::ManTowers{on});
@@ -650,6 +678,7 @@ Dictionary BoSimulation::get_invasion() const {
     d["active"] = inv.active;
     d["nation"] = String(inv.nation.c_str());
     d["invaders"] = static_cast<int64_t>(inv.invaders.size());
+    d["by_sea"] = inv.by_sea;  // Z:144
     d["city"] = static_cast<int64_t>(inv.city);
     d["bribe"] = bo::core::bribe_cost(sim_->state(), *catalog_);
     return d;
@@ -1120,6 +1149,9 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
     ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
+    ClassDB::bind_method(D_METHOD("get_ships"), &BoSimulation::get_ships);
+    ClassDB::bind_method(D_METHOD("set_ship_order", "ship", "order", "x", "y"), &BoSimulation::set_ship_order,
+                         DEFVAL(-1), DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("get_expeditions"), &BoSimulation::get_expeditions);
     ClassDB::bind_method(D_METHOD("get_invasion"), &BoSimulation::get_invasion);
     ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);

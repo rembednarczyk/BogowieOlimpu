@@ -92,6 +92,10 @@ Ruch: kliknięcie statku, potem celu. Zaznaczanie wielu i grupy jak w armii (P:1
 3. Wrodzy żołnierze przy brzegu.
 4. Puste transportowce.
 
+### Implementacja etapu 1 (L-124)
+
+Rdzeń: `core/src/naval.cpp`. Triera wypływa ze stoczni, gdy ta ją zbuduje; rozkazy Defend Location (domyślny), Attack All Enemies, Carry Out Repairs (`SetShipOrder`); desant z `by_sea` w zdarzeniu `invasion` scenariusza. Wzorzec desantu: eZeus (S-008), liczby bez źródła oznaczone w L-124.
+
 ### Statusy trier (Z:150-151)
 
 Unmanned, Anchored, Sailing, Disembarking, Returning, Repairing, Fighting, Abroad. Panel pokazuje stan kadłuba.

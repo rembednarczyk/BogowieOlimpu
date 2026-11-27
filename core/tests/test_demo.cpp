@@ -16,6 +16,7 @@
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
 #include "bo/core/scenario.h"
+#include "bo/core/naval.h"
 #include "bo/core/simulation.h"
 #include "bo/core/storage.h"
 #include "doctest/doctest.h"
@@ -204,7 +205,7 @@ void dump(const Simulation& sim) {
             }
             std::printf("\n");
         }
-        if (b.type == "growers_lodge" || b.type == "olive_press" || b.type == "foundry" || b.type == "sculpture_studio" ||
+        if (b.type == "growers_lodge" || b.type == "olive_press" || b.type == "foundry" || b.type == "sculpture_studio" || b.type == "trireme_wharf" ||
             b.type == "timber_mill") {
             std::printf("  %s %d,%d staff %u in %u out %u progress %u", b.type.c_str(), b.origin.x, b.origin.y,
                         b.staffing_percent, b.producer->input_loads, b.producer->output_loads, b.producer->progress);
@@ -239,7 +240,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
@@ -339,6 +340,13 @@ DemoRun run_demo(std::uint64_t years) {
         }
         run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
         run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
+        run.seen["trireme"] += sim.state().military.ships.empty() ? 0 : 1;  // launched from a wharf (Z:141)
+        run.seen["sea_invasion"] += sim.state().military.invasion.by_sea ? 1 : 0;  // Z:144
+        for (const WalkerId id : sim.state().military.invasion.invaders) {
+            const Walker& w = sim.state().walkers.items.at(id);
+            const auto& units = sim.catalog().combat.nations.at(w.variant).units;
+            run.seen["naval_hit"] += is_ship(w) && units.count(w.type) != 0 && w.hp < units.at(w.type).hp ? 1 : 0;
+        }
         for (const Company& c : sim.state().military.companies) {
             run.seen["tactics_set"] += c.tactic != Tactic::Defensive ? 1 : 0;  // Z:138-139
             run.seen["hoplites"] += c.unit == "hoplite" && !c.members.empty() ? 1 : 0;  // from the mansions (Z:136)

@@ -292,6 +292,15 @@
    "deadline_months": 3
   },
   {
+   "type": "invasion",
+   "city": "sparta",
+   "nation": "greek",
+   "amount": 16,
+   "year": 5,
+   "month": 9,
+   "by_sea": true
+  },
+  {
    "type": "monster",
    "monster": "medusa",
    "strength": 1,

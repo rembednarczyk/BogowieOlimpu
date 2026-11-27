@@ -12,6 +12,7 @@ var army_box: VBoxContainer
 var world: PanelContainer
 var world_box: VBoxContainer
 var moving: Array = []  # companies whose standards the next map tap moves (Z:137)
+var posting := -1  # the trireme whose station the next map tap sets (Z:142)
 
 func setup(owner_ui, root: Control) -> void:
 	ui = owner_ui
@@ -85,6 +86,8 @@ func refresh_army() -> void:
 		_row(army_box, tr("ui.invasion_line") % [inv["invaders"], inv["bribe"]], [
 			_small("ui.bribe", func(): game.sim.bribe_invaders(); refresh_army()),
 			_small("ui.surrender", func(): game.sim.surrender(); refresh_army())])
+		if inv.get("by_sea", false):
+			army_box.add_child(ui._label("  " + tr("ui.invasion_by_sea")))
 	var sc: Dictionary = game.sim.get_scenario()
 	var man: Button = ui._button("ui.man_all", func(): game.sim.man_towers(not game.sim.get_scenario()["towers_manned"]),
 		Vector2(240, ui.CELL.y))  # Man All (Z:146): sentries to every tower
@@ -133,6 +136,25 @@ func refresh_army() -> void:
 			_small("ui.muster", func(): _each(ids, func(i): game.sim.muster_company(i)), home and not c["fled"]),
 			_small("ui.move", func(): start_move(ids), not home and not abroad),
 			_small("ui.go_home", func(): _each(ids, func(i): game.sim.send_company_home(i)), not home and not abroad)])
+	_ships()
+
+# Triremes (Z:141-144): the order of each, its hull, and a new station by a tap on the water.
+func _ships() -> void:
+	var ships: Array = game.sim.get_ships()
+	if ships.is_empty():
+		return
+	army_box.add_child(ui._label(tr("ui.ships"), 20))
+	for i in ships.size():
+		var sh: Dictionary = ships[i]
+		var order := OptionButton.new()
+		order.custom_minimum_size = Vector2(200, ui.CELL.y)
+		order.add_theme_font_size_override("font_size", 18)
+		for o in 3:
+			order.add_item(tr("ship.order.%d" % o))
+		order.select(int(sh["order"]))
+		order.item_selected.connect(func(o): game.sim.set_ship_order(i, o); refresh_army())
+		_row(army_box, tr("ui.ship_line") % [i + 1, sh["hp"], sh["max_hp"]], [order,
+			_small("ui.ship_post", func(): posting = i; army.visible = false)])
 
 func _each(ids: Array, f: Callable) -> void:
 	for i in ids:
@@ -153,6 +175,10 @@ func start_move(ids) -> void:
 
 # Called by build_ui.tap: true when the tap moved a company.
 func map_tap(tile: Vector2i) -> bool:
+	if posting >= 0 and tile.x >= 0:
+		game.sim.set_ship_order(posting, 0, tile.x, tile.y)  # Hold station there (rejected off the water)
+		posting = -1
+		return true
 	if moving.is_empty() or tile.x < 0:
 		return false
 	for i in moving:

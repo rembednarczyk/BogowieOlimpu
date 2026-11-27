@@ -77,6 +77,10 @@ public:
     void set_not_buying(int64_t stall, bool on);              // Z:72
     void man_towers(bool on);                                 // Man All, Z:146
     void set_company_tactic(int64_t company, int64_t tactic); // 0 defensive, 1 offensive, 2 special (Z:138-139)
+    // Triremes (Z:141-144): {"order" (0 defend, 1 attack all, 2 repair), "hp", "max_hp", "x", "y", "station_x",
+    // "station_y"}; set_ship_order(ship, order, x, y): Defend Location at a water tile (-1: where it is).
+    godot::Array get_ships() const;
+    void set_ship_order(int64_t ship, int64_t order, int64_t x = -1, int64_t y = -1);
     godot::PackedStringArray get_stockpiled() const;
     void set_trade_partner(int64_t building, int64_t partner);
     void set_trade_order(int64_t building, const godot::String& good, bool import_on, int64_t import_limit,
