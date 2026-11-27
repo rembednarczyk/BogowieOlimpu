@@ -14,6 +14,8 @@ struct WorldState;
 
 // Site rules (doc 21): at most 4 sanctuaries; the foundation needs the initial marble in storage.
 std::string sanctuary_site_check(const CityState& city, const DataCatalog& catalog, const std::string& type);
+// Hold or resume a monument's building (P:26-28); a god's sanctuary cannot be held. Returns an error key or "".
+std::string pause_construction(WorldState& state, const DataCatalog& catalog, BuildingId site, bool on);
 // Lays the foundation: takes the initial marble from storage and sets the materials still to build in.
 void lay_foundation(CityState& city, const DataCatalog& catalog, Building& b);
 

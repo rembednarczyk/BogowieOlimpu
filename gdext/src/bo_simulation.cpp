@@ -652,6 +652,12 @@ void BoSimulation::man_towers(bool on) {
     }
 }
 
+void BoSimulation::set_construction_paused(int64_t building, bool on) {
+    if (sim_) {
+        sim_->issue(bo::core::SetConstructionPaused{static_cast<std::uint32_t>(building), on});
+    }
+}
+
 void BoSimulation::set_auto_defend(bool on) {
     if (sim_) {
         sim_->issue(bo::core::SetAutoDefend{on});
@@ -1217,6 +1223,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
     ClassDB::bind_method(D_METHOD("set_auto_defend", "on"), &BoSimulation::set_auto_defend);
+    ClassDB::bind_method(D_METHOD("set_construction_paused", "building", "on"), &BoSimulation::set_construction_paused);
     ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
     ClassDB::bind_method(D_METHOD("get_ships"), &BoSimulation::get_ships);
     ClassDB::bind_method(D_METHOD("consult_oracle", "building"), &BoSimulation::consult_oracle);

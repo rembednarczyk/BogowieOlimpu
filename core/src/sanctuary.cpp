@@ -96,10 +96,13 @@ void dispatch_artisans(WorldState& st, const DataCatalog& catalog, MythEvents& e
         });
         const bool busy = out >= (god_blesses(st.city, catalog, "atlas") ? catalog.blessings.atlas_artisans : 1);
         // B-022: the nearest site with its stone delivered; only when none has any, the nearest site to wait at.
-        auto site = nearest_by_road(st.city, *g.road_access, [&catalog](const Building& b) { return has_work(catalog, b); });
+        auto site = nearest_by_road(st.city, *g.road_access, [&catalog](const Building& b) {
+            return has_work(catalog, b) && !b.sanctuary->paused;
+        });
         if (!site) {
-            site = nearest_by_road(st.city, *g.road_access,
-                                   [](const Building& b) { return b.sanctuary && !b.sanctuary->complete; });
+            site = nearest_by_road(st.city, *g.road_access, [](const Building& b) {
+                return b.sanctuary && !b.sanctuary->complete && !b.sanctuary->paused;
+            });
         }
         if (busy || !site) {
             continue;
@@ -133,19 +136,27 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
             continue;
         }
         const std::uint32_t batch = std::string(good) == "sculpture" ? 1U : std::min(kBulkLoads, needed - have);
-        const auto from = nearest_by_road(st.city, *site.road_access, [&](const Building& b) {
-            if (!b.storage || b.staffing_percent == 0) {
-                return false;
-            }
-            if (b.trade) {  // a trade building importing the material (Z:117); export goods stay (Z:79)
-                const auto order = b.trade->orders.find(good);
-                if (order == b.trade->orders.end() || !order->second.import_on || order->second.export_on) {
+        const auto holding = [&](const std::string& g) {
+            return [&, g](const Building& b) {
+                if (!b.storage || b.staffing_percent == 0) {
                     return false;
                 }
-            }
-            const auto it = b.storage->loads.find(good);
-            return it != b.storage->loads.end() && it->second >= batch;
-        });
+                if (b.trade) {  // a trade building importing the material (Z:117); export goods stay (Z:79)
+                    const auto order = b.trade->orders.find(g);
+                    if (order == b.trade->orders.end() || !order->second.import_on || order->second.export_on) {
+                        return false;
+                    }
+                }
+                const auto it = b.storage->loads.find(g);
+                return it != b.storage->loads.end() && it->second >= batch;
+            };
+        };
+        std::string load = good;
+        auto from = nearest_by_road(st.city, *site.road_access, holding(load));
+        if (!from && load == "marble" && catalog.sanctuaries.at(site.type).monument) {
+            load = "black_marble";  // a monument takes white or black marble (P:26-28) [ZAŁOŻENIE, L-128]
+            from = nearest_by_road(st.city, *site.road_access, holding(load));
+        }
         if (!from) {
             continue;
         }
@@ -153,7 +164,7 @@ void dispatch_supplies(WorldState& st, const DataCatalog& catalog, BuildingId si
         if (w == kNoWalker) {
             continue;
         }
-        st.city.buildings.items.at(*from).storage->loads[good] -= batch;
+        st.city.buildings.items.at(*from).storage->loads[load] -= batch;  // built in as marble
         Walker& cart = st.walkers.items.at(w);
         cart.job = WalkerJob::Supply;
         cart.target = site_id;
@@ -372,7 +383,8 @@ MythEvents advance_sanctuaries(WorldState& st, const DataCatalog& catalog) {
             continue;
         }
         const Building& b = st.city.buildings.items.at(id);
-        if (!b.sanctuary->complete && b.road_access) {
+        // A monument starts when its plank reaches a road (P:26-28) and waits while held [ZAŁOŻENIE, L-128].
+        if (!b.sanctuary->complete && b.road_access && !b.sanctuary->paused) {
             build(st, catalog, id, ev);
             dispatch_supplies(st, catalog, id, ev);
         } else if (b.sanctuary->complete && !catalog.sanctuaries.at(b.type).monument) {
@@ -380,6 +392,26 @@ MythEvents advance_sanctuaries(WorldState& st, const DataCatalog& catalog) {
         }
     }
     return ev;
+}
+
+std::string pause_construction(WorldState& st, const DataCatalog& catalog, BuildingId site, bool on) {
+    const auto it = st.city.buildings.items.find(site);
+    if (it == st.city.buildings.items.end() || !it->second.sanctuary || it->second.sanctuary->complete) {
+        return "myth.no_site";
+    }
+    if (!catalog.sanctuaries.at(it->second.type).monument) {
+        return "myth.not_a_monument";  // a god's sanctuary goes on (P:26-28 speaks of the monuments)
+    }
+    it->second.sanctuary->paused = on;
+    if (on) {
+        for (auto& [id, w] : st.walkers.items) {
+            if (w.target == site && (w.job == WalkerJob::Build) && w.phase == WalkerPhase::AtTarget) {
+                w.job = WalkerJob::None;
+                send_home(st.city, w);  // the artisans go back to their guild
+            }
+        }
+    }
+    return {};
 }
 
 }  // namespace bo::core

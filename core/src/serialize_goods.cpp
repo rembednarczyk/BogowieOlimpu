@@ -91,7 +91,40 @@ void write_goods_state(ByteWriter& w, const Building& b) {
         w.u32(t.prayer_cooldown);  // since v20
         w.u32(t.days_to_sanctify);
         w.u32(t.oracle_silent);  // since v41
+        w.u8(t.paused ? 1 : 0);  // since v49
     }
+}
+
+// A sanctuary's or monument's state (since v19; prayers v20, oracle v41, held v49).
+bool read_sanctuary_state(ByteReader& r, Building& b, std::uint32_t version) {
+    const auto flag = [&r](bool& out) {  // as read_goods_state reads its flags
+        std::uint8_t v = 0;
+        const bool ok = r.u8(v);
+        out = v != 0;
+        return ok;
+    };
+    SanctuaryState t;
+    std::uint32_t days = 0;
+    if (!flag(t.complete) || !read_counts(r, t.needed) || !read_counts(r, t.on_site) || !r.u32(days) ||
+        days > 0xFFFF || !r.u32(t.priest) || !flag(t.favor_lost)) {
+        return false;
+    }
+    t.days_since_sacrifice = static_cast<std::uint16_t>(days);
+    std::uint32_t pray = 0;
+    std::uint32_t bless = 0;
+    std::uint32_t silent = 0;  // since v41
+    if ((version >= 20 && (!r.u32(pray) || !r.u32(bless) || pray > 0xFFFF || bless > 0xFFFF)) ||
+        (version >= 41 && (!r.u32(silent) || silent > 0xFFFF))) {
+        return false;
+    }
+    t.prayer_cooldown = static_cast<std::uint16_t>(pray);
+    t.days_to_sanctify = static_cast<std::uint16_t>(bless);
+    t.oracle_silent = static_cast<std::uint16_t>(silent);
+    if (version >= 49 && !flag(t.paused)) {
+        return false;
+    }
+    b.sanctuary = std::move(t);
+    return true;
 }
 
 bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
@@ -191,25 +224,8 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
         }
         b.trade = std::move(t);
     }
-    if ((flags & 64U) != 0) {
-        SanctuaryState t;
-        std::uint32_t days = 0;
-        if (!read_flag(t.complete) || !read_counts(r, t.needed) || !read_counts(r, t.on_site) || !r.u32(days) ||
-            days > 0xFFFF || !r.u32(t.priest) || !read_flag(t.favor_lost)) {
-            return false;
-        }
-        t.days_since_sacrifice = static_cast<std::uint16_t>(days);
-        std::uint32_t pray = 0;
-        std::uint32_t bless = 0;
-        std::uint32_t silent = 0;  // since v41
-        if ((version >= 20 && (!r.u32(pray) || !r.u32(bless) || pray > 0xFFFF || bless > 0xFFFF)) ||
-            (version >= 41 && (!r.u32(silent) || silent > 0xFFFF))) {
-            return false;
-        }
-        t.prayer_cooldown = static_cast<std::uint16_t>(pray);
-        t.days_to_sanctify = static_cast<std::uint16_t>(bless);
-        t.oracle_silent = static_cast<std::uint16_t>(silent);
-        b.sanctuary = std::move(t);
+    if ((flags & 64U) != 0 && !read_sanctuary_state(r, b, version)) {
+        return false;
     }
     return true;
 }

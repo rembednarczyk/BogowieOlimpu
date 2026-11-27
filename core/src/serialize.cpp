@@ -128,7 +128,7 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, SetStockpile>) {
                 w.str(cmd.good);
                 w.u8(cmd.on ? 1 : 0);
-            } else if constexpr (std::is_same_v<T, SetNotBuying>) {
+            } else if constexpr (std::is_same_v<T, SetNotBuying> || std::is_same_v<T, SetConstructionPaused>) {
                 w.u32(cmd.building);
                 w.u8(cmd.on ? 1 : 0);
             } else if constexpr (std::is_same_v<T, ManTowers> || std::is_same_v<T, SetAutoDefend>) {

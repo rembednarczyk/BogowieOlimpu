@@ -16,6 +16,7 @@
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
+#include "bo/core/sanctuary.h"
 #include "bo/core/risks.h"
 #include "bo/core/trade.h"
 #include "bo/core/serialize.h"
@@ -335,6 +336,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
                    [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
                    [&](const SetAutoDefend& c) { reject(set_auto_defend(state_, c.on)); },  // Z:145
+                   [&](const SetConstructionPaused& c) { reject(pause_construction(state_, catalog_, c.building, c.on)); },
                    [&](const SetCompanyTactic&) { apply_stock_command(command, index); },  // Z:138-139
                    [&](const SetShipOrder&) { apply_combat_command(command, index); },     // Z:142
                    [&](const SetIndustryEnabled&) { apply_stock_command(command, index); },

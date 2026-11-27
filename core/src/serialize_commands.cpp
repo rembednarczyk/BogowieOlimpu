@@ -46,9 +46,22 @@ bool read_auto_defend(ByteReader& r, Command& out) {
     return true;
 }
 
+// Hold or resume a monument's building (index 34, since v49, P:26-28).
+bool read_construction_paused(ByteReader& r, Command& out) {
+    SetConstructionPaused c;
+    std::uint8_t on = 0;
+    if (!r.u32(c.building) || !r.u8(on)) {
+        return false;
+    }
+    c.on = on != 0;
+    out = c;
+    return true;
+}
+
 bool read_late_command(std::uint32_t index, ByteReader& r, Command& out) {
     return (index == 30 && read_ship_order(r, out)) || (index == 31 && read_help_request(r, out)) ||
-           (index == 32 && read_oracle(r, out)) || (index == 33 && read_auto_defend(r, out));
+           (index == 32 && read_oracle(r, out)) || (index == 33 && read_auto_defend(r, out)) ||
+           (index == 34 && read_construction_paused(r, out));
 }
 
 }  // namespace bo::core

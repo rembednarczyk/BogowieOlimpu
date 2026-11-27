@@ -158,11 +158,12 @@ struct SanctuaryState {
     std::uint16_t prayer_cooldown = 0;  // days until the god listens again (since v20)
     std::uint16_t days_to_sanctify = 0;  // days until the god blesses the next building (since v20)
     std::uint16_t oracle_silent = 0;     // days until the oracle speaks again (Z:124; since v41)
+    bool paused = false;                 // a monument's building held (P:26-28; since v49)
     friend bool operator==(const SanctuaryState& a, const SanctuaryState& b) {
         return a.complete == b.complete && a.needed == b.needed && a.on_site == b.on_site &&
                a.days_since_sacrifice == b.days_since_sacrifice && a.priest == b.priest && a.favor_lost == b.favor_lost &&
                a.prayer_cooldown == b.prayer_cooldown && a.days_to_sanctify == b.days_to_sanctify &&
-               a.oracle_silent == b.oracle_silent;
+               a.oracle_silent == b.oracle_silent && a.paused == b.paused;
     }
 };
 

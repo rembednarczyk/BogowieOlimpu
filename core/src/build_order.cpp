@@ -115,6 +115,8 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {
         add(SetNotBuying{0, s.value("on", true)}, pos_of(s.at("not_buying")));
+    } else if (s.contains("hold_building")) {  // a monument's building held or resumed (P:26-28)
+        add(SetConstructionPaused{0, s.value("on", true)}, pos_of(s.at("hold_building")));
     } else if (s.contains("ship_order")) {  // [ship, order, x, y]: one trireme's order or post (Z:142)
         const json& o = s.at("ship_order");
         add(SetShipOrder{o.at(0).get<std::uint32_t>(), o.at(1).get<std::uint8_t>(), o.size() > 3 ? o.at(2).get<std::int32_t>() : -1,
@@ -273,6 +275,8 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
                 pr->building = id;
             } else if (auto* oc = std::get_if<ConsultOracle>(&c)) {
                 oc->building = id;
+            } else if (auto* hb = std::get_if<SetConstructionPaused>(&c)) {
+                hb->building = id;
             } else if (auto* nb = std::get_if<SetNotBuying>(&c)) {
                 const auto& b = sim.state().city.buildings.items.at(id);
                 nb->building = b.slots.empty() ? id : b.slots.front();  // a tile of an agora: its first stall

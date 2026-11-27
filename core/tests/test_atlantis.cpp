@@ -298,3 +298,115 @@ TEST_CASE("science: the university sends astronomers to the observatory and cura
     CHECK(city_culture_bonus(sim.state().city, sim.catalog()) == 10);  // a working museum: 10 for every house (doc 18)
     CHECK(place(sim, "museum", 56, 2) == "build.only_one");  // one a city (P:12)
 }
+
+namespace {
+
+// A modest pyramid on a road with a guild and its stone in store; `black`: black marble in place of white.
+struct Site {
+    Simulation sim;
+    BuildingId pyramid = kNoBuilding;
+    BuildingId store = kNoBuilding;
+};
+
+Site pyramid_site(bool black, bool road = true) {
+    std::vector<std::string> rows(30, std::string(40, '.'));
+    rows[20] = std::string(40, '=');
+    SimulationConfig cfg{8, Difficulty::Hero, 30000, rows, true};
+    cfg.atlantean = true;
+    Site s{Simulation(bo::test::catalog_isolated(), cfg)};
+    REQUIRE(place(s.sim, "storehouse", 30, 17) == "ok");
+    REQUIRE(place(s.sim, "artisans_guild", 24, 18) == "ok");
+    s.store = s.sim.state().city.map.at({30, 17}).building;
+    auto& loads = s.sim.mutable_state().city.buildings.items.at(s.store).storage->loads;
+    loads[black ? "black_marble" : "marble"] = 30;
+    loads["orichalc"] = 10;
+    REQUIRE(place(s.sim, "pyramid_modest", 4, road ? 17 : 10) == "ok");  // off the road: its plank reaches none
+    s.pyramid = s.sim.state().city.map.at({4, road ? 17 : 10}).building;
+    return s;
+}
+
+bool finished_within(Site& s, int days) {
+    for (int d = 0; d < days && !s.sim.state().city.buildings.items.at(s.pyramid).sanctuary->complete; ++d) {
+        s.sim.run_days(1);
+    }
+    return s.sim.state().city.buildings.items.at(s.pyramid).sanctuary->complete;
+}
+
+}  // namespace
+
+TEST_CASE("monuments: black marble builds a pyramid as white marble does (P:26-28, L-128)") {
+    auto s = pyramid_site(true);
+    CHECK(finished_within(s, 400));
+    CHECK(s.sim.state().city.buildings.items.at(s.store).storage->loads.at("black_marble") == 10);
+}
+
+TEST_CASE("monuments: the building starts only when the plank reaches a road (P:26-28, L-128)") {
+    auto s = pyramid_site(false, false);
+    s.sim.run_days(100);
+    const auto& site = *s.sim.state().city.buildings.items.at(s.pyramid).sanctuary;
+    CHECK(site.needed.at("marble") == 20);  // nothing came
+    for (int y = 13; y < 20; ++y) {
+        s.sim.issue(PlaceRoad{5, y});  // a road up to the plank
+    }
+    s.sim.step(1);
+    CHECK(finished_within(s, 400));
+}
+
+TEST_CASE("monuments: held, the building stops; resumed, it goes on; a god's sanctuary cannot be held (P:26-28)") {
+    auto s = pyramid_site(false);
+    s.sim.run_days(30);
+    const std::uint32_t left = s.sim.state().city.buildings.items.at(s.pyramid).sanctuary->needed.at("marble") +
+                               s.sim.state().city.buildings.items.at(s.pyramid).sanctuary->needed.at("orichalc");
+    REQUIRE(left > 0);
+    s.sim.issue(SetConstructionPaused{s.pyramid, true});
+    s.sim.step(1);
+    s.sim.run_days(5);  // the walkers on their way finish their trips
+    const auto& site = *s.sim.state().city.buildings.items.at(s.pyramid).sanctuary;
+    const std::uint32_t held = site.needed.at("marble") + site.needed.at("orichalc");
+    s.sim.run_days(100);
+    CHECK(site.paused);
+    CHECK(site.needed.at("marble") + site.needed.at("orichalc") == held);
+    s.sim.issue(SetConstructionPaused{s.pyramid, false});
+    s.sim.step(1);
+    CHECK(finished_within(s, 400));
+
+    auto god = bo::test::with_god("");
+    god.issue(PlaceBuilding{"storehouse", 50, 17});
+    god.step(1);
+    god.mutable_state().city.buildings.items.at(god.state().city.map.at({50, 17}).building).storage->loads["marble"] = 40;
+    god.issue(PlaceBuilding{"sanctuary_hermes", 2, 14});
+    god.step(1);
+    god.drain_events();
+    god.issue(SetConstructionPaused{god.state().city.map.at({2, 14}).building, true});
+    god.step(1);
+    std::string why;
+    for (const auto& e : god.drain_events()) {
+        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+            why = r->reason_key;
+        }
+    }
+    CHECK(why == "myth.not_a_monument");
+}
+
+TEST_CASE("save v49: a held monument stays held after a round trip") {
+    auto s = pyramid_site(false);
+    s.sim.issue(SetConstructionPaused{s.pyramid, true});
+    s.sim.step(1);
+    std::string error;
+    auto b = Simulation::load(bo::test::catalog_isolated(), s.sim.save(), error);
+    REQUIRE_MESSAGE(b.has_value(), error);
+    CHECK(b->state().city.buildings.items.at(s.pyramid).sanctuary->paused);
+    CHECK(b->state_hash() == s.sim.state_hash());
+}
+
+TEST_CASE("aesthetics of the expansion: each adorns its neighbourhood (P:16-17, building_stats.json)") {
+    for (const char* t : {"water_park", "bird_bath", "short_obelisk", "tall_obelisk", "shell_garden", "sundial",
+                          "dolphin_sculpture", "orrery", "spring", "topiary", "baths", "stone_circle"}) {
+        INFO(t);
+        auto sim = town(true);
+        REQUIRE(place(sim, t, 10, 2) == "ok");
+        sim.run_days(1);
+        const Building& b = sim.state().city.buildings.items.at(sim.state().city.map.at({10, 2}).building);
+        CHECK(sim.state().city.appeal[sim.state().city.map.index({b.origin.x + b.width, b.origin.y})] > 0);
+    }
+}

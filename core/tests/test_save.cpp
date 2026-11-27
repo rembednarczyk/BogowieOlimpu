@@ -287,6 +287,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(a.save(), 48, h);  // v49 adds only a per-sanctuary field
     check_load(as_v47(a.save()), 47, h);
     check_load(as_v47(a.save()), 46, h);  // v47 adds only a per-ship field
     check_load(as_v45(a.save()), 45, h);
