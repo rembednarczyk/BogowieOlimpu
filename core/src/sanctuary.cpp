@@ -51,7 +51,8 @@ std::optional<BuildingId> nearest_by_road(const CityState& city, TilePos from, P
 int phase_of(const DataCatalog& catalog, const Building& site);
 
 // The materials an artisan works with in the site's phase (S-005): tiles of marble, then marble and wood, then
-// the sculptures; a monument takes any (L-128).
+// the sculptures, with the orichalc of the Citadel of Poseidon (P:26, B-025) [ZAŁOŻENIE, L-134]; a monument
+// takes any (L-128).
 std::vector<const char*> phase_goods(const DataCatalog& catalog, const Building& site) {
     if (catalog.sanctuaries.at(site.type).monument) {
         return {"marble", "orichalc", "wood", "sculpture"};
@@ -59,7 +60,7 @@ std::vector<const char*> phase_goods(const DataCatalog& catalog, const Building&
     const int phase = phase_of(catalog, site);
     return phase == 1 ? std::vector<const char*>{"marble"}
            : phase == 2 ? std::vector<const char*>{"marble", "wood"}
-                        : std::vector<const char*>{"sculpture"};
+                        : std::vector<const char*>{"sculpture", "orichalc"};
 }
 
 // B-022: something to build on the site now (its phase's material delivered).

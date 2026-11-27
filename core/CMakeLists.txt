@@ -98,6 +98,7 @@ if(BO_BUILD_TESTS)
         tests/test_demo.cpp
         tests/test_demo_atlantis.cpp
         tests/test_demo_atlantis_army.cpp
+        tests/test_demo_atlantis_gods.cpp
         tests/test_housing.cpp
         tests/test_labour.cpp
         tests/test_migration.cpp

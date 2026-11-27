@@ -82,8 +82,11 @@ const DEMOS := {"greek": ["res://scenarios/demo.json", "res://scenarios/demo_bui
 		"res://scenarios/demo_gods_colony_build.json"],
 	# The expansion's army (tools/make_demo_atlantis_army.py, P:15-19): its own city by the sea.
 	"atlantis_army": ["res://scenarios/demo_atlantis_army.json", "res://scenarios/demo_atlantis_army_build.json",
-		"user://autosave_atlantis_army.bo"]}
-const DEMO_ORDER := ["greek", "atlantis", "gods", "atlantis_army"]
+		"user://autosave_atlantis_army.bo"],
+	# The expansion's gods (tools/make_demo_atlantis_gods.py, P:20-26): Hera, Atlas, the Citadel of Poseidon.
+	"atlantis_gods": ["res://scenarios/demo_atlantis_gods.json", "res://scenarios/demo_atlantis_gods_build.json",
+		"user://autosave_atlantis_gods.bo"]}
+const DEMO_ORDER := ["greek", "atlantis", "gods", "atlantis_army", "atlantis_gods"]
 var demo := "greek"
 
 static func chosen_demo() -> String:

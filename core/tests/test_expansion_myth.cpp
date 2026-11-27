@@ -155,3 +155,24 @@ TEST_CASE("the expansion's monsters come and go for the city: Sphinx, Chimera, E
         CHECK(sim.catalog().monster_slayer.at(monster) == (std::string(monster) == "sphinx" || std::string(monster) == "harpies" ? "atalanta" : "bellerophon"));
     }
 }
+
+TEST_CASE("B-025: the Citadel of Poseidon is finished with its orichalc (P:26)") {
+    auto sim = bo::test::with_god("");
+    sim.mutable_state().city.atlantean = true;
+    sim.issue(PlaceBuilding{"storehouse", 50, 17});
+    sim.step(1);
+    auto& store = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({50, 17}).building);
+    store.storage->loads["marble"] = 40;
+    sim.issue(PlaceBuilding{"sanctuary_poseidon_citadel", 2, 0});
+    sim.issue(PlaceBuilding{"artisans_guild", 30, 18});
+    sim.step(1);
+    const BuildingId site = sim.state().city.map.at({2, 0}).building;
+    REQUIRE(site != kNoBuilding);
+    auto& s = *sim.mutable_state().city.buildings.items.at(site).sanctuary;
+    for (auto& [g, n] : s.needed) {
+        n = g == "orichalc" ? 4 : 0;  // all built but the orichalc
+    }
+    s.on_site["orichalc"] = 4;
+    sim.run_days(60);
+    CHECK(sim.state().city.buildings.items.at(site).sanctuary->complete);
+}

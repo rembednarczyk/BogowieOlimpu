@@ -4,6 +4,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-28: Piąte demo, bogowie Atlantydy
+- Decyzja: Hera, Atlas i cytadela Posejdona (P:20-26) z gajami pomarańczy, sadem, dwoma rzemieślnikami Atlasa, jego modlitwą, ofiarami z bydła i Sfinksem pokazuje demo `scenarios/demo_atlantis_gods.json` (`tools/make_demo_atlantis_gods.py`, bramka `core/tests/test_demo_atlantis_gods.cpp`, w grze piąty przycisk demo), ułożone jak kolonia demo bogów.
+- Powód: trzy sanktuaria potrzebują ok. 200 pracowników, więcej niż ma którekolwiek z dotychczasowych miast demo; zasada właściciela (demo pokazuje każdą mechanikę).
+- Niesprawdzone: heros przeciw Sfinksowi (Atalanta wymaga stadionu lub muzeum i 8 kompanii; jest test jednostkowy).
+
 ### 2026-11-28: Czwarte demo, wojsko Atlantydy; dzielnica gospodarki dodatku w demo Atlantydy
 - Decyzja: wojsko dodatku (łucznicy, fregata z Atlantean Fire, wieża z orichalkiem, desant z morza, Oceanidy; P:15-19) pokazuje osobne demo `scenarios/demo_atlantis_army.json` (`tools/make_demo_atlantis_army.py`, bramka `core/tests/test_demo_atlantis_army.cpp`, w grze czwarty przycisk demo). Gospodarka dodatku (zagroda z bydłem, sad pomarańczy; P:7-8) dołączyła do demo Atlantydy jako dzielnica południowa po wygranej; mapa urosła w dół, żeby stare miasto zachowało swoje losowe bajty kafli.
 - Powód: zasada właściciela (demo pokazuje każdą mechanikę) i polecenie „lecimy z dodatkiem” z rekomendacją. Małe miasto demo Atlantydy po wygranej traciło siłę roboczą (z 277 do 142), a stocznia fregat potrzebuje 100 ludzi; własne miasto nad morzem z handlem utrzymuje ok. 800 mieszkańców.

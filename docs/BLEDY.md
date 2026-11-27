@@ -36,6 +36,13 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 
 ## Naprawione
 
+### B-025 [S2] Cytadela Posejdona nigdy się nie kończyła: nikt nie wbudowywał orichalku
+- Status: naprawione
+- Miejsce i liczba wystąpień: `core/src/sanctuary.cpp` `phase_goods`; każda cytadela (demo bogów Atlantydy: cała budowa stała przez 6 lat z 16 orichalku do wbudowania). Przy okazji `data_economy.cpp` nie wczytywał orichalku cytadeli do materiałów.
+- Dowód: log bramki "demo gate: Atlantean gods": `sanctuary_poseidon_citadel marble:0 orichalc:16 sculpture:0 wood:0` od dnia 863 do końca.
+- Test "co dziś pada": "B-025: the Citadel of Poseidon is finished with its orichalc (P:26)" (`core/tests/test_expansion_myth.cpp`), pada bez poprawki.
+- Przyczyna: fazy budowy sanktuarium (S-005) znały tylko marmur, drewno i rzeźby; orichalk występował tylko w pomnikach. Teraz wchodzi do ostatniej fazy razem z rzeźbami [ZAŁOŻENIE, L-134].
+
 ### B-024 [S1] Wezwanie Herkulesa lub Tezeusza kończyło się wyjątkiem; czterech herosów nie dało się wezwać
 - Status: naprawione
 - Miejsce i liczba wystąpień: `core/src/monsters.cpp` `requirement_met`; Herkules, Tezeusz (podstawa), Atalanta, Bellerofont (dodatek); każda próba wezwania.
