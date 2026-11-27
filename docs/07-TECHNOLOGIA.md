@@ -36,7 +36,7 @@ Renderer gry: **Mobile (Vulkan)** (R-015). Compatibility (OpenGL ES 3, poziom We
 
 | Element | Telefon odniesienia (Xiaomi 15T Pro) | Słabszy telefon (do ustalenia) |
 |---|---|---|
-| FPS | 60 stałe (ogranicznik klatek domyślnie; 144 Hz ekranu nie wykorzystujemy w pełni, by nie grzać) | 30 stałe |
+| FPS | 60 stałe (ogranicznik klatek domyślnie; 120 Hz ekranu (pomiar właściciela 2026-11-27) nie wykorzystujemy w pełni, by nie grzać) | 30 stałe |
 | Wywołania rysowania | < 600 | < 300 |
 | Postacie na ekranie | 3 000 | 800 |
 | Tick symulacji (15 000 mieszkańców) | < 0,5 ms średnio na tick (51 ticków/dzień przy prędkości 1x) | |
@@ -44,7 +44,7 @@ Renderer gry: **Mobile (Vulkan)** (R-015). Compatibility (OpenGL ES 3, poziom We
 
 Bramka: liczby deterministyczne (wywołania rysowania, instancje, czas ticku w natywnym benchmarku rdzenia). Czas klatki pod llvmpipe to raport.
 
-Pomiar E4 na Xiaomi 15T Pro (właściciel, 2026-11-27, APK 0.0.43, scena `bench_crowd`): 6 000 postaci z animacją VAT i 2 000 budynków, 120 klatek/s, czas klatki średnio 8,3 ms i najgorszy 8,3 ms w oknie 120 klatek, 19 wywołań rysowania, 53 MB pamięci. 120 klatek/s to odświeżanie ekranu (synchronizacja pionowa), więc zapasu nie widać: dwa razy budżet postaci bez jednego spadku klatki. Bez cieni i bez LOD; czas GPU i CPU osobno nie zmierzony.
+Pomiar E4 na Xiaomi 15T Pro (właściciel, 2026-11-27, APK 0.0.43, scena `bench_crowd`): 6 000 postaci z animacją VAT i 2 000 budynków, 120 klatek/s, czas klatki średnio 8,3 ms i najgorszy 8,3 ms w oknie 120 klatek, 19 wywołań rysowania, 53 MB pamięci. 120 klatek/s to odświeżanie ekranu 120 Hz (synchronizacja pionowa), więc zapasu nie widać: dwa razy budżet postaci bez jednego spadku klatki. Bez cieni i bez LOD; czas GPU i CPU osobno nie zmierzony.
 
 ## Środowisko
 
