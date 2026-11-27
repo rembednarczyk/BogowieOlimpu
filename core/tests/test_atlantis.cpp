@@ -189,7 +189,14 @@ TEST_CASE("crosswalk: across a straight stade, ends open, never next to another;
     REQUIRE(hippodrome_track(sim.state().city).closed);
     CHECK(place(sim, "crosswalk", 3, 3) == "build.crosswalk_not_straight");  // a corner
     CHECK(place(sim, "crosswalk", 20, 3) == "build.needs_hippodrome");
-    CHECK(place(sim, "crosswalk", 7, 2) == "ok");  // north to south across the top stade (6, 2)
+    sim.drain_events();
+    sim.issue(PlaceBuilding{"crosswalk", 7, 2});
+    sim.step(1);
+    int changed = 0;
+    for (const auto& e : sim.drain_events()) {
+        changed += std::holds_alternative<TileChanged>(e.event) ? 1 : 0;  // the renderer draws the walkway
+    }
+    CHECK(changed == 4);  // north to south across the top stade (6, 2)
     for (std::int32_t y = 2; y < 6; ++y) {
         CHECK(sim.state().city.map.at({7, y}).road);
     }

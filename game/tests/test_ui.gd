@@ -192,6 +192,22 @@ func _process(_d: float) -> bool:
 	check(atl.ui.buildings_by_tab["science"].has("bibliotheke"), "the science tab in place of culture (P:10-13)")
 	check(not atl.ui.buildings_by_tab.values().any(func(ids): return ids.has("theater")), "no Greek-only theater there")
 	check(not game.ui.buildings_by_tab.values().any(func(ids): return ids.has("bibliotheke")), "no Atlantean ones in Greece")
+	# A crosswalk over a straight stade (P:14) is drawn as a walkway above the track.
+	for p in [Vector2i(13, 23), Vector2i(17, 23), Vector2i(21, 23), Vector2i(21, 27), Vector2i(21, 31), Vector2i(17, 31),
+			Vector2i(13, 31), Vector2i(13, 27)]:  # where the demo's autopilot puts its ring
+		atl.sim.place_building("hippodrome", p.x, p.y, 0)
+	atl.sim.step(1)
+	atl._handle_events(atl.sim.drain_events())
+	var stade: int = atl.sim.get_tile(17, 23)["building"]
+	var raised := func(id) -> int:  # parts above the track: the walkway
+		return atl.building_nodes[id].get_children().filter(func(c): return c.position.y > 0.2).size() \
+			if atl.building_nodes.has(id) else -1
+	var plain: int = raised.call(stade)
+	atl.sim.place_building("crosswalk", 18, 23, 0)
+	atl.sim.step(1)
+	atl._handle_events(atl.sim.drain_events())
+	check(atl.sim.get_tile(18, 25)["road"], "the crosswalk's tiles are road")
+	check(plain == 0 and raised.call(stade) == 4, "the stade is drawn again with a 4-tile walkway above the track")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

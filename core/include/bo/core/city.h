@@ -262,6 +262,7 @@ struct BuildResult {
     BuildingId building = kNoBuilding;  // placed building
     std::vector<BuildingId> removed;    // buildings removed by a demolition (stalls and ornaments included)
     std::int64_t cost = 0;
+    std::vector<TilePos> tiles;         // tiles changed without a new building (a crosswalk's road, P:14)
     [[nodiscard]] bool ok() const { return reason.empty(); }
 };
 

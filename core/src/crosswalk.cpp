@@ -69,6 +69,7 @@ BuildResult place_crosswalk(CityState& city, const DataCatalog& catalog, Difficu
     for (const TilePos p : across) {
         city.map.at(p).road = true;
     }
+    r.tiles = across;  // the renderer draws the crosswalk over the track
     update_roads(city);
     const auto cost = catalog.building_stats.find("crosswalk");
     r.cost = cost != catalog.building_stats.end() ? cost->second.cost[static_cast<std::size_t>(difficulty)].value_or(0) : 0;

@@ -13,6 +13,7 @@ const TERRAIN_COLORS := {
 const ROAD_COLOR := Color(0.72, 0.64, 0.50)
 const ROADBLOCK_COLOR := Color(0.70, 0.30, 0.20)
 const BUILDING_COLORS := {
+	"hippodrome": Color(0.7, 0.55, 0.35),
 	"fountain": Color(0.55, 0.75, 0.95), "maintenance_office": Color(0.85, 0.70, 0.45),
 	"watchpost": Color(0.80, 0.45, 0.40), "gymnasium": Color(0.92, 0.90, 0.85),
 	"common_agora": Color(0.80, 0.78, 0.72), "boulevard": Color(0.35, 0.60, 0.30), "avenue": Color(0.35, 0.60, 0.30),
@@ -37,9 +38,10 @@ const BUILDING_COLORS := {
 	"trireme_wharf": Color(0.40, 0.35, 0.30), "flower_garden": Color(0.60, 0.80, 0.40), "gazebo": Color(0.85, 0.85, 0.75),
 	"column": Color(0.92, 0.92, 0.90), "boar_hunters_lodge": Color(0.45, 0.30, 0.25), "hunting_lodge": Color(0.50, 0.40, 0.30),
 }
+const CROSSWALK_COLOR := Color(0.85, 0.75, 0.55)
 const FLAT_BUILDINGS := {"common_agora": 0.06, "grand_agora": 0.06, "boulevard": 0.25, "avenue": 0.25, "ruins": 0.2,
 	"carrot_farm": 0.15, "onion_farm": 0.15, "wheat_farm": 0.15, "sheep": 0.3, "goat": 0.3, "olive_tree": 0.8,
-	"grapevine": 0.5, "flower_garden": 0.2}
+	"grapevine": 0.5, "flower_garden": 0.2, "hippodrome": 0.12}
 const WALKER_COLORS := {
 	"deliveryman": Color(0.55, 0.35, 0.15), "food_vendor": Color(0.95, 0.80, 0.30), "fleece_vendor": Color(0.9, 0.9, 0.9),
 	"shepherd": Color(0.3, 0.7, 0.3), "trade_caravan": Color(0.6, 0.3, 0.6),
@@ -286,6 +288,7 @@ func _handle_events(events: Array) -> void:
 				tiles_dirty = true
 			"tile_changed":
 				tiles_dirty = true
+				_redraw_track_at(e["x"], e["y"])
 			"walker_spawned":
 				_add_walker(e["id"], e["walker_type"])
 			"walker_removed":
@@ -362,7 +365,12 @@ func _add_building(e: Dictionary) -> void:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.8, 0.8, 0.8))
 	var parts: Array = []
-	if e["building_type"] in ["boulevard", "avenue"]:
+	var bridges: Array = []  # crosswalk tiles over a hippodrome stade (P:14)
+	if e["building_type"] == "hippodrome":
+		for y in range(e["y"], e["y"] + e["height"]):
+			for x in range(e["x"], e["x"] + e["width"]):
+				(bridges if sim.get_tile(x, y)["road"] else parts).append(Rect2(x, y, 1, 1))
+	elif e["building_type"] in ["boulevard", "avenue"]:
 		for y in range(e["y"], e["y"] + e["height"]):
 			for x in range(e["x"], e["x"] + e["width"]):
 				if sim.get_tile(x, y)["building"] == e["id"]:
@@ -377,8 +385,31 @@ func _add_building(e: Dictionary) -> void:
 		mesh.mesh = box
 		mesh.position = Vector3(r.position.x + r.size.x / 2.0, height / 2.0, r.position.y + r.size.y / 2.0)
 		node.add_child(mesh)
+	var bridge_mat := StandardMaterial3D.new()
+	bridge_mat.albedo_color = CROSSWALK_COLOR
+	for r in bridges:  # a raised walkway above the track
+		var mesh := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(0.9, 0.12, 0.9)
+		box.material = bridge_mat
+		mesh.mesh = box
+		mesh.position = Vector3(r.position.x + 0.5, height + 0.25, r.position.y + 0.5)
+		node.add_child(mesh)
+	node.set_meta("placed", e)
 	add_child(node)
 	building_nodes[e["id"]] = node
+
+# A crosswalk was built (P:14): its stade is drawn again with the walkway.
+func _redraw_track_at(x: int, y: int) -> void:
+	var id: int = sim.get_tile(x, y)["building"]
+	if id == 0 or not building_nodes.has(id):
+		return
+	var e: Dictionary = building_nodes[id].get_meta("placed", {})
+	if e.get("building_type", "") != "hippodrome":
+		return
+	building_nodes[id].queue_free()
+	building_nodes.erase(id)
+	_add_building(e)
 
 func _add_walker(id: int, type: String) -> void:
 	var node := MeshInstance3D.new()

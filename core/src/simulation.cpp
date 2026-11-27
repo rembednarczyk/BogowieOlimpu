@@ -206,6 +206,9 @@ void Simulation::apply_build(const BuildResult& r, std::uint32_t index, TilePos 
     if (tile_changed) {
         emit(TileChanged{tile.x, tile.y});
     }
+    for (const TilePos p : r.tiles) {
+        emit(TileChanged{p.x, p.y});
+    }
     for (const BuildingId id : r.removed) {
         emit(BuildingRemoved{id});
     }
