@@ -100,6 +100,15 @@ put("maintenance_office", 46, 7, day=MONUMENT); put("watchpost", 42, 7, day=MONU
 put("pyramid_modest", 33, 7, day=MONUMENT + 60)
 houses(31, 12, 3, day=MONUMENT); put("fountain", 37, 12, day=MONUMENT); houses(39, 12, 3, day=MONUMENT)
 
+# Stage SCIENCES (P:10-12), once the pyramid has its stone: the university sends astronomers to the
+# observatory and curators to the museum, the workshop inventors to the laboratory; the museum gives every
+# house 10 points (doc 18).
+SCIENCES = 1250
+put("university", 1, 15, day=SCIENCES); put("inventors_workshop", 5, 15, day=SCIENCES)
+put("maintenance_office", 9, 15, day=SCIENCES); put("watchpost", 9, 18, day=SCIENCES)
+put("laboratory", 5, 18, day=SCIENCES)
+put("observatory", 1, 23, day=SCIENCES); put("museum", 6, 23, day=SCIENCES)
+
 scenario = {
     "id": "demo_atlantis",
     "name_key": "scenario.demo_atlantis.name",

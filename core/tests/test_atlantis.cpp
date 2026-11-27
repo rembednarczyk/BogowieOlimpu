@@ -1,7 +1,9 @@
 // Atlantis stage 1 (docs/gameplay/15-atlantyda.md, P:10-13, P:16-17): the city's culture decides what may be
 // built; science points work in houses as culture points.
 #include <optional>
+#include <tuple>
 
+#include "bo/core/culture.h"
 #include "bo/core/hippodrome.h"
 #include "bo/core/housing.h"
 #include "bo/core/scenario.h"
@@ -251,4 +253,48 @@ TEST_CASE("monuments: a pyramid is built like a sanctuary of marble and orichalc
     CHECK(refused);  // no god to pray to
     sim.run_days(16);
     CHECK(sim.state().scenario.goals[0].met);
+}
+
+namespace {
+
+// A road along y = 10 of an Atlantean city; buildings above it touch it (P:10-13).
+Simulation science_street() {
+    std::vector<std::string> rows(16, std::string(70, '.'));
+    rows[10] = std::string(70, '=');
+    SimulationConfig cfg{7, Difficulty::Hero, 100000, rows, true};
+    cfg.atlantean = true;
+    return Simulation(bo::test::catalog(), cfg);
+}
+
+std::uint8_t visits(const Simulation& sim, TilePos p, const std::string& walker) {
+    const auto& b = sim.state().city.buildings.items.at(sim.state().city.map.at(p).building);
+    const auto it = b.coverage.find(walker);
+    return it == b.coverage.end() ? 0 : it->second;
+}
+
+}  // namespace
+
+TEST_CASE("science: the university sends astronomers to the observatory and curators to the museum, the workshop "
+          "inventors to the laboratory; they roam from there (P:10-12)") {
+    auto sim = science_street();
+    for (const auto& [type, x, y] : {std::tuple{"university", 2, 7}, {"inventors_workshop", 6, 7}, {"observatory", 14, 5},
+                                     {"laboratory", 30, 6}, {"museum", 46, 4}}) {
+        REQUIRE(place(sim, type, x, y) == "ok");
+    }
+    REQUIRE(place(sim, "maintenance_office", 26, 8) == "ok");  // or they burn and fall (Z:89-90)
+    REQUIRE(place(sim, "watchpost", 40, 8) == "ok");
+    REQUIRE(place(sim, "maintenance_office", 60, 8) == "ok");
+    for (const std::int32_t x : {20, 36, 54}) {  // neighbours to receive the visits
+        REQUIRE(place(sim, "fountain", x, 8) == "ok");
+    }
+    sim.run_days(90);
+    const auto& items = sim.state().city.buildings.items;
+    CHECK(items.at(sim.state().city.map.at({14, 5}).building).performing_days > 0);
+    CHECK(items.at(sim.state().city.map.at({30, 6}).building).performing_days > 0);
+    CHECK(items.at(sim.state().city.map.at({46, 4}).building).performing_days > 0);
+    CHECK(visits(sim, {20, 8}, "astronomer") > 0);
+    CHECK(visits(sim, {36, 8}, "inventor") > 0);
+    CHECK(visits(sim, {54, 8}, "curator") > 0);
+    CHECK(city_culture_bonus(sim.state().city, sim.catalog()) == 10);  // a working museum: 10 for every house (doc 18)
+    CHECK(place(sim, "museum", 56, 2) == "build.only_one");  // one a city (P:12)
 }

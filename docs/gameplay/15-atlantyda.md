@@ -2,7 +2,7 @@
 
 Dodatek wprowadza drugą kulturę miast: **atlantydzką**. Budynki atlantydzkie (piramidy, hipodrom, Frigate Wharf, Chariot Factory, Chariot Vendor's Stall, budynki nauki) **wolno stawiać tylko w Atlantydzie i jej koloniach** (P:16-17). Wspólne z Grecją pozostają m.in. spichlerze, magazyny, agory, Horse Ranch, Timber Mill, sanktuaria.
 
-Implementacja etapu 1: kultura miasta (`CityState::atlantean`, w przygodzie klucz `culture`), reguła budowy w `core/src/city.cpp` (`build.atlantean_only`, `build.greek_only`), punkty nauki liczone w domach jak kultura (`house_culture`), panel budowy pokazuje tylko budynki kultury miasta; testy `core/tests/test_atlantis.cpp`. Nazwy poziomów domów atlantydzkich zostają otwarte (L-080).
+Implementacja etapu 1: kultura miasta (`CityState::atlantean`, w przygodzie klucz `culture`), reguła budowy w `core/src/city.cpp` (`build.atlantean_only`, `build.greek_only`), punkty nauki liczone w domach jak kultura (`house_culture`), panel budowy pokazuje tylko budynki kultury miasta (w Atlantydzie zakładka Nauka zamiast Kultury); budynki nauki z fazą celową (uniwersytet → obserwatorium i muzeum, warsztat wynalazców → laboratorium) działają przez ogólny mechanizm szkoła i miejsce występu z `data/walkers.json` (`core/src/culture.cpp`), muzeum daje każdemu domowi 10 punktów (doc 18) i jest jedno na miasto; testy `core/tests/test_atlantis.cpp`, w demo Atlantydy od dnia 1250. Nazwy poziomów domów atlantydzkich zostają otwarte (L-080).
 
 ## Fabuła ramowa (P:3-4)
 

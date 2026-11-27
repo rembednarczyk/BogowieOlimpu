@@ -88,6 +88,13 @@
   {"day": 260, "place": "pyramid_modest", "x": 33, "y": 7},
   {"day": 200, "place": "common_housing", "x": 31, "y": 12, "repeat": [3, 2, 0]},
   {"day": 200, "place": "fountain", "x": 37, "y": 12},
-  {"day": 200, "place": "common_housing", "x": 39, "y": 12, "repeat": [3, 2, 0]}
+  {"day": 200, "place": "common_housing", "x": 39, "y": 12, "repeat": [3, 2, 0]},
+  {"day": 1250, "place": "university", "x": 1, "y": 15},
+  {"day": 1250, "place": "inventors_workshop", "x": 5, "y": 15},
+  {"day": 1250, "place": "maintenance_office", "x": 9, "y": 15},
+  {"day": 1250, "place": "watchpost", "x": 9, "y": 18},
+  {"day": 1250, "place": "laboratory", "x": 5, "y": 18},
+  {"day": 1250, "place": "observatory", "x": 1, "y": 23},
+  {"day": 1250, "place": "museum", "x": 6, "y": 23}
  ]
 }

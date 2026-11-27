@@ -37,13 +37,14 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     CHECK(sim.state().city.atlantean);
     const bool log = std::getenv("BO_DEMO_LOG") != nullptr;
     bool science = false;
+    bool sciences = false;  // astronomers, inventors and curators in the houses (P:10-12)
     bool racing = false;
     bool crosswalk = false;
     std::vector<std::string> refused;
     std::uint64_t day = 0;
     const char* years = std::getenv("BO_DEMO_YEARS");
     const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 8) * kDaysPerMonth * kMonthsPerYear;
-    for (; day < cap && !(sim.state().scenario.won && science && racing && crosswalk); ++day) {
+    for (; day < cap && !(sim.state().scenario.won && science && sciences && racing && crosswalk); ++day) {
         for (const auto& c : due_commands(*order, sim, day)) {
             sim.issue(c);
         }
@@ -56,6 +57,14 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
         for (const auto& [id, b] : sim.state().city.buildings.items) {
             const auto s = b.coverage.find("scholar");
             science = science || (b.house && s != b.coverage.end() && s->second > 0);
+            if (b.house) {
+                bool all = true;
+                for (const char* w : {"astronomer", "inventor", "curator"}) {
+                    const auto c = b.coverage.find(w);
+                    all = all && c != b.coverage.end() && c->second > 0;
+                }
+                sciences = sciences || all;
+            }
         }
         racing = racing || working_hippodrome(sim.state(), sim.catalog()) > 0;
         for (const BuildingId id : hippodrome_track(sim.state().city).segments) {
@@ -115,6 +124,7 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     }
     CHECK(sim.state().scenario.won);
     CHECK(science);  // scholars in the houses (P:10-11)
+    CHECK(sciences);  // and astronomers, inventors, curators in one house (P:10-12)
     CHECK(racing);   // the hippodrome with its horses (P:13-15)
     CHECK(crosswalk);  // a crosswalk over it (P:14)
 }
