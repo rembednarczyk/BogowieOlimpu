@@ -398,6 +398,8 @@
   {"day": 960, "place": "maintenance_office", "x": 78, "y": 12},
   {"day": 960, "place": "watchpost", "x": 80, "y": 12},
   {"day": 961, "place": "stadium", "x": 82, "y": 12, "retry": true},
+  {"day": 961, "roadblock": [93, 11]},
+  {"day": 960, "at": [34, 46], "trade_order": {"good": "wine", "import": 12}},
   {"day": 1160, "place": "sanctuary_apollo", "x": 94, "y": 12, "retry": true, "when": {"marble": 20}},
   {"day": 960, "place": "theater", "x": 94, "y": 24},
   {"day": 960, "place": "gymnasium", "x": 84, "y": 30},

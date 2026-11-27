@@ -349,6 +349,9 @@ steps.append({"day": EAST, "demolish": [2, 12]})
 # road in about 24 tiles.
 put("maintenance_office", 78, 12, day=EAST); put("watchpost", 80, 12, day=EAST)  # or it burns (Z:89-90)
 put("stadium", 82, 12, day=EAST + 1, retry=True)
+steps.append({"day": EAST + 1, "roadblock": [93, 11]})  # its competitors turn down the x = 92 road (Z:19-20)
+# Wine for the manor (Z:33): Rhodes's wine comes in by the pier, none goes out any more (Z:77-79).
+steps.append({"day": EAST, "at": [34, 46], "trade_order": {"good": "wine", "import": 12}})
 put("sanctuary_apollo", 94, 12, day=EAST + 200, retry=True, when={"marble": 20})  # after Perseus has his sculptures
 put("theater", 94, 24, day=EAST)
 put("gymnasium", 84, 30, day=EAST); put("podium", 88, 30, day=EAST)  # by the estate: athletes, philosophers

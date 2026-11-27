@@ -328,6 +328,24 @@ DemoRun run_demo(std::uint64_t years) {
                 tally.clear();
             }
         }
+        if (std::getenv("BO_DEMO_VENUES") != nullptr && sim.state().time.day_in_month() == 0) {  // venues, schools
+            std::printf("d%llu", static_cast<unsigned long long>(day));
+            for (const auto& [id, b] : sim.state().city.buildings.items) {
+                if (b.type == "stadium" || b.type == "gymnasium") {
+                    std::printf(" | %s %d,%d perf %u road %d", b.type.c_str(), b.origin.x, b.origin.y,
+                                static_cast<unsigned>(b.performing_days), b.road_access ? 1 : 0);
+                    for (const auto& [w, st] : b.schools) {
+                        std::printf(" %s:%u>%u", w.c_str(), static_cast<unsigned>(st.first), static_cast<unsigned>(st.second));
+                    }
+                }
+            }
+            for (const auto& [id, w] : sim.state().walkers.items) {
+                if (w.type == "competitor") {
+                    std::printf(" | comp %d,%d ph %d job %d", w.tile.x, w.tile.y, static_cast<int>(w.phase), static_cast<int>(w.job));
+                }
+            }
+            std::printf("\n");
+        }
         if (std::getenv("BO_DEMO_ELITE") != nullptr && sim.state().time.day_in_month() == 0) {  // a line a month
             std::printf("d%llu", static_cast<unsigned long long>(day));
             for (const auto& [id, b] : sim.state().city.buildings.items) {
