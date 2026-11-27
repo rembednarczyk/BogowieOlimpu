@@ -154,3 +154,119 @@ TEST_CASE("B-004: morale does not recover while a monster fights in the city") {
     recover_morale(st);
     CHECK(st.military.companies[0].morale == 55);
 }
+
+namespace {
+
+// 60x30: a street on row 8, the sea from row 12 with its entry at (59,20); a granary with food inland at (30,2),
+// a storehouse on the shore at (10,9).
+Simulation harbour(bool sea_entry = true) {
+    std::vector<std::string> rows(30, std::string(60, '.'));
+    rows[8] = std::string(60, '=');
+    for (std::size_t y = 12; y < 30; ++y) {
+        rows[y] = std::string(60, '~');
+    }
+    if (sea_entry) {
+        rows[20][59] = 'S';
+    }
+    Simulation sim(bo::test::catalog_isolated(), SimulationConfig{14, Difficulty::Hero, 30000, rows, true});
+    sim.issue(PlaceBuilding{"granary", 30, 4});
+    sim.issue(PlaceBuilding{"storehouse", 10, 9});
+    sim.step(1);
+    sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({30, 4}).building).storage->loads["wheat"] = 8;
+    return sim;
+}
+
+const Walker* monster_walker(const Simulation& sim) {
+    const auto it = sim.state().walkers.items.find(sim.state().monsters.at(0).walker);
+    return it == sim.state().walkers.items.end() ? nullptr : &it->second;
+}
+
+}  // namespace
+
+TEST_CASE("the Kraken comes in from the sea, keeps to the water and wrecks what stands on the shore (Z:128, L-116)") {
+    auto sim = harbour();
+    send_monster(sim, "kraken");
+    sim.run_days(1);
+    REQUIRE(sim.state().monsters.size() == 1);
+    bool wrecked = false;
+    for (int d = 0; d < 60 && !wrecked; ++d) {
+        sim.step(kTicksPerDay / 3);
+        const Walker* w = monster_walker(sim);
+        REQUIRE(w != nullptr);
+        CHECK(sim.state().city.map.at(w->tile).terrain == Terrain::Water);  // never on land
+        sim.step(kTicksPerDay - kTicksPerDay / 3);
+        wrecked = sim.state().city.map.at({10, 9}).building == kNoBuilding;
+    }
+    CHECK(wrecked);  // the shore storehouse, though it asked for food: the granary stands inland
+    CHECK(sim.state().city.map.at({30, 4}).building != kNoBuilding);
+}
+
+TEST_CASE("a sea monster without the sea does not appear; Scylla too keeps to the water (S-008, L-116)") {
+    auto dry = harbour(false);
+    MonsterEvents ev;
+    CHECK(spawn_monster(dry.mutable_state(), dry.catalog(), "kraken", 1, "", ev) == "myth.no_sea_point");
+    CHECK(dry.state().monsters.empty());
+    auto sim = harbour();
+    REQUIRE(spawn_monster(sim.mutable_state(), sim.catalog(), "scylla", 1, "", ev).empty());
+    CHECK(sim.state().city.map.at(monster_walker(sim)->tile).terrain == Terrain::Water);
+}
+
+TEST_CASE("Medusa turns to stone the people next to her, not the soldiers (Z:128, L-116)") {
+    auto sim = town();
+    send_monster(sim, "medusa");
+    sim.run_days(1);
+    REQUIRE(!sim.state().monsters.empty());
+    const TilePos at = monster_walker(sim)->tile;
+    WorldState& st = sim.mutable_state();
+    Walker carrier;
+    carrier.id = st.walkers.next_id++;
+    carrier.job = WalkerJob::Deliver;
+    carrier.tile = at;
+    carrier.phase = WalkerPhase::AtTarget;
+    Walker far = carrier;
+    far.id = st.walkers.next_id++;
+    far.tile = {at.x + 5, at.y};
+    Walker soldier = carrier;
+    soldier.id = st.walkers.next_id++;
+    soldier.job = WalkerJob::Soldier;
+    soldier.type = "hoplite";
+    for (const Walker& w : {carrier, far, soldier}) {
+        st.walkers.items.emplace(w.id, w);
+    }
+    sim.drain_events();
+    sim.step(1);
+    std::vector<std::uint32_t> stone;
+    for (const auto& e : sim.drain_events()) {
+        if (const auto* p = std::get_if<WalkerPetrified>(&e.event)) {
+            stone.push_back(p->walker);
+            CHECK(p->monster == "medusa");
+        }
+    }
+    CHECK(stone == std::vector<std::uint32_t>{carrier.id});  // not the one 5 tiles off, not the soldier
+    CHECK(sim.state().walkers.items.count(carrier.id) == 0);
+    CHECK(sim.state().walkers.items.count(soldier.id) == 1);
+}
+
+TEST_CASE("Perseus fights the Kraken from the shore and slays it (Z:130, L-116)") {
+    auto sim = harbour();
+    send_monster(sim, "kraken");
+    sim.run_days(1);
+    sim.issue(PlaceBuilding{"heros_hall", 40, 4});
+    sim.step(1);
+    const BuildingId hall = sim.state().city.map.at({40, 4}).building;
+    REQUIRE(hall != kNoBuilding);
+    WorldState& st = sim.mutable_state();
+    st.heroes.push_back(HeroState{"perseus", hall, kNoWalker});
+    st.heroes.back().walker = hero_walker(st, sim.catalog(), st.heroes.back());
+    REQUIRE(st.heroes.back().walker != kNoWalker);
+    bool slain = false;
+    for (int d = 0; d < 120 && !slain; ++d) {
+        sim.run_days(1);
+        for (const auto& e : sim.drain_events()) {
+            if (const auto* m = std::get_if<MonsterSlain>(&e.event)) {
+                slain = m->by_hero && m->monster == "kraken";
+            }
+        }
+    }
+    CHECK(slain);
+}

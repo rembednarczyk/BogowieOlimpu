@@ -195,6 +195,11 @@ struct MonsterSlain {
     bool by_hero = false;
 };
 
+struct WalkerPetrified {  // Medusa turned a walker of the city to stone (Z:128, L-116)
+    std::string monster;
+    std::uint32_t walker = 0;
+};
+
 struct HeroArrived {  // D5: a hero moves into his Hall (Z:130)
     std::string hero;
 };
@@ -228,7 +233,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, GamesHeld, CityRebelled, CityGift,
                            CityRequestReceived, RequestClosed, EpisodeWon, MilitaryHelpGiven, OracleSpoke,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted,
-                           GodHelped, GodBlessing>;
+                           GodHelped, GodBlessing, WalkerPetrified>;
 
 struct TimedEvent {
     std::uint64_t tick = 0;

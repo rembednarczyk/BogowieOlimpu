@@ -5,7 +5,7 @@
   {"id": "medusa", "master": "demeter", "slain_by": "perseus", "petrifies": true, "src": "Z:128, Z:130"},
   {"id": "hydra", "master": "athena", "slain_by": "hercules", "src": "Z:128, Z:130"},
   {"id": "calydonian_boar", "master": "artemis", "slain_by": "theseus", "src": "Z:128, Z:130"},
-  {"id": "scylla", "master": "apollo", "slain_by": "odysseus", "src": "Z:128, Z:130"},
+  {"id": "scylla", "master": "apollo", "slain_by": "odysseus", "sea": true, "sea_src": "S-008 eZeus (emonsteraction: Scylla i Kraken chodzą tylko po głębokiej wodzie) [ZAŁOŻENIE, L-116]", "src": "Z:128, Z:130"},
   {"id": "dragon", "master": "ares", "slain_by": "jason", "src": "Z:128, Z:130"},
   {"id": "talos", "master": "hephaestus", "slain_by": "jason", "src": "Z:128, Z:130"},
   {"id": "hector", "master": "aphrodite", "slain_by": "achilles", "src": "Z:128, Z:130"},

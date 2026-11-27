@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -454,6 +455,8 @@ struct DataCatalog {
     std::map<std::string, std::int32_t> wrath;           // gods_rules.json wrath_numbers [ZAŁOŻENIE, L-115]
     std::map<std::string, std::int32_t> monster_numbers;  // gods_rules.json monster_numbers [ZAŁOŻENIE, L-116]
     std::map<std::string, std::string> monster_slayer;    // monsters.json: monster -> hero (Z:130)
+    std::set<std::string> sea_monsters;                   // monsters.json "sea": on the water only (Z:128, L-116)
+    std::set<std::string> petrifying_monsters;            // monsters.json "petrifies": Medusa (Z:128, L-116)
     std::map<std::string, std::vector<std::string>> hero_requirements;  // heroes.json (doc 21)
     std::map<std::string, std::string> quest_heroes;     // quests.json: "god:index" -> traditional hero
     std::map<std::string, std::string> goods;  // good id -> class (food, raw, goods, construction, money)

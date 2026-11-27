@@ -48,7 +48,8 @@
   "excellent_percent": 80,
   "hall_excellent_culture": 80,
   "hall_good_appeal": 10,
-  "hall_near_palace_tiles": 20
+  "hall_near_palace_tiles": 20,
+  "petrify_reach": 1
  },
  "monster_numbers_src": "[ZAŁOŻENIE L-116] potwór niszczy cel po 2 dniach ataku i odpoczywa 16 dni w punkcie startu (S-004 scendesign: wraca do punktu startu); dobra dla herosa liczone z magazynów miasta; \"doskonały\" dostęp miasta do gimnazjonów i pokrycie podatkowe = co najmniej 80% mieszkańców w domach odwiedzonych przez atletę lub poborcę; doskonały dostęp Hall do kultury = 80 punktów kultury (wszystkie cztery rodzaje wykonawców); dobra atrakcyjność Hall = co najmniej 10; blisko Palace = do 20 kafli; Hall chroniony murami = żadna droga pieszo od punktów najazdu (bez nich od wjazdu lądowego, bez niego od krawędzi mapy) bez przebicia muru, wieży lub bramy",
  "prayer_chance_full_days": 16,

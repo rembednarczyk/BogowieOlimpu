@@ -174,6 +174,9 @@ void Simulation::step_walkers() {
     CombatEvents combat;
     combat_tick(state_, catalog_, combat);
     emit_combat(combat);
+    for (const auto& [monster, walker] : petrify(state_, catalog_)) {
+        emit(WalkerPetrified{monster, walker});
+    }
     catch_outlaws(state_, catalog_);
     muggings(state_, catalog_);
     handle_arrivals(state_, catalog_);

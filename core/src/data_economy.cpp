@@ -222,7 +222,14 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
     }
     if (docs.count("monsters.json") != 0) {
         for (const auto& m : docs.at("monsters.json")) {
-            cat.monster_slayer[m.at("id").get<std::string>()] = m.value("slain_by", "");
+            const auto id = m.at("id").get<std::string>();
+            cat.monster_slayer[id] = m.value("slain_by", "");
+            if (m.value("sea", false)) {
+                cat.sea_monsters.insert(id);
+            }
+            if (m.value("petrifies", false)) {
+                cat.petrifying_monsters.insert(id);
+            }
         }
     }
     if (docs.count("quests.json") != 0) {

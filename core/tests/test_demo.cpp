@@ -63,11 +63,15 @@ void count_events(const std::vector<TimedEvent>& events, std::map<std::string, s
                                : std::is_same_v<T, CityGift>           ? "city_gift"
                                : std::is_same_v<T, ExpeditionReturned> ? "aid_returned"
                                : std::is_same_v<T, PrayerAnswered>     ? "prayer"
+                               : std::is_same_v<T, WalkerPetrified>    ? "petrified"  // Medusa (Z:128)
                                                                        : nullptr;
             if (name != nullptr) {
                 ++seen[name];
             }
         }, e.event);
+        if (const auto* m = std::get_if<MonsterSlain>(&e.event)) {
+            seen["kraken_slain"] += m->monster == "kraken" ? 1 : 0;  // the sea monster, from the shore (L-116)
+        }
     }
 }
 
@@ -77,7 +81,7 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "ships_abroad", "stockpile", "not_buying", "towers_manned",
                                       // From the audit of the base game (2026-11-27): what the demo showed unchecked.
                                       "auto_defend", "import", "export", "request_fulfilled", "army_won_abroad",
-                                      "hero_slew", "wolves", "taxes", "sanctified", "plague", "collapse", "games_won",
+                                      "hero_slew", "petrified", "kraken_slain", "wolves", "taxes", "sanctified", "plague", "collapse", "games_won",
                                       "culture_philosopher", "culture_athlete", "culture_actor", "culture_competitor",
                                       "tribute", "gift_sent", "goods_asked", "wages_set", "industry_off",
                                       "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo",

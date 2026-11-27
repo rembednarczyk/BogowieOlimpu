@@ -140,6 +140,11 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["monster"] = String(e.monster.c_str());
                        d["by_hero"] = e.by_hero;
                    },
+                   [&d](const bo::core::WalkerPetrified& e) {
+                       d["type"] = "walker_petrified";
+                       d["monster"] = String(e.monster.c_str());
+                       d["walker"] = static_cast<int64_t>(e.walker);
+                   },
                    [&d](const bo::core::HeroArrived& e) {
                        d["type"] = "hero_arrived";
                        d["hero"] = String(e.hero.c_str());

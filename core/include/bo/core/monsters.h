@@ -43,16 +43,20 @@ struct MonsterEvents {
     std::vector<std::pair<std::string, bool>> slain;  // monster, by a hero
 };
 
-// A monster appears at the monster point ('M'; else the land entry) with hit points x strength (L-057b).
+// A monster appears at the monster point ('M'; else the land entry) with hit points x strength (L-057b). A sea
+// monster (Kraken, Scylla) needs water: the monster point if it lies on water, else the sea entry (L-116).
 std::string spawn_monster(WorldState& state, const DataCatalog& catalog, const std::string& id, std::uint32_t strength,
                           const std::string& target_kind, MonsterEvents& ev);
 // Daily: a monster walks to its target, wrecks it after destroy_days, goes home and rests rest_days (L-116);
 // Apollo from his sanctuary kills it (Z:129); a hero walks to the monster he slays; deaths are noted.
 void advance_monsters(WorldState& state, const DataCatalog& catalog, MonsterEvents& ev);
+// Every tick: a monster that petrifies (Medusa) turns to stone the city's walkers next to it (Z:128); they
+// end now. Returns (monster, walker) for each.
+std::vector<std::pair<std::string, WalkerId>> petrify(WorldState& state, const DataCatalog& catalog);
+
 // Hero's Hall is built only while a monster threatens the city (Z:130, doc 21).
 bool hero_needed(const WorldState& state);
-// Requirements of the hero who slays a monster now in the city (doc 21). Returns the unmet ones; the
-// requirements we cannot yet check (triremes, walls, games, tax coverage) count as unmet [L-116].
+// Requirements of the hero who slays a monster now in the city (doc 21, L-116). Returns the unmet ones.
 std::vector<std::string> unmet_requirements(const WorldState& state, const DataCatalog& catalog, const std::string& hero,
                                             BuildingId hall);
 // A hero's walker standing at his Hall (after summoning or coming back from a quest).

@@ -21,8 +21,29 @@ std::int32_t number(const DataCatalog& catalog, const char* key, std::int32_t fa
 
 std::int32_t chebyshev(TilePos a, TilePos b) { return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y)); }
 
+bool sea_walker(const Walker& w) { return w.job == WalkerJob::Monster && w.variant == "sea"; }
+
+bool water(const CityState& city, TilePos p) { return city.map.in_bounds(p) && city.map.at(p).terrain == Terrain::Water; }
+
+// The water tile next to `b` nearest to `from`: where a sea monster attacks it from (S-008).
+std::optional<TilePos> shore_water(const CityState& city, const Building& b, TilePos from) {
+    std::optional<std::pair<std::int32_t, TilePos>> best;
+    for (const TilePos t : b.tiles) {
+        for (std::int32_t dy = -1; dy <= 1; ++dy) {
+            for (std::int32_t dx = -1; dx <= 1; ++dx) {
+                const TilePos p{t.x + dx, t.y + dy};
+                if (water(city, p) && (!best || chebyshev(p, from) < best->first)) {
+                    best = std::make_pair(chebyshev(p, from), p);
+                }
+            }
+        }
+    }
+    return best ? std::optional<TilePos>(best->second) : std::nullopt;
+}
+
 bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding) {
-    PathRequest req{w.tile, to, PathMode::Walkable};  // monsters go over gates [ZAŁOŻENIE, L-117]
+    // Monsters go over gates [ZAŁOŻENIE, L-117]; a sea monster keeps to the water (Z:128, S-008).
+    PathRequest req{w.tile, to, sea_walker(w) ? PathMode::Water : PathMode::Walkable};
     req.goal_building = goal;
     auto path = find_path(city, req);
     if (!path) {
@@ -34,12 +55,44 @@ bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding
     return true;
 }
 
+// A monster goes to the building it attacks: on land to the building, at sea to the water beside it.
+void approach(CityState& city, Walker& w, const Building& b) {
+    if (!sea_walker(w)) {
+        route(city, w, b.origin, b.id);
+        return;
+    }
+    if (const auto spot = shore_water(city, b, w.tile)) {
+        route(city, w, *spot);
+    }
+}
+
+// A hero goes for his monster; one in the water he fights from the shore beside it (L-116).
+void hunt(CityState& city, Walker& w, TilePos prey) {
+    if (!water(city, prey)) {
+        route(city, w, prey);
+        return;
+    }
+    std::optional<std::pair<std::int32_t, TilePos>> shore;
+    for (std::int32_t dy = -1; dy <= 1; ++dy) {
+        for (std::int32_t dx = -1; dx <= 1; ++dx) {
+            const TilePos p{prey.x + dx, prey.y + dy};
+            if (city.map.in_bounds(p) && terrain_walkable(city.map.at(p).terrain) && city.map.at(p).building == kNoBuilding &&
+                (!shore || chebyshev(p, w.tile) < shore->first)) {
+                shore = std::make_pair(chebyshev(p, w.tile), p);
+            }
+        }
+    }
+    if (shore && w.tile != shore->second) {
+        route(city, w, shore->second);
+    }
+}
+
 // The building a monster goes for (doc 21: food by default; citizens, military, resources).
 std::optional<BuildingId> pick_target(const WorldState& st, const DataCatalog& catalog, const std::string& kind,
-                                      TilePos from) {
+                                      TilePos from, bool sea) {
     const auto wanted = [&](const Building& b) {
-        if (b.tiles.empty() || b.type == "ruins") {
-            return false;
+        if (b.tiles.empty() || b.type == "ruins" || (sea && !shore_water(st.city, b, from))) {
+            return false;  // a sea monster reaches only what stands by the water
         }
         if (kind == "citizens") {
             return b.house.has_value() && b.house->population > 0;
@@ -61,7 +114,7 @@ std::optional<BuildingId> pick_target(const WorldState& st, const DataCatalog& c
         if (wanted(b) && (!best || d < best->first)) {
             best = std::make_pair(d, id);
         }
-        if (!b.tiles.empty() && b.type != "ruins" && (!any || d < any->first)) {
+        if (!b.tiles.empty() && b.type != "ruins" && (!sea || shore_water(st.city, b, from)) && (!any || d < any->first)) {
             any = std::make_pair(d, id);
         }
     }
@@ -82,22 +135,25 @@ std::string spawn_monster(WorldState& st, const DataCatalog& catalog, const std:
     if (catalog.monster_slayer.count(id) == 0 || stats == catalog.combat.nations.end()) {
         return "myth.unknown_monster";
     }
+    const bool sea = catalog.sea_monsters.count(id) != 0;
     std::optional<TilePos> home;
-    for (const TileFeature f : {TileFeature::MonsterPoint, TileFeature::LandEntry}) {
+    for (const TileFeature f : {TileFeature::MonsterPoint, sea ? TileFeature::SeaEntry : TileFeature::LandEntry}) {
         for (std::size_t i = 0; i < st.city.map.size() && !home; ++i) {
-            if (st.city.map.tiles()[i].feature == static_cast<std::uint8_t>(f)) {
+            const bool on_water = st.city.map.tiles()[i].terrain == Terrain::Water;
+            if (st.city.map.tiles()[i].feature == static_cast<std::uint8_t>(f) && on_water == sea) {
                 home = st.city.map.pos(i);  // without a monster point it starts at the land entry (doc 23)
             }
         }
     }
     if (!home) {
-        return "myth.no_monster_point";
+        return sea ? "myth.no_sea_point" : "myth.no_monster_point";
     }
     const UnitStats& s = stats->second.units.at("monster");
     Walker w;
     w.id = st.walkers.next_id++;
     w.type = id;
     w.job = WalkerJob::Monster;
+    w.variant = sea ? "sea" : "";
     w.tile = *home;
     w.phase = WalkerPhase::AtTarget;
     w.speed_raw = s.speed_raw;
@@ -149,18 +205,17 @@ void advance_monsters(WorldState& st, const DataCatalog& catalog, MonsterEvents&
         }
         const auto target = st.city.buildings.items.find(m.target);
         if (target == st.city.buildings.items.end()) {
-            const auto next = pick_target(st, catalog, m.target_kind, w.tile);
+            const auto next = pick_target(st, catalog, m.target_kind, w.tile, sea_walker(w));
             if (next) {
                 m.target = *next;
                 m.days = 0;
-                const Building& b = st.city.buildings.items.at(*next);
-                route(st.city, w, b.origin, *next);
+                approach(st.city, w, st.city.buildings.items.at(*next));
             }
             continue;
         }
         if (std::none_of(target->second.tiles.begin(), target->second.tiles.end(),
                          [&w](TilePos p) { return chebyshev(p, w.tile) <= 1; })) {
-            route(st.city, w, target->second.origin, m.target);
+            approach(st.city, w, target->second);
             continue;
         }
         if (++m.days >= static_cast<std::uint16_t>(number(catalog, "destroy_days", 2))) {
@@ -182,7 +237,7 @@ void advance_monsters(WorldState& st, const DataCatalog& catalog, MonsterEvents&
             return !m.slain && s != catalog.monster_slayer.end() && s->second == h.id;
         });
         if (prey != st.monsters.end() && st.walkers.items.count(prey->walker) != 0) {
-            route(st.city, w, st.walkers.items.at(prey->walker).tile);  // the hero hunts it down (Z:130)
+            hunt(st.city, w, st.walkers.items.at(prey->walker).tile);  // the hero hunts it down (Z:130)
         } else if (w.phase == WalkerPhase::AtTarget) {
             const auto hall = st.city.buildings.items.find(h.hall);
             if (hall != st.city.buildings.items.end() && hall->second.road_access && w.tile != *hall->second.road_access) {
@@ -256,6 +311,29 @@ WalkerId hero_walker(WorldState& st, const DataCatalog& catalog, const HeroState
     const WalkerId id = w.id;
     st.walkers.items.emplace(id, std::move(w));
     return id;
+}
+
+std::vector<std::pair<std::string, WalkerId>> petrify(WorldState& st, const DataCatalog& catalog) {
+    std::vector<std::pair<std::string, WalkerId>> out;
+    const std::int32_t reach = number(catalog, "petrify_reach", 1);
+    for (const MonsterState& m : st.monsters) {
+        const auto me = st.walkers.items.find(m.walker);
+        if (m.slain || catalog.petrifying_monsters.count(m.id) == 0 || me == st.walkers.items.end() ||
+            me->second.phase == WalkerPhase::Done) {
+            continue;
+        }
+        const TilePos at = me->second.tile;
+        for (auto& [id, w] : st.walkers.items) {
+            // The city's people; not soldiers, heroes, ships, invaders, monsters or wolves (they fight her).
+            const bool person = w.job != WalkerJob::Soldier && w.job != WalkerJob::Invade && w.job != WalkerJob::Monster &&
+                                w.job != WalkerJob::Hero && w.job != WalkerJob::Ship && w.job != WalkerJob::Prowl;
+            if (person && w.phase != WalkerPhase::Done && chebyshev(w.tile, at) <= reach) {
+                w.phase = WalkerPhase::Done;  // turned to stone (Z:128)
+                out.emplace_back(m.id, id);
+            }
+        }
+    }
+    return out;
 }
 
 }  // namespace bo::core

@@ -71,7 +71,8 @@ std::int32_t distance_to(const Building& b, TilePos p) {
 }
 
 bool route(CityState& city, Walker& w, TilePos to, BuildingId goal) {
-    PathRequest req{w.tile, to, is_ship(w) ? PathMode::Water : defends(w) ? PathMode::Walkable : PathMode::Hostile};
+    const bool on_water = is_ship(w) || (w.job == WalkerJob::Monster && w.variant == "sea");  // Kraken, Scylla (L-116)
+    PathRequest req{w.tile, to, on_water ? PathMode::Water : defends(w) ? PathMode::Walkable : PathMode::Hostile};
     req.goal_building = goal;
     auto path = find_path(city, req);
     if (!path) {

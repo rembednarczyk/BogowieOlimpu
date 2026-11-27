@@ -104,6 +104,7 @@ scenario = {
         {"type": "invasion", "city": "sparta", "nation": "greek", "amount": 16, "year": 5, "month": 9,
          "by_sea": True},  # transports with a warship from the sea entry (Z:144); the triremes meet them
         {"type": "monster", "monster": "medusa", "strength": 1, "target": "resources", "year": 6, "month": 0},
+        {"type": "monster", "monster": "kraken", "strength": 1, "year": 6, "month": 8},  # from the sea entry (L-116)
     ],
     "goals": [
         {"type": "population", "value": 1200},
