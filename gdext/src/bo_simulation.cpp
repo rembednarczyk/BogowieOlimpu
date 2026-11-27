@@ -556,6 +556,12 @@ void BoSimulation::set_not_buying(int64_t stall, bool on) {
     }
 }
 
+void BoSimulation::set_company_tactic(int64_t company, int64_t tactic) {
+    if (sim_ && company >= 0 && tactic >= 0 && tactic <= 2) {
+        sim_->issue(bo::core::SetCompanyTactic{static_cast<std::uint32_t>(company), static_cast<std::uint8_t>(tactic)});
+    }
+}
+
 void BoSimulation::man_towers(bool on) {
     if (sim_) {
         sim_->issue(bo::core::ManTowers{on});
@@ -786,6 +792,7 @@ Array BoSimulation::get_companies() const {
         d["unit"] = String(c.unit.c_str());
         d["nation"] = String(c.nation.c_str());  // a god's company (Z:140): "divine", "amazon"
         d["fled"] = c.fled;
+        d["tactic"] = static_cast<int64_t>(c.tactic);
         d["in_field"] = static_cast<int64_t>(c.soldiers.size());
         d["soldiers"] = soldiers;
         d["status"] = static_cast<int64_t>(c.status);
@@ -1112,6 +1119,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_not_buying", "stall", "on"), &BoSimulation::set_not_buying);
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
+    ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
     ClassDB::bind_method(D_METHOD("get_expeditions"), &BoSimulation::get_expeditions);
     ClassDB::bind_method(D_METHOD("get_invasion"), &BoSimulation::get_invasion);
     ClassDB::bind_method(D_METHOD("apply_build_order"), &BoSimulation::apply_build_order);

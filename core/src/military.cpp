@@ -63,6 +63,12 @@ TilePos slot(const CityState& city, TilePos standard, std::size_t k) {
     return city.map.in_bounds(p) && terrain_walkable(city.map.at(p).terrain) ? p : standard;
 }
 
+}  // namespace
+
+TilePos company_slot(const CityState& city, TilePos standard, std::size_t k) { return slot(city, standard, k); }
+
+namespace {
+
 bool route(CityState& city, Walker& w, TilePos to) {
     auto path = find_path(city, {w.tile, to, PathMode::Walkable});
     if (!path) {

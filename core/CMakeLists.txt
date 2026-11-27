@@ -13,6 +13,7 @@ add_library(bo_core STATIC
     src/gods.cpp
     src/build_order.cpp
     src/culture.cpp
+    src/tactics.cpp
     src/games.cpp
     src/relations.cpp
     src/prayers.cpp

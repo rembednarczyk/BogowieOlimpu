@@ -148,6 +148,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
         }
         w.u8(c.fled ? 1 : 0);  // since v18
         w.str(c.nation);        // since v34
+        w.u8(static_cast<std::uint8_t>(c.tactic));  // since v38
     }
     const Invasion& inv = m.invasion;  // since v18
     w.u8(inv.active ? 1 : 0);
@@ -199,6 +200,11 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
         if (version >= 34 && !r.str(c.nation)) {
             return false;
         }
+        std::uint8_t tactic = 0;
+        if (version >= 38 && (!r.u8(tactic) || tactic > static_cast<std::uint8_t>(Tactic::Special))) {
+            return false;
+        }
+        c.tactic = static_cast<Tactic>(tactic);
     }
     if (version < 18) {
         return true;

@@ -76,6 +76,7 @@ public:
     void set_stockpile(const godot::String& good, bool on);   // Z:80
     void set_not_buying(int64_t stall, bool on);              // Z:72
     void man_towers(bool on);                                 // Man All, Z:146
+    void set_company_tactic(int64_t company, int64_t tactic); // 0 defensive, 1 offensive, 2 special (Z:138-139)
     godot::PackedStringArray get_stockpiled() const;
     void set_trade_partner(int64_t building, int64_t partner);
     void set_trade_order(int64_t building, const godot::String& good, bool import_on, int64_t import_limit,

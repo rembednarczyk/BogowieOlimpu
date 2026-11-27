@@ -103,7 +103,7 @@ func refresh_army() -> void:
 	var order := []
 	for i in companies.size():
 		var c: Dictionary = companies[i]
-		var key := "%s|%s|%d|%s" % [c["unit"], c["nation"], c["status"], c["fled"]]
+		var key := "%s|%s|%d|%s|%d" % [c["unit"], c["nation"], c["status"], c["fled"], c.get("tactic", 0)]
 		if not groups.has(key):
 			groups[key] = []
 			order.append(key)
@@ -121,7 +121,15 @@ func refresh_army() -> void:
 		var text := "%s%s: %s, %s %d%%, %s" % [tr("unit." + c["unit"]), "" if c["nation"] == "" else " ★",
 			tr("ui.companies_soldiers") % [ids.size(), soldiers], tr("ui.morale"), morale / ids.size(),
 			tr("company.status.%d" % c["status"])]
+		var tactic := OptionButton.new()  # defensive, offensive, special (Z:138-139), for the whole group
+		tactic.custom_minimum_size = Vector2(170, ui.CELL.y)
+		tactic.add_theme_font_size_override("font_size", 18)
+		for t in 3:
+			tactic.add_item(tr("tactic.%d" % t))
+		tactic.select(int(c.get("tactic", 0)))
+		tactic.item_selected.connect(func(t): _each(ids, func(i): game.sim.set_company_tactic(i, t)))
 		_row(army_box, text, [
+			tactic,
 			_small("ui.muster", func(): _each(ids, func(i): game.sim.muster_company(i)), home and not c["fled"]),
 			_small("ui.move", func(): start_move(ids), not home and not abroad),
 			_small("ui.go_home", func(): _each(ids, func(i): game.sim.send_company_home(i)), not home and not abroad)])

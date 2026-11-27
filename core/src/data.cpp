@@ -403,6 +403,16 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         load_combat(docs, cat.combat);
         load_world(docs, cat.world);
         detail::load_games(docs, cat.games);
+        if (docs.count("military.json") != 0 && docs.at("military.json").contains("tactics_rules")) {
+            const json& t = docs.at("military.json").at("tactics_rules");
+            TacticsParams& tp = cat.tactics;
+            tp.defensive_engage = t.at("defensive").value("engage_tiles", tp.defensive_engage);
+            tp.defensive_armor = t.at("defensive").value("armor_bonus", tp.defensive_armor);
+            tp.offensive_engage = t.at("offensive").value("engage_tiles", tp.offensive_engage);
+            tp.special_engage = t.at("special").value("engage_tiles", tp.special_engage);
+            tp.wedge_attack_percent = t.at("special").value("wedge_attack_percent", tp.wedge_attack_percent);
+            tp.skirmish_retreat = t.at("special").value("skirmish_retreat_tiles", tp.skirmish_retreat);
+        }
         for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
             const std::string id = m.value("id", "");
             if (id == "population" && m.contains("thresholds")) {

@@ -72,7 +72,8 @@ TEST_CASE("golden hash") {
     // 2026-11-26: save format v35 (version field; nothing stockpiled), Z:80 and Z:72.
     // 2026-11-26: save format v36 (version field; towers not manned), Z:146.
     // 2026-11-26: save format v37 (version field; no right to host games), Z:111.
-    const std::uint64_t kGolden = 0xf8509824f1a8a9dfULL;
+    // 2026-11-26: save format v38 (version field; no companies here), tactics Z:138-139.
+    const std::uint64_t kGolden = 0x6800ebffc3275bf6ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -222,7 +223,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-26: save format v35 (Not Buying flag per stall; nothing stockpiled), Z:72, Z:80.
     // 2026-11-26: save format v36 (Man All flag; no towers here), Z:146.
     // 2026-11-26: save format v37 (hosting year -1; no games here), Z:111.
-    const std::uint64_t kGolden = 0xd3545d44434dd8eaULL;
+    // 2026-11-26: save format v38 (a tactic byte per company; no battle here), Z:138-139.
+    const std::uint64_t kGolden = 0x4a1c087b1bb6b155ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

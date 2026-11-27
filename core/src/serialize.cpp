@@ -123,6 +123,9 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u8(cmd.on ? 1 : 0);
             } else if constexpr (std::is_same_v<T, ManTowers>) {
                 w.u8(cmd.on ? 1 : 0);
+            } else if constexpr (std::is_same_v<T, SetCompanyTactic>) {
+                w.u32(cmd.company);
+                w.u8(cmd.tactic);
             } else if constexpr (std::is_same_v<T, MusterCompany> || std::is_same_v<T, SendCompanyHome>) {
                 w.u32(cmd.company);
             } else if constexpr (std::is_same_v<T, MoveCompany>) {
@@ -249,6 +252,14 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
                 return false;
             }
             c.on = on != 0;
+            out = c;
+            return true;
+        }
+        case 29: {  // since v38 (Z:138-139)
+            SetCompanyTactic c;
+            if (!r.u32(c.company) || !r.u8(c.tactic)) {
+                return false;
+            }
             out = c;
             return true;
         }

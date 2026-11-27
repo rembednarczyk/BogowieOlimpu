@@ -223,6 +223,16 @@ struct GameParams {
     std::vector<std::string> walkers;  // performers whose visits count (philosopher, athlete, actor, competitor)
     std::string monument;              // scholar or athlete
 };
+// Company tactics (data/military.json tactics_rules; Z:138-139) [ZAŁOŻENIE, L-110].
+struct TacticsParams {
+    std::int32_t defensive_engage = 2;
+    std::int32_t defensive_armor = 2;
+    std::int32_t offensive_engage = 6;
+    std::int32_t special_engage = 6;
+    std::int32_t wedge_attack_percent = 125;
+    std::int32_t skirmish_retreat = 3;
+};
+
 struct GamesParams {
     std::vector<GameParams> games;
     std::uint32_t end_month = 7;  // 0-based: August
@@ -368,6 +378,7 @@ struct DataCatalog {
     DebtParams debt;
     MonumentParams monuments;
     GamesParams games;
+    TacticsParams tactics;
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

@@ -27,6 +27,9 @@ struct CompanyMember {
     }
 };
 
+// Company tactics (Z:138-139). Stored in saves: append only.
+enum class Tactic : std::uint8_t { Defensive = 0, Offensive, Special };
+
 struct Company {
     std::string unit;  // rabble, hoplite, horseman (walker type of its soldiers)
     std::vector<CompanyMember> members;
@@ -38,9 +41,11 @@ struct Company {
     // A god's company (Z:121, Z:140; since v34): the unit's stats come from this nation of enemies.json ("divine":
     // Ares's Sparti, "amazon": Artemis's Amazons); empty for the player's own soldiers. Its morale never drops.
     std::string nation;
+    Tactic tactic = Tactic::Defensive;  // since v38; defensive by default (Z:138)
     friend bool operator==(const Company& a, const Company& b) {
         return a.unit == b.unit && a.members == b.members && a.standard == b.standard && a.status == b.status &&
-               a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled && a.nation == b.nation;
+               a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled && a.nation == b.nation &&
+               a.tactic == b.tactic;
     }
 };
 
@@ -99,6 +104,9 @@ std::string start_invasion(WorldState& state, const DataCatalog& catalog, const 
                            std::uint32_t soldiers, CombatEvents& ev, std::int32_t city = -1);
 // Bribe (doc 22): 100 dr a foot soldier, 200 a mounted one, x the difficulty percent; they walk away.
 std::int64_t bribe_cost(const WorldState& state, const DataCatalog& catalog);
+
+// The tile of soldier k of a company standing at `standard` [ZAŁOŻENIE, L-109].
+TilePos company_slot(const CityState& city, TilePos standard, std::size_t k);
 std::string bribe_invaders(WorldState& state, const DataCatalog& catalog, CombatEvents& ev);
 // Surrender (Z:137): they walk away; the tribute belongs to the world module (D4).
 std::string surrender(WorldState& state, CombatEvents& ev);

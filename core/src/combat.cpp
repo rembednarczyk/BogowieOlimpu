@@ -1,4 +1,5 @@
 // Module D3 stage 2: invasions, combat, morale (docs/gameplay/11, 22, 24; Z:137-144; assumptions L-062, L-110).
+#include "combat_internal.h"
 #include <algorithm>
 #include <cstdlib>
 #include <optional>
@@ -9,7 +10,7 @@
 #include "bo/core/walker.h"
 
 namespace bo::core {
-namespace {
+namespace combat_detail {
 
 std::int32_t chebyshev(TilePos a, TilePos b) { return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y)); }
 
@@ -65,7 +66,7 @@ std::int32_t distance_to(const Building& b, TilePos p) {
     return d;
 }
 
-bool route(CityState& city, Walker& w, TilePos to, BuildingId goal = kNoBuilding) {
+bool route(CityState& city, Walker& w, TilePos to, BuildingId goal) {
     PathRequest req{w.tile, to, defends(w) ? PathMode::Walkable : PathMode::Hostile};
     req.goal_building = goal;
     auto path = find_path(city, req);
@@ -155,39 +156,6 @@ void towers_shoot(WorldState& st, const DataCatalog& catalog, const std::vector<
     }
 }
 
-// Strength of the living units on one side: hit points times attack, melee and missile [ZAŁOŻENIE, L-110].
-std::int64_t side_strength(const WorldState& st, const DataCatalog& catalog, bool invaders) {
-    std::int64_t total = 0;
-    for (const auto& [id, w] : st.walkers.items) {
-        const bool side = invaders ? w.job == WalkerJob::Invade : (w.job == WalkerJob::Soldier || w.job == WalkerJob::Hero);
-        const UnitStats* s = side && w.hp > 0 && w.phase != WalkerPhase::Done ? stats_of(catalog, w) : nullptr;
-        if (s) {
-            total += static_cast<std::int64_t>(w.hp) * (s->attack + s->missile_attack);
-        }
-    }
-    return total;
-}
-
-// Z:144: the Palace falls to an army stronger than the player's forces.
-bool invaders_stronger(const WorldState& st, const DataCatalog& catalog) {
-    return side_strength(st, catalog, true) > side_strength(st, catalog, false);
-}
-
-// Zeus strikes the army down (Z:119); Talos guards the city (Z:120).
-void divine_help(WorldState& st) {
-    Invasion& inv = st.military.invasion;
-    if (!inv.active || (!st.zeus_guard && st.talos_days == 0)) {
-        return;
-    }
-    for (const WalkerId id : inv.invaders) {
-        const auto it = st.walkers.items.find(id);
-        if (it != st.walkers.items.end()) {
-            it->second.hp = 0;
-        }
-    }
-    st.zeus_guard = false;
-}
-
 void stand(Walker& w) {
     w.path.clear();
     w.path_pos = 0;
@@ -261,7 +229,9 @@ void soldier_killed(WorldState& st, const DataCatalog& catalog, const Walker& w)
     }
 }
 
-}  // namespace
+}  // namespace combat_detail
+
+using namespace combat_detail;
 
 std::string start_invasion(WorldState& st, const DataCatalog& catalog, const std::string& nation,
                            std::uint32_t soldiers, CombatEvents& ev, std::int32_t city) {
@@ -390,28 +360,9 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
                 }
             }
         }
-        if (foe && foe->first <= kEngageTiles) {
-            Walker& o = items.at(foe->second);
-            const UnitStats* os = stats_of(catalog, o);
-            Company* c = w.job == WalkerJob::Soldier ? company_of(st, id) : nullptr;
-            if (c && c->status == CompanyStatus::Still) {
-                c->status = CompanyStatus::Fighting;
-            }
-            if (foe->first <= 1 && s->attack > 0) {
-                stand(w);
-                if (w.cooldown == 0 && os) {
-                    o.hp -= std::max(0, s->attack - os->armor);
-                    w.cooldown = static_cast<std::uint16_t>(s->melee_rate);
-                }
-            } else if (s->missile_attack > 0 && foe->first <= s->missile_range) {
-                stand(w);
-                if (w.cooldown == 0 && os) {
-                    o.hp -= std::max(0, s->missile_attack - os->armor_vs_missiles);
-                    w.cooldown = static_cast<std::uint16_t>(s->missile_rate);
-                }
-            } else if (rechase || w.phase == WalkerPhase::AtTarget) {
-                route(st.city, w, o.tile);
-            }
+        Company* c = w.job == WalkerJob::Soldier ? company_of(st, id) : nullptr;
+        if (foe && foe->first <= engage_tiles(catalog, c, *s)) {
+            fight(st, catalog, w, *s, c, *foe, rechase);
             continue;
         }
         if (w.job == WalkerJob::Invade) {

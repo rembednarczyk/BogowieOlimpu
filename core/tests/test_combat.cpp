@@ -219,3 +219,59 @@ TEST_CASE("an army in the field with no enemy in the city lowers happiness (Z:15
     CHECK(fighting.city.buildings.items.begin()->second.house->happiness ==
           calm.city.buildings.items.begin()->second.house->happiness);
 }
+
+namespace {
+
+// How far a lone hoplite of a company with `tactic` walks in a day when an invader is four tiles away.
+std::int32_t hoplite_moves(Tactic tactic) {
+    auto sim = city(true);
+    sim.issue(StartInvasion{"greek", 2});  // 60 % of 2: one hoplite (doc 22)
+    sim.step(1);
+    REQUIRE(!sim.state().military.invasion.invaders.empty());
+    auto& st = sim.mutable_state();
+    for (const WalkerId id : st.military.invasion.invaders) {
+        st.walkers.items.at(id).speed_raw = 0;  // the invaders stay put for the test
+    }
+    Walker& enemy = st.walkers.items.at(st.military.invasion.invaders.front());
+    const TilePos at{enemy.tile.x + 4, enemy.tile.y};
+    Walker w;
+    w.id = st.walkers.next_id++;
+    w.type = "hoplite";
+    w.job = WalkerJob::Soldier;
+    w.phase = WalkerPhase::AtTarget;
+    w.tile = at;
+    w.hp = 150;
+    Company c;
+    c.unit = "hoplite";
+    c.status = CompanyStatus::Still;
+    c.standard = at;
+    c.soldiers.push_back(w.id);
+    c.tactic = tactic;
+    st.walkers.items.emplace(w.id, w);
+    st.military.companies.push_back(c);
+    sim.run_days(1);
+    const auto it = sim.state().walkers.items.find(w.id);
+    return it == sim.state().walkers.items.end() ? 99 : std::abs(it->second.tile.x - at.x) + std::abs(it->second.tile.y - at.y);
+}
+
+}  // namespace
+
+TEST_CASE("tactics: a defensive company holds its ground, an offensive one charges the enemy (Z:138-139)") {
+    CHECK(hoplite_moves(Tactic::Defensive) == 0);
+    CHECK(hoplite_moves(Tactic::Offensive) > 0);
+}
+
+TEST_CASE("tactics: the order is kept in the company and in the save (Z:138)") {
+    auto sim = city(true);
+    fill_hovels(sim);
+    run_battle(sim, 2);
+    REQUIRE(!sim.state().military.companies.empty());
+    CHECK(sim.state().military.companies[0].tactic == Tactic::Defensive);  // the default (Z:138)
+    sim.issue(SetCompanyTactic{0, 2});
+    sim.step(1);
+    CHECK(sim.state().military.companies[0].tactic == Tactic::Special);
+    std::string error;
+    auto copy = Simulation::load(bo::test::catalog_isolated(), sim.save(), error);
+    REQUIRE(copy.has_value());
+    CHECK(copy->state().military.companies[0].tactic == Tactic::Special);
+}

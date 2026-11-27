@@ -230,7 +230,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) { return seen.count(m) != 0; });
@@ -313,6 +313,9 @@ DemoRun run_demo(std::uint64_t years) {
         }
         run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
         run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
+        for (const Company& c : sim.state().military.companies) {
+            run.seen["tactics_set"] += c.tactic != Tactic::Defensive ? 1 : 0;  // Z:138-139
+        }
         for (const auto& [id, b] : sim.state().city.buildings.items) {
             run.seen["not_buying"] += b.stall && b.stall->not_buying ? 1 : 0;  // Z:72
         }

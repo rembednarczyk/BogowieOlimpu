@@ -191,3 +191,6 @@ games.isthmian,Igrzyska Istmijskie,Isthmian Games
 games.pythian,Igrzyska Pytyjskie,Pythian Games
 games.nemean,Igrzyska Nemejskie,Nemean Games
 ui.games_host,Miasto organizuje Igrzyska Olimpijskie w roku %d; potrzebny działający stadion,The city hosts the Olympic Games in year %d; a working stadium is needed
+tactic.0,Obrona,Defensive
+tactic.1,Natarcie,Offensive
+tactic.2,Specjalna,Special

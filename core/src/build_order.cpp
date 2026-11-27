@@ -84,6 +84,11 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {
         add(SetNotBuying{0, s.value("on", true)}, pos_of(s.at("not_buying")));
+    } else if (s.contains("tactics")) {  // every company's tactic: 0 defensive, 1 offensive, 2 special
+        BuildStep step = base;
+        step.all_companies = true;
+        step.command = SetCompanyTactic{0, s.at("tactics").get<std::uint8_t>()};
+        out.push_back(std::move(step));
     } else if (s.contains("dispatch")) {  // {"city": i, "raid": bool, "good": g}: companies picked when due
         const json& d = s.at("dispatch");
         BuildStep step = base;
@@ -149,6 +154,13 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
             stocked = stocked && city_stock(sim.state().city, sim.catalog(), good) >= n;  // without trade buildings (Z:79)
         }
         if (!stocked) {
+            continue;
+        }
+        if (s.all_companies) {
+            const auto tactic = std::get<SetCompanyTactic>(s.command).tactic;
+            for (std::uint32_t i = 0; i < sim.state().military.companies.size(); ++i) {
+                out.emplace_back(SetCompanyTactic{i, tactic});
+            }
             continue;
         }
         if (s.fulfill_all) {  // last first: a fulfilled request shifts the ones after it

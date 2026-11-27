@@ -323,6 +323,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const SetStockpile&) { apply_stock_command(command, index); },  // Z:80
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
                    [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
+                   [&](const SetCompanyTactic&) { apply_stock_command(command, index); },  // Z:138-139
                    [&](const SetIndustryEnabled& c) {
                        if (catalog_.buildings.count(c.type) == 0) {
                            emit(CommandRejected{index, "labour.unknown_industry"});
@@ -425,7 +426,7 @@ void Simulation::emit_combat(const CombatEvents& ev) {
     }
 }
 
-// Stockpiling (Z:80) and Not Buying (Z:72).
+// Stockpiling (Z:80), Not Buying (Z:72) and company tactics (Z:138-139): orders that only set a field.
 void Simulation::apply_stock_command(const Command& command, std::uint32_t index) {
     if (const auto* c = std::get_if<SetStockpile>(&command)) {
         if (catalog_.goods.count(c->good) == 0) {
@@ -434,6 +435,12 @@ void Simulation::apply_stock_command(const Command& command, std::uint32_t index
             state_.stockpiled.insert(c->good);
         } else {
             state_.stockpiled.erase(c->good);
+        }
+    } else if (const auto* t = std::get_if<SetCompanyTactic>(&command)) {
+        if (t->company >= state_.military.companies.size() || t->tactic > 2) {
+            emit(CommandRejected{index, "military.bad_company"});
+        } else {
+            state_.military.companies[t->company].tactic = static_cast<Tactic>(t->tactic);
         }
     } else if (const auto* n = std::get_if<SetNotBuying>(&command)) {
         auto it = state_.city.buildings.items.find(n->building);

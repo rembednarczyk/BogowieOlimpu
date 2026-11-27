@@ -97,6 +97,12 @@ struct SetNotBuying {
     bool on = true;
 };
 
+// Company tactics (Z:138-139): 0 defensive, 1 offensive, 2 special.
+struct SetCompanyTactic {
+    std::uint32_t company = 0;
+    std::uint8_t tactic = 0;
+};
+
 // Man All (Z:146): sentries to every tower, or back home.
 struct ManTowers {
     bool on = true;
@@ -172,7 +178,7 @@ using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, 
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers>;
+                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers, SetCompanyTactic>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

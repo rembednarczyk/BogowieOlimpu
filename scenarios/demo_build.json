@@ -360,6 +360,7 @@
   {"day": 324, "not_buying": [24, 30], "on": true},
   {"day": 424, "not_buying": [24, 30], "on": false},
   {"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}},
+  {"day": 1000, "tactics": 2},
   {"day": 1070, "dispatch": {"city": 1, "raid": true, "good": "drachmas"}},
   {"day": 1480, "every": 16, "dispatch": {"city": 3}},
   {"day": 64, "every": 8, "fulfill_requests": true},

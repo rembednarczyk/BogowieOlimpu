@@ -1,41 +1,283 @@
 {
-  "limits": {"max_companies": 20, "company_size": 8, "src": "Z:136"},
-  "fortification_hits": {"wall": 200, "gatehouse": 800, "tower": 600},
-  "tower_shots": 3,
-  "fortification_src": "[ZAŁOŻENIE L-117] wytrzymałość murów, bramy i wieży oraz liczba strzałów wieży (15 wartowników, doc 22) nieznane",
-  "trireme": {"wood": 4, "armor": 4, "build_days": 96, "src": "[ZAŁOŻENIE L-117] Z:141: drewno na kadłub, zbroja dla żołnierzy piechoty morskiej; ilości i czas nieznane"},
-  "units": [
-    {"id": "rabble", "culture": "greek", "source": "common_housing>=hovel", "equipment": [], "abroad": false, "tactics": {"defensive": "hold_and_throw_rocks_melee_if_close", "offensive": "close_in_melee", "special": "skirmish"}, "src": "Z:136, Z:138-139"},
-    {"id": "hoplite", "culture": "greek", "source": ["mansion", "manor"], "equipment": ["armor"], "abroad": true, "tactics": {"defensive": "interlocked_shields_spears", "offensive": "attack_together_thrusting", "special": "wedge"}, "src": "Z:136, Z:138-139"},
-    {"id": "horseman", "culture": "greek", "source": ["estate"], "equipment": ["armor", "horse"], "abroad": true, "tactics": {"defensive": "hold_fight_mounted", "offensive": "charge_melee", "special": "harass"}, "src": "Z:136-139"},
-    {"id": "archer", "culture": "atlantean", "source": "common_housing", "abroad": false, "gaps": ["L-066"], "src": "P:15"},
-    {"id": "spearman", "culture": "atlantean", "source": "elite_housing", "abroad": true, "gaps": ["L-066"], "src": "P:15"},
-    {"id": "charioteer", "culture": "atlantean", "source": "elite_housing", "equipment": ["chariot"], "abroad": true, "gaps": ["L-066"], "src": "P:15, P:18"},
-    {"id": "sparti", "source": "ares_sanctuary", "companies": 2, "abroad": true, "morale_never_drops": true, "src": "Z:140"},
-    {"id": "amazons", "source": "artemis_sanctuary", "companies": 2, "abroad": true, "morale_never_drops": true, "src": "Z:140"},
-    {"id": "loaned_troops", "source": "other_leader", "abroad": false, "defense_only": true, "leave_when_no_action": true, "morale_never_drops": true, "src": "Z:140-141"}
-  ],
-  "company_orders": ["muster", "rotate", "defensive_tactics", "offensive_tactics", "special_tactics", "send_home", "go_to_standard"],
-  "company_statuses": ["at_home", "still", "marching", "going_home", "fleeing", "fighting", "serving_abroad"],
-  "groups": {"hotkeys": 5, "src": "Z:140"},
-  "defense_choices": ["surrender_pay_tribute", "bribe", "fight"],
-  "invader_primary_target": "palace",
-  "battle_rules": ["no_new_companies_during_battle", "fled_company_cannot_remuster_this_battle", "dead_soldiers_reduce_population", "dead_elite_lose_equipment_house_may_devolve", "muster_without_fighting_lowers_popularity"],
-  "ships": [
-    {"id": "trireme", "culture": "greek", "built_at": "trireme_wharf", "inputs": ["wood", "armor"], "crew_from_workforce": true, "src": "Z:141"},
-    {"id": "frigate", "culture": "atlantean", "built_at": "frigate_wharf", "inputs": ["wood", "armor"], "optional": {"orichalc": "atlantean_fire"}, "crew_from_workforce": true, "src": "P:15-18"}
-  ],
-  "ship_orders": ["call_crew", "defend_location", "attack_all_enemies", "patrol_area", "carry_out_repairs", "send_crew_home", "go_to_ship"],
-  "ship_default_order": "defend_location",
-  "ship_attack_priority": ["enemy_transport_with_soldiers", "enemy_warship", "enemy_soldiers_near_shore", "empty_enemy_transport"],
-  "ship_statuses": ["unmanned", "anchored", "sailing", "disembarking", "returning", "repairing", "fighting", "abroad"],
-  "ship_rules": ["partial_crew_slower", "large_crew_shortage_no_orders", "captain_auto_repairs_when_damaged", "only_water_reachable_battles_abroad", "small_water_crossing_blocks_ships"],
-  "fortifications": {
-    "wall": {"requires_road": false, "thickness_stacks": true},
-    "tower": {"requires": ["wall_thickness>=2", "palace", "road_to_palace"], "sentries_patrol_walls_if_thick": true, "atlantean_fire_with_orichalc": true},
-    "gatehouse": {"requires": ["walls_both_sides"], "lets_through": ["immigrants", "caravans"]},
-    "src": "Z:145-147, P:18"
+ "limits": {
+  "max_companies": 20,
+  "company_size": 8,
+  "src": "Z:136"
+ },
+ "fortification_hits": {
+  "wall": 200,
+  "gatehouse": 800,
+  "tower": 600
+ },
+ "tower_shots": 3,
+ "fortification_src": "[ZAŁOŻENIE L-117] wytrzymałość murów, bramy i wieży oraz liczba strzałów wieży (15 wartowników, doc 22) nieznane",
+ "trireme": {
+  "wood": 4,
+  "armor": 4,
+  "build_days": 96,
+  "src": "[ZAŁOŻENIE L-117] Z:141: drewno na kadłub, zbroja dla żołnierzy piechoty morskiej; ilości i czas nieznane"
+ },
+ "units": [
+  {
+   "id": "rabble",
+   "culture": "greek",
+   "source": "common_housing>=hovel",
+   "equipment": [],
+   "abroad": false,
+   "tactics": {
+    "defensive": "hold_and_throw_rocks_melee_if_close",
+    "offensive": "close_in_melee",
+    "special": "skirmish"
+   },
+   "src": "Z:136, Z:138-139"
   },
-  "auto_defend": {"set_before_battle_starts": true, "player_can_take_over_anytime": true, "src": "Z:145"},
-  "special_enemies": [{"id": "oceanids", "underwater": true, "immune_to": ["frigate", "trireme"], "vulnerable_to": ["kraken"], "src": "P:19"}]
+  {
+   "id": "hoplite",
+   "culture": "greek",
+   "source": [
+    "mansion",
+    "manor"
+   ],
+   "equipment": [
+    "armor"
+   ],
+   "abroad": true,
+   "tactics": {
+    "defensive": "interlocked_shields_spears",
+    "offensive": "attack_together_thrusting",
+    "special": "wedge"
+   },
+   "src": "Z:136, Z:138-139"
+  },
+  {
+   "id": "horseman",
+   "culture": "greek",
+   "source": [
+    "estate"
+   ],
+   "equipment": [
+    "armor",
+    "horse"
+   ],
+   "abroad": true,
+   "tactics": {
+    "defensive": "hold_fight_mounted",
+    "offensive": "charge_melee",
+    "special": "harass"
+   },
+   "src": "Z:136-139"
+  },
+  {
+   "id": "archer",
+   "culture": "atlantean",
+   "source": "common_housing",
+   "abroad": false,
+   "gaps": [
+    "L-066"
+   ],
+   "src": "P:15"
+  },
+  {
+   "id": "spearman",
+   "culture": "atlantean",
+   "source": "elite_housing",
+   "abroad": true,
+   "gaps": [
+    "L-066"
+   ],
+   "src": "P:15"
+  },
+  {
+   "id": "charioteer",
+   "culture": "atlantean",
+   "source": "elite_housing",
+   "equipment": [
+    "chariot"
+   ],
+   "abroad": true,
+   "gaps": [
+    "L-066"
+   ],
+   "src": "P:15, P:18"
+  },
+  {
+   "id": "sparti",
+   "source": "ares_sanctuary",
+   "companies": 2,
+   "abroad": true,
+   "morale_never_drops": true,
+   "src": "Z:140"
+  },
+  {
+   "id": "amazons",
+   "source": "artemis_sanctuary",
+   "companies": 2,
+   "abroad": true,
+   "morale_never_drops": true,
+   "src": "Z:140"
+  },
+  {
+   "id": "loaned_troops",
+   "source": "other_leader",
+   "abroad": false,
+   "defense_only": true,
+   "leave_when_no_action": true,
+   "morale_never_drops": true,
+   "src": "Z:140-141"
+  }
+ ],
+ "company_orders": [
+  "muster",
+  "rotate",
+  "defensive_tactics",
+  "offensive_tactics",
+  "special_tactics",
+  "send_home",
+  "go_to_standard"
+ ],
+ "company_statuses": [
+  "at_home",
+  "still",
+  "marching",
+  "going_home",
+  "fleeing",
+  "fighting",
+  "serving_abroad"
+ ],
+ "groups": {
+  "hotkeys": 5,
+  "src": "Z:140"
+ },
+ "defense_choices": [
+  "surrender_pay_tribute",
+  "bribe",
+  "fight"
+ ],
+ "invader_primary_target": "palace",
+ "battle_rules": [
+  "no_new_companies_during_battle",
+  "fled_company_cannot_remuster_this_battle",
+  "dead_soldiers_reduce_population",
+  "dead_elite_lose_equipment_house_may_devolve",
+  "muster_without_fighting_lowers_popularity"
+ ],
+ "ships": [
+  {
+   "id": "trireme",
+   "culture": "greek",
+   "built_at": "trireme_wharf",
+   "inputs": [
+    "wood",
+    "armor"
+   ],
+   "crew_from_workforce": true,
+   "src": "Z:141"
+  },
+  {
+   "id": "frigate",
+   "culture": "atlantean",
+   "built_at": "frigate_wharf",
+   "inputs": [
+    "wood",
+    "armor"
+   ],
+   "optional": {
+    "orichalc": "atlantean_fire"
+   },
+   "crew_from_workforce": true,
+   "src": "P:15-18"
+  }
+ ],
+ "ship_orders": [
+  "call_crew",
+  "defend_location",
+  "attack_all_enemies",
+  "patrol_area",
+  "carry_out_repairs",
+  "send_crew_home",
+  "go_to_ship"
+ ],
+ "ship_default_order": "defend_location",
+ "ship_attack_priority": [
+  "enemy_transport_with_soldiers",
+  "enemy_warship",
+  "enemy_soldiers_near_shore",
+  "empty_enemy_transport"
+ ],
+ "ship_statuses": [
+  "unmanned",
+  "anchored",
+  "sailing",
+  "disembarking",
+  "returning",
+  "repairing",
+  "fighting",
+  "abroad"
+ ],
+ "ship_rules": [
+  "partial_crew_slower",
+  "large_crew_shortage_no_orders",
+  "captain_auto_repairs_when_damaged",
+  "only_water_reachable_battles_abroad",
+  "small_water_crossing_blocks_ships"
+ ],
+ "fortifications": {
+  "wall": {
+   "requires_road": false,
+   "thickness_stacks": true
+  },
+  "tower": {
+   "requires": [
+    "wall_thickness>=2",
+    "palace",
+    "road_to_palace"
+   ],
+   "sentries_patrol_walls_if_thick": true,
+   "atlantean_fire_with_orichalc": true
+  },
+  "gatehouse": {
+   "requires": [
+    "walls_both_sides"
+   ],
+   "lets_through": [
+    "immigrants",
+    "caravans"
+   ]
+  },
+  "src": "Z:145-147, P:18"
+ },
+ "auto_defend": {
+  "set_before_battle_starts": true,
+  "player_can_take_over_anytime": true,
+  "src": "Z:145"
+ },
+ "special_enemies": [
+  {
+   "id": "oceanids",
+   "underwater": true,
+   "immune_to": [
+    "frigate",
+    "trireme"
+   ],
+   "vulnerable_to": [
+    "kraken"
+   ],
+   "src": "P:19"
+  }
+ ],
+ "tactics_rules": {
+  "defensive": {
+   "engage_tiles": 2,
+   "armor_bonus": 2
+  },
+  "offensive": {
+   "engage_tiles": 6
+  },
+  "special": {
+   "engage_tiles": 6,
+   "wedge_attack_percent": 125,
+   "skirmish_retreat_tiles": 3
+  },
+  "src": "Z:138-139 opisy słowne; [ZAŁOŻENIE L-110] obronna trzyma pozycję (walka do 2 kafli, pancerz +2), ofensywna ściga do 6 kafli, specjalna: motłoch harcuje (odwrót o 3 kafle od wroga tuż obok), hoplici klinem (+25 % ataku), jeźdźcy nękają (po ciosie powrót pod sztandar)"
+ }
 }
