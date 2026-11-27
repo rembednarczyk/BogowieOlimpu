@@ -126,7 +126,7 @@ scenario = {
     "culture": "atlantean",
     "map": ["".join(r) for r in grid],
     "cities": [
-        {"id": "samos", "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
+        {"id": "samos", "map": [22, 40], "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
          "sells": {"marble": [80, 300], "wood": [40, 80], "sculpture": [150, 20], "orichalc": [200, 40],
                    "wheat": [30, 80], "black_marble": [90, 30]},
          "buys": {}},

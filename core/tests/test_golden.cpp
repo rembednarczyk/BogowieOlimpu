@@ -84,7 +84,9 @@ TEST_CASE("golden hash") {
     // 2026-11-27: save format v47 (version field; no ships), partial trireme crews Z:141.
     // 2026-11-27: save format v48 (version field; Auto-Defend off), Auto-Defend Z:145.
     // 2026-11-28: save format v49 (version field; no monument here), holding a monument's building P:26-28.
-    const std::uint64_t kGolden = 0xfe052d4b9e8d44e9ULL;
+    // 2026-11-27: save format v50 (version field; no trade partners here), world map places L-135 and the
+    // cities' history of interactions Z:171.
+    const std::uint64_t kGolden = 0xb3989a5589e96346ULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -246,7 +248,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-27: save format v47 (hands aboard each trireme; no ships here), Z:141.
     // 2026-11-27: save format v48 (the Auto-Defend switch; off), Z:145.
     // 2026-11-28: save format v49 (a monument held or not; no monument here), P:26-28.
-    const std::uint64_t kGolden = 0x19661ada97c08344ULL;
+    // 2026-11-27: save format v50 (world map places and histories of interactions; no partners here), L-135, Z:171.
+    const std::uint64_t kGolden = 0x20841e1e7e9cdce9ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

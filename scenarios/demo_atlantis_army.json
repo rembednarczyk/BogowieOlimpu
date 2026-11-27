@@ -59,6 +59,10 @@
  "cities": [
   {
    "id": "samos",
+   "map": [
+    22,
+    40
+   ],
    "relation": "ally",
    "by_sea": false,
    "opinion": 70,
@@ -86,6 +90,10 @@
   },
   {
    "id": "lemnos",
+   "map": [
+    80,
+    72
+   ],
    "relation": "rival",
    "by_sea": true,
    "opinion": 20,

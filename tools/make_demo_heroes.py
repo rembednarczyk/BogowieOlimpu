@@ -119,11 +119,11 @@ scenario = {
     "difficulty": "M",
     "map": ["".join(r) for r in grid],
     "cities": [
-        {"id": "paros", "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
+        {"id": "paros", "map": [20, 30], "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
          "sells": {"wheat": [30, 300], "meat": [40, 80]}, "buys": {}},
-        {"id": "naxos", "relation": "ally", "by_sea": False, "opinion": 70, "military": 2, "economy": 3,
+        {"id": "naxos", "map": [16, 58], "relation": "ally", "by_sea": False, "opinion": 70, "military": 2, "economy": 3,
          "sells": {"bronze": [80, 60], "wine": [110, 60]}, "buys": {}},
-        {"id": "delos", "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
+        {"id": "delos", "map": [30, 82], "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
          "sells": {"marble": [80, 200], "sculpture": [150, 20], "wood": [40, 100]}, "buys": {}},
     ],
     "events": [

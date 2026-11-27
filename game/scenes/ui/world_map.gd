@@ -2,8 +2,9 @@
 # what the reference shows on the map: the trade route (blue by sea, brown by land), coins for economic strength,
 # shields for military strength, a flag by the relation and a torch for a revolt. A tap picks a city; its orders
 # are in the row under the map (army_world_ui.gd).
-# Positions: the scenarios have none yet, so the map lays the cities out itself, by sea to the east and by land
-# to the west, in their order [ZAŁOŻENIE] (L-135, positions on the world map).
+# Positions: a scenario city's "map": [x, y], 0-100 from the west and the north (L-135); the player's city in
+# the middle [ZAŁOŻENIE]. A city without one is laid out by the map: by sea on the eastern half-ring, by land
+# on the western one, in the scenario's order.
 # Presentation only: nothing here touches the simulation.
 extends Control
 
@@ -30,8 +31,13 @@ func show_cities(c: Array, n: Array, sel: int) -> void:
 func home() -> Vector2:
 	return Vector2(size.x * 0.5, size.y * 0.5)
 
-# Sea cities on the eastern half-ring, land cities on the western one, each half spread evenly.
 func city_pos(i: int) -> Vector2:
+	if int(cities[i].get("map_x", -1)) >= 0:
+		return Vector2(size.x * cities[i]["map_x"] / 100.0, size.y * cities[i]["map_y"] / 100.0)
+	return _laid_out(i)
+
+# Sea cities on the eastern half-ring, land cities on the western one, each half spread evenly.
+func _laid_out(i: int) -> Vector2:
 	var by_sea: bool = cities[i]["by_sea"]
 	var side := []
 	for j in cities.size():

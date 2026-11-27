@@ -1,5 +1,6 @@
 #include "bo_simulation.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <map>
 #include <string>
@@ -525,6 +526,11 @@ String BoSimulation::start_with_map(const String& data_dir, int64_t seed, const 
         p.diplomacy.military = static_cast<std::int32_t>(int64_t(d.get("military", 1)));
         p.diplomacy.economy = static_cast<std::int32_t>(int64_t(d.get("economy", 1)));
         p.diplomacy.tribute = int64_t(d.get("tribute", 0));
+        const Array place = d.get("map", Array());  // world map, 0-100 (L-135)
+        if (place.size() == 2) {
+            p.map_x = std::clamp(static_cast<std::int32_t>(int64_t(place[0])), 0, 100);
+            p.map_y = std::clamp(static_cast<std::int32_t>(int64_t(place[1])), 0, 100);
+        }
         for (const char* key : {"sells", "buys"}) {
             const Dictionary offers = d.get(key, Dictionary());
             const Array goods = offers.keys();
@@ -771,12 +777,36 @@ Array BoSimulation::get_cities() const {
         d["tribute"] = p.diplomacy.tribute;
         d["tribute_demand"] = p.diplomacy.tribute_demand;
         d["rebelling"] = p.diplomacy.rebelling;
-        d["by_sea"] = p.by_sea;
         PackedStringArray sells;
         for (const auto& [good, offer] : p.sells) {
             sells.append(String(good.c_str()));
         }
         d["sells"] = sells;
+        // The city panel (Z:171): goods with the yearly limit and the trade this year, the world map place,
+        // the history of interactions.
+        for (const char* key : {"sells", "buys"}) {
+            Array offers;
+            for (const auto& [good, offer] : std::string(key) == "sells" ? p.sells : p.buys) {
+                Dictionary o;
+                o["good"] = String(good.c_str());
+                o["price"] = offer.price;
+                o["limit"] = offer.yearly_limit;
+                o["traded"] = offer.traded;
+                offers.append(o);
+            }
+            d[String(key) + "_detail"] = offers;
+        }
+        d["map_x"] = p.map_x;
+        d["map_y"] = p.map_y;
+        Array history;
+        for (const auto& h : p.diplomacy.history) {
+            Dictionary e;
+            e["day"] = h.day;
+            e["what"] = String(h.what.c_str());
+            e["delta"] = h.delta;
+            history.append(e);
+        }
+        d["history"] = history;
         out.append(d);
     }
     return out;

@@ -11,6 +11,7 @@ add_library(bo_core STATIC
     src/combat.cpp
     src/crosswalk.cpp
     src/serialize_commands.cpp
+    src/serialize_atlas.cpp
     src/naval.cpp
     src/oracle.cpp
     src/extraction.cpp
@@ -126,6 +127,7 @@ if(BO_BUILD_TESTS)
         tests/test_games.cpp
         tests/test_gods.cpp
         tests/test_trade.cpp
+        tests/test_world_map.cpp
     )
     target_link_libraries(bo_core_tests PRIVATE bo_core)
     target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)

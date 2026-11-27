@@ -8,6 +8,7 @@
 
 #include "bo/core/path.h"
 #include "bo/core/walker.h"
+#include "bo/core/world.h"
 
 namespace bo::core {
 namespace {
@@ -84,7 +85,7 @@ void advance_hippodrome(WorldState& st, const DataCatalog& catalog, LogisticsEve
         st.hippodrome_this_year += r->income;
         if (t.segments.size() >= catalog.hippodrome_bonus.opinion_from) {  // visitors from all over the world (P:14)
             for (TradePartner& p : st.trade.partners) {
-                p.diplomacy.opinion = std::min(100, p.diplomacy.opinion + catalog.hippodrome_bonus.opinion);
+                change_opinion(p.diplomacy, catalog.hippodrome_bonus.opinion, "history.hippodrome", st.time.total_days());
             }
         }
     }

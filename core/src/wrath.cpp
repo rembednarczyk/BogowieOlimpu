@@ -7,6 +7,7 @@
 #include "bo/core/gods.h"
 #include "bo/core/logistics.h"
 #include "bo/core/state.h"
+#include "bo/core/world.h"
 
 namespace bo::core {
 namespace {
@@ -154,7 +155,7 @@ WrathEvents god_attack(WorldState& st, const DataCatalog& catalog, const std::st
     } else if (god == "hera") {
         destroy(city, pick(city, 1 << 30, [](const Building& b) { return b.type == "cattle"; }), ev);
         for (TradePartner& p : st.trade.partners) {
-            p.diplomacy.opinion = std::max(0, p.diplomacy.opinion - n("opinion_loss", 10));  // P:22
+            change_opinion(p.diplomacy, -n("opinion_loss", 10), "history.wrath", st.time.total_days());  // P:22
         }
     }
     return ev;

@@ -4,6 +4,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Położenie miast na mapie świata w scenariuszu
+- Decyzja: miasto scenariusza ma pole `"map": [x, y]` (0-100 od zachodu i od północy); miasto gracza w środku mapy. Razem z nim panel miasta z historią interakcji (Z:171): każda zmiana opinii z powodem, osiem najnowszych. Zapis v50.
+- Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
+- Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
+
 ### 2026-11-28: Siódme demo, herosi
 - Decyzja: Atalanta przeciw Sfinksowi i Bellerofont przeciw Echidnie (P:23-24, Z:130) w demo `scenarios/demo_heroes.json` (`tools/make_demo_heroes.py`, bramka `core/tests/test_demo_heroes.cpp`, siódmy przycisk demo): greckie miasto bez Apolla (zabiłby potwory pierwszy, Z:129), Artemida i Ares, działający stadion, trzy stadniny z farmami, urzędy podatkowe na każdej ulicy, trzy faktorie po grupach towarów, każdy magazyn tylko na swoje.
 - Powód: polecenie właściciela z 2026-11-28. Demo greckie ma limit czterech sanktuariów wyczerpany, miasta Atlantydy nie udźwignęły sanktuarium Artemidy i 8 kompanii obok elity.

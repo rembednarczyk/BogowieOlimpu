@@ -66,6 +66,10 @@
  "cities": [
   {
    "id": "corinth",
+   "map": [
+    28,
+    40
+   ],
    "relation": "ally",
    "by_sea": false,
    "opinion": 60,
@@ -102,6 +106,10 @@
   },
   {
    "id": "sparta",
+   "map": [
+    18,
+    72
+   ],
    "relation": "rival",
    "opinion": 40,
    "military": 1,
@@ -227,10 +235,18 @@
      "cities": [
       {
        "id": "parent",
+       "map": [
+        60,
+        20
+       ],
        "relation": "parent_city"
       },
       {
        "id": "megara",
+       "map": [
+        26,
+        64
+       ],
        "relation": "ally",
        "by_sea": false,
        "opinion": 60,

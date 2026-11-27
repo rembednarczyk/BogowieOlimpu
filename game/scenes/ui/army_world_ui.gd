@@ -25,9 +25,9 @@ func setup(owner_ui, root: Control) -> void:
 	ui = owner_ui
 	game = owner_ui.game
 	army = _panel(root)
-	army_box = army.get_child(0)
+	army_box = army.get_child(0).get_child(0)
 	world = _panel(root)
-	world_box = world.get_child(0)
+	world_box = world.get_child(0).get_child(0)
 
 func _panel(root: Control) -> PanelContainer:
 	var p := PanelContainer.new()
@@ -40,8 +40,12 @@ func _panel(root: Control) -> PanelContainer:
 	bg.bg_color = Color(0.13, 0.14, 0.17, 0.96)
 	bg.set_content_margin_all(16)
 	p.add_theme_stylebox_override("panel", bg)
-	var scroll := VBoxContainer.new()
+	var scroll := ScrollContainer.new()  # a long list or a city's history scrolls on a phone
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	p.add_child(scroll)
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
 	p.visible = false
 	root.add_child(p)
 	return p
@@ -259,7 +263,6 @@ func refresh_world() -> void:
 	city = clampi(city, 0, maxi(cities.size() - 1, 0))
 	world_map = WorldMap.new()
 	world_map.custom_minimum_size = Vector2(0, 340)
-	world_map.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	world_map.picked = func(i): city = i; refresh_world()
 	var names := []
 	for i in cities.size():
@@ -296,6 +299,7 @@ func refresh_world() -> void:
 		var invaded: bool = game.sim.get_invasion().get("active", false)
 		var at_war: bool = c["relation"] in ["ally", "rival"] or c["rebelling"]
 		world_box.add_child(ui._label(text))
+		_city_panel(c)
 		var orders := HFlowContainer.new()  # wraps on a narrow screen
 		world_box.add_child(orders)
 		for b in [
@@ -319,6 +323,34 @@ func refresh_world() -> void:
 			var kind := "ui.aid" if e["aid"] else ("ui.raid" if e["raid"] else "ui.attack")
 			world_box.add_child(ui._label("  " + tr("ui.expedition_line") % [tr(kind), ui._city_name(e["city"]),
 				e["companies"], tr("ui.returning") if e["returning"] else tr("ui.marching"), e["days_left"]]))
+
+# The orders under the picked city (tests and the tutorial find them here).
+func world_orders() -> HFlowContainer:
+	for n in world_box.get_children():
+		if n is HFlowContainer:
+			return n
+	return null
+
+# The city panel (Z:171): what it sells and buys with the yearly limits and the trade this year, and the
+# history of interactions, the newest first, thumbs up in green and down in red.
+func _city_panel(c: Dictionary) -> void:
+	for key in ["sells", "buys"]:
+		var parts := []
+		for o in c.get(key + "_detail", []):
+			parts.append(tr("ui.offer") % [tr("good." + o["good"]), o["price"], o["traded"], o["limit"]])
+		if not parts.is_empty():
+			world_box.add_child(ui._label(tr("ui.city_" + key) % ", ".join(parts)))
+	var history: Array = c.get("history", [])
+	if history.is_empty():
+		return
+	world_box.add_child(ui._label(tr("ui.city_history"), 20))
+	for k in range(history.size() - 1, -1, -1):
+		var h: Dictionary = history[k]
+		var day: int = h["day"]
+		var line: Label = ui._label("  " + tr("ui.history_line") % [day / 192 + 1, day / 16 % 12 + 1, tr(h["what"]),
+			("+%d" % h["delta"]) if h["delta"] > 0 else str(h["delta"])])
+		line.add_theme_color_override("font_color", Color(0.55, 0.85, 0.45) if h["delta"] > 0 else Color(0.95, 0.45, 0.4))
+		world_box.add_child(line)
 
 # Companies that may go abroad (Z:136, Z:177): at home, not rabble.
 func _companies_for_abroad() -> Array:

@@ -63,6 +63,10 @@
  "cities": [
   {
    "id": "naxos",
+   "map": [
+    24,
+    36
+   ],
    "relation": "ally",
    "by_sea": false,
    "opinion": 70,
@@ -94,6 +98,10 @@
   },
   {
    "id": "paros",
+   "map": [
+    26,
+    68
+   ],
    "relation": "ally",
    "by_sea": false,
    "opinion": 70,

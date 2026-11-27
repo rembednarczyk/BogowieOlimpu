@@ -5,6 +5,7 @@
 #include "bo/core/city.h"
 #include "bo/core/gods.h"
 #include "bo/core/naval.h"
+#include "bo/core/world.h"
 
 #include <algorithm>
 
@@ -148,7 +149,7 @@ std::vector<std::pair<std::string, std::string>> advance_blessings(WorldState& s
     const BlessingParams& b = catalog.blessings;
     if (st.time.day_in_month() == 0 && god_blesses(st.city, catalog, "zeus")) {
         for (TradePartner& p : st.trade.partners) {
-            p.diplomacy.opinion = std::clamp(p.diplomacy.opinion + b.zeus_opinion, 0, 100);
+            change_opinion(p.diplomacy, b.zeus_opinion, "history.zeus", st.time.total_days());
         }
         out.emplace_back("zeus", "opinion");  // Z:119: the other leaders think more of the player
     }

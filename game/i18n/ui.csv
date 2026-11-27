@@ -274,3 +274,25 @@ ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszł
 ui.group_none,bez grupy,no group
 ui.group,grupa %d,group %d
 ui.group_line,"Grupa %d, kompanie: %d","Group %d, companies: %d"
+ui.offer,%s %d dr (%d z %d w tym roku),%s %d dr (%d of %d this year)
+ui.city_sells,Sprzedaje: %s,Sells: %s
+ui.city_buys,Kupuje: %s,Buys: %s
+ui.city_history,Historia,History
+ui.history_line,"rok %d, miesiąc %d: %s %s","year %d, month %d: %s %s"
+history.gift,dar,gift
+history.gift_heard,dar dla miasta tego samego stanu,gift to a city of the same standing
+history.asked,prośba,request
+history.asked_other,prośba do innego miasta,request to another city
+history.struck,uderzenie na prośbę gracza,strike at the player's request
+history.attacked,atak gracza,the player's attack
+history.ally_attacked,atak na sojusznika,attack on an ally
+history.rival_respect,atak na rywala,attack on a rival
+history.tribute_unpaid,niezapłacony trybut,tribute unpaid
+history.zeus,przychylność Zeusa,Zeus's favour
+history.games_host,gospodarz igrzysk,host of the games
+history.olympian_win,zwycięstwo w igrzyskach olimpijskich,win at the Olympian games
+history.hippodrome,goście hipodromu,visitors to the hippodrome
+history.request_lapsed,prośba miasta niespełniona,the city's request not met
+history.request_done,prośba miasta spełniona,the city's request met
+history.request_late,prośba miasta spełniona po terminie,the city's request met late
+history.wrath,gniew Hery,Hera's wrath

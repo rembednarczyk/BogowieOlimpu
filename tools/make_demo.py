@@ -64,18 +64,18 @@ hline(17, 12, 52)                  # inner streets of the house blocks
 hline(29, 12, 52)
 
 world = [
-    {"id": "corinth", "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
+    {"id": "corinth", "map": [28, 40], "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
      "sells": {"olive_oil": [145, 12], "fleece": [60, 24], "marble": [80, 60], "wood": [50, 24], "sculpture": [200, 8],
                "wine": [120, 24], "armor": [150, 12]},
      "buys": {"bronze": [110, 16], "wood": [70, 16], "drachmas_note": [0, 0]}},
-    {"id": "sparta", "relation": "rival", "opinion": 20, "military": 3, "economy": 2, "sells": {}, "buys": {}},
-    {"id": "rhodes", "relation": "ally", "by_sea": True, "opinion": 95, "military": 2, "economy": 3,
+    {"id": "sparta", "map": [18, 72], "relation": "rival", "opinion": 20, "military": 3, "economy": 2, "sells": {}, "buys": {}},
+    {"id": "rhodes", "map": [86, 68], "relation": "ally", "by_sea": True, "opinion": 95, "military": 2, "economy": 3,
      "sells": {"wine": [110, 24], "fish": [40, 24]}, "buys": {"olive_oil": [160, 12], "sculpture": [260, 8]}},
 ]
 # Argos: a vassal just willing to pay tribute (Z:172) until the requests for help of year 4 sour it (doc 24:
 # -10 a request); it stops paying and rises a year later (L-121). Rhodes above is fond of the player and sends a
 # goodwill gift after two years.
-world.append({"id": "argos", "relation": "vassal", "by_sea": True, "opinion": 31, "military": 1, "economy": 2, "tribute": 300,
+world.append({"id": "argos", "map": [70, 24], "relation": "vassal", "by_sea": True, "opinion": 31, "military": 1, "economy": 2, "tribute": 300,
               "sells": {}, "buys": {}})
 for c in world:
     c["buys"].pop("drachmas_note", None)

@@ -13,8 +13,6 @@
 namespace bo::core {
 namespace {
 
-void change_opinion(CityDiplomacy& d, std::int32_t delta) { d.opinion = std::clamp(d.opinion + delta, 0, 100); }
-
 std::int32_t attitude(const DataCatalog& catalog, const std::string& name) {
     const auto it = catalog.world.attitude.find(name);
     return it == catalog.world.attitude.end() ? 50 : it->second;
@@ -116,6 +114,25 @@ void come_home(WorldState& st, const DataCatalog& catalog, Expedition& e) {
 
 }  // namespace
 
+void change_opinion(CityDiplomacy& d, std::int32_t delta, const std::string& what, std::uint64_t day) {
+    const std::int32_t before = d.opinion;
+    d.opinion = std::clamp(d.opinion + delta, 0, 100);
+    const std::int32_t change = d.opinion - before;
+    if (change == 0) {
+        return;
+    }
+    const auto today = static_cast<std::uint32_t>(day);
+    if (!d.history.empty() && d.history.back().what == what) {
+        d.history.back().delta += change;
+        d.history.back().day = today;
+        return;
+    }
+    d.history.push_back(Interaction{today, what, change});
+    if (d.history.size() > kHistoryLength) {
+        d.history.erase(d.history.begin());
+    }
+}
+
 std::int64_t army_strength_x2(const WorldState& st, const std::vector<std::uint32_t>& companies) {
     std::int64_t x2 = 0;
     for (const std::uint32_t c : companies) {
@@ -154,12 +171,12 @@ std::string give_gift(WorldState& st, const DataCatalog& catalog, std::uint32_t 
     d.gift_units_this_year[good] += units;
     const bool needed = money || st.trade.partners[city].buys.count(good) != 0;
     const auto gain_x2 = static_cast<std::int32_t>(units) * (needed ? w.gift_needed_x2 : w.gift_other_x2);
-    change_opinion(d, gain_x2 / 2);
+    change_opinion(d, gain_x2 / 2, "history.gift", st.time.total_days());
     const std::string relation = st.trade.partners[city].relation;
     for (std::size_t i = 0; i < st.trade.partners.size(); ++i) {
         TradePartner& other = st.trade.partners[i];
         if (i != city && relation != "rival" && other.relation == relation) {
-            change_opinion(other.diplomacy, gain_x2 / 4);  // the others of the same state hear of it (Z:177)
+            change_opinion(other.diplomacy, gain_x2 / 4, "history.gift_heard", st.time.total_days());  // the others of the same state hear of it (Z:177)
         }
     }
     return {};
@@ -193,7 +210,7 @@ std::string request_from_city(WorldState& st, const DataCatalog& catalog, std::u
     const auto amount = static_cast<std::uint32_t>(money ? p.diplomacy.economy * w.request_money_per_coin : w.request_loads);
     st.deliveries.push_back(PendingDelivery{city, good, amount, static_cast<std::uint32_t>(w.request_delay_days)});
     for (TradePartner& other : st.trade.partners) {
-        change_opinion(other.diplomacy, w.request_opinion);  // doc 24: every city thinks less of a beggar
+        change_opinion(other.diplomacy, w.request_opinion, &other == &p ? "history.asked" : "history.asked_other", st.time.total_days());  // doc 24: every city thinks less of a beggar
     }
     p.diplomacy.request_cooldown = static_cast<std::uint16_t>(w.request_cooldown_days);
     return {};
@@ -231,10 +248,11 @@ std::string request_military_help(WorldState& st, const DataCatalog& catalog, st
         TradePartner& t = st.trade.partners[target];
         std::int32_t& loser = p.diplomacy.military >= t.diplomacy.military ? t.diplomacy.military : p.diplomacy.military;
         loser = std::max(0, loser - 1);
-        change_opinion(t.diplomacy, catalog.world.attacked_ally_opinion);  // they know who sent them
+        change_opinion(t.diplomacy, catalog.world.attacked_ally_opinion, "history.struck", st.time.total_days());  // they know who sent them
     }
     for (TradePartner& other : st.trade.partners) {
-        change_opinion(other.diplomacy, catalog.world.request_opinion);  // doc 24: every city thinks less of a beggar
+        change_opinion(other.diplomacy, catalog.world.request_opinion, &other == &p ? "history.asked" : "history.asked_other",
+                       st.time.total_days());  // doc 24: every city thinks less of a beggar
     }
     p.diplomacy.request_cooldown = static_cast<std::uint16_t>(catalog.world.request_cooldown_days);
     return {};
@@ -303,7 +321,7 @@ std::string dispatch_army(WorldState& st, const DataCatalog& catalog, std::uint3
     st.expeditions.push_back(e);
     const WorldParams& w = catalog.world;
     if (raid || p.relation == "ally") {
-        change_opinion(p.diplomacy, -100);  // the target turns hostile (Z:177-178)
+        change_opinion(p.diplomacy, -100, "history.attacked", st.time.total_days());  // the target turns hostile (Z:177-178)
     }
     for (std::size_t i = 0; i < st.trade.partners.size(); ++i) {
         TradePartner& other = st.trade.partners[i];
@@ -311,9 +329,9 @@ std::string dispatch_army(WorldState& st, const DataCatalog& catalog, std::uint3
             continue;
         }
         if (p.relation == "ally" && other.relation == "ally") {
-            change_opinion(other.diplomacy, w.attacked_ally_opinion);  // all allies turn away
+            change_opinion(other.diplomacy, w.attacked_ally_opinion, "history.ally_attacked", st.time.total_days());  // all allies turn away
         } else if (p.relation == "rival" && other.relation == "rival") {
-            change_opinion(other.diplomacy, w.attacked_rival_respect);  // other rivals respect it
+            change_opinion(other.diplomacy, w.attacked_rival_respect, "history.rival_respect", st.time.total_days());  // other rivals respect it
         }
     }
     return {};
@@ -382,7 +400,7 @@ WorldEvents advance_world(WorldState& st, const DataCatalog& catalog) {
                 st.finance.treasury -= d.tribute_demand;
                 ev.tribute.emplace_back(i, -d.tribute_demand);
             } else {
-                change_opinion(d, catalog.world.refused_tribute_opinion);  // not paid: they will come (Z:172)
+                change_opinion(d, catalog.world.refused_tribute_opinion, "history.tribute_unpaid", st.time.total_days());  // not paid: they will come (Z:172)
             }
         }
     }

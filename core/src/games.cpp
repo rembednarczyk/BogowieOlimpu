@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "bo/core/gods.h"
+#include "bo/core/world.h"
 
 namespace bo::core {
 
@@ -51,7 +52,7 @@ namespace {
 void host(WorldState& st, const GamesParams& p) {
     ++st.scenario.monuments["games_host"];
     for (TradePartner& partner : st.trade.partners) {
-        partner.diplomacy.opinion = std::min(100, partner.diplomacy.opinion + p.host_opinion);
+        change_opinion(partner.diplomacy, p.host_opinion, "history.games_host", st.time.total_days());
     }
     for (auto& [id, b] : st.city.buildings.items) {
         if (b.house && b.house->population > 0) {
@@ -92,7 +93,7 @@ std::optional<GamesResult> advance_games(WorldState& st, const DataCatalog& cata
         ++st.scenario.monuments[game->monument];  // Scholar or Athlete (Z:155-156)
         if (game->id == "olympian") {
             for (TradePartner& partner : st.trade.partners) {  // other leaders think better of the city (Z:111)
-                partner.diplomacy.opinion = std::min(100, partner.diplomacy.opinion + p.olympian_opinion);
+                change_opinion(partner.diplomacy, p.olympian_opinion, "history.olympian_win", st.time.total_days());
             }
             if (st.games_host_year < 0) {
                 st.games_host_year = static_cast<std::int32_t>(year) + 4;  // the right to host in four years (Z:111)

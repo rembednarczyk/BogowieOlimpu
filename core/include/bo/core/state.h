@@ -51,6 +51,17 @@ struct TradeOffer {
     std::uint32_t traded = 0;          // loads traded this year
 };
 
+// One change of a leader's opinion and why (Z:171: the city's history of interactions, thumbs up and down).
+struct Interaction {
+    std::uint32_t day = 0;      // total days since the start
+    std::string what;           // reason key, "history.gift" and the like
+    std::int32_t delta = 0;     // opinion change, after the clamp to 0-100
+    friend bool operator==(const Interaction& a, const Interaction& b) {
+        return a.day == b.day && a.what == b.what && a.delta == b.delta;
+    }
+};
+inline constexpr std::size_t kHistoryLength = 8;  // the newest ones [ZAŁOŻENIE] (Z:171 gives no number)
+
 // Module D4: what a leader thinks of the player and owes or demands (Z:167-178; doc 24; L-064, L-113).
 struct CityDiplomacy {
     std::int32_t opinion = 60;      // 0-100, scenario "favour" (doc 24)
@@ -66,12 +77,13 @@ struct CityDiplomacy {
     std::uint8_t months_bad = 0;
     std::uint8_t months_good = 0;
     std::uint8_t aid_cooldown = 0;
+    std::vector<Interaction> history;  // since v50, oldest first, at most kHistoryLength
     friend bool operator==(const CityDiplomacy& a, const CityDiplomacy& b) {
         return a.opinion == b.opinion && a.military == b.military && a.economy == b.economy &&
                a.tribute == b.tribute && a.tribute_demand == b.tribute_demand && a.rebelling == b.rebelling &&
                a.player_defeats == b.player_defeats && a.gift_units_this_year == b.gift_units_this_year &&
                a.request_cooldown == b.request_cooldown && a.months_bad == b.months_bad &&
-               a.months_good == b.months_good && a.aid_cooldown == b.aid_cooldown;
+               a.months_good == b.months_good && a.aid_cooldown == b.aid_cooldown && a.history == b.history;
     }
 };
 
@@ -82,6 +94,10 @@ struct TradePartner {
     std::map<std::string, TradeOffer> sells;  // what we can import
     std::map<std::string, TradeOffer> buys;   // what we can export
     CityDiplomacy diplomacy;           // D4; saved in the world block (since v21)
+    // Place on the world map, 0-100 from the west and from the north (scenario "map": [x, y], since v50);
+    // -1: none given, the map lays the city out itself (L-135).
+    std::int32_t map_x = -1;
+    std::int32_t map_y = -1;
 };
 
 // What a city sends at the player's request, on its way (eZeus: 90 days; owner's choice, L-113).

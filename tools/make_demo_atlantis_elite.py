@@ -115,11 +115,11 @@ scenario = {
     "culture": "atlantean",
     "map": ["".join(r) for r in grid],
     "cities": [
-        {"id": "naxos", "relation": "ally", "by_sea": False, "opinion": 70, "military": 2, "economy": 3,
+        {"id": "naxos", "map": [24, 36], "relation": "ally", "by_sea": False, "opinion": 70, "military": 2, "economy": 3,
          "sells": {"fleece": [60, 60], "olive_oil": [100, 60], "wine": [110, 60], "armor": [150, 40],
                    "wood": [40, 40]},
          "buys": {}},
-        {"id": "paros", "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
+        {"id": "paros", "map": [26, 68], "relation": "ally", "by_sea": False, "opinion": 70, "military": 1, "economy": 3,
          "sells": {"wheat": [30, 300]}, "buys": {}},
     ],
     "events": [],

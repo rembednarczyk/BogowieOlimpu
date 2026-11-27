@@ -163,14 +163,19 @@ func _process(_d: float) -> bool:
 	check(aw.city == 1 and (aw.world_box.get_child(2) as Label).text.begins_with(ui._city_name(1)), "a tap on a city shows its row")
 	check(aw.world_map.city_at(aw.world_map.city_pos(1)) == 1, "the tap finds the city under the finger")
 	aw.world_map.picked.call(0)
+	var panel_text := ""
+	for n in aw.world_box.get_children():
+		panel_text += (n.text + "\n") if n is Label else ""
+	check(panel_text.contains(tr("ui.city_history")), "the city panel lists its history (Z:171): %s" % panel_text)
+	check(game.sim.get_cities()[0]["map_x"] >= 0, "the demo cities have their places on the map (L-135)")
 	# The buttons themselves: under the city's line, Gift, the good to pick, Ask, Help, Strike, Attack, Raid.
-	var row: HFlowContainer = aw.world_box.get_child(3)
+	var row: HFlowContainer = aw.world_orders()
 	var before: int = game.sim.get_cities()[0]["opinion"]
 	var treasury: int = game.sim.get_treasury()
 	(row.get_child(0) as Button).pressed.emit()
 	game.sim.step(1)
 	check(game.sim.get_cities()[0]["opinion"] > before or game.sim.get_treasury() < treasury, "the Gift button gives 500 dr")
-	row = aw.world_box.get_child(3)
+	row = aw.world_orders()
 	var pick: OptionButton = row.get_child(1)
 	check(pick.item_count > 1, "the goods of Corinth to choose from: %d" % pick.item_count)
 	pick.select(1)

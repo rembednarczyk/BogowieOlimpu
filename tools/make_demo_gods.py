@@ -64,7 +64,7 @@ def services(c, y, x0, x1, day=0):
 
 
 # Partners: the marble, wood and sculptures of the sanctuaries come by caravan (Z:74-79, Z:117).
-QUARRY_CITY = {"id": "corinth", "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
+QUARRY_CITY = {"id": "corinth", "map": [28, 40], "relation": "ally", "by_sea": False, "opinion": 60, "military": 2, "economy": 3,
                "sells": {"marble": [80, 240], "wood": [40, 120], "sculpture": [150, 40], "armor": [150, 24],
                          "wheat": [30, 60]},
                "buys": {"fleece": [60, 12]}}
@@ -161,7 +161,7 @@ parent = {
     "treasury": 150000,  # four big sanctuaries of imported stone (Z:116-117)
     "difficulty": "M",
     "map": P.rows(),
-    "cities": [QUARRY_CITY, {"id": "sparta", "relation": "rival", "opinion": 40, "military": 1, "economy": 2,
+    "cities": [QUARRY_CITY, {"id": "sparta", "map": [18, 72], "relation": "rival", "opinion": 40, "military": 1, "economy": 2,
                              "sells": {}, "buys": {}}],
 }
 parent_goals = [{"type": "sanctuary", "target": g} for g in ("zeus", "hades", "poseidon", "demeter")] + \
@@ -218,7 +218,7 @@ colony = {
     "treasury": 60000,
     "difficulty": "M",
     "map": C.rows(),
-    "cities": [{"id": "parent", "relation": "parent_city"}, QUARRY_CITY | {"id": "megara"}],
+    "cities": [{"id": "parent", "map": [60, 20], "relation": "parent_city"}, QUARRY_CITY | {"id": "megara", "map": [26, 64]}],
     "goals": [{"type": "sanctuary", "target": g} for g in ("artemis", "hephaestus", "aphrodite", "dionysus")],
     "events": [],
 }

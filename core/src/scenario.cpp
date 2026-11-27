@@ -31,6 +31,10 @@ TradePartner parse_city(const json& c) {
     p.id = c.at("id").get<std::string>();
     p.relation = c.value("relation", "ally");
     p.by_sea = c.value("by_sea", false);
+    if (c.contains("map")) {  // place on the world map, 0-100 (L-135)
+        p.map_x = std::clamp(c.at("map").at(0).get<std::int32_t>(), 0, 100);
+        p.map_y = std::clamp(c.at("map").at(1).get<std::int32_t>(), 0, 100);
+    }
     for (const auto* key : {"sells", "buys"}) {
         const json offers = c.value(key, json::object());
         for (const auto& [good, v] : offers.items()) {
@@ -249,7 +253,7 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
         if (today > it->due_day + kWithdrawAfterDays) {
             if (it->city < st.trade.partners.size()) {
                 CityDiplomacy& d = st.trade.partners[it->city].diplomacy;
-                d.opinion = std::max(0, d.opinion - 15);  // refused or too late (doc 24)
+                change_opinion(d, -15, "history.request_lapsed", st.time.total_days());  // refused or too late (doc 24)
             }
             ev.closed.emplace_back(it->city, false);
             it = s.requests.erase(it);
@@ -306,7 +310,8 @@ std::string fulfill_request(WorldState& st, const DataCatalog& catalog, std::uin
     const bool late = st.time.tick() / kTicksPerDay > r.due_day;
     if (r.city < st.trade.partners.size()) {
         CityDiplomacy& d = st.trade.partners[r.city].diplomacy;
-        d.opinion = std::clamp(d.opinion + (late ? -5 : 10), 0, 100);  // late: -5 (eZeus; owner, L-114)
+        change_opinion(d, late ? -5 : 10, late ? "history.request_late" : "history.request_done",  // late: -5 (eZeus; owner, L-114)
+                       st.time.total_days());
     }
     s.requests.erase(s.requests.begin() + static_cast<std::ptrdiff_t>(index));
     return {};

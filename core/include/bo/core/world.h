@@ -23,6 +23,10 @@ struct WorldEvents {
     std::vector<std::pair<std::uint32_t, std::int64_t>> gifts;          // goodwill or debt aid, drachmas
 };
 
+// Changes a leader's opinion (clamped to 0-100) and notes it in the city's history (Z:171): a change of the
+// same kind as the newest note joins it; the history keeps the newest kHistoryLength notes.
+void change_opinion(CityDiplomacy& d, std::int32_t delta, const std::string& what, std::uint64_t day);
+
 // A city's call for troops (Z:161): `companies` companies at home, no rabble, march to fight its enemy.
 std::string dispatch_aid(WorldState& state, const DataCatalog& catalog, std::uint32_t city, std::uint32_t companies);
 
