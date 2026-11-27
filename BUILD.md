@@ -10,7 +10,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 ```
 
 ```bash
-cmake --build build && ctest --test-dir build --output-on-failure
+cmake --build build && ctest --test-dir build -j 4 --output-on-failure
 ```
 
 ```bash

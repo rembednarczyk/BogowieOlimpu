@@ -1,16 +1,10 @@
 # Headless test of the player interface (E7, E8): right panel, building column, ghost, confirm, dragging as a
 # rectangle (houses, demolish) or a line (roads, walls), instant building, card.
 # Run: godot --headless --path game --script res://tests/test_ui.gd
-extends SceneTree
+extends "res://tests/check.gd"
 
-var failures := 0
 var game: Node3D
 var frame := 0
-
-func check(cond: bool, what: String) -> void:
-	if not cond:
-		failures += 1
-		printerr("FAIL: ", what)
 
 func _init() -> void:
 	game = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
@@ -277,7 +271,5 @@ func _process(_d: float) -> bool:
 	check(held, "held from the card; two layers for a modest pyramid")
 	agods._update_monuments()
 	check(agods.building_nodes[pid].get_meta("levels_shown", -1) == 0, "a bare site draws its foundation only")
-	if failures == 0:
-		print("UI TESTS PASSED")
-	quit(1 if failures > 0 else 0)
+	finish("UI TESTS PASSED")
 	return true

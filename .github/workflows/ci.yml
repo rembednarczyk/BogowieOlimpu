@@ -17,12 +17,12 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build build
-          ctest --test-dir build --output-on-failure
+          ctest --test-dir build -j 4 --output-on-failure
       - name: Build and test (Clang, Release) - golden hash must match GCC
         run: |
           CXX=clang++ cmake -S . -B build-clang -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build build-clang
-          ctest --test-dir build-clang --output-on-failure
+          ctest --test-dir build-clang -j 4 --output-on-failure
   godot:
     runs-on: ubuntu-24.04
     needs: core

@@ -1,13 +1,6 @@
 # Headless integration test of the GDExtension binding (docs/PRAKTYKI.md ch. 4).
 # Run: godot --headless --path game --script res://tests/test_simulation.gd
-extends SceneTree
-
-var failures := 0
-
-func check(cond: bool, what: String) -> void:
-	if not cond:
-		failures += 1
-		printerr("FAIL: ", what)
+extends "res://tests/check.gd"
 
 func _init() -> void:
 	var a := BoSimulation.new()
@@ -198,6 +191,4 @@ func _init() -> void:
 	check(ad2.get_adventure().get("steps", 0) == 4 and ad2.get_state_hash() == ad.get_state_hash(), "the adventure came back")
 
 	print("state hash ", a.get_state_hash(), " data version ", a.get_data_version())
-	if failures == 0:
-		print("TESTS PASSED")
-	quit(1 if failures > 0 else 0)
+	finish("TESTS PASSED")

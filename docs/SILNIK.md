@@ -31,7 +31,7 @@ core/        rdzeń symulacji: C++17, bez nagłówków Godota      ◄── tes
 gdext/       GDExtension: cienkie wiązanie core ↔ Godot         ◄── jedyne miejsce, które zna oba światy
      │
      ▼
-game/        projekt Godota: render, kamera, UI, audio, wejście  ◄── testy GDScript (gdUnit4), zrzuty (Xvfb)
+game/        projekt Godota: render, kamera, UI, audio, wejście  ◄── testy GDScript (SceneTree, `game/tests/check.gd`), zrzuty (Xvfb)
      ▲
 assets/      wynik potoku Blendera (.glb, tekstury, animacje)   ◄── skrypty Blendera + manifest + rejestr licencji
 ```

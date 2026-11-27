@@ -93,6 +93,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Proces
 
+### 2026-11-27: Testy Godota na SceneTree, testy rdzenia po jednym w ctest
+- Decyzja: testy Godota zostają skryptami na `SceneTree` (wspólne `check()` i `finish()` w `game/tests/check.gd`), bez gdUnit4; testy rdzenia rejestrowane w ctest po jednym przypadku przez `doctest_discover_tests` (`third_party/doctest/cmake/`, skrypt doctest 2.4.11 z poprawką na `;` w nazwie testu), CI uruchamia `ctest -j 4`.
+- Powód: polecenie właściciela "Robimy z rekomendacją: 6 i 7" (przegląd niespójności testów). Obecne testy Godota działają w CI bez zależności; gdUnit4 wymagałby przepisania. Jeden wpis ctest na 347 przypadków ukrywał, który pada.
+- Wdrożone: `game/tests/check.gd`, `test_simulation.gd`, `test_ui.gd`, `bench_check.gd`; `core/CMakeLists.txt`; `.github/workflows/ci.yml`; `PRAKTYKI.md`, `07-TECHNOLOGIA.md`, `SILNIK.md`.
+- Sprawdzone: 347 wpisów ctest, każdy filtr trafia dokładnie jeden przypadek, zestaw `-j 4` 70 s (wcześniej 103 s jednym procesem).
+
 ### 2026-11-27: Sonda staje się kontrolą (R-016), plan odporności
 - Decyzja: każdy problem znaleziony sondą zamienia się w kontrolę automatyczną; plan wdrożenia warstw (niezmienniki, ciche porażki, progi zdrowia, kontrole statyczne, test losowy, wiele ziaren, narzędzie sond, zapadki, determinizm między platformami) w `docs/PLAN-ODPORNOSCI.md`, etapy E1-E7.
 - Powód: przebiegi demo z 2026-11-27 kosztowały kilkadziesiąt sond; inwentarz 30 przypadków w planie, rozdz. 3.
