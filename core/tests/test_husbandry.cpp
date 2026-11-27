@@ -6,6 +6,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -25,9 +26,6 @@ Simulation town() {
     return Simulation(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 9000, farmland(), true});
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 std::uint32_t stock(const Simulation& sim, const std::string& good) {
     return city_stock(sim.state().city, bo::test::catalog(), good);
@@ -165,7 +163,7 @@ TEST_CASE("herds below 8 get a young one every 32 days; the young give fleece af
     CHECK(herd() == 8);  // capped at the herd size
 }
 
-TEST_CASE("B-014: grapes with nowhere to go do not hold back the olives of a Growers' Lodge") {
+TEST_CASE("grapes with nowhere to go do not hold back the olives of a Growers' Lodge (B-014)") {
     auto sim = town();
     sim.issue(PlaceBuilding{"growers_lodge", 14, 4});
     sim.issue(PlaceBuilding{"olive_press", 18, 4});  // in reach; no winery or storehouse for the grapes
@@ -179,7 +177,7 @@ TEST_CASE("B-014: grapes with nowhere to go do not hold back the olives of a Gro
     CHECK(at(sim, {18, 4}).producer->input_loads + at(sim, {18, 4}).producer->output_loads > 0);
 }
 
-TEST_CASE("B-014: twenty well tended olive trees give a lodge about 20 loads a year (S-004: ~20, up to 25)") {
+TEST_CASE("twenty well tended olive trees give a lodge about 20 loads a year (S-004: ~20, up to 25, B-014)") {
     auto sim = town();
     sim.issue(PlaceBuilding{"growers_lodge", 14, 4});
     sim.issue(PlaceBuilding{"storehouse", 18, 3});

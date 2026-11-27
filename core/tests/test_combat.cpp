@@ -9,6 +9,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -62,14 +63,6 @@ int run_battle(Simulation& sim, int days) {
     return -1;
 }
 
-std::string rejection(Simulation& sim) {
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
-            return r->reason_key;
-        }
-    }
-    return {};
-}
 
 }  // namespace
 
@@ -278,7 +271,7 @@ TEST_CASE("tactics: the order is kept in the company and in the save (Z:138)") {
     CHECK(copy->state().military.companies[0].tactic == Tactic::Special);
 }
 
-TEST_CASE("B-017: the companies formed anew each day keep the order the player gave them (Z:138)") {
+TEST_CASE("the companies formed anew each day keep the order the player gave them (Z:138, B-017)") {
     auto sim = city(true);
     fill_hovels(sim);
     for (int day = 0; day < 2; ++day) {
@@ -364,7 +357,7 @@ TEST_CASE("special tactics: hoplites in a wedge strike harder than in an offensi
     CHECK(hp(wedge) < hp(line));
 }
 
-TEST_CASE("special tactics: horsemen harass, riding back to their standard after a blow (Z:139)") {
+TEST_CASE("special tactics: horsemen harass, riding back to their standard after a blow (Z:139, B-016)") {
     auto harass = duel("horseman", Tactic::Special, 1, 5);
     auto charge = duel("horseman", Tactic::Offensive, 1, 5);
     harass.sim.step(10);
@@ -417,7 +410,7 @@ TEST_CASE("Auto-Defend goes on only before the fighting starts; off at any time 
     CHECK_FALSE(sim.state().auto_defend);
 }
 
-TEST_CASE("B-018: a company whose soldiers all fell is at home again and forms anew from its houses (Z:136)") {
+TEST_CASE("a company whose soldiers all fell is at home again and forms anew from its houses (Z:136, B-018)") {
     auto sim = city(true);
     fill_hovels(sim);
     run_battle(sim, 2);
@@ -436,7 +429,7 @@ TEST_CASE("B-018: a company whose soldiers all fell is at home again and forms a
     CHECK(rejection(sim).empty());
 }
 
-TEST_CASE("B-020: a company breaks ranks while one of its soldiers is already gone from the map (Z:140)") {
+TEST_CASE("a company breaks ranks while one of its soldiers is already gone from the map (Z:140, B-020)") {
     auto sim = city(true);
     fill_hovels(sim);
     run_battle(sim, 2);
@@ -459,7 +452,7 @@ TEST_CASE("B-020: a company breaks ranks while one of its soldiers is already go
     CHECK(fled);
 }
 
-TEST_CASE("B-020: a company is moved and sent home while one of its soldiers is already gone (Z:137-139)") {
+TEST_CASE("a company is moved and sent home while one of its soldiers is already gone (Z:137-139, B-020)") {
     auto sim = city(true);
     fill_hovels(sim);
     run_battle(sim, 2);

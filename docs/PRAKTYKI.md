@@ -98,6 +98,8 @@ Wzorce, które w tym projekcie są domyślne:
 
 **Zasada. Każdy zgłoszony błąd dostaje test regresji.**
 
+**Zasada. Nazwa testu: `temat: zachowanie (źródła, identyfikatory)`.** Strona instrukcji, luka, błąd i odstępstwo stoją na końcu w jednym nawiasie, np. `"heroes: a Hall ringed by walls is protected (Z:130, L-116, B-024)"`, nigdy jako prefiks; identyfikator błędu w nazwie jego testu regresji, żeby nie trzeba go było szukać w `BLEDY.md`. Znaczniki po angielsku jak cała nazwa (`assumption` zamiast `[ZAŁOŻENIE]`). Wspólne helpery testów rdzenia (`catalog`, `at`, `rejection`, `read_text`, `with_god`) są tylko w `core/tests/helpers.h`. Prefiks i ponowną definicję helpera łapie `tools/checks/check_core.py`.
+
 **Zasada. Refaktor bez zmiany zachowania dowodzi się odciskiem** (pełny przebieg scenariusza: hash stanu co N ticków).
 
 **Zasada. Podniesienie limitu czasu albo budżetu nie jest poprawką.** Najpierw przyczyna; wyjątek z uzasadnieniem i wpisem do długu z warunkiem zdjęcia.

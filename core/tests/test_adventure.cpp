@@ -102,7 +102,7 @@ TEST_CASE("the example adventure (scenarios/example_adventure.json) parses") {
     CHECK(a->steps[1].colonies.size() == 2);
 }
 
-TEST_CASE("B-007: a save in the middle of a colony keeps the adventure and the parent city") {
+TEST_CASE("a save in the middle of a colony keeps the adventure and the parent city (B-007)") {
     std::string error;
     const auto adventure = parse_adventure(kAdventure, error);
     REQUIRE(adventure.has_value());

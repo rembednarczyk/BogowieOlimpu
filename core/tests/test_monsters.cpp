@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -47,14 +48,6 @@ void bless(Simulation& sim, const std::string& god, int x) {
     }
 }
 
-std::string rejection(Simulation& sim) {
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
-            return r->reason_key;
-        }
-    }
-    return {};
-}
 
 }  // namespace
 
@@ -140,7 +133,7 @@ TEST_CASE("save v24: a monster on its way survives a round trip with the same fu
     CHECK(a.state_hash() == b->state_hash());
 }
 
-TEST_CASE("B-004: morale does not recover while a monster fights in the city") {
+TEST_CASE("morale does not recover while a monster fights in the city (B-004)") {
     auto sim = town();
     WorldState& st = sim.mutable_state();
     Company c;

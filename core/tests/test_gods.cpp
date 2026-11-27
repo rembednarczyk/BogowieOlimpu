@@ -141,7 +141,7 @@ TEST_CASE("Aphrodite: nobody emigrates (doc 10, Z:122)") {
     CHECK(migrate(plain.mutable_state(), bo::test::catalog_isolated()).left > 0);
 }
 
-TEST_CASE("B-011: the sanctuary goal counts a finished sanctuary that stands, without the god's favour") {
+TEST_CASE("the sanctuary goal counts a finished sanctuary that stands, without the god's favour (B-011)") {
     auto sim = bo::test::with_god("dionysus");
     sim.mutable_state().scenario.goals.push_back(ScenarioGoal{"sanctuary", "dionysus", 0, false});
     sim.mutable_state().scenario.goals.push_back(ScenarioGoal{"population", "", 1000000, false});  // never won
@@ -167,7 +167,7 @@ std::string pray_now(Simulation& sim) {
     return result(sim);
 }
 
-TEST_CASE("L-053: the chance of a prayer falls with the days since the last sacrifice (Z:132)") {
+TEST_CASE("the chance of a prayer falls with the days since the last sacrifice (Z:132, L-053)") {
     auto sim = bo::test::with_god("hades");
     auto& s = *sim.mutable_state().city.buildings.items.at(sanctuary_id(sim)).sanctuary;
     s.days_since_sacrifice = 0;
@@ -355,7 +355,7 @@ TEST_CASE("spontaneous help: Apollo cures a plague unasked, then waits like afte
     CHECK(helped_in(static_cast<int>(kDaysPerMonth) * 4) == 1);
 }
 
-TEST_CASE("B-022: artisans build where the stone is, not idle at the nearest empty site (Z:117)") {
+TEST_CASE("artisans build where the stone is, not idle at the nearest empty site (Z:117, B-022)") {
     std::vector<std::string> rows(40, std::string(60, '.'));
     rows[20] = std::string(60, '=');
     Simulation sim(bo::test::catalog_isolated(), SimulationConfig{11, Difficulty::Hero, 30000, rows, true});

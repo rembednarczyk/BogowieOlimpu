@@ -357,7 +357,7 @@ TEST_CASE("fleet: a crew takes the free workers there are; short-handed a ship i
     CHECK(copy->state_hash() == sim.state_hash());
 }
 
-TEST_CASE("B-021 probe: a storehouse with Get orders supplies the wharf with wood and armour on its road (Z:141)") {
+TEST_CASE("a storehouse with Get orders supplies the wharf with wood and armour on its road (Z:141, B-021)") {
     auto sim = sea_city();
     sim.issue(PlaceBuilding{"storehouse", 14, 5});
     sim.step(1);

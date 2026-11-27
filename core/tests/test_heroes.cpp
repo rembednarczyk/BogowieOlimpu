@@ -25,7 +25,7 @@ struct HeroCity {
     BuildingId stadium = kNoBuilding;
 };
 
-BuildingId at(const Simulation& sim, std::int32_t x, std::int32_t y) { return sim.state().city.map.at({x, y}).building; }
+BuildingId id_at(const Simulation& sim, std::int32_t x, std::int32_t y) { return sim.state().city.map.at({x, y}).building; }
 
 // A monster in the city now (one without a walker is gone after the next day of the simulation).
 void with_monster(Simulation& sim, const std::string& id, TilePos home = {0, 10}) {
@@ -51,7 +51,7 @@ HeroCity hero_city() {
             FAIL_CHECK("setup refused: " << r->reason_key);
         }
     }
-    c.store = at(sim, 50, 27);
+    c.store = id_at(sim, 50, 27);
     auto& loads = sim.mutable_state().city.buildings.items.at(c.store).storage->loads;
     for (const char* g : {"marble", "wine", "olive_oil", "fleece", "armor", "horses", "wheat"}) {
         loads[g] = 200;  // elite houses are built only with their goods in store (build.elite_needs_goods)
@@ -70,13 +70,13 @@ HeroCity hero_city() {
         }
     }
     sim.run_days(1);  // appeal and road access
-    c.hall = at(sim, 30, 26);
-    c.granary = at(sim, 54, 26);
-    c.house = at(sim, 96, 28);
+    c.hall = id_at(sim, 30, 26);
+    c.granary = id_at(sim, 54, 26);
+    c.house = id_at(sim, 96, 28);
     for (int x = 60; x < 92; x += 4) {
-        REQUIRE(at(sim, x, 26) != kNoBuilding);
+        REQUIRE(id_at(sim, x, 26) != kNoBuilding);
     }
-    c.stadium = at(sim, 100, 31);
+    c.stadium = id_at(sim, 100, 31);
     REQUIRE(c.hall != kNoBuilding);
     REQUIRE(c.granary != kNoBuilding);
     REQUIRE(c.house != kNoBuilding);
@@ -155,7 +155,7 @@ bool lacks(HeroCity& c, const char* hero, const std::string& prefix) {
 
 }  // namespace
 
-TEST_CASE("heroes: a city that has all they ask for leaves no demand unmet, walls aside (Z:130, P:24-25)") {
+TEST_CASE("heroes: a city that has all they ask for leaves no demand unmet, walls aside (Z:130, P:24-25, B-024)") {
     auto c = hero_city();
     meet_all(c);
     for (const char* hero : {"hercules", "achilles", "odysseus", "jason", "perseus", "atalanta", "bellerophon"}) {
@@ -166,7 +166,7 @@ TEST_CASE("heroes: a city that has all they ask for leaves no demand unmet, wall
     CHECK(unmet(c, "theseus") == std::vector<std::string>{"hall_protected_by_walls"});
 }
 
-TEST_CASE("heroes: each demand on the city's state is unmet while that state is missing (Z:130, L-116)") {
+TEST_CASE("heroes: each demand on the city's state is unmet while that state is missing (Z:130, L-116, B-024)") {
     auto c = hero_city();
     meet_all(c);
     WorldState& st = c.sim.mutable_state();
@@ -206,7 +206,7 @@ TEST_CASE("heroes: each demand on the city's state is unmet while that state is 
     CHECK(lacks(c, "odysseus", "elite_houses>=8"));
 }
 
-TEST_CASE("heroes: Theseus wants his Hall near the Palace, in good appeal (Z:130, L-116)") {
+TEST_CASE("heroes: Theseus wants his Hall near the Palace, in good appeal (Z:130, L-116, B-024)") {
     auto c = hero_city();
     meet_all(c);
     CHECK_FALSE(lacks(c, "theseus", "hall_near_palace"));
@@ -217,14 +217,14 @@ TEST_CASE("heroes: Theseus wants his Hall near the Palace, in good appeal (Z:130
     c.sim.issue(PlaceBuilding{"granary", 110, 22});
     c.sim.issue(PlaceBuilding{"heros_hall", 108, 26});
     c.sim.run_days(1);
-    const BuildingId far = at(c.sim, 108, 26);
+    const BuildingId far = id_at(c.sim, 108, 26);
     REQUIRE(far != kNoBuilding);
     const auto u = unmet_requirements(c.sim.state(), c.sim.catalog(), "theseus", far);
     CHECK(std::count(u.begin(), u.end(), "hall_near_palace") == 1);
     CHECK(std::count(u.begin(), u.end(), "hall_appeal:good") == 1);
 }
 
-TEST_CASE("heroes: a Hall ringed by walls is protected; one gap and it is not (Z:130, Z:145, L-116)") {
+TEST_CASE("heroes: a Hall ringed by walls is protected; one gap and it is not (Z:130, Z:145, L-116, B-024)") {
     std::vector<std::string> rows(30, std::string(40, '.'));
     rows[5][0] = 'i';  // armies come in here
     for (int x = 16; x <= 23; ++x) {
@@ -234,7 +234,7 @@ TEST_CASE("heroes: a Hall ringed by walls is protected; one gap and it is not (Z
     with_monster(sim, "minotaur", {0, 5});
     sim.issue(PlaceBuilding{"heros_hall", 18, 12});
     sim.step(1);
-    const BuildingId hall = at(sim, 18, 12);
+    const BuildingId hall = id_at(sim, 18, 12);
     REQUIRE(hall != kNoBuilding);
     const auto open = [&sim, hall] {
         const auto u = unmet_requirements(sim.state(), sim.catalog(), "theseus", hall);
@@ -255,11 +255,11 @@ TEST_CASE("heroes: a Hall ringed by walls is protected; one gap and it is not (Z
     CHECK(open());  // a gap at (24,14)
     sim.issue(PlaceBuilding{"wall", 24, 14});
     sim.step(1);
-    REQUIRE(at(sim, 24, 14) != kNoBuilding);
+    REQUIRE(id_at(sim, 24, 14) != kNoBuilding);
     CHECK_FALSE(open());
 }
 
-TEST_CASE("heroes: for each of the 16 monsters its own hero answers the summons (Z:130, P:23-24)") {
+TEST_CASE("heroes: for each of the 16 monsters its own hero answers the summons (Z:130, P:23-24, B-024)") {
     for (const auto& [monster, slayer] : bo::test::catalog().monster_slayer) {
         INFO(monster << " -> " << slayer);
         auto c = hero_city();
@@ -287,7 +287,7 @@ TEST_CASE("heroes: for each of the 16 monsters its own hero answers the summons 
     }
 }
 
-TEST_CASE("B-026: with two monsters in the city the hero whose demands are met comes; a hall holds one hero") {
+TEST_CASE("with two monsters in the city the hero whose demands are met comes; a hall holds one hero (B-026)") {
     auto c = hero_city();
     meet_all(c);
     auto& st = c.sim.mutable_state();

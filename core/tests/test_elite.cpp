@@ -4,6 +4,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -18,9 +19,6 @@ Simulation town(bool entry) {
     return Simulation(bo::test::catalog(), SimulationConfig{2, Difficulty::Hero, 9000, rows, true});
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 // Stock for an elite plot (doc 18: 2 food, 1 fleece, 1 olive oil), then the plot.
 void elite_plot(Simulation& sim) {
@@ -96,7 +94,7 @@ TEST_CASE("no immigrants: the elite do not come either (L-108, eZeus)") {
     CHECK(at(sim, {22, 2}).house->population == 0);
 }
 
-TEST_CASE("B-013: a new elite family waits for its needs; it leaves only when it loses them (Z:34, doc 03)") {
+TEST_CASE("a new elite family waits for its needs; it leaves only when it loses them (Z:34, doc 03, B-013)") {
     auto sim = town(false);
     elite_plot(sim);
     for (int d = 0; d < 20 && at(sim, {22, 2}).house->population == 0; ++d) {
@@ -111,7 +109,7 @@ TEST_CASE("B-013: a new elite family waits for its needs; it leaves only when it
     CHECK(at(sim, {22, 2}).house->abandoned);
 }
 
-TEST_CASE("B-012: an elite house gets its family while common houses still have room") {
+TEST_CASE("an elite house gets its family while common houses still have room (B-012)") {
     auto sim = town(false);
     elite_plot(sim);
     for (std::int32_t x = 2; x < 38; x += 2) {  // empty common plots along the street: much room, 8 each

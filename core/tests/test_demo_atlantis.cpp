@@ -16,15 +16,10 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::read_text;
 
 namespace {
 
-std::string read_text(const std::string& path) {
-    std::ifstream f(path);
-    std::stringstream s;
-    s << f.rdbuf();
-    return s.str();
-}
 
 // The expansion's mechanics the demo must show (the owner's rule), noted as they happen.
 constexpr const char* kExpansionMechanics[] = {

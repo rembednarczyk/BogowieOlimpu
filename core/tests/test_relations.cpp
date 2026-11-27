@@ -44,7 +44,7 @@ constexpr std::uint64_t kMonth = 16;
 
 }  // namespace
 
-TEST_CASE("L-121: a vassal unhappy for a year stops its tribute and rises (Z:172, Z:178)") {
+TEST_CASE("a vassal unhappy for a year stops its tribute and rises (Z:172, Z:178, L-121)") {
     auto sim = with({partner("megara", "vassal", 20)});
     sim.run_days(11 * kMonth);
     CHECK_FALSE(sim.state().trade.partners[0].diplomacy.rebelling);
@@ -53,19 +53,19 @@ TEST_CASE("L-121: a vassal unhappy for a year stops its tribute and rises (Z:172
     CHECK(count<CityRebelled>(sim) == 1);
 }
 
-TEST_CASE("L-121: a content vassal does not rise") {
+TEST_CASE("a content vassal does not rise (L-121)") {
     auto sim = with({partner("megara", "vassal", 40)});
     sim.run_days(30 * kMonth);
     CHECK_FALSE(sim.state().trade.partners[0].diplomacy.rebelling);
 }
 
-TEST_CASE("L-121: a rival that hates the player for a year marches on the city (Z:178)") {
+TEST_CASE("a rival that hates the player for a year marches on the city (Z:178, L-121)") {
     auto sim = with({partner("sparta", "rival", 5)});
     sim.run_days(12 * kMonth + 1);
     CHECK(count<InvasionStarted>(sim) == 1);  // without defenders the battle may already be over (L-110)
 }
 
-TEST_CASE("L-121: an ally fond of the player for two years sends a gift; allies help a city in debt") {
+TEST_CASE("an ally fond of the player for two years sends a gift; allies help a city in debt (L-121)") {
     auto fond = with({partner("athens", "ally", 90)});
     const std::int64_t before = fond.state().finance.treasury;
     fond.run_days(24 * kMonth + 1);
@@ -78,7 +78,7 @@ TEST_CASE("L-121: an ally fond of the player for two years sends a gift; allies 
     CHECK(debt.state().finance.treasury > 0);
 }
 
-TEST_CASE("L-122: a city's call for troops is answered by sending companies; unanswered, it lapses without penalty (Z:161)") {
+TEST_CASE("a city's call for troops is answered by sending companies; unanswered, it lapses without penalty (Z:161, L-122)") {
     auto sim = with({partner("athens", "ally", 50)});
     auto& m = sim.mutable_state().military;
     Company rabble;

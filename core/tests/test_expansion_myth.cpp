@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -15,15 +16,6 @@ std::size_t count_of(const Simulation& sim, const char* type) {
                                                   [type](const auto& kv) { return kv.second.type == type; }));
 }
 
-std::string refusal(Simulation& sim) {
-    std::string r;
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* c = std::get_if<CommandRejected>(&e.event)) {
-            r = c->reason_key;
-        }
-    }
-    return r;
-}
 
 // Loads a masonry shop on a quarry cuts in a year, with or without Atlas.
 std::uint32_t stone_in_a_year(bool atlas) {
@@ -70,7 +62,7 @@ TEST_CASE("Atlas: stonecutters work faster; a guild sends two artisans at a time
         sim.issue(PlaceBuilding{"sanctuary_hermes", 40, 21});
         sim.issue(PlaceBuilding{"artisans_guild", 30, 18});
         sim.step(1);
-        CHECK(refusal(sim).empty());
+        CHECK(rejection(sim).empty());
         std::size_t most = 0;
         for (int d = 0; d < 60; ++d) {
             sim.run_days(1);
@@ -86,7 +78,7 @@ TEST_CASE("Citadel of Poseidon: only in Atlantis, built with orichalc too (P:26)
     auto greek = bo::test::with_god("");
     greek.issue(PlaceBuilding{"sanctuary_poseidon_citadel", 2, 0});
     greek.step(1);
-    CHECK(refusal(greek) == "build.atlantean_only");
+    CHECK(rejection(greek) == "build.atlantean_only");
     auto atl = bo::test::with_god("");
     atl.mutable_state().city.atlantean = true;
     atl.issue(PlaceBuilding{"storehouse", 50, 17});
@@ -94,7 +86,7 @@ TEST_CASE("Citadel of Poseidon: only in Atlantis, built with orichalc too (P:26)
     atl.mutable_state().city.buildings.items.at(atl.state().city.map.at({50, 17}).building).storage->loads["marble"] = 40;
     atl.issue(PlaceBuilding{"sanctuary_poseidon_citadel", 2, 0});
     atl.step(1);
-    const std::string why = refusal(atl);
+    const std::string why = rejection(atl);
     INFO(why);
     CHECK(why.empty());
     const auto& p = atl.catalog().sanctuaries.at("sanctuary_poseidon_citadel");
@@ -156,7 +148,7 @@ TEST_CASE("the expansion's monsters come and go for the city: Sphinx, Chimera, E
     }
 }
 
-TEST_CASE("B-025: the Citadel of Poseidon is finished with its orichalc (P:26)") {
+TEST_CASE("the Citadel of Poseidon is finished with its orichalc (P:26, B-025)") {
     auto sim = bo::test::with_god("");
     sim.mutable_state().city.atlantean = true;
     sim.issue(PlaceBuilding{"storehouse", 50, 17});

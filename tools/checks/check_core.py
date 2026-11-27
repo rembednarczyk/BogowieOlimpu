@@ -5,7 +5,9 @@ Checks core/ sources for:
   - forbidden includes: Godot headers (core must not know the engine);
   - non-determinism: std::rand/srand, <random>, <chrono>, time(), clock(), unordered containers
     (iteration order is not portable), float/double in simulation state headers;
-  - size limits: file <= 500 lines, function <= 120 lines (brace-depth heuristic).
+  - size limits: file <= 500 lines, function <= 120 lines (brace-depth heuristic);
+  - tests (docs/PRAKTYKI.md ch. 4): a bug or gap id goes at the end of the name in parentheses, never as a
+    prefix; the shared helpers of core/tests/helpers.h are not defined again in a test file.
 Exit code 1 on any violation. Usage: python3 tools/checks/check_core.py [repo_root]
 """
 import pathlib
@@ -25,6 +27,9 @@ FORBIDDEN = [
 ]
 STATE_HEADERS = {"state.h", "time.h", "rng.h", "command.h", "event.h", "fixed.h"}
 FLOAT_RE = re.compile(r'\b(float|double)\b')
+ID_PREFIX_RE = re.compile(r'TEST_CASE\("\s*[BLKOR]-\d+')
+SHARED_HELPERS_RE = re.compile(
+    r'^(?:const\s+)?(?:std::string|Building&)\s+(at|rejection|refusal|read_text)\s*\(', re.M)
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -74,6 +79,11 @@ def main() -> int:
             for m in regex.finditer(code):
                 line = code[: m.start()].count('\n') + 1
                 errors.append(f"{rel}:{line}: {why}")
+        if is_test and path.name != 'helpers.h':
+            for m in ID_PREFIX_RE.finditer(raw):
+                errors.append(f"{rel}:{raw[: m.start()].count(chr(10)) + 1}: id as a test name prefix (put it last, in parentheses)")
+            for m in SHARED_HELPERS_RE.finditer(code):
+                errors.append(f"{rel}:{code[: m.start()].count(chr(10)) + 1}: {m.group(1)}() again (use core/tests/helpers.h)")
         if path.name in STATE_HEADERS:
             for m in FLOAT_RE.finditer(code):
                 line = code[: m.start()].count('\n') + 1

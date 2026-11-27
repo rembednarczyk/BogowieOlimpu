@@ -5,6 +5,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -15,9 +16,6 @@ Simulation town() {
     return Simulation(bo::test::catalog_isolated(), SimulationConfig{6, Difficulty::Hero, 20000, rows, true});
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 }  // namespace
 

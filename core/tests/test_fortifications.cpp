@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -32,14 +33,6 @@ Simulation walled(bool gate = true) {
     return sim;
 }
 
-std::string rejection(Simulation& sim) {
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
-            return r->reason_key;
-        }
-    }
-    return {};
-}
 
 }  // namespace
 
@@ -189,7 +182,7 @@ TEST_CASE("a trireme wharf builds a trireme from wood and armor, one at a time (
     CHECK(unmet_requirements(sim.state(), sim.catalog(), "jason", wharf).size() == 4);  // triremes>=3 met
 }
 
-TEST_CASE("B-015: the Palace falls only to an army stronger than the player's forces (Z:144)") {
+TEST_CASE("the Palace falls only to an army stronger than the player's forces (Z:144, B-015)") {
     auto sim = walled(false);
     for (int y = 0; y < 30; ++y) {  // an open city: no wall in the way
         sim.issue(Demolish{15, y});

@@ -34,21 +34,21 @@ Brak.
 - Status: naprawione
 - Miejsce i liczba wystąpień: `core/src/data_economy.cpp` `load_production`; `max_storage_distance` przystani i nabrzeża jeżowców (300 zamiast pomiaru 25/40) oraz `loads_per_year` w postaci `{"close": n, "dist20": m}` u przystani, nabrzeża, odlewni, rafinerii i innych wydobywczych (0 zamiast 13).
 - Dowód: sonda na zapisie demo bogów (`max_storage_distance == 300`); test poniżej na starym kodzie: 300 == 40 i 0 == 13 dla każdego takiego wpisu.
-- Test "co dziś pada": "B-023: every production distance and rate reads as written, in any of its forms (production.json)" (`core/tests/test_data.cpp`), pada bez poprawki.
+- Test "co dziś pada": "every production distance and rate reads as written, in any of its forms (production.json, B-023)" (`core/tests/test_data.cpp`), pada bez poprawki.
 - Przyczyna: loader rozumiał liczbę i tablicę, a obiekt pomiarów według odległości od źródła oddawał domyślną. Teraz wspólna funkcja `measured` czyta wszystkie trzy postacie: zasięg dowozu to najdłuższy zmierzony, tempo to pomiar przy źródle [ZAŁOŻENIE, L-103]. Demo greckie straciło przez to zarazę (krótszy dowóz ryb, zdrowsze miasto); pierwsza infirmeria stoi teraz od dnia 160, więc zaraza przychodzi z higieny poniżej 40 (Z:84-85).
 
 ### B-026 [S2] Przy dwóch potworach w mieście żaden heros nie przychodził, gdy pierwszy nie miał spełnionych wymagań
 - Status: naprawione
 - Miejsce i liczba wystąpień: `core/src/monsters.cpp` `summon_hero`; każde miasto z dwoma potworami (demo herosów: Bellerofont spełniał wszystko od dnia 512, a wezwanie odmawiało, bo pierwszy był Sfinks Atalanty).
 - Dowód: sonda bramki "demo gate: heroes": `bellerophon` bez braków, `myth.hero_requirements` przy każdym wezwaniu.
-- Test "co dziś pada": "B-026: with two monsters in the city the hero whose demands are met comes; a hall holds one hero" (`core/tests/test_heroes.cpp`), pada bez poprawki.
+- Test "co dziś pada": "with two monsters in the city the hero whose demands are met comes; a hall holds one hero (B-026)" (`core/tests/test_heroes.cpp`), pada bez poprawki.
 - Przyczyna: wezwanie brało herosa pierwszego żywego potwora i odmawiało, gdy ten nie miał kompletu. Teraz przychodzi pierwszy potrzebny heros ze spełnionymi wymaganiami; jeden dom herosa mieści jednego herosa (`myth.hall_taken`, buildings.json `per_hero`).
 
 ### B-025 [S2] Cytadela Posejdona nigdy się nie kończyła: nikt nie wbudowywał orichalku
 - Status: naprawione
 - Miejsce i liczba wystąpień: `core/src/sanctuary.cpp` `phase_goods`; każda cytadela (demo bogów Atlantydy: cała budowa stała przez 6 lat z 16 orichalku do wbudowania). Przy okazji `data_economy.cpp` nie wczytywał orichalku cytadeli do materiałów.
 - Dowód: log bramki "demo gate: Atlantean gods": `sanctuary_poseidon_citadel marble:0 orichalc:16 sculpture:0 wood:0` od dnia 863 do końca.
-- Test "co dziś pada": "B-025: the Citadel of Poseidon is finished with its orichalc (P:26)" (`core/tests/test_expansion_myth.cpp`), pada bez poprawki.
+- Test "co dziś pada": "the Citadel of Poseidon is finished with its orichalc (P:26, B-025)" (`core/tests/test_expansion_myth.cpp`), pada bez poprawki.
 - Przyczyna: fazy budowy sanktuarium (S-005) znały tylko marmur, drewno i rzeźby; orichalk występował tylko w pomnikach. Teraz wchodzi do ostatniej fazy razem z rzeźbami [ZAŁOŻENIE, L-134].
 
 ### B-024 [S1] Wezwanie Herkulesa lub Tezeusza kończyło się wyjątkiem; czterech herosów nie dało się wezwać
@@ -62,20 +62,20 @@ Brak.
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo bogów: Zeus z kompletem materiałów na placu od dnia ok. 400 bez postępu; wcześniej Afrodyta (marmur, drewno i rzeźby na placu) i Demeter.
 - Dowód: `BO_DEMO_HOUSE` na placu i gildii: `on_site marble 97 ... sculpture 22 ... wood 28` bez zmian przez lata, rzemieślnik gildii stoi przy innym placu.
-- Test "co dziś pada": "B-022: artisans build where the stone is, not idle at the nearest empty site (Z:117)" (`core/tests/test_gods.cpp`), pada bez poprawki.
+- Test "co dziś pada": "artisans build where the stone is, not idle at the nearest empty site (Z:117, B-022)" (`core/tests/test_gods.cpp`), pada bez poprawki.
 - Przyczyna: gildia wysyłała rzemieślnika na najbliższy niedokończony plac, a ten czekał tam, aż przyjdzie materiał. Teraz gildia wybiera najbliższy plac z materiałem na bieżącą fazę, a bezczynny rzemieślnik wraca, jeśli inny plac ma pracę (`core/src/sanctuary.cpp` `has_work`) [ZAŁOŻENIE: Z:117 nie opisuje wyboru placu].
 
 ### B-021 [S3] Magazyn z rozkazem Get nie zasilał stoczni obok (odrzucone: błąd układu demo, nie rdzenia)
 - Status: odrzucone 2026-11-27
 - Miejsce: demo bogów, magazyn (55,43) i stocznia (61,47), potem magazyn (49,43) i stocznia (39,47).
-- Dowód: testy "B-021 probe" (`core/tests/test_goods.cpp`, `core/tests/test_naval.cpp`): magazyn z rozkazem Get zasila warsztat i stocznię przy wspólnej drodze. W demo droga brzegowa była odcięta od sieci, potem stocznia leżała poza zasięgiem 40 kafli (objazd ok. 47).
-- Co zostaje: kontrola `cut_off` w bramkach demo (`core/tests/demo_probes.h`): każdy budynek z dostępem do drogi musi być połączony drogą z punktem wejścia, a mapa musi go mieć; test "B-021: the demo gates find a building whose road does not reach the land entry". Kontrola wykryła, że w obu mapach demo bogów droga zasłaniała znacznik wejścia 'E' (poprawione w `tools/make_demo_gods.py`).
+- Dowód: testy z "(Z:67, B-021)" i "(Z:141, B-021)" w nazwie (`core/tests/test_goods.cpp`, `core/tests/test_naval.cpp`): magazyn z rozkazem Get zasila warsztat i stocznię przy wspólnej drodze. W demo droga brzegowa była odcięta od sieci, potem stocznia leżała poza zasięgiem 40 kafli (objazd ok. 47).
+- Co zostaje: kontrola `cut_off` w bramkach demo (`core/tests/demo_probes.h`): każdy budynek z dostępem do drogi musi być połączony drogą z punktem wejścia, a mapa musi go mieć; test "the demo gates find a building whose road does not reach the land entry (B-021)". Kontrola wykryła, że w obu mapach demo bogów droga zasłaniała znacznik wejścia 'E' (poprawione w `tools/make_demo_gods.py`).
 
 ### B-020 [S1] Awaria symulacji przy rozkazie dla kompanii, której żołnierz zniknął tego dnia z mapy
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo greckie z przekupieniem najazdu (dzień 433) i z Auto-Defend: wyjątek `std::out_of_range` w `soldier_killed` (combat.cpp) i `send_company_home` (military.cpp).
 - Dowód: `gdb -ex "catch throw"` na bramce demo, `map::at` dla identyfikatora usuniętego piechura.
-- Test "co dziś pada": "B-020: a company breaks ranks while one of its soldiers is already gone from the map (Z:140)" i "B-020: a company is moved and sent home while one of its soldiers is already gone (Z:137-139)" (`core/tests/test_combat.cpp`); pierwszy pada bez poprawki z `map::at`.
+- Test "co dziś pada": "a company breaks ranks while one of its soldiers is already gone from the map (Z:140, B-020)" i "a company is moved and sent home while one of its soldiers is already gone (Z:137-139, B-020)" (`core/tests/test_combat.cpp`); pierwszy pada bez poprawki z `map::at`.
 - Przyczyna: lista żołnierzy kompanii czyszczona raz dziennie (`update_companies`), a rozkazy i ucieczka sięgały po nieistniejące postacie. Teraz każdy rozkaz czyści listę (`prune_soldiers`), a ucieczka pomija brakujących.
 
 ### B-019 [S2] Łowiska, przystań jeżowców i chata łowców dzików w demo nic nie dawały
@@ -89,7 +89,7 @@ Brak.
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo greckie, najazd Sparty w roku 6: 17 pustych kompanii motłochu w stanie Marching do końca gry, jeźdźcy z majątków nigdy się nie uformowali.
 - Dowód: `BO_DEMO_INV=1`, linie `rabble/ st1 ... n0`.
-- Test "co dziś pada": "B-018: a company whose soldiers all fell is at home again and forms anew from its houses (Z:136)" (`core/tests/test_combat.cpp`).
+- Test "co dziś pada": "a company whose soldiers all fell is at home again and forms anew from its houses (Z:136, B-018)" (`core/tests/test_combat.cpp`).
 - Przyczyna: `update_companies` wracał kompanię do domu tylko ze stanu GoingHome lub Fleeing; kompania bez żołnierzy w każdym stanie poza służbą za granicą jest teraz w domu.
 
 Od najnowszego. Źródła zgłoszeń: B-002 do B-007 agent weryfikujący, B-008 do B-011 agent przeglądu referencji, B-012 do B-015 przebudowa demo i autopilot, B-016 i B-017 testy taktyk i bramka demo.

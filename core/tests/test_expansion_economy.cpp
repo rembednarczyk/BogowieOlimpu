@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -27,15 +28,6 @@ Simulation farm(bool atlantean = false) {
 
 std::uint32_t stock(const Simulation& sim, const char* good) { return city_stock(sim.state().city, sim.catalog(), good); }
 
-std::string refusal(Simulation& sim) {
-    std::string r;
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* c = std::get_if<CommandRejected>(&e.event)) {
-            r = c->reason_key;
-        }
-    }
-    return r;
-}
 
 }  // namespace
 
@@ -43,7 +35,7 @@ TEST_CASE("expansion: cattle need a corral and bring meat to the granary (P:7)")
     auto sim = farm();
     sim.issue(PlaceBuilding{"cattle", 2, 2});
     sim.step(1);
-    CHECK(refusal(sim) == "build.needs_building");
+    CHECK(rejection(sim) == "build.needs_building");
     sim.issue(PlaceBuilding{"corral", 14, 2});
     sim.issue(PlaceBuilding{"granary", 22, 2});
     sim.step(1);
@@ -51,7 +43,7 @@ TEST_CASE("expansion: cattle need a corral and bring meat to the granary (P:7)")
         sim.issue(PlaceBuilding{"cattle", 2 + i, 2});
     }
     sim.step(1);
-    CHECK(refusal(sim).empty());
+    CHECK(rejection(sim).empty());
     sim.run_days(16 * 24);
     MESSAGE("meat in two years: " << stock(sim, "meat"));
     CHECK(stock(sim, "meat") >= 12);  // 12-14 loads a year once grown (data/production.json corral)
@@ -65,7 +57,7 @@ TEST_CASE("expansion: orange tenders pick the oranges for the granary (P:8)") {
         sim.issue(PlaceBuilding{"orange_tree", 2 + i, 3});
     }
     sim.step(1);
-    CHECK(refusal(sim).empty());
+    CHECK(rejection(sim).empty());
     sim.run_days(16 * 24);
     MESSAGE("oranges in two years: " << stock(sim, "oranges"));
     CHECK(stock(sim, "oranges") >= 4);
@@ -76,7 +68,7 @@ TEST_CASE("expansion: the hunting lodge brings venison from the deer (P:8)") {
     sim.issue(PlaceBuilding{"hunting_lodge", 26, 4});
     sim.issue(PlaceBuilding{"granary", 32, 2});
     sim.step(1);
-    CHECK(refusal(sim).empty());
+    CHECK(rejection(sim).empty());
     sim.run_days(16 * 12);
     MESSAGE("meat in a year: " << stock(sim, "meat"));
     CHECK(stock(sim, "meat") >= 6);
@@ -86,11 +78,11 @@ TEST_CASE("expansion: a chariot factory makes chariots of wood and horses, only 
     auto greek = farm();
     greek.issue(PlaceBuilding{"chariot_factory", 20, 2});
     greek.step(1);
-    CHECK(refusal(greek) == "build.atlantean_only");
+    CHECK(rejection(greek) == "build.atlantean_only");
     auto sim = farm(true);
     sim.issue(PlaceBuilding{"chariot_factory", 20, 2});
     sim.step(1);
-    CHECK(refusal(sim).empty());
+    CHECK(rejection(sim).empty());
     auto& p = *sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({20, 2}).building).producer;
     p.units["wood"] = 400;
     p.units["horses"] = 400;
@@ -145,7 +137,7 @@ TEST_CASE("expansion: the chariot stall takes chariots from the factory; an esta
     }
     sim.issue(PlaceBuilding{"elite_housing", 16, 7});
     sim.step(1);
-    CHECK(refusal(sim).empty());
+    CHECK(rejection(sim).empty());
     auto& factory = *sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({26, 2}).building).producer;
     factory.output_loads = 2;
     sim.step(kTicksPerMonth);

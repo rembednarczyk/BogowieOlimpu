@@ -1,5 +1,9 @@
 #pragma once
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
 #include "bo/core/data.h"
 #include "bo/core/simulation.h"
 #include "doctest/doctest.h"
@@ -63,5 +67,31 @@ inline bo::core::Simulation with_god(const std::string& god) {
     return sim;
 }
 
+// The building on tile p (REQUIREs a building there).
+inline bo::core::Building& at(bo::core::Simulation& sim, bo::core::TilePos p) {
+    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
+}
+inline const bo::core::Building& at(const bo::core::Simulation& sim, bo::core::TilePos p) {
+    return sim.state().city.buildings.items.at(sim.state().city.map.at(p).building);
+}
+
+// The reason key of the first command rejected since the last drain, empty if none; drains the events.
+inline std::string rejection(bo::core::Simulation& sim) {
+    std::string first;
+    for (const auto& e : sim.drain_events()) {
+        if (const auto* r = std::get_if<bo::core::CommandRejected>(&e.event); r != nullptr && first.empty()) {
+            first = r->reason_key;
+        }
+    }
+    return first;
+}
+
+// A whole file as text (scenarios and build orders of the demo gates).
+inline std::string read_text(const std::string& path) {
+    std::ifstream f(path);
+    std::stringstream s;
+    s << f.rdbuf();
+    return s.str();
+}
 
 }  // namespace bo::test

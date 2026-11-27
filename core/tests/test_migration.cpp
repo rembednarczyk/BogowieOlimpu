@@ -28,7 +28,7 @@ TEST_CASE("migration table (doc 24)") {
     CHECK(migration_percent(p, 20) == -50);
 }
 
-TEST_CASE("a new town on Hero starts at popularity 60 and gains 6 people a day (12 x 50%)") {
+TEST_CASE("migration: a new town on Hero starts at popularity 60 and gains 6 people a day, 12 x 50% (doc 24, Z:159-160)") {
     Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, street(20)});
     for (int x = 0; x < 20; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 1});
@@ -41,7 +41,7 @@ TEST_CASE("a new town on Hero starts at popularity 60 and gains 6 people a day (
     CHECK(city_population(sim.state().city) == 60);
 }
 
-TEST_CASE("immigrants fill houses with at least 8 free places first, then the rest") {
+TEST_CASE("migration: immigrants fill houses with at least 8 free places first, then the rest (doc 24)") {
     Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, street(10)});
     sim.issue(PlaceBuilding{"common_housing", 0, 1});
     sim.issue(PlaceBuilding{"common_housing", 2, 1});
@@ -53,14 +53,14 @@ TEST_CASE("immigrants fill houses with at least 8 free places first, then the re
     CHECK(items.at(1).house->population == 3);
 }
 
-TEST_CASE("no room: the batch does not wait") {
+TEST_CASE("migration: with no room the batch does not wait (doc 24)") {
     Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, street(10)});
     sim.run_days(3);
     CHECK(sim.state().migration.pool == 0);
     CHECK(city_population(sim.state().city) == 0);
 }
 
-TEST_CASE("moods: high taxes and unemployment lower happiness in a city of 300+; popularity is the mean") {
+TEST_CASE("moods: high taxes and unemployment lower happiness in a city of 300+; popularity is the mean (doc 24, S-004, S-006, Z:159)") {
     Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 1000, street(30)});
     for (int x = 0; x < 30; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 1});
@@ -83,7 +83,7 @@ TEST_CASE("moods: high taxes and unemployment lower happiness in a city of 300+;
     CHECK(st.city.buildings.items.at(1).house->happiness == 51 - 5 - 3 - 2);  // hunger grows to -3
 }
 
-TEST_CASE("small cities do not complain (below 300 people: base happiness)") {
+TEST_CASE("moods: a city below 300 people does not complain, base happiness (doc 24)") {
     Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Titan, 1000, street(10)});
     sim.issue(PlaceBuilding{"common_housing", 0, 1});
     sim.issue(SetTaxRate{TaxRate::Outrageous});
@@ -94,7 +94,7 @@ TEST_CASE("small cities do not complain (below 300 people: base happiness)") {
     CHECK(st.migration.popularity == 50);  // Titan base
 }
 
-TEST_CASE("emigration takes people from the lowest levels, only above 100 residents") {
+TEST_CASE("migration: emigration takes people from the lowest levels, only above 100 residents (doc 24, Z:159-160)") {
     Simulation sim(bo::test::catalog(), SimulationConfig{1, Difficulty::Hero, 1000, street(20)});
     for (int x = 0; x < 10; x += 2) {
         sim.issue(PlaceBuilding{"common_housing", x, 1});
@@ -113,7 +113,7 @@ TEST_CASE("emigration takes people from the lowest levels, only above 100 reside
     CHECK(st.city.buildings.items.at(1).house->population == 18);
 }
 
-TEST_CASE("a house cut off from roads empties after more than 4 days; the people are rehoused first") {
+TEST_CASE("homeless: a house cut off from roads empties after more than 4 days; the people are rehoused first (doc 24)") {
     Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 1000, street(10)});
     sim.issue(PlaceBuilding{"common_housing", 0, 1});
     sim.issue(PlaceBuilding{"common_housing", 4, 1});

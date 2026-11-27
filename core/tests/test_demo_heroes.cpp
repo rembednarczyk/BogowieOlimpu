@@ -22,15 +22,10 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::read_text;
 
 namespace {
 
-std::string read_text(const std::string& path) {
-    std::ifstream f(path);
-    std::stringstream s;
-    s << f.rdbuf();
-    return s.str();
-}
 
 // The heroes the demo must show at work (the owner's rule).
 constexpr const char* kHeroMechanics[] = {

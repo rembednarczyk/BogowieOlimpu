@@ -19,15 +19,10 @@
 
 using namespace bo::core;
 using namespace bo::test::demo;
+using bo::test::read_text;
 
 namespace {
 
-std::string read_text(const std::string& path) {
-    std::ifstream f(path);
-    std::stringstream s;
-    s << f.rdbuf();
-    return s.str();
-}
 
 BuildOrder order_of(const std::string& file) {
     std::string error;

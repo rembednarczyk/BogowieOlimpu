@@ -41,7 +41,7 @@ const GameParams& isthmian(const Simulation& sim) {
 
 }  // namespace
 
-TEST_CASE("L-123: the chance is multiplier(population) x coverage squared; no performers, no invitation (Z:111)") {
+TEST_CASE("the chance is multiplier(population) x coverage squared; no performers, no invitation (Z:111, L-123)") {
     CHECK(games_chance(city(0).state(), bo::test::catalog(), isthmian(city(0))) == 0);
     auto half = city(5);   // 50 % coverage: 0.5 x 0.5^2 = 12 %
     CHECK(games_chance(half.state(), half.catalog(), isthmian(half)) == 12);
@@ -51,7 +51,7 @@ TEST_CASE("L-123: the chance is multiplier(population) x coverage squared; no pe
     CHECK(games_chance(few.state(), few.catalog(), isthmian(few)) == 0);
 }
 
-TEST_CASE("L-123: the games are decided in August; a win earns the discipline's monument (Z:111, Z:155-156)") {
+TEST_CASE("the games are decided in August; a win earns the discipline's monument (Z:111, Z:155-156, L-123)") {
     auto sim = city(10);
     std::size_t held = 0;
     std::size_t won = 0;
@@ -84,7 +84,7 @@ TEST_CASE("L-123: the games are decided in August; a win earns the discipline's 
     CHECK(monuments == won);
 }
 
-TEST_CASE("L-123: a city with the right and a working Stadium hosts the Olympian games; without one it loses the right (Z:111)") {
+TEST_CASE("a city with the right and a working Stadium hosts the Olympian games; without one it loses the right (Z:111, L-123)") {
     for (const bool stadium : {true, false}) {
         auto sim = city(10);
         sim.mutable_state().games_host_year = 0;  // the Olympian games of year 0

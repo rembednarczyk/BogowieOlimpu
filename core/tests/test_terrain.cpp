@@ -48,7 +48,7 @@ TEST_CASE("roads over a ramp become one network; without the ramp the cliff spli
     CHECK_FALSE(find_path(flat_cliff, {{0, 0}, {9, 0}, PathMode::Road}));
 }
 
-TEST_CASE("buildings stand on one level and not on ramps [ZAŁOŻENIE, L-099]") {
+TEST_CASE("buildings stand on one level and not on ramps (assumption, L-099)") {
     const auto& cat = bo::test::catalog();
     auto c = plateau(false);
     CHECK(place_building(c, cat, Difficulty::Hero, "fountain", {4, 0}).reason == "build.uneven_ground");

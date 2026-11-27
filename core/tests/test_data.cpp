@@ -57,7 +57,7 @@ TEST_CASE("validation catches a broken reference (proof that the check bites)") 
     fs::remove_all(tmp);
 }
 
-TEST_CASE("B-023: every production distance and rate reads as written, in any of its forms (production.json)") {
+TEST_CASE("every production distance and rate reads as written, in any of its forms (production.json, B-023)") {
     std::ifstream f(std::string(BO_DATA_DIR) + "/production.json");
     const auto doc = nlohmann::json::parse(f);
     const auto& cat = bo::test::catalog();

@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -22,9 +23,6 @@ Simulation road_sim() {
     return sim;
 }
 
-const Building& at(const Simulation& sim, TilePos p) {
-    return sim.state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 std::uint8_t coverage(const Building& b, const std::string& walker) {
     const auto it = b.coverage.find(walker);
@@ -33,7 +31,7 @@ std::uint8_t coverage(const Building& b, const std::string& walker) {
 
 }  // namespace
 
-TEST_CASE("B-008: a College sends a philosopher to the Podium, then philosophers roam from the Podium") {
+TEST_CASE("a College sends a philosopher to the Podium, then philosophers roam from the Podium (B-008)") {
     auto sim = road_sim();
     sim.issue(PlaceBuilding{"college", 2, 2});
     sim.issue(PlaceBuilding{"podium", 30, 3});
@@ -44,7 +42,7 @@ TEST_CASE("B-008: a College sends a philosopher to the Podium, then philosophers
     CHECK(coverage(at(sim, {34, 3}), "philosopher") > 0);
 }
 
-TEST_CASE("B-008: a Podium without a College never performs") {
+TEST_CASE("a Podium without a College never performs (B-008)") {
     auto sim = road_sim();
     sim.issue(PlaceBuilding{"podium", 30, 3});
     sim.issue(PlaceBuilding{"fountain", 34, 3});
@@ -54,7 +52,7 @@ TEST_CASE("B-008: a Podium without a College never performs") {
     CHECK(coverage(at(sim, {34, 3}), "philosopher") == 0);
 }
 
-TEST_CASE("B-010: a Gymnasium trains competitors only when there is a Stadium (Z:108)") {
+TEST_CASE("a Gymnasium trains competitors only when there is a Stadium (Z:108, B-010)") {
     auto sim = road_sim();
     sim.issue(PlaceBuilding{"gymnasium", 2, 2});
     sim.step(1);
@@ -65,7 +63,7 @@ TEST_CASE("B-010: a Gymnasium trains competitors only when there is a Stadium (Z
     CHECK(at(sim, {2, 2}).schools.at("competitor").second == kNoBuilding);
 }
 
-TEST_CASE("B-008: a working Stadium gives every house 10 culture points (doc 18)") {
+TEST_CASE("a working Stadium gives every house 10 culture points (doc 18, B-008)") {
     auto sim = road_sim();
     sim.issue(PlaceBuilding{"gymnasium", 2, 2});
     sim.issue(PlaceBuilding{"stadium", 30, 0});
@@ -77,7 +75,7 @@ TEST_CASE("B-008: a working Stadium gives every house 10 culture points (doc 18)
     CHECK(city_culture_bonus(sim.state().city, sim.catalog()) == 10);
 }
 
-TEST_CASE("B-009: one Palace and one Stadium per city (Z:95, Z:109)") {
+TEST_CASE("one Palace and one Stadium per city (Z:95, Z:109, B-009)") {
     auto sim = road_sim();
     sim.issue(PlaceBuilding{"palace", 2, 7});
     sim.issue(PlaceBuilding{"palace", 20, 7});

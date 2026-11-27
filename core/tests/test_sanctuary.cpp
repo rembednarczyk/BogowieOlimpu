@@ -8,6 +8,8 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
+using bo::test::rejection;
 
 namespace {
 
@@ -23,18 +25,7 @@ Simulation town() {
     return Simulation(bo::test::catalog_isolated(), SimulationConfig{9, Difficulty::Hero, 30000, rows, true});
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
-std::string rejection(Simulation& sim) {
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
-            return r->reason_key;
-        }
-    }
-    return {};
-}
 
 // A storehouse at (30, 17) holding the given loads (set directly; capacity is not the point here).
 void stock(Simulation& sim, std::uint32_t marble, std::uint32_t wood = 0, std::uint32_t sculptures = 0) {

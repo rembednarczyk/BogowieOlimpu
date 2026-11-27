@@ -362,7 +362,7 @@ TEST_CASE("save v15: spawn points load without the hunting wolf field (v16)") {
     check_load(v15, 15, a.state_hash());
 }
 
-TEST_CASE("B-001: burning days and quarantine survive a save (read in the order they are written)") {
+TEST_CASE("burning days and quarantine survive a save (read in the order they are written, B-001)") {
     std::vector<std::string> rows(10, std::string(20, '.'));
     rows[5] = std::string(20, '=');
     Simulation a(bo::test::catalog_isolated(), SimulationConfig{4, Difficulty::Hero, 5000, rows});

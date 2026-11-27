@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -36,9 +37,6 @@ SimulationConfig config(std::vector<TradePartner> partners) {
     return c;
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 }  // namespace
 

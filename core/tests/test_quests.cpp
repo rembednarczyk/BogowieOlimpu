@@ -7,6 +7,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::rejection;
 
 namespace {
 
@@ -44,14 +45,6 @@ void ready_for_perseus(Simulation& sim) {
     store.storage->loads["sculpture"] = 6;
 }
 
-std::string rejection(Simulation& sim) {
-    for (const auto& e : sim.drain_events()) {
-        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
-            return r->reason_key;
-        }
-    }
-    return {};
-}
 
 }  // namespace
 

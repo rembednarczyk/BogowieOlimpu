@@ -307,7 +307,7 @@ DemoRun run_demo(std::uint64_t years) {
 
 }  // namespace
 
-TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
+TEST_CASE("demo gate: the autopilot builds the demo city and wins it (B-002, B-003, B-019)") {
     const char* years = std::getenv("BO_DEMO_YEARS");  // shorter runs while tuning the demo
     const auto run = run_demo(years != nullptr ? std::strtoull(years, nullptr, 10) : 10);
     if (std::getenv("BO_DEMO_LOG") != nullptr) {

@@ -27,7 +27,7 @@ Simulation in_debt() {
 
 }  // namespace
 
-TEST_CASE("L-034: a year of debt brings a notice and stops immigration") {
+TEST_CASE("a year of debt brings a notice and stops immigration (L-034)") {
     auto sim = in_debt();
     sim.run_days(191);
     CHECK(count_notices(sim) == 0);
@@ -45,7 +45,7 @@ TEST_CASE("L-034: a year of debt brings a notice and stops immigration") {
     CHECK_FALSE(sim.state().episode_lost);
 }
 
-TEST_CASE("L-034: three years of continuous debt lose the episode; paying it off starts the count again") {
+TEST_CASE("three years of continuous debt lose the episode; paying it off starts the count again (L-034)") {
     auto sim = in_debt();
     sim.run_days(2 * 192);
     sim.mutable_state().finance.treasury = 10;  // out of debt for a day

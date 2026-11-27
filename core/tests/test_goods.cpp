@@ -8,6 +8,7 @@
 #include "helpers.h"
 
 using namespace bo::core;
+using bo::test::at;
 
 namespace {
 
@@ -23,9 +24,6 @@ std::vector<std::string> valley() {
     return r;
 }
 
-Building& at(Simulation& sim, TilePos p) {
-    return sim.mutable_state().city.buildings.items.at(sim.state().city.map.at(p).building);
-}
 
 }  // namespace
 
@@ -329,7 +327,7 @@ TEST_CASE("Not Buying: the stall sends no vendor; both orders survive a save (Z:
     CHECK(copy->state().city.buildings.items.at(stall).stall->not_buying == false);
 }
 
-TEST_CASE("B-021 probe: a storehouse with a Get order still supplies a workshop on its road (Z:67)") {
+TEST_CASE("a storehouse with a Get order still supplies a workshop on its road (Z:67, B-021)") {
     Simulation sim(bo::test::catalog_isolated(), SimulationConfig{1, Difficulty::Hero, 5000, valley(), true});
     sim.issue(PlaceBuilding{"storehouse", 10, 3});
     sim.issue(PlaceBuilding{"sculpture_studio", 20, 4});
@@ -344,7 +342,7 @@ TEST_CASE("B-021 probe: a storehouse with a Get order still supplies a workshop 
     CHECK(at(sim, {10, 3}).storage->loads["bronze"] < 4);
 }
 
-TEST_CASE("B-021: the demo gates find a building whose road does not reach the land entry") {
+TEST_CASE("the demo gates find a building whose road does not reach the land entry (B-021)") {
     auto rows = valley();
     rows[6][0] = 'E';
     rows[12] = std::string(40, '=');  // a street of its own, joined to nothing
