@@ -6,7 +6,8 @@ extends SceneTree
 var frames_left := 10
 var out_path := "user://shot.png"
 var speed := 0.0  # ticks per second of the demo; 0 keeps the scene default
-var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report, 4: the army, 5: the world
+var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report, 4: the army, 5: the world, 6: monuments layer by layer (P:26-28)
+var demo := ""  # demo=atlantis_gods and the like
 var node: Node
 
 func _init() -> void:
@@ -19,9 +20,13 @@ func _init() -> void:
 			speed = float(arg.substr(6))
 		elif arg.begins_with("build_view="):
 			build_view = int(arg.substr(11))
+		elif arg.begins_with("demo="):
+			demo = arg.substr(5)
 	var scene: PackedScene = load("res://scenes/boot.tscn")
 	node = scene.instantiate()
 	node.set("use_save", false)  # never the player's save
+	if demo != "":
+		node.set("demo", demo)
 	if speed > 0.0:
 		node.set("ticks_per_second", speed)
 	root.add_child(node)
@@ -35,6 +40,16 @@ func _process(_delta: float) -> bool:
 			node.ui.army_world.toggle_army()
 		elif build_view == 5:
 			node.ui.army_world.toggle_world()
+		elif build_view == 6:  # four pyramids of 2 to 5 layers, each part built and whole (presentation only)
+			var x := 4
+			for p in [["pyramid_modest", 3, 2], ["pyramid_standard", 5, 3], ["pyramid_great", 7, 4], ["pyramid_majestic", 9, 5]]:
+				for built in [p[2] / 2, p[2]]:
+					node._add_building({"id": -x - built, "building_type": p[0], "x": x, "y": 46 - (0 if built == p[2] else p[1] + 1),
+						"width": p[1], "height": p[1], "parent": 0, "levels": p[2], "built": built})
+				x += p[1] + 1
+			node.cam_target = Vector3(16, 0, 42)
+			node.cam.size = 22.0
+			node._place_camera()
 		elif build_view == 1:
 			node.ui._show_tab("husbandry")
 		else:

@@ -239,6 +239,8 @@ ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
 ui.demo_greek,Demo: Grecja,Demo: Greece
 ui.demo_gods,Demo: bogowie,Demo: the gods
 ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
+ui.hold_building,Wstrzymaj budowę,Hold the building
+ui.monument_progress,Budowa: %d z %d ładunków,Building: %d of %d loads
 ui.demo_atlantis_gods,Demo: bogowie Atlantydy,Demo: the Atlantean gods
 msg.adventure_won,Przygoda wygrana,Adventure won
 scenario.demo_atlantis.name,Atlantyda,Atlantis

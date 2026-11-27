@@ -227,6 +227,7 @@ func _process(delta: float) -> void:
 			_handle_events(sim.drain_events())
 			if sim.get_tick() % TICKS_PER_DAY == 0:
 				_demo_day()
+				_update_monuments()
 				if sim.get_day_in_month() == 0:
 					save_game()  # once a month of game time
 		_update_label()
@@ -418,6 +419,9 @@ func _add_building(e: Dictionary) -> void:
 			for x in range(e["x"], e["x"] + e["width"]):
 				if sim.get_tile(x, y)["building"] == e["id"]:
 					parts.append(Rect2(x, y, 1, 1))
+	elif e.has("levels"):  # a monument going up layer by layer (P:26-28, L-128)
+		mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.86, 0.82, 0.70))  # stone
+		_add_layers(node, e, mat)
 	else:
 		parts.append(Rect2(e["x"], e["y"], bw, bh))
 	for r in parts:
@@ -441,6 +445,43 @@ func _add_building(e: Dictionary) -> void:
 	node.set_meta("placed", e)
 	add_child(node)
 	building_nodes[e["id"]] = node
+
+# A monument as a stepped pyramid: `built` of its `levels` layers, each a tile narrower on every side (S-008);
+# a bare site shows its foundation only.
+func _add_layers(node: Node3D, e: Dictionary, mat: StandardMaterial3D) -> void:
+	var levels: int = e["levels"]
+	var built: int = e.get("built", 0)
+	for k in maxi(built, 1):
+		var inset: float = minf(k, (minf(e["width"], e["height"]) - 1.0) / 2.0)
+		var mesh := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		var h := 0.8 if built > 0 else 0.06
+		box.size = Vector3(e["width"] - 2.0 * inset - 0.15, h, e["height"] - 2.0 * inset - 0.15)
+		var layer_mat := StandardMaterial3D.new()  # each layer a shade lighter: the steps read in flat light
+		layer_mat.albedo_color = mat.albedo_color.darkened(0.25).lightened(0.12 * k)
+		box.material = layer_mat
+		mesh.mesh = box
+		mesh.position = Vector3(e["x"] + e["width"] / 2.0, h / 2.0 + 0.8 * k, e["y"] + e["height"] / 2.0)
+		node.add_child(mesh)
+	node.set_meta("levels_shown", built if built <= levels else levels)
+
+# Daily: a monument's layers follow its building (presentation only).
+func _update_monuments() -> void:
+	for b in sim.get_buildings():
+		if not b.get("monument", false) or not building_nodes.has(b["id"]):
+			continue
+		var total: int = maxi(b["sanctuary_loads_total"], 1)
+		var levels: int = b["monument_levels"]
+		var built: int = levels if b["sanctuary_complete"] else int(levels * (total - b["sanctuary_loads_needed"]) / total)
+		var node: Node3D = building_nodes[b["id"]]
+		if node.get_meta("levels_shown", -1) == built:
+			continue
+		var e: Dictionary = node.get_meta("placed", {}).duplicate()
+		e["levels"] = levels
+		e["built"] = built
+		node.queue_free()
+		building_nodes.erase(b["id"])
+		_add_building(e)
 
 # The race (P:14; presentation only, as in eZeus): while the track races, its horses run round the loop of
 # stade centres; the core keeps only how many there are.

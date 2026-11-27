@@ -229,6 +229,24 @@ func _process(_d: float) -> bool:
 	agods.demo = "atlantis_gods"
 	root.add_child(agods)
 	check(agods.sim.get_map_width() == 64 and agods._build_order().ends_with("demo_atlantis_gods_build.json"), "the Atlantean gods demo's map and autopilot")
+	# A monument (P:26-28): its card holds the building, its layers show as it goes up.
+	agods.sim.place_building("pyramid_modest", 30, 21, 0)
+	agods.sim.step(1)
+	agods._handle_events(agods.sim.drain_events())
+	var pid: int = agods.sim.get_tile(30, 21)["building"]
+	check(pid != 0, "a pyramid placed in the Atlantean gods demo")
+	agods.ui._open_card(Vector2i(30, 21))
+	check(agods.ui.hold_btn.visible and not agods.ui.hold_btn.button_pressed, "the monument's card offers to hold its building")
+	agods.ui.hold_btn.button_pressed = true
+	agods.ui._toggle_hold()
+	agods.sim.step(1)
+	var held := false
+	for b in agods.sim.get_buildings():
+		if b["id"] == pid:
+			held = b["construction_paused"] and b["monument_levels"] == 2
+	check(held, "held from the card; two layers for a modest pyramid")
+	agods._update_monuments()
+	check(agods.building_nodes[pid].get_meta("levels_shown", -1) == 0, "a bare site draws its foundation only")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

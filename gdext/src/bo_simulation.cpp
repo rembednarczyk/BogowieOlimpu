@@ -1017,6 +1017,16 @@ Array BoSimulation::get_buildings() const {
             d["sanctuary_complete"] = b.sanctuary->complete;
             d["monument"] = catalog_->sanctuaries.count(b.type) != 0 && catalog_->sanctuaries.at(b.type).monument;
             d["sanctuary_loads_needed"] = needed;
+            int64_t total = 0;  // every load the site takes (gods.json, pyramids.json)
+            const auto params = catalog_->sanctuaries.find(b.type);
+            if (params != catalog_->sanctuaries.end()) {
+                for (const auto& [g, n] : params->second.materials) {
+                    total += n;
+                }
+                d["monument_levels"] = static_cast<int64_t>(params->second.levels);
+            }
+            d["sanctuary_loads_total"] = total;
+            d["construction_paused"] = b.sanctuary->paused;  // P:26-28
             d["sanctuary_loads_on_site"] = on_site;
             d["days_since_sacrifice"] = static_cast<int64_t>(b.sanctuary->days_since_sacrifice);
             d["favor_lost"] = b.sanctuary->favor_lost;

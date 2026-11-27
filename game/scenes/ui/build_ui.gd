@@ -46,6 +46,8 @@ var pray_btn: Button
 var oracle_btn: Button
 var prophecy := ""  # the oracle's last answer, shown on the card
 var buying_btn: Button  # Not Buying on an agora stall's card (Z:72)
+var hold_btn: Button  # hold a monument's building (P:26-28)
+var card_monument := 0
 var card_stall := 0
 var card_sanctuary := 0  # the sanctuary on the card, for the prayer
 
@@ -165,6 +167,9 @@ func _build() -> void:
 	buying_btn = _button("ui.not_buying", func(): _toggle_buying(), Vector2(200, CELL.y))
 	buying_btn.toggle_mode = true
 	card_box.add_child(buying_btn)
+	hold_btn = _button("ui.hold_building", func(): _toggle_hold(), Vector2(240, CELL.y))
+	hold_btn.toggle_mode = true
+	card_box.add_child(hold_btn)
 	card_box.add_child(_button("ui.close", func(): card.visible = false, Vector2(140, CELL.y)))
 	card.add_child(card_box)
 	card.visible = false
@@ -555,6 +560,10 @@ func _confirm() -> void:
 	game.clear_ghost()
 	confirm_btn.disabled = true  # stay in the mode: the next drag or tap builds more
 
+func _toggle_hold() -> void:
+	if card_monument != 0:
+		game.sim.set_construction_paused(card_monument, hold_btn.button_pressed)
+
 func _toggle_buying() -> void:
 	if card_stall != 0:
 		game.sim.set_not_buying(card_stall, buying_btn.button_pressed)
@@ -602,6 +611,11 @@ func _open_card(tile: Vector2i) -> void:
 		card_stall = id if buying_btn.visible else 0
 		if buying_btn.visible:
 			buying_btn.set_pressed_no_signal(b["not_buying"])
+		hold_btn.visible = b.get("monument", false) and not b.get("sanctuary_complete", false)
+		card_monument = id if hold_btn.visible else 0
+		if hold_btn.visible:
+			hold_btn.set_pressed_no_signal(b["construction_paused"])
+			lines.append(tr("ui.monument_progress") % [b["sanctuary_loads_total"] - b["sanctuary_loads_needed"], b["sanctuary_loads_total"]])
 		pray_btn.visible = b.get("sanctuary_complete", false) and not b.get("monument", false)
 		card_sanctuary = id if pray_btn.visible else 0
 		if pray_btn.visible:

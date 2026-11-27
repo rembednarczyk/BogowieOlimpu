@@ -454,6 +454,7 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
                                                              : json::array()) {
             SanctuaryParams p;  // P:26-28, S-008 [L-128]
             p.monument = true;
+            p.levels = m.value("levels", p.levels);
             for (const char* good : {"marble", "orichalc", "wood", "sculpture"}) {
                 p.materials[good] = m.value(good, 0);
             }
