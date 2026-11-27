@@ -242,10 +242,12 @@ ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
 ui.hold_building,Wstrzymaj budowę,Hold the building
 ui.monument_progress,Budowa: %d z %d ładunków,Building: %d of %d loads
 ui.demo_atlantis_gods,Demo: bogowie Atlantydy,Demo: the Atlantean gods
+ui.demo_atlantis_elite,Demo: elita Atlantydy,Demo: the Atlantean elite
 msg.adventure_won,Przygoda wygrana,Adventure won
 scenario.demo_atlantis.name,Atlantyda,Atlantis
 scenario.demo_gods.name,Bogowie,The gods
 scenario.demo_atlantis_army.name,Wojsko Atlantydy,The Atlantean army
 scenario.demo_atlantis_gods.name,Bogowie Atlantydy,The Atlantean gods
+scenario.demo_atlantis_elite.name,Elita Atlantydy,The Atlantean elite
 tab.science,Nauka,Science
 ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"

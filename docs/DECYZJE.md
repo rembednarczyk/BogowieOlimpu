@@ -4,6 +4,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-28: Szóste demo, elita Atlantydy
+- Decyzja: włóczników, rydwanników, stoisko z rydwanami i majątek w Atlantydzie (P:15, P:18-19, Z:32-34) pokazuje demo `scenarios/demo_atlantis_elite.json` (`tools/make_demo_atlantis_elite.py`, bramka `core/tests/test_demo_atlantis_elite.cpp`, szósty przycisk demo). Nauka stoi po drugiej stronie ulicy elity, dwie agory z sześcioma stoiskami między działkami, osobna faktoria na pszenicę. Cel: 500 mieszkańców; majątek bramka widzi po drodze (rodziny odchodzą, gdy pokrycie nauką spada, Z:34).
+- Powód: polecenie właściciela z 2026-11-28 („Robimy: włócznicy, rydwannicy i stoisko z rydwanami…”). Próba z dzielnicą elity w demo wojska Atlantydy odrzucona: dzielnica i stare miasto dzielą pulę pracowników i losowe ruchy, każda poprawka psuła fregatę albo wieżę.
+
 ### 2026-11-28: Piąte demo, bogowie Atlantydy
 - Decyzja: Hera, Atlas i cytadela Posejdona (P:20-26) z gajami pomarańczy, sadem, dwoma rzemieślnikami Atlasa, jego modlitwą, ofiarami z bydła i Sfinksem pokazuje demo `scenarios/demo_atlantis_gods.json` (`tools/make_demo_atlantis_gods.py`, bramka `core/tests/test_demo_atlantis_gods.cpp`, w grze piąty przycisk demo), ułożone jak kolonia demo bogów.
 - Powód: trzy sanktuaria potrzebują ok. 200 pracowników, więcej niż ma którekolwiek z dotychczasowych miast demo; zasada właściciela (demo pokazuje każdą mechanikę).
