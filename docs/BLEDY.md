@@ -26,15 +26,16 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 
 ## Otwarte
 
-### B-023 [S2] Dane w postaci obiektu po cichu dają wartość domyślną
-- Status: niepotwierdzone
-- Miejsce i liczba wystąpień: `data/production.json` fishery `max_storage_distance: {"close": 25, "dist20": 40}`; sonda pokazała zasięg 300 (domyślny) zamiast 25 albo 40.
-- Dowód: sonda na zapisie demo bogów (`catalog.production.at("fishery").max_storage_distance == 300`).
-- Test "co dziś pada": do napisania (E3 planu odporności): ładowanie pola o złym typie daje błąd, nie wartość domyślną.
-- Przyczyna: do zbadania; podejrzenie `value(..., default)` przy polu, które nie jest liczbą.
-
+Brak.
 
 ## Naprawione
+
+### B-023 [S2] Dane w postaci obiektu po cichu dawały wartość domyślną
+- Status: naprawione
+- Miejsce i liczba wystąpień: `core/src/data_economy.cpp` `load_production`; `max_storage_distance` przystani i nabrzeża jeżowców (300 zamiast pomiaru 25/40) oraz `loads_per_year` w postaci `{"close": n, "dist20": m}` u przystani, nabrzeża, odlewni, rafinerii i innych wydobywczych (0 zamiast 13).
+- Dowód: sonda na zapisie demo bogów (`max_storage_distance == 300`); test poniżej na starym kodzie: 300 == 40 i 0 == 13 dla każdego takiego wpisu.
+- Test "co dziś pada": "B-023: every production distance and rate reads as written, in any of its forms (production.json)" (`core/tests/test_data.cpp`), pada bez poprawki.
+- Przyczyna: loader rozumiał liczbę i tablicę, a obiekt pomiarów według odległości od źródła oddawał domyślną. Teraz wspólna funkcja `measured` czyta wszystkie trzy postacie: zasięg dowozu to najdłuższy zmierzony, tempo to pomiar przy źródle [ZAŁOŻENIE, L-103]. Demo greckie straciło przez to zarazę (krótszy dowóz ryb, zdrowsze miasto); pierwsza infirmeria stoi teraz od dnia 160, więc zaraza przychodzi z higieny poniżej 40 (Z:84-85).
 
 ### B-026 [S2] Przy dwóch potworach w mieście żaden heros nie przychodził, gdy pierwszy nie miał spełnionych wymagań
 - Status: naprawione

@@ -44,7 +44,7 @@
   {"day": 0, "place": "common_housing", "x": 13, "y": 21, "repeat": [4, 2, 0]},
   {"day": 0, "place": "watchpost", "x": 21, "y": 21},
   {"day": 0, "place": "common_housing", "x": 23, "y": 21, "repeat": [4, 2, 0]},
-  {"day": 0, "place": "infirmary", "x": 33, "y": 12},
+  {"day": 160, "place": "infirmary", "x": 33, "y": 12},
   {"day": 0, "place": "common_housing", "x": 37, "y": 12, "repeat": [7, 2, 0]},
   {"day": 0, "place": "common_housing", "x": 37, "y": 15, "repeat": [2, 2, 0]},
   {"day": 0, "place": "fountain", "x": 41, "y": 15},

@@ -69,18 +69,41 @@ void load_risks(const std::map<std::string, json>& docs, RiskParams& p) {
     }
 }
 
+// A production number in any of its data forms (B-023): a number, a [low, high] range, or measurements by the
+// distance to the source {"close": n, "dist20": m}; `longest` takes the farthest a deliveryman goes, else the
+// figure by the source (S-004, S-005; L-103). nullopt for null or a missing field.
+std::optional<std::int32_t> measured(const json& j, bool longest) {
+    const auto pick = [longest](const json& v) -> std::optional<std::int32_t> {
+        if (v.is_number_integer()) {
+            return v.get<std::int32_t>();
+        }
+        if (v.is_array() && !v.empty() && v.front().is_number_integer() && v.back().is_number_integer()) {
+            return longest ? v.back().get<std::int32_t>() : v.front().get<std::int32_t>();
+        }
+        return std::nullopt;
+    };
+    if (!j.is_object()) {
+        return pick(j);
+    }
+    std::optional<std::int32_t> best;
+    for (const auto& [k, v] : j.items()) {
+        const auto n = pick(v);
+        if (n && (longest ? (!best || *n > *best) : k == "close")) {
+            best = n;
+        }
+    }
+    return best;
+}
+
 void load_production(const std::map<std::string, json>& docs, DataCatalog& cat) {
     if (docs.count("production.json") != 0) {
         for (const auto& p : docs.at("production.json")) {
             ProductionParams pp;
-            const auto& lpy = p.value("loads_per_year", json());
-            pp.loads_per_year = lpy.is_array() ? lpy.at(0).get<std::int32_t>() : opt_int(lpy).value_or(0);
+            pp.loads_per_year = measured(p.value("loads_per_year", json()), false).value_or(0);
             if (const auto m = opt_int(p.value("harvest_month", json()))) {
                 pp.harvest_month = *m - 1;  // data: 1-12
             }
-            const auto& msd = p.value("max_storage_distance", json());
-            pp.max_storage_distance =
-                msd.is_array() ? msd.at(msd.size() - 1).get<std::int32_t>() : opt_int(msd).value_or(300);
+            pp.max_storage_distance = measured(p.value("max_storage_distance", json()), true).value_or(300);
             const auto& in = p.value("input", json());
             if (in.is_object() && in.size() == 1 && in.begin().value().is_number_integer() &&
                 !p.contains("input_units_good")) {
