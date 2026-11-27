@@ -140,6 +140,7 @@ def priorities(day, values):
 priorities(FOOD, [4, 1, 5, 5, 3, 2, 2, 1])
 priorities(CULTURE, [4, 3, 5, 5, 3, 4, 3, 1])
 priorities(ARMY, [4, 3, 5, 5, 3, 4, 3, 2])
+priorities(MYTH + 400, [4, 3, 5, 5, 3, 4, 3, 4])  # the armory staffed: armour for the mansions (Z:33)
 put("palace", 53, 12)  # first: the Tax Office, the trireme wharf and the towers need it (Z:96, Z:141, Z:146)
 
 # Stage FOOD: houses, water, maintenance, safety, farms, granaries, the first agora, fishing.
@@ -234,7 +235,7 @@ put("winery", 30, 36, day=INDUSTRY)
 for i in range(10):
     put("grapevine", 18 + i, 41, day=INDUSTRY)
 put("common_agora", 24, 29, rot=1, day=INDUSTRY)
-put("wine_vendor_stall", 24, 30, day=INDUSTRY + 1); put("arms_vendor_stall", 26, 30, day=INDUSTRY + 1)
+put("wine_vendor_stall", 24, 30, day=INDUSTRY + 1)  # armour only at the east agora, for the mansions
 put("food_vendor_stall", 28, 30, day=INDUSTRY + 1)
 put("common_agora", 50, 36, day=INDUSTRY)  # along the x = 52 road, for the south and the elite houses
 for i, stall in enumerate(["food_vendor_stall", "fleece_vendor_stall", "oil_vendor_stall"]):
@@ -248,7 +249,7 @@ steps.append({"day": INDUSTRY + 1, "at": [34, 46], "trade_order": {"good": "wine
 
 # Stage MYTH: the guild, Hermes's sanctuary (the goal), later Athena's (Perseus needs two, doc 21).
 put("artisans_guild", 68, 12, day=MYTH)
-put("maintenance_office", 66, 24, day=MYTH); put("watchpost", 68, 24, day=MYTH)
+put("maintenance_office", 68, 43, day=MYTH); put("watchpost", 70, 24, day=MYTH)
 put("sanctuary_hermes", 53, 24, day=MYTH, retry=True, when={"marble": 9})
 put("sanctuary_athena", 53, 31, day=MYTH + 160, retry=True, when={"marble": 24})
 put("heros_hall", 64, 12, day=MYTH, retry=True)
@@ -285,13 +286,33 @@ steps.append({"day": ARMY, "road": [49, 46, 49, 46]})
 put("trireme_wharf", 50, 47, day=ARMY)
 
 # Stage ELITE (Z:32-34): gardens raise the appeal, elite houses once their goods are in storage.
-for x, y in [(62, 15), (68, 15), (68, 18), (66, 27), (68, 27), (70, 24), (70, 27), (70, 30)]:
+for x, y in [(62, 15), (68, 18)]:
     put("flower_garden", x, y, day=ELITE)
-put("gazebo", 62, 17, day=ELITE); put("column", 68, 21, day=ELITE); put("column", 70, 36, day=ELITE)
+put("gazebo", 62, 17, day=ELITE); put("column", 68, 21, day=ELITE)
 put("fountain", 61, 20, day=ELITE)
 for x, y in [(53, 19), (57, 19), (64, 19)]:
     put("elite_housing", x, y, day=ELITE + 200, retry=True)
-put("podium", 70, 14, day=ELITE); put("podium", 70, 17, day=ELITE)
+put("podium", 70, 18, day=ELITE); put("hedge_maze", 69, 20, day=ELITE)
+# Mansions (Z:33, Z:136): a theater by the elite plots (actors, 25 culture points), columns along their
+# north side for the appeal, and two agoras by the east wall: food, fleece and oil; armour, wine and horses.
+put("theater", 65, 24, day=ELITE)
+for x in range(53, 62):
+    put("column", x, 18, day=ELITE)
+# Roadblocks (Z:19-20) keep the peddlers on the road past the elite plots: north up the wall road, then west
+# along y = 23.
+for x, y in [(72, 22), (72, 44)]:
+    steps.append({"day": ELITE, "roadblock": [x, y]})
+put("granary", 68, 14, day=ELITE)  # food for the east agora, fetched from the west granaries
+for good in ["onions", "carrots"]:
+    steps.append({"day": ELITE + 1, "at": [68, 14], "storage_order": {"good": good, "kind": 1, "limit": 8}})
+put("storehouse", 69, 29, day=ELITE)  # vendors fetch within 40 tiles (doc 24): the agoras' goods brought east
+for good, limit in [("fleece", 8), ("olive_oil", 8), ("armor", 4), ("wine", 4)]:
+    steps.append({"day": ELITE + 1, "at": [69, 29], "storage_order": {"good": good, "kind": 1, "limit": limit}})
+for y0, stalls in [(32, ["food_vendor_stall", "fleece_vendor_stall", "oil_vendor_stall"]),
+                   (38, ["arms_vendor_stall", "wine_vendor_stall", "horse_trainer_stall"])]:
+    put("common_agora", 70, y0, day=ELITE)
+    for i, stall in enumerate(stalls):
+        put(stall, 70, y0 + 2 * i, day=ELITE + 1)
 
 # Stockpiling (Z:80): oil kept from the stalls before the elite plots, so a load waits in storage (doc 18).
 steps.append({"day": ELITE + 120, "stockpile": "olive_oil", "on": True})
@@ -305,7 +326,7 @@ steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "
 
 # Armies abroad (Z:177-178) with the Sparti, the companies at home that may go: a raid on Sparta for drachmas
 # while the first company helps Corinth, then the rising vassal Argos is put down.
-steps.append({"day": 1000, "tactics": 2})  # special tactics: rabble skirmish, the gods' troops too (Z:139)
+steps.append({"day": 1000, "every": 64, "tactics": 2})  # special: rabble skirmish, hoplite wedge (Z:139)
 steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachmas"}})
 steps.append({"day": 1480, "every": 16, "dispatch": {"city": 3}})
 

@@ -191,9 +191,18 @@ void dump(const Simulation& sim) {
     }
     for (const auto& [id, b] : sim.state().city.buildings.items) {
         if (b.house && b.house->elite) {
-            std::printf("  elite %d,%d pop %u incoming %u level %u road %d abandoned %d quarantine %u\n", b.origin.x,
-                        b.origin.y, b.house->population, b.house->incoming, b.house->level, b.road_access ? 1 : 0,
-                        b.house->abandoned ? 1 : 0, b.house->quarantine_days);
+            std::printf("  elite %d,%d pop %u incoming %u level %u road %d abandoned %d quarantine %u appeal %d culture %d"
+                        " goods", b.origin.x, b.origin.y, b.house->population, b.house->incoming, b.house->level,
+                        b.road_access ? 1 : 0, b.house->abandoned ? 1 : 0, b.house->quarantine_days,
+                        building_appeal(sim.state().city, b),
+                        house_culture(b, sim.catalog(), city_culture_bonus(sim.state().city, sim.catalog())));
+            for (const auto g : b.house->goods) {
+                std::printf(" %u", static_cast<unsigned>(g));
+            }
+            for (const auto& [walker, days] : b.coverage) {
+                std::printf(" %s:%u", walker.c_str(), static_cast<unsigned>(days));
+            }
+            std::printf("\n");
         }
         if (b.type == "growers_lodge" || b.type == "olive_press" || b.type == "foundry" || b.type == "sculpture_studio" ||
             b.type == "timber_mill") {
@@ -230,7 +239,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
@@ -314,10 +323,27 @@ DemoRun run_demo(std::uint64_t years) {
                 tally.clear();
             }
         }
+        if (std::getenv("BO_DEMO_ELITE") != nullptr && sim.state().time.day_in_month() == 0) {  // a line a month
+            std::printf("d%llu", static_cast<unsigned long long>(day));
+            for (const auto& [id, b] : sim.state().city.buildings.items) {
+                if (b.house && b.house->elite) {
+                    std::printf(" | %d,%d p%u l%u a%d g", b.origin.x, b.origin.y, b.house->population, b.house->level,
+                                b.house->abandoned ? 1 : 0);
+                    for (const auto g : b.house->goods) {
+                        std::printf(" %u", static_cast<unsigned>(g));
+                    }
+                }
+            }
+            std::printf(" | oil %u fleece %u\n", city_stock(sim.state().city, sim.catalog(), "olive_oil"),
+                        city_stock(sim.state().city, sim.catalog(), "fleece"));
+        }
         run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
         run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
         for (const Company& c : sim.state().military.companies) {
             run.seen["tactics_set"] += c.tactic != Tactic::Defensive ? 1 : 0;  // Z:138-139
+            run.seen["hoplites"] += c.unit == "hoplite" && !c.members.empty() ? 1 : 0;  // from the mansions (Z:136)
+            run.seen["hoplite_wedge"] += c.unit == "hoplite" && c.tactic == Tactic::Special ? 1 : 0;  // Z:139
+            run.seen["horsemen"] += c.unit == "horseman" && !c.members.empty() ? 1 : 0;  // from the estates
         }
         for (const auto& [id, b] : sim.state().city.buildings.items) {
             run.seen["not_buying"] += b.stall && b.stall->not_buying ? 1 : 0;  // Z:72
@@ -367,6 +393,34 @@ TEST_CASE("demo gate: the autopilot builds the demo city and wins it") {
                 const BuildingId b = map.at({p->x, p->y}).building;
                 std::printf("missing %s %d,%d (now %s)\n", p->type.c_str(), p->x, p->y,
                             b == kNoBuilding ? "empty" : run.sim->state().city.buildings.items.at(b).type.c_str());
+            }
+        }
+    }
+    if (std::getenv("BO_DEMO_MAP") != nullptr) {  // the city at the end: a letter per building, # road
+        const auto& city = run.sim->state().city;
+        for (std::int32_t y = 0; y < city.map.height(); ++y) {
+            std::printf("%2d ", y);
+            for (std::int32_t x = 0; x < city.map.width(); ++x) {
+                const Tile& t = city.map.at({x, y});
+                const char c = t.building != kNoBuilding ? city.buildings.items.at(t.building).type[0]
+                               : t.road                  ? '#'
+                               : t.terrain == Terrain::Grassland ? '.'
+                                                                 : '~';
+                std::printf("%c", c);
+            }
+            std::printf("\n");
+        }
+    }
+    if (const char* a = std::getenv("BO_DEMO_APPEAL")) {  // x0,y0,x1,y1: the appeal of the tiles at the end
+        int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+        if (std::sscanf(a, "%d,%d,%d,%d", &x0, &y0, &x1, &y1) == 4) {
+            const auto& city = run.sim->state().city;
+            for (int y = y0; y <= y1; ++y) {
+                std::printf("%2d ", y);
+                for (int x = x0; x <= x1; ++x) {
+                    std::printf("%4d", city.appeal.empty() ? 0 : city.appeal[city.map.index({x, y})]);
+                }
+                std::printf("\n");
             }
         }
     }
