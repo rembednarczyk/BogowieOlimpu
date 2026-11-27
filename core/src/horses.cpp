@@ -88,7 +88,12 @@ void fetch_from_producer(WorldState& st, const DataCatalog& catalog, Walker& w, 
     }
 }
 
-void hostler_unload(const DataCatalog& catalog, const Walker& w, Building& home) {
+void hostler_unload(WorldState& st, const DataCatalog& catalog, const Walker& w, Building& home) {
+    if (!home.producer) {  // the hippodrome's handler (P:14)
+        const auto it = w.cargo.find("horses");
+        st.hippodrome_horses += it != w.cargo.end() ? it->second : 0;
+        return;
+    }
     for (const auto& [good, loads] : w.cargo) {
         processor_add(home, catalog, good, loads);
     }

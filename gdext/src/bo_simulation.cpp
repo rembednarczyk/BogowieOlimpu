@@ -11,6 +11,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 
 #include "bo/core/adventure.h"
+#include "bo/core/hippodrome.h"
 #include "bo/core/migration.h"
 #include "bo/core/scenario.h"
 
@@ -454,6 +455,11 @@ Dictionary BoSimulation::get_scenario() const {
     d["lost"] = sim_->state().episode_lost;
     d["towers_manned"] = sim_->state().towers_manned;
     d["games_host_year"] = sim_->state().games_host_year;  // -1: no right to host (Z:111)
+    const auto track = bo::core::hippodrome_track(sim_->state().city);  // P:13-15
+    d["hippodrome_stades"] = static_cast<int64_t>(track.segments.size());
+    d["hippodrome_closed"] = track.closed;
+    d["hippodrome_horses"] = static_cast<int64_t>(sim_->state().hippodrome_horses);
+    d["hippodrome_working"] = static_cast<int64_t>(bo::core::working_hippodrome(sim_->state(), *catalog_));
     const auto year = static_cast<std::uint32_t>(sim_->state().time.year());
     for (const auto& g : catalog_->games.games) {  // this year's Panhellenic games and the city's chance (L-123)
         if (g.year_mod_4 == year % 4) {

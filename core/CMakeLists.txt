@@ -18,6 +18,7 @@ add_library(bo_core STATIC
     src/tactics.cpp
     src/games.cpp
     src/goals.cpp
+    src/hippodrome.cpp
     src/relations.cpp
     src/prayers.cpp
     src/housing.cpp

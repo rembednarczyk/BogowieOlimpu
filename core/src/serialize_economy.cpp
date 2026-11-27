@@ -328,6 +328,7 @@ void write_world(ByteWriter& w, const WorldState& s) {
     write_counts(w, s.produced_this_year);  // since v43
     write_counts(w, s.produced_best_year);
     w.u8(s.city.atlantean ? 1 : 0);  // since v44 (P:16-17)
+    w.u32(s.hippodrome_horses);      // since v45 (P:14)
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -444,7 +445,7 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
     std::uint8_t atlantean = 0;
     const bool ok = (version < 37 || r.i32(s.games_host_year)) &&
                     (version < 43 || (read_counts(r, s.produced_this_year) && read_counts(r, s.produced_best_year))) &&
-                    (version < 44 || r.u8(atlantean));
+                    (version < 44 || r.u8(atlantean)) && (version < 45 || r.u32(s.hippodrome_horses));
     s.city.atlantean = atlantean != 0;
     return ok;
 }

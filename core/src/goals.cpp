@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "bo/core/hippodrome.h"
 #include "bo/core/military.h"
 #include "bo/core/migration.h"
 #include "bo/core/monsters.h"
@@ -115,6 +116,9 @@ bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGo
             return it != m.end() ? static_cast<std::int64_t>(it->second) : 0;
         };
         return std::max(get(st.produced_best_year), get(st.produced_this_year)) >= g.value;
+    }
+    if (g.type == "hippodrome") {  // a working track of at least `value` stades (S-008: workingHippodrome)
+        return static_cast<std::int64_t>(working_hippodrome(st, catalog)) >= std::max<std::int64_t>(1, g.value);
     }
     if (g.type == "yearly_profit") {  // last year's taxes less wages and building [ZAŁOŻENIE, L-093b]
         const FinanceYear& y = st.finance.last_year;

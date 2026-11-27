@@ -104,7 +104,7 @@ std::string walker_type_from(const DataCatalog& catalog, const std::string& buil
 // within the hostler's reach (44 tiles, S-005); the hostler brings one horse [ZAŁOŻENIE, L-106].
 void dispatch_hostlers(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
 void fetch_from_producer(WorldState& state, const DataCatalog& catalog, Walker& w, Building& producer);
-void hostler_unload(const DataCatalog& catalog, const Walker& w, Building& home);
+void hostler_unload(WorldState& state, const DataCatalog& catalog, const Walker& w, Building& home);
 
 // Wolves (wolves.cpp, Z:45, L-107): daily, a den with wolves sends one on average once in hunt_one_in_days
 // to the nearest sheep or goat in reach; at the prey it takes the animal unless a shepherd of its shed is

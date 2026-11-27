@@ -99,6 +99,7 @@ struct BuildingType {
     std::vector<std::string> never_from;       // input sources refused (horse ranch: never from a Granary)
     bool pickup_only = false;                  // output waits for a hostler or a vendor (horse ranch, doc 06)
     bool unique = false;                       // one per city: Palace (Z:95), Stadium (Z:109), Museum (P:12)
+    bool segmented = false;  // built of pieces that join (the hippodrome, P:13)
     std::int32_t city_culture_bonus = 0;       // working Stadium or Museum: points for every house (doc 18)
 };
 
@@ -233,6 +234,14 @@ struct TacticsParams {
     std::int32_t special_engage = 6;
     std::int32_t wedge_attack_percent = 125;
     std::int32_t skirmish_retreat = 3;
+};
+
+// The hippodrome (data/hippodrome.json, doc 18, P:13-15): from `stades` segments on, `horses` on the track
+// bring `income` drachmas a month.
+struct HippodromeRow {
+    std::uint32_t stades = 0;
+    std::uint32_t horses = 0;
+    std::int64_t income = 0;
 };
 
 // Fleets (data/military.json naval_rules; Z:141-144) [ZAŁOŻENIE, L-124].
@@ -392,6 +401,7 @@ struct DataCatalog {
     GamesParams games;
     TacticsParams tactics;
     NavalParams naval;
+    std::vector<HippodromeRow> hippodrome;  // rising stades
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

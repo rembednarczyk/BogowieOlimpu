@@ -42,7 +42,7 @@ Patrz [05-przemysl-praca.md](05-przemysl-praca.md): Refinery (orichalc), Black M
 - Wystarczająco duży: mieszkańcy obstawiają i kupują przekąski, tor zarabia.
 - Dalsze powiększanie: wzrost popularności, przybywają goście z całego świata (większy dochód), wzrost opinii innych przywódców.
 - Tor zajmuje dużo miejsca, a konie nie pracują. **Crosswalk** (kładka): tylko na prostym odcinku z wolnym terenem lub drogą po obu stronach; każdy może przejść; dwie kładki nie mogą stać obok siebie.
-- [LUKA: progi wielkości, przychody]
+- Progi i przychody: doc 18 (L-081). Implementacja etapu 1: `core/src/hippodrome.cpp` (pętla z kawałków, opiekun z końmi, dochód), cel `hippodrome`; założenia L-127.
 
 ## Wojsko
 

@@ -239,6 +239,8 @@ func _goal_text(g: Dictionary) -> String:
 			return tr("goal.set_aside_goods") % [g["value"], tr("good." + g["target"])]
 		"survive_until", "complete_before":
 			return tr("goal." + g["type"]) % (int(g["value"]) + 1)
+		"hippodrome":
+			return tr("goal.hippodrome") % g["value"]
 		"trading_partners", "yearly_profit":
 			return tr("goal." + g["type"]) % g["value"]
 	return g["type"]
@@ -271,6 +273,10 @@ func refresh_report() -> void:
 			else tr("ui.games_not_invited") % tr("games." + sc["games"]), 18))
 	if sc.get("games_host_year", -1) >= 0:  # the right to host the Olympian games (Z:111)
 		report_box.add_child(_label(tr("ui.games_host") % (int(sc["games_host_year"]) + 1), 18))
+	if sc.get("hippodrome_stades", 0) > 0:  # the track (P:13-15): its length, horses and whether it races
+		report_box.add_child(_label(tr("ui.hippodrome_line") % [sc["hippodrome_stades"], sc["hippodrome_horses"],
+			tr("ui.hippodrome_racing" if sc["hippodrome_working"] > 0 else ("ui.hippodrome_waiting" if sc["hippodrome_closed"]
+			else "ui.hippodrome_open"))], 18))
 	report_box.add_child(_label(tr("ui.goals"), 20))
 	for g in sc.get("goals", []):
 		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))

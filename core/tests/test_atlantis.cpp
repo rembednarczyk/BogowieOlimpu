@@ -1,5 +1,6 @@
 // Atlantis stage 1 (docs/gameplay/15-atlantyda.md, P:10-13, P:16-17): the city's culture decides what may be
 // built; science points work in houses as culture points.
+#include "bo/core/hippodrome.h"
 #include "bo/core/housing.h"
 #include "bo/core/scenario.h"
 #include "bo/core/simulation.h"
@@ -67,4 +68,61 @@ TEST_CASE("Atlantis: an adventure says its city's culture (scenarios/README.md)"
     auto cfg = parse_scenario(R"({"id": "a", "culture": "atlantean", "map": [)" + map + "]}", error);
     REQUIRE_MESSAGE(cfg.has_value(), error);
     CHECK(cfg->atlantean);
+}
+
+namespace {
+
+Simulation track_town() {
+    std::vector<std::string> rows(30, std::string(40, '.'));
+    rows[10] = std::string(40, '=');
+    SimulationConfig cfg{8, Difficulty::Hero, 30000, rows, true};
+    cfg.atlantean = true;
+    return Simulation(bo::test::catalog_isolated(), cfg);
+}
+
+}  // namespace
+
+TEST_CASE("hippodrome: 4x4 stades joined into a closed loop; one track a city (P:13, L-127)") {
+    auto sim = track_town();
+    CHECK(place(sim, "hippodrome", 2, 6) == "ok");  // by the road: it keeps the horses
+    CHECK(place(sim, "hippodrome", 20, 6) == "build.segment_apart");
+    CHECK(place(sim, "hippodrome", 6, 6) == "ok");
+    CHECK(place(sim, "hippodrome", 6, 2) == "ok");
+    CHECK_FALSE(hippodrome_track(sim.state().city).closed);  // three pieces: open
+    CHECK(place(sim, "hippodrome", 2, 2) == "ok");
+    const Track t = hippodrome_track(sim.state().city);
+    CHECK(t.segments.size() == 4);
+    CHECK(t.closed);
+    CHECK(working_hippodrome(sim.state(), sim.catalog()) == 0);  // no horses yet
+    auto greek = town(false);
+    CHECK(place(greek, "hippodrome", 2, 2) == "build.atlantean_only");
+}
+
+TEST_CASE("hippodrome: the handler brings horses from the ranch; with 4 the races earn 10 dr a month (P:14, doc 18)") {
+    auto sim = track_town();
+    for (const auto& [x, y] : {std::pair{2, 6}, {6, 6}, {6, 2}, {2, 2}}) {
+        REQUIRE(place(sim, "hippodrome", x, y) == "ok");
+    }
+    REQUIRE(place(sim, "horse_ranch", 20, 11) == "ok");
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        if (b.type == "horse_ranch") {
+            b.producer->output_loads = 6;
+        }
+    }
+    for (int day = 0; day < 60 && sim.state().hippodrome_horses < 4; ++day) {
+        sim.run_days(1);
+    }
+    CHECK(sim.state().hippodrome_horses == 4);  // as many as 4 stades need, one a trip
+    CHECK(working_hippodrome(sim.state(), sim.catalog()) == 4);
+    const auto before = sim.state().finance.treasury;
+    sim.mutable_state().finance.treasury = before;
+    std::int64_t income = 0;
+    for (int day = 0; day < 16; ++day) {
+        const auto t = sim.state().finance.treasury;
+        sim.run_days(1);
+        if (sim.state().time.day_in_month() == 1) {
+            income = sim.state().finance.treasury - t;
+        }
+    }
+    CHECK(income >= 10);  // the month's 10 dr (with the month's wages and taxes of an empty town: none)
 }

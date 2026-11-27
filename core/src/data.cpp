@@ -91,6 +91,7 @@ void load_buildings(const json& buildings, const json& stats, DataCatalog& cat) 
         t.sources = strings("sources");
         t.pickup_only = o.value("pickup_only", false);
         t.unique = o.value("unique", false) && !o.value("segmented", false);  // a hippodrome is many pieces
+        t.segmented = o.value("segmented", false);
         t.city_culture_bonus = o.value("city_culture_bonus", 0);
         t.tends = strings("tends");
         t.requires_building = o.value("requires_building", "");
@@ -428,6 +429,12 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         load_world(docs, cat.world);
         detail::load_games(docs, cat.games);
         load_army_rules(docs, cat);
+        if (docs.count("hippodrome.json") != 0) {  // [stades_min, stades_max, horses, drachmas_per_month]
+            for (const auto& row : docs.at("hippodrome.json").value("segments_to_horses_income", json::array())) {
+                cat.hippodrome.push_back(HippodromeRow{row.at(0).get<std::uint32_t>(), row.at(2).get<std::uint32_t>(),
+                                                       row.at(3).get<std::int64_t>()});
+            }
+        }
         for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
             const std::string id = m.value("id", "");
             if (id == "population" && m.contains("thresholds")) {

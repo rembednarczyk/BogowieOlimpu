@@ -8,6 +8,7 @@
 #include "bo/core/finance.h"
 #include "bo/core/gods.h"
 #include "bo/core/hash.h"
+#include "bo/core/hippodrome.h"
 #include "bo/core/housing.h"
 #include "bo/core/logistics.h"
 #include "bo/core/migration.h"
@@ -212,7 +213,8 @@ static void run_production(Simulation& sim) {
 }
 
 static void run_logistics(Simulation& sim) {
-    const auto ev = dispatch_workers(sim.mutable_state(), sim.catalog());
+    auto ev = dispatch_workers(sim.mutable_state(), sim.catalog());
+    advance_hippodrome(sim.mutable_state(), sim.catalog(), ev);  // P:13-15
     apply_sanctification(sim.mutable_state().city);  // note what the deliverymen took
     for (const WalkerId id : ev.spawned) {
         sim.emit(WalkerSpawned{id, sim.state().walkers.items.at(id).type});

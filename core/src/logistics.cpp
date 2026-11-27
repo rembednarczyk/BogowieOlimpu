@@ -479,8 +479,8 @@ void unload_at_home(WorldState& st, const DataCatalog& catalog, const Walker& w)
         for (const auto& [good, loads] : w.cargo) {
             b.storage->loads[good] += loads;  // the sanctuary site is gone: the load goes back
         }
-    } else if (w.job == WalkerJob::Fetch && b.producer) {
-        hostler_unload(catalog, w, b);
+    } else if (w.job == WalkerJob::Fetch && (b.producer || b.type == "hippodrome")) {
+        hostler_unload(st, catalog, w, b);  // to a chariot factory, or the hippodrome's horses (P:14)
     } else if (w.job == WalkerJob::Fetch && b.stall) {
         for (const auto& [good, loads] : w.cargo) {
             b.stall->units[good] += loads * units_per_load_of(catalog, good);  // armor, horses: one per load

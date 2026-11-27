@@ -106,6 +106,29 @@ static bool already_built(const CityState& city, const std::string& type) {
                        [&type](const auto& kv) { return kv.second.type == type; });
 }
 
+// A new hippodrome piece must touch one already built, edge to edge (P:13, L-127).
+static bool joins_track(const CityState& city, const std::string& type, TilePos origin) {
+    return std::any_of(city.buildings.items.begin(), city.buildings.items.end(), [&](const auto& kv) {
+        const TilePos o = kv.second.origin;
+        return kv.second.type == type && ((o.x == origin.x && std::abs(o.y - origin.y) == 4) ||
+                                          (o.y == origin.y && std::abs(o.x - origin.x) == 4));
+    });
+}
+
+// Rules before the site is looked at: rotation, the city's culture (P:16-17), one Palace (Z:95), one Stadium
+// (Z:109) (B-009), one hippodrome grown at its pieces (P:13).
+static std::string precondition(const CityState& city, const BuildingType& bt, const std::string& type, TilePos origin,
+                                std::uint8_t rotation) {
+    const bool apart = bt.segmented && already_built(city, type) && !joins_track(city, type, origin);
+    return rotation > 3                                    ? "build.bad_rotation"
+           : !bt.player_placeable                          ? "build.unknown_type"
+           : bt.culture == "atlantean" && !city.atlantean  ? "build.atlantean_only"
+           : bt.culture == "greek" && city.atlantean       ? "build.greek_only"
+           : bt.unique && already_built(city, type)        ? "build.only_one"
+           : apart                                         ? "build.segment_apart"
+                                                           : "";
+}
+
 BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficulty difficulty, const std::string& type,
                            TilePos origin, std::uint8_t rotation) {
     BuildResult r;
@@ -118,13 +141,7 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     }
     const BuildingType& bt = type_it->second;
     const BuildingStats& stats = stats_it->second;
-    // B-009: one Palace (Z:95), one Stadium (Z:109)
-    r.reason = rotation > 3                              ? "build.bad_rotation"
-               : !bt.player_placeable                    ? "build.unknown_type"
-               : bt.culture == "atlantean" && !city.atlantean ? "build.atlantean_only"  // P:16-17
-               : bt.culture == "greek" && city.atlantean      ? "build.greek_only"
-               : bt.unique && already_built(city, type)  ? "build.only_one"
-                                                         : "";
+    r.reason = precondition(city, bt, type, origin, rotation);
     if (!r.reason.empty()) {
         return r;
     }
