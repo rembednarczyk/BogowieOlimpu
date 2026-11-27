@@ -210,3 +210,45 @@ TEST_CASE("crosswalk: across a straight stade, ends open, never next to another;
     CHECK(place(sim, "crosswalk", 2, 6) == "ok");  // west to east across the side stade (2, 6), row 6
     CHECK(hippodrome_track(sim.state().city).closed);  // still a loop
 }
+
+TEST_CASE("monuments: a pyramid is built like a sanctuary of marble and orichalc, then it adorns the city (P:26-28, L-128)") {
+    std::vector<std::string> rows(30, std::string(40, '.'));
+    rows[20] = std::string(40, '=');
+    SimulationConfig cfg{8, Difficulty::Hero, 30000, rows, true};
+    cfg.atlantean = true;
+    ScenarioGoal goal;
+    goal.type = "monument";
+    goal.target = "pyramid_modest";
+    cfg.scenario.goals = {goal};
+    Simulation sim(bo::test::catalog_isolated(), cfg);
+    REQUIRE(place(sim, "storehouse", 30, 17) == "ok");
+    REQUIRE(place(sim, "artisans_guild", 24, 18) == "ok");
+    auto& store = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({30, 17}).building);
+    store.storage->loads["marble"] = 30;
+    store.storage->loads["orichalc"] = 10;
+    REQUIRE(place(sim, "pyramid_modest", 4, 17) == "ok");  // no marble taken first, no drachmas (S-008)
+    const BuildingId id = sim.state().city.map.at({4, 17}).building;
+    const auto& site = *sim.state().city.buildings.items.at(id).sanctuary;
+    CHECK(site.needed.at("marble") == 20);
+    CHECK(site.needed.at("orichalc") == 8);
+    sim.run_days(1);
+    CHECK(sim.state().city.appeal[sim.state().city.map.index({7, 17})] <= 0);  // a building site: no appeal yet
+    for (int day = 0; day < 400 && !sim.state().city.buildings.items.at(id).sanctuary->complete; ++day) {
+        sim.run_days(1);
+    }
+    REQUIRE(sim.state().city.buildings.items.at(id).sanctuary->complete);
+    CHECK(store.storage->loads["marble"] == 10);
+    CHECK(store.storage->loads["orichalc"] == 2);
+    sim.run_days(1);
+    CHECK(sim.state().city.appeal[sim.state().city.map.index({7, 17})] > 0);  // 15 next to it (building_stats.json)
+    sim.drain_events();
+    sim.issue(Pray{id});
+    sim.step(1);
+    bool refused = false;
+    for (const auto& e : sim.drain_events()) {
+        refused = refused || std::holds_alternative<CommandRejected>(e.event);
+    }
+    CHECK(refused);  // no god to pray to
+    sim.run_days(16);
+    CHECK(sim.state().scenario.goals[0].met);
+}

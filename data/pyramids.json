@@ -1,0 +1,111 @@
+{
+ "monuments": [
+  {
+   "id": "pyramid_modest",
+   "marble": 20,
+   "orichalc": 8,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "pyramid_standard",
+   "marble": 70,
+   "orichalc": 24,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "pyramid_great",
+   "marble": 168,
+   "orichalc": 48,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "pyramid_majestic",
+   "marble": 330,
+   "orichalc": 80,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "monument_to_the_sky_small",
+   "marble": 69,
+   "orichalc": 24,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "monument_to_the_sky_standard",
+   "marble": 108,
+   "orichalc": 32,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "monument_to_the_sky_grand",
+   "marble": 236,
+   "orichalc": 60,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "shrine_minor",
+   "marble": 18,
+   "orichalc": 8,
+   "wood": 0,
+   "sculpture": 1
+  },
+  {
+   "id": "shrine_standard",
+   "marble": 109,
+   "orichalc": 32,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "shrine_major",
+   "marble": 181,
+   "orichalc": 40,
+   "wood": 0,
+   "sculpture": 4
+  },
+  {
+   "id": "pyramid_of_the_pantheon",
+   "marble": 217,
+   "orichalc": 44,
+   "wood": 0,
+   "sculpture": 14
+  },
+  {
+   "id": "altar_of_olympus",
+   "marble": 236,
+   "orichalc": 60,
+   "wood": 0,
+   "sculpture": 0
+  },
+  {
+   "id": "temple_of_olympus",
+   "marble": 205,
+   "orichalc": 48,
+   "wood": 5,
+   "sculpture": 0
+  },
+  {
+   "id": "observatory_kosmika",
+   "marble": 265,
+   "orichalc": 56,
+   "wood": 5,
+   "sculpture": 0
+  },
+  {
+   "id": "museum_atlantika",
+   "marble": 138,
+   "orichalc": 28,
+   "wood": 10,
+   "sculpture": 0
+  }
+ ],
+ "src": "S-008 eZeus buildings/pyramids (sumy kosztów kafli: wypełnienie 2 marmury na poziom pod kaflem, ściana 2 marmury i 1 orichalk, wierzchołek 2, płyta 1, posąg 1 rzeźba); P:26-28 materiały; [ZAŁOŻENIE L-128] cały marmur biały (eZeus: poziomy z czarnym marmurem według scenariusza), materiały w dowolnej kolejności po jednym ładunku na rzemieślnika dziennie",
+ "drachma_cost": 0
+}

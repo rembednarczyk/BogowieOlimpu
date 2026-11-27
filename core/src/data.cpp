@@ -448,6 +448,15 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         detail::load_games(docs, cat.games);
         load_army_rules(docs, cat);
         load_hippodrome(docs, cat);
+        for (const auto& m : docs.count("pyramids.json") != 0 ? docs.at("pyramids.json").value("monuments", json::array())
+                                                             : json::array()) {
+            SanctuaryParams p;  // P:26-28, S-008 [L-128]
+            p.monument = true;
+            for (const char* good : {"marble", "orichalc", "wood", "sculpture"}) {
+                p.materials[good] = m.value(good, 0);
+            }
+            cat.sanctuaries[m.at("id").get<std::string>()] = p;
+        }
         for (const auto& m : docs.count("monuments.json") != 0 ? docs.at("monuments.json") : json::array()) {
             const std::string id = m.value("id", "");
             if (id == "population" && m.contains("thresholds")) {

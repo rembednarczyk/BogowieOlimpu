@@ -60,6 +60,9 @@ void advance_gods(WorldState& st, const DataCatalog& catalog) {
             continue;
         }
         const SanctuaryParams& p = catalog.sanctuaries.at(s.type);
+        if (p.monument) {
+            continue;  // no god blesses from a monument (L-128)
+        }
         std::optional<std::pair<std::int32_t, BuildingId>> best;
         for (const auto& [bid, b] : city.buildings.items) {
             const std::int32_t d = std::max(std::abs(b.origin.x - s.origin.x), std::abs(b.origin.y - s.origin.y));

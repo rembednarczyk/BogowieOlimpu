@@ -101,7 +101,8 @@ std::int32_t prayer_chance(const SanctuaryState& s, const DataCatalog& catalog) 
 
 std::string pray(WorldState& st, const DataCatalog& catalog, BuildingId id) {
     const auto it = st.city.buildings.items.find(id);
-    if (it == st.city.buildings.items.end() || !it->second.sanctuary || !it->second.sanctuary->complete) {
+    if (it == st.city.buildings.items.end() || !it->second.sanctuary || !it->second.sanctuary->complete ||
+        catalog.sanctuaries.at(it->second.type).monument) {  // a monument has no god to pray to (L-128)
         return "myth.no_sanctuary";
     }
     SanctuaryState& s = *it->second.sanctuary;

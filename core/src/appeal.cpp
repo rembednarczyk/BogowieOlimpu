@@ -36,7 +36,9 @@ std::vector<std::int32_t> compute_appeal(const CityState& city, const DataCatalo
     for (const auto& [id, b] : city.buildings.items) {
         const auto type = catalog.buildings.find(b.type);
         const auto stats = catalog.building_stats.find(type == catalog.buildings.end() ? b.type : type->second.stats_id);
-        if (stats == catalog.building_stats.end() || !stats->second.appeal || b.tiles.empty()) {
+        const bool site = b.sanctuary && !b.sanctuary->complete && catalog.sanctuaries.count(b.type) != 0 &&
+                          catalog.sanctuaries.at(b.type).monument;  // a monument counts once finished (S-008)
+        if (stats == catalog.building_stats.end() || !stats->second.appeal || b.tiles.empty() || site) {
             continue;  // stalls have no tiles of their own
         }
         const AppealParams& a = *stats->second.appeal;

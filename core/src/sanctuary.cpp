@@ -13,7 +13,7 @@
 namespace bo::core {
 namespace {
 
-const char* const kMaterials[] = {"marble", "wood", "sculpture"};  // order of building in [ZAŁOŻENIE, L-111]
+const char* const kMaterials[] = {"marble", "wood", "sculpture", "orichalc"};  // [ZAŁOŻENIE, L-111]; orichalc: monuments (L-128)
 
 // Walkers of a job heading for or standing at `target`.
 std::vector<WalkerId> walkers_for(const WorldState& st, WalkerJob job, BuildingId target) {
@@ -150,14 +150,17 @@ void build(WorldState& st, const DataCatalog& catalog, BuildingId site_id, MythE
     bool one_at_work = false;
     for (const WalkerId id : artisans) {
         Walker& w = st.walkers.items.at(id);
-        const int phase = phase_of(catalog, site);
+        const bool monument = catalog.sanctuaries.at(site.type).monument;
+        const int phase = monument ? 0 : phase_of(catalog, site);
         if (w.phase != WalkerPhase::AtTarget || (phase == 2 && one_at_work)) {
             continue;  // phase 2: one artisan only (S-005)
         }
         one_at_work = true;
-        const std::vector<const char*> goods = phase == 1   ? std::vector<const char*>{"marble"}
-                                               : phase == 2 ? std::vector<const char*>{"marble", "wood"}
-                                                            : std::vector<const char*>{"sculpture"};
+        const std::vector<const char*> goods =
+            monument     ? std::vector<const char*>{"marble", "orichalc", "wood", "sculpture"}  // any, a load a day [L-128]
+            : phase == 1 ? std::vector<const char*>{"marble"}
+            : phase == 2 ? std::vector<const char*>{"marble", "wood"}
+                         : std::vector<const char*>{"sculpture"};
         for (const char* good : goods) {
             if (s.needed[good] > 0 && s.on_site[good] > 0) {
                 --s.needed[good];
@@ -255,11 +258,13 @@ void sacrifice(WorldState& st, const DataCatalog& catalog, BuildingId id, MythEv
 
 std::string sanctuary_site_check(const CityState& city, const DataCatalog& catalog, const std::string& type) {
     const auto p = catalog.sanctuaries.find(type);
-    if (p == catalog.sanctuaries.end()) {
-        return {};
+    if (p == catalog.sanctuaries.end() || p->second.monument) {
+        return {};  // a monument: no limit, no marble before (S-008)
     }
-    const auto count = std::count_if(city.buildings.items.begin(), city.buildings.items.end(),
-                                     [](const auto& kv) { return kv.second.sanctuary.has_value(); });
+    const auto count = std::count_if(city.buildings.items.begin(), city.buildings.items.end(), [&](const auto& kv) {
+        const auto q = catalog.sanctuaries.find(kv.second.type);
+        return kv.second.sanctuary.has_value() && (q == catalog.sanctuaries.end() || !q->second.monument);
+    });
     if (count >= catalog.max_sanctuaries) {
         return "build.too_many_sanctuaries";
     }
@@ -314,8 +319,8 @@ MythEvents advance_sanctuaries(WorldState& st, const DataCatalog& catalog) {
         if (!b.sanctuary->complete && b.road_access) {
             build(st, catalog, id, ev);
             dispatch_supplies(st, catalog, id, ev);
-        } else if (b.sanctuary->complete) {
-            sacrifice(st, catalog, id, ev);
+        } else if (b.sanctuary->complete && !catalog.sanctuaries.at(b.type).monument) {
+            sacrifice(st, catalog, id, ev);  // a god's sanctuary; a monument has no priests (L-128)
         }
     }
     return ev;

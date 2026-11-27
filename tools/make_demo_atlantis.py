@@ -22,11 +22,15 @@ def fill(x0, y0, x1, y1, c):
 
 
 fill(31, 23, 46, 29, ",")     # meadow: farms (Z:43)
+fill(26, 0, 33, 3, "#")       # rock with orichalc ore open to the south (P:9)
+fill(27, 1, 32, 3, "o")
+fill(36, 0, 46, 3, "q")       # marble quarry (Z:52)
 grid[6][0] = "E"              # land entry: immigrants (Z:17)
 for y in (6, 14, 22, 37):      # streets
     fill(1, y, W - 1, y, "=")
 for x in (12, 30):
     fill(x, 6, x, 37, "=")
+fill(31, 30, 46, 30, "=")      # a lane under the second row of farms
 
 steps = []
 
@@ -61,17 +65,40 @@ put("food_vendor_stall", 19, 15, day=1)
 put("bibliotheke", 5, 12, day=SCIENCE); put("bibliotheke", 19, 12, day=SCIENCE)
 put("maintenance_office", 21, 12, day=SCIENCE)
 put("carrot_farm", 38, 23, day=SCIENCE); put("onion_farm", 41, 23, day=SCIENCE)
+put("carrot_farm", 35, 27, day=SCIENCE); put("onion_farm", 38, 27, day=SCIENCE)
 # Stage TRACK: the hippodrome (P:13-15): a ring of eight stades round an empty middle, the first by the y = 22
 # street keeps the horses; a crosswalk over the top stade (P:14); the ranch takes wheat from the storehouse.
-put("wheat_farm", 44, 23, day=TRACK)
+put("wheat_farm", 44, 23, day=TRACK); put("wheat_farm", 41, 27, day=TRACK); put("wheat_farm", 32, 27, day=TRACK)
 put("horse_ranch", 32, 15, day=TRACK)
 put("storehouse", 40, 15, day=TRACK)
 steps.append({"day": TRACK + 1, "at": [40, 15], "storage_order": {"good": "wheat", "kind": 1, "limit": 8}})
+steps.append({"day": TRACK, "at": [13, 15], "storage_order": {"good": "wheat", "kind": 3, "limit": 0}})  # for the horses
 for x, y in [(13, 23), (17, 23), (21, 23), (21, 27), (21, 31), (17, 31), (13, 31), (13, 27)]:
     put("hippodrome", x, y, day=TRACK)
 put("crosswalk", 18, 23, day=TRACK + 1)
 put("maintenance_office", 25, 15, day=TRACK); put("watchpost", 27, 15, day=TRACK)
 put("maintenance_office", 26, 23, day=TRACK); put("watchpost", 28, 23, day=TRACK)
+# More hands for the ranch and the farms: houses on the y = 37 street, husbandry first (Z:66).
+houses(1, 38, 5, day=TRACK); houses(19, 38, 1, day=TRACK); put("fountain", 21, 38, day=TRACK); houses(23, 38, 3, day=TRACK)
+put("common_agora", 13, 37, rot=1, day=TRACK)  # food for the south street (Z:69-71)
+put("food_vendor_stall", 13, 38, day=TRACK + 1)
+put("carrot_farm", 44, 27, day=TRACK)
+put("common_agora", 36, 6, rot=1, day=TRACK)  # and for the north street
+put("food_vendor_stall", 36, 7, day=TRACK + 1)
+for sector, prio in enumerate([5, 4, 5, 5, 3, 4, 4, 5]):  # the ranch: army sector (Z:148); science, stone, guild
+    steps.append({"day": TRACK, "priority": [sector, prio]})
+# Stage MONUMENT: a small pyramid (P:26-28, L-128): marble from the quarry, orichalc from the refinery, the
+# artisans' guild builds it; more houses for the workers.
+MONUMENT = 200
+for sector, prio in enumerate([5, 4, 5, 5, 3, 4, 4, 5]):  # industry and myth too: the quarry, refinery, guild
+    steps.append({"day": MONUMENT, "priority": [sector, prio]})
+put("masonry_shop", 38, 4, day=MONUMENT); put("masonry_shop", 41, 4, day=MONUMENT); put("masonry_shop", 44, 4, day=MONUMENT)
+put("refinery", 30, 4, day=MONUMENT)
+steps.append({"day": TRACK + 1, "at": [40, 15], "storage_order": {"good": "orichalc", "kind": 0, "limit": 8}})  # room for marble
+put("artisans_guild", 44, 7, day=MONUMENT)
+put("maintenance_office", 46, 7, day=MONUMENT); put("watchpost", 42, 7, day=MONUMENT)  # or they burn (Z:89-90)
+put("pyramid_modest", 33, 7, day=MONUMENT + 60)
+houses(31, 12, 3, day=MONUMENT); put("fountain", 37, 12, day=MONUMENT); houses(39, 12, 3, day=MONUMENT)
 
 scenario = {
     "id": "demo_atlantis",
@@ -88,6 +115,7 @@ scenario = {
         {"type": "population", "value": 250},
         {"type": "houses", "target": "hovel", "value": 6},  # 15 points: the scholars' science (P:10-11)
         {"type": "hippodrome", "value": 8},
+        {"type": "monument", "target": "pyramid_modest"},
     ],
 }
 build = {"note": "Autopilot demo Atlantydy (tools/make_demo_atlantis.py). Do not edit by hand.", "steps": steps}

@@ -982,6 +982,7 @@ Array BoSimulation::get_buildings() const {
                 on_site += n;
             }
             d["sanctuary_complete"] = b.sanctuary->complete;
+            d["monument"] = catalog_->sanctuaries.count(b.type) != 0 && catalog_->sanctuaries.at(b.type).monument;
             d["sanctuary_loads_needed"] = needed;
             d["sanctuary_loads_on_site"] = on_site;
             d["days_since_sacrifice"] = static_cast<int64_t>(b.sanctuary->days_since_sacrifice);

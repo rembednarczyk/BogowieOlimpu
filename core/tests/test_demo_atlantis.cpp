@@ -1,5 +1,5 @@
 // The Atlantis demo gate (tools/make_demo_atlantis.py; docs/PRAKTYKI.md ch. 4): the autopilot builds the
-// Atlantean city and wins it; science lifts its houses (P:10-11) and the hippodrome races (P:13-15).
+// Atlantean city and wins it within eight years (the small city's quarries are slow for the pyramid, L-128); science lifts its houses (P:10-11) and the hippodrome races (P:13-15).
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -42,7 +42,7 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     std::vector<std::string> refused;
     std::uint64_t day = 0;
     const char* years = std::getenv("BO_DEMO_YEARS");
-    const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 4) * kDaysPerMonth * kMonthsPerYear;
+    const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 8) * kDaysPerMonth * kMonthsPerYear;
     for (; day < cap && !(sim.state().scenario.won && science && racing && crosswalk); ++day) {
         for (const auto& c : due_commands(*order, sim, day)) {
             sim.issue(c);
@@ -74,6 +74,15 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
             }
             std::printf(" | workers %u/%u |", sim.state().labour.employed, sim.state().labour.workforce);
             for (const auto& [id, b] : sim.state().city.buildings.items) {
+                if (b.house) {
+                    const auto w = b.coverage.find("water_bearer");
+                    const auto sc = b.coverage.find("scholar");
+                    std::printf(" %d,%d:l%u f%u w%d s%d", b.origin.x, b.origin.y, b.house->level, b.house->goods[0],
+                                w != b.coverage.end() && w->second > 0 ? 1 : 0, sc != b.coverage.end() && sc->second > 0 ? 1 : 0);
+                }
+            }
+            std::printf(" |");
+            for (const auto& [id, b] : sim.state().city.buildings.items) {
                 if (b.house && id % 4 == 0) {
                     std::printf(" h%u:%u f%u", b.house->level, b.house->population, b.house->goods[0]);
                 }
@@ -82,6 +91,16 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
                     for (const auto& [g, n] : b.storage->loads) {
                         std::printf(" %s:%u", g.c_str(), n);
                     }
+                }
+                if (b.sanctuary) {
+                    std::printf(" %s complete %d needs", b.type.c_str(), b.sanctuary->complete ? 1 : 0);
+                    for (const auto& [g, n] : b.sanctuary->needed) {
+                        std::printf(" %s:%u/%u", g.c_str(), n, b.sanctuary->on_site.count(g) ? b.sanctuary->on_site.at(g) : 0U);
+                    }
+                }
+                if (b.type == "masonry_shop" || b.type == "refinery" || b.type == "artisans_guild") {
+                    std::printf(" %s staff %u out %u", b.type.c_str(), b.staffing_percent,
+                                b.producer ? b.producer->output_loads : 0U);
                 }
                 if (b.producer && (b.type == "horse_ranch" || b.type == "wheat_farm")) {
                     std::printf(" %s staff %u out %u wheat %u", b.type.c_str(), b.staffing_percent, b.producer->output_loads,

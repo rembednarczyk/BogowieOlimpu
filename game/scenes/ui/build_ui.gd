@@ -601,7 +601,7 @@ func _open_card(tile: Vector2i) -> void:
 		card_stall = id if buying_btn.visible else 0
 		if buying_btn.visible:
 			buying_btn.set_pressed_no_signal(b["not_buying"])
-		pray_btn.visible = b.get("sanctuary_complete", false)
+		pray_btn.visible = b.get("sanctuary_complete", false) and not b.get("monument", false)
 		card_sanctuary = id if pray_btn.visible else 0
 		if pray_btn.visible:
 			lines.append(tr("ui.prayer_chance") % b["prayer_chance"])

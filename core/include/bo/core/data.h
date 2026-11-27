@@ -215,6 +215,8 @@ struct SanctuaryParams {
     std::string prayer;                             // gods.json prayer effect id
     std::int32_t prayer_cooldown_days = 96;         // gods_rules.json [ZAŁOŻENIE, L-053]
     bool oracle = false;                            // gods.json benefit "oracle": Zeus, Apollo (Z:124)
+    bool monument = false;  // an Atlantean monument (data/pyramids.json, P:26-28, L-128): built like a sanctuary,
+                            // no god, no priests, no limit of four
     std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
 };
 

@@ -117,6 +117,14 @@ bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGo
         };
         return std::max(get(st.produced_best_year), get(st.produced_this_year)) >= g.value;
     }
+    if (g.type == "monument") {  // finished Atlantean monuments: of a type, or any `value` of them (S-008 "pyramid")
+        const auto n = std::count_if(st.city.buildings.items.begin(), st.city.buildings.items.end(), [&](const auto& kv) {
+            const auto p = catalog.sanctuaries.find(kv.second.type);
+            return kv.second.sanctuary && kv.second.sanctuary->complete && p != catalog.sanctuaries.end() &&
+                   p->second.monument && (g.target.empty() || kv.second.type == g.target);
+        });
+        return n >= std::max<std::int64_t>(1, g.value);
+    }
     if (g.type == "hippodrome") {  // a working track of at least `value` stades (S-008: workingHippodrome)
         return static_cast<std::int64_t>(working_hippodrome(st, catalog)) >= std::max<std::int64_t>(1, g.value);
     }
