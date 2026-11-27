@@ -149,17 +149,45 @@ DemoRun run_demo(std::uint64_t years) {
         note_events(events, run.seen);
         note_state(sim, run.seen);
         trace_invasion(sim, day);
+        if (const char* at = std::getenv("BO_DEMO_SAVE_AT"); at != nullptr && std::strtoull(at, nullptr, 10) == day) {
+            const auto bytes = sim.save();  // BO_DEMO_SAVE_AT=day: the state after that day, for a probe
+            std::ofstream out(std::string(BO_DATA_DIR) + "/../build/demo_day.sav", std::ios::binary);
+            out.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+        }
+        if (std::getenv("BO_DEMO_ARMY") != nullptr && sim.state().time.day_in_month() == 0) {  // a line a month
+            std::map<std::string, int> by;
+            for (const Company& c : sim.state().military.companies) {
+                ++by[c.unit + "/" + std::to_string(static_cast<int>(c.status))];
+            }
+            std::printf("d%llu army", static_cast<unsigned long long>(day));
+            for (const auto& [k, v] : by) {
+                std::printf(" %s:%d", k.c_str(), v);
+            }
+            std::printf(" expeditions %zu\n", sim.state().expeditions.size());
+        }
         if (const char* hs = std::getenv("BO_DEMO_HOUSE"); hs != nullptr && sim.state().time.day_in_month() == 0) {
             int hx = 0, hy = 0;  // BO_DEMO_HOUSE=x,y: the building there once a month (risks, mood, coverage)
             if (std::sscanf(hs, "%d,%d", &hx, &hy) == 2) {
                 const BuildingId id = sim.state().city.map.at({hx, hy}).building;
                 if (id != kNoBuilding) {
                     const Building& b = sim.state().city.buildings.items.at(id);
-                    std::printf("d%llu %s fire %u crime %u", static_cast<unsigned long long>(day), b.type.c_str(),
-                                b.fire_counter, b.crime_counter);
+                    std::printf("d%llu %s fire %u crime %u staffing %u", static_cast<unsigned long long>(day),
+                                b.type.c_str(), b.fire_counter, b.crime_counter, b.staffing_percent);
                     if (b.house) {
                         std::printf(" pop %u level %u happy %u food %u", b.house->population, b.house->level,
                                     b.house->happiness, b.house->goods[0]);
+                    }
+                    for (const auto& [wid, w] : sim.state().walkers.items) {
+                        if (w.home == id) {
+                            std::printf(" [%s job%d ph%d @%d,%d t%u]", w.type.c_str(), static_cast<int>(w.job),
+                                        static_cast<int>(w.phase), w.tile.x, w.tile.y, w.target);
+                        }
+                    }
+                    if (b.sanctuary) {
+                        std::printf(" staff %u", b.staffing_percent);
+                        for (const auto& [g, n] : b.sanctuary->on_site) {
+                            std::printf(" on_site %s %u", g.c_str(), n);
+                        }
                     }
                     for (const auto& [w, d] : b.coverage) {
                         std::printf(" %s:%u", w.c_str(), static_cast<unsigned>(d));

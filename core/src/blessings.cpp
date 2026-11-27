@@ -67,7 +67,8 @@ bool feed_dragon(WorldState& st, const DataCatalog& catalog) {
         auto it = st.walkers.items.find(id);
         if (it != st.walkers.items.end() && it->second.hp > 0 && it->second.job == WalkerJob::Invade &&
             it->second.type != "transport" && it->second.type != "warship") {
-            it->second.hp = 0;  // combat removes the fallen
+            it->second.hp = 0;
+            it->second.phase = WalkerPhase::Done;  // eaten: gone at once (combat only buries those it hit itself)
             return true;
         }
     }

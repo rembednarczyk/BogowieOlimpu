@@ -356,7 +356,7 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # horsemen (Z:136). Apollo's Oracle foretells (Z:124). Two agoras, a granary and a storehouse for the estate
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
-priorities(EAST, [4, 4, 5, 5, 3, 4, 3, 4])  # bronze and armour for the estates while the generals call the rabble
+priorities(EAST, [4, 4, 5, 5, 3, 4, 4, 4])  # bronze, armour and the artisans of Apollo while the generals call the rabble
 steps.append({"day": EAST, "tax": 4})  # High: the district is dear (Z:97)
 steps.append({"day": EAST, "wage": 4})  # High wages: more of the people work (Z:59-60, doc 22)
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})

@@ -438,6 +438,9 @@ TEST_CASE("Ares: his dragon eats an invader every eight days (Z:121, L-131)") {
     }
     feed_dragon(st, sim.catalog());
     CHECK(fallen() == 1);
+    const auto count = sim.state().military.invasion.invaders.size();
+    sim.step(1);  // the eaten one leaves the invasion with the day's finished walkers (no zombie invader)
+    CHECK(sim.state().military.invasion.invaders.size() < count);
     auto none = with_god("athena");  // no Ares, no dragon
     none.mutable_state().city.map.at({59, 20}).feature = static_cast<std::uint8_t>(TileFeature::InvasionPoint);
     none.issue(StartInvasion{"greek", 20});
