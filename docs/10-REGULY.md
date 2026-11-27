@@ -155,3 +155,11 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Uzasadnienie: demo są deterministyczne, ale chaotyczne; bez kontroli ten sam problem wraca po każdej zmianie i znów kosztuje sondowanie.
 - Wpływ na: `docs/PLAN-ODPORNOSCI.md`, `docs/PRAKTYKI.md` rozdz. 4-6, bramki demo, `core/src/invariants.cpp`, `core/src/health.cpp`.
 - Historia: 2026-11-27 utworzona; 2026-11-27 doprecyzowana: kontrola dla problemów, które mogą wrócić, strojenie demo raportem (plan, wersja 2)
+
+### R-017 [ASSETY] Licencje assetów: własne, CC0, animacje Mixamo
+- Status: obowiązuje
+- Źródło: decyzja właściciela 2026-11-27 (odpowiedzi 1a, 2 „tak CC0”, 3; animacje z Mixamo od właściciela)
+- Treść: Do repozytorium wchodzą tylko: assety własne (modele budowane skryptami `tools/blender/`), tekstury i inne zasoby na licencji CC0 (np. ambientCG, Poly Haven) oraz animacje postaci z Mixamo dostarczone przez właściciela, wypiekane do naszych modeli. Każdy plik ma wpis w rejestrze pochodzenia `game/models/provenance.json` (plik, źródło, autor, licencja, zmiany). Żadnych assetów, kształtów ani przeróbek grafiki z gry referencyjnej (R-002): z oryginału i z eZeus bierzemy tylko listy kategorii, liczby i nazwy czynności.
+- Uzasadnienie: CC0 nie wymaga podawania autora i pozwala na grę komercyjną; animacje Mixamo są dopuszczone w grach, ale nie jako osobne pliki do rozpowszechniania, dlatego trafiają do repo tylko w postaci wypieczonej.
+- Wpływ na: `docs/ASSETY.md`, `tools/blender/`, `game/models/`, `tools/checks/check_models.py`.
+- Historia: 2026-11-27 utworzona

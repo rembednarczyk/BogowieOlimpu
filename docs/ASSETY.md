@@ -23,6 +23,38 @@ Wariant awaryjny (gdyby 3D w czasie rzeczywistym było za drogie na telefonie): 
 - Towary: osobne modele ładunków (skrzynie, amfory, bele, bloki, sztaby) wspólne dla wozów, magazynów i stosów przy budynkach.
 - Każdy asset ma wpis w rejestrze pochodzenia (autor, źródło, licencja, zmiany) przed wejściem do repo.
 
+## Parametry budynku: wiek, stan, praca (plan 2026-11-27)
+
+Jeden model budynku i jeden shader (`game/shaders/building.gdshader`) dają wszystkie stany z O-005 i wiek. Oprawa tylko czyta stan rdzenia; parametry liczy `boot.gd` co dzień gry i podaje jako `instance uniform` (przy przejściu na MultiMesh, moduł E3: te same cztery liczby w `INSTANCE_CUSTOM`).
+
+| Parametr | Zakres | Z czego (rdzeń, `get_buildings`) | Co widać |
+|---|---|---|---|
+| `build` | 0-1 | `age_days` / 4 dni (ok. 3,4 s przy 1x) | fundament, mury, dach po kolei; rusztowanie do końca budowy (tylko obraz, budynek działa od pierwszego ticku, O-005) |
+| `age` | 0-1 | `age_days` / 1 920 dni (10 lat) | patyna: przygaszony tynk, zabrudzenie przy ziemi, mech na dachu; [ZAŁOŻENIE] liniowo |
+| `damage` | 0-3 | `damage_risk` / próg 960: od 40 %, 70 %, 90 % | 1 pęknięcia na tynku, 2 odpadający tynk (kamień pod spodem), 3 przechylone luźne części |
+| `fire` | 0-3 | `burning_days` z 32: faza 1 do 1/3, 2 do 2/3, 3 reszta | 1 sadza i żar, 2 płomienie (cząsteczki, etap E), 3 zwęglenie |
+| `working` | 0/1 | obsada > 0 i brak klątwy | ruchome części w ruchu (np. kopuła obserwatorium, prasa, krosno, woda w fontannie) |
+| wariant | | poziom domu (`house_level`), kategoria ruiny | osobny model na poziom domu; ruina osobnym modelem na kategorię |
+
+Maski części w kolorach wierzchołków modelu (eksport glTF `COLOR_0`), ustawiane w skryptach Blendera:
+
+| Kanał | Znaczenie |
+|---|---|
+| R | etap budowy części: 0 fundament, 1/3 mury, 2/3 dach, 1 rusztowanie |
+| G | tynk lub farba: tu działają patyna, pęknięcia i odpadanie tynku |
+| B | część luźna: przechyla się przy `damage` 3 |
+| A | część ruchoma: obraca się wokół osi pionowej przez punkt z `UV2` (x, z w metrach), gdy `working` |
+
+Kolor bazowy (stylizowany realizm, etap 1a) idzie w drugim zestawie kolorów materiału według części (tynk, kamień, dachówka, drewno); tekstury CC0 (etap 1b) dojdą w tym samym shaderze jako mapy kafelkowane po świecie, bez zmiany modeli.
+
+## Animacje postaci (etap 2, Mixamo od właściciela)
+
+Spis czynności wyprowadzamy z kodu eZeus i instrukcji (nazwy animacji i liczby klatek, S-008, rozdz. "2. Postacie" niżej), bez oglądania plików graficznych oryginału (R-017). Właściciel dostarcza klipy z Mixamo, my je wypiekamy do tekstur (VAT, jak w prototypie E4) na wspólnym szkielecie. Wstępny podział: chód i śmierć dla każdego spacerującego; praca w miejscu (budowa, kopanie, zbiór, noszenie wody, gaszenie); występy (aktor w teatrze, filozof na podium, zawodnik na stadionie i gimnazjonie, muzyk); wojsko (marsz, atak wręcz, rzut, strzał, śmierć); bogowie, herosi i potwory po kilka klipów walki i pojawienia. Lista nazw z odpowiednikami Mixamo powstanie na początku etapu 2.
+
+## Budynki interaktywne
+
+Części ruchome sterowane `working` (kanał A): obserwatorium atlantydzkie obraca kopułę i lunetę, fontanna ma płynącą wodę, warsztaty mają ruchome narzędzia (prasa oliwy, krosno, miech kuźni), stadion i hipodrom ruch na trybunach (etap postaci). Ruch tylko w obrazie, symulacji nie dotyczy.
+
 ## 1. Budynki
 
 ### Mieszkalne

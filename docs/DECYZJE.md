@@ -4,6 +4,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Modele budynków: stylizowany realizm, potem tekstury CC0; animacje z Mixamo; wiek i stan budynku
+- Decyzja: modele budujemy skryptami Blendera w stylizowanym realizmie (proporcje z architektury greckiej, kolor według części), tekstury CC0 jako drugi krok; tylko licencje z R-017; animacje postaci z Mixamo od właściciela w etapie 2, spis czynności z kodu eZeus i instrukcji; każdy budynek ma parametry wieku, budowy, uszkodzenia, pożaru i pracy (`ASSETY.md`), część budynków ruchome elementy (obserwatorium).
+- Powód: odpowiedzi właściciela „1a i później b, 2 tak CC0, 3 tak” i uwagi o animacjach Mixamo, budowlach interaktywnych i parametryzacji wieku i stanu. Assety oryginału nie są w repozytorium i nie powstaną z nich przeróbki (R-002).
+- Wdrożone: R-017, `ASSETY.md` (parametry, maski, animacje), rdzeń: dzień postawienia budynku (zapis v51).
+
 ### 2026-11-27: Cienie słońca w grze na stałe
 - Decyzja: cienie słońca włączone w grze (budynki i postacie); LOD tłumu dopiero dla słabszych telefonów.
 - Powód: pomiar właściciela na Xiaomi 15T Pro (APK 0.0.44): 6 000 postaci z animacją i 2 000 budynków, GPU średnio 4,42 ms, najgorzej 6,76 ms; cienie dodają setne części milisekundy, są widoczne na budynkach i postaciach („Myślę, że mogą wejść”).
