@@ -181,6 +181,7 @@ void end_invasion(WorldState& st, std::uint8_t result, CombatEvents& ev) {
     }
     ev.city = inv.city;
     inv = Invasion{};
+    release_borrowed(st);  // lent companies leave when the fighting ends (Z:140)
     for (Company& c : st.military.companies) {
         c.fled = false;
         if (c.status == CompanyStatus::Fighting) {

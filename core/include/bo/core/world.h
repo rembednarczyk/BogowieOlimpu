@@ -38,6 +38,13 @@ std::string give_gift(WorldState& state, const DataCatalog& catalog, std::uint32
                       std::uint32_t amount);
 // Request (Z:173-175; doc 24): food, goods or money by state and opinion; a rival only gives to a stronger
 // player. The goods arrive after request_delay_days (90, eZeus; L-113); every city's opinion -10.
+// Military help (Z:174; [ZAŁOŻENIE, L-125] numbers in diplomacy.json military_help): defensive aid only while an
+// invasion is on (allies when they think very highly of the player, vassals, colonies and the parent city more
+// readily; rivals never): 1 + military / 2 companies come; a strike on `target` (allies who adore the player,
+// the others above average): their armies meet, the weaker loses a shield, the target thinks less of the player.
+std::string request_military_help(WorldState& state, const DataCatalog& catalog, std::uint32_t city, bool strike,
+                                  std::uint32_t target, std::vector<WalkerId>& spawned);
+
 std::string request_from_city(WorldState& state, const DataCatalog& catalog, std::uint32_t city,
                               const std::string& good);
 // Attack or raid (Z:177-178): companies at home, no rabble; 200 days there, a battle by strength (L-063),

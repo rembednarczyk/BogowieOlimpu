@@ -170,6 +170,11 @@ struct RequestClosed {  // D5: fulfilled, or withdrawn after the deadline
     bool fulfilled = false;
 };
 
+struct MilitaryHelpGiven {  // a partner city lent companies or struck another city (Z:174)
+    std::uint32_t city = 0;
+    bool strike = false;
+};
+
 struct EpisodeWon {};  // D5: all goals met
 
 struct MonsterAppeared {  // D5: a monster comes to the city (Z:127)
@@ -203,7 +208,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
                            TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, GamesHeld, CityRebelled, CityGift,
-                           CityRequestReceived, RequestClosed, EpisodeWon,
+                           CityRequestReceived, RequestClosed, EpisodeWon, MilitaryHelpGiven,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
 
 struct TimedEvent {

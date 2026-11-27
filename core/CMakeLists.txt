@@ -43,6 +43,7 @@ add_library(bo_core STATIC
     src/serialize_scenario.cpp
     src/scenario.cpp
     src/simulation.cpp
+    src/simulation_world.cpp
     src/storage.cpp
     src/systems.cpp
     src/trade.cpp
@@ -68,6 +69,7 @@ if(BO_BUILD_TESTS)
         tests/test_save.cpp
         tests/test_fortifications.cpp
         tests/test_naval.cpp
+        tests/test_allies.cpp
         tests/test_golden.cpp
         tests/test_map.cpp
         tests/test_city.cpp

@@ -132,6 +132,14 @@ struct StartInvasion {
     bool by_sea = false;     // in transports with warships (Z:144; since v39)
 };
 
+// A request to a partner city (Z:174): defensive aid (lent companies while an invasion is on) or, with `strike`,
+// an attack of that city on `target`.
+struct RequestMilitaryHelp {
+    std::uint32_t city = 0;
+    bool strike = false;
+    std::uint32_t target = 0;
+};
+
 // Trireme orders (Z:142): 0 Defend Location at (x, y) (-1: where it is), 1 Attack All Enemies, 2 Carry Out Repairs.
 struct SetShipOrder {
     std::uint32_t ship = 0;
@@ -187,7 +195,8 @@ using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, 
                              Undo, SetSectorPriority, SetIndustryEnabled, SetStorageOrder, SetTradePartner,
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
-                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers, SetCompanyTactic, SetShipOrder>;
+                             FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers, SetCompanyTactic, SetShipOrder,
+                             RequestMilitaryHelp>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

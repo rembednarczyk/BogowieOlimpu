@@ -240,7 +240,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
@@ -276,6 +276,9 @@ DemoRun run_demo(std::uint64_t years) {
                 run.seen[g->invited ? "games_invited" : "games_not_invited"] += 1;  // Z:110-112
                 run.seen["games_won"] += g->won ? 1 : 0;
                 run.seen["games_hosted"] += g->hosted ? 1 : 0;  // Z:111
+            }
+            if (const auto* h = std::get_if<MilitaryHelpGiven>(&e.event)) {
+                run.seen[h->strike ? "strike" : "lent_troops"] += 1;  // Z:174
             }
         }
         if (const char* m = std::getenv("BO_DEMO_MONTHLY")) {  // e.g. BO_DEMO_MONTHLY=7: a line a month from year 7

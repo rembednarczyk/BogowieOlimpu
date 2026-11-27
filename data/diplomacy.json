@@ -143,9 +143,10 @@
    "very_good": 80,
    "very_high": 80,
    "extremely_good": 90,
-   "adores": 90
+   "adores": 90,
+   "more_willing_than_ally": 60
   },
-  "attitude_src": "[ZAŁOŻENIE L-113] słowne progi Z:174-175 na skali 0-100 (doc 24)",
+  "attitude_src": "[ZAŁOŻENIE L-113] słowne progi Z:174-175 na skali 0-100 (doc 24); more_willing_than_ally (pomoc obronna wasala, kolonii, metropolii) [ZAŁOŻENIE L-125]",
   "gift_needed_x2": 6,
   "gift_other_x2": 3,
   "gift_units_per_year": 3,

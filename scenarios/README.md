@@ -37,7 +37,9 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `dispatch: {"city": n, "raid": bool, "good": towar}` | atak albo rajd wszystkimi kompaniami z domu poza motłochem (Z:177-178) |
 | `tactics: n` | taktyka wszystkich kompanii: 0 obronna, 1 ofensywna, 2 specjalna (Z:138-139) |
 | `fulfill_requests: true` | spełnij wszystkie otwarte prośby miast (towar z magazynu, wojsko z domu) |
+| `gift: {"city": n, "good": towar, "amount": n}` | dar dla miasta (`drachmas`: pieniądze, Z:176-177) |
+| `military_help: {"city": n, "strike": bool, "target": m}` | prośba o pomoc obronną (tylko w czasie najazdu) albo o uderzenie miasta n na miasto m (Z:174, L-125) |
 
-Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`).
+Modyfikatory: `retry: true` (budynek: próba co dzień, aż stanie, np. dom elity czekający na towary), `when: {towar: ładunki}` (tylko przy takim zapasie w magazynach miasta, bez faktorii, Z:79), `every: n` (polecenie co n dni od `day`), `until: dzień` (z `every`: ostatni dzień).
 
 Kroki są bezstanowe: krok wykonuje się w swoim dniu, więc wczytana gra prowadzi demo dalej od bieżącego dnia (`BoSimulation.load_build_order` po wczytaniu zapisu).

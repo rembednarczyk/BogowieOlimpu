@@ -1,5 +1,6 @@
 // Labour, migration and finance blocks of the save (v5, v6).
 #include "serialize_city.h"
+#include "bo/core/command.h"
 
 namespace bo::core {
 
@@ -149,6 +150,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
         w.u8(c.fled ? 1 : 0);  // since v18
         w.str(c.nation);        // since v34
         w.u8(static_cast<std::uint8_t>(c.tactic));  // since v38
+        w.i32(c.lender);                              // since v40
     }
     const Invasion& inv = m.invasion;  // since v18
     w.u8(inv.active ? 1 : 0);
@@ -175,7 +177,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
 
 bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
     std::uint32_t count = 0;
-    if (!r.u32(count) || count > kMaxCompanies) {
+    if (!r.u32(count) || count > 2 * kMaxCompanies) {  // the city's 20 and up to 20 lent (L-125)
         return false;
     }
     m.companies.resize(count);
@@ -216,6 +218,9 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
             return false;
         }
         c.tactic = static_cast<Tactic>(tactic);
+        if (version >= 40 && !r.i32(c.lender)) {
+            return false;
+        }
     }
     if (version < 18) {
         return true;
@@ -417,6 +422,28 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
     }
     s.towers_manned = manned != 0;
     return version < 37 || r.i32(s.games_host_year);
+}
+
+// A trireme order (index 30, since v39, Z:142).
+bool read_ship_order(ByteReader& r, Command& out) {
+    SetShipOrder c;
+    if (!r.u32(c.ship) || !r.u8(c.order) || !r.i32(c.x) || !r.i32(c.y)) {
+        return false;
+    }
+    out = c;
+    return true;
+}
+
+// A request for military help (index 31, since v40, Z:174).
+bool read_help_request(ByteReader& r, Command& out) {
+    RequestMilitaryHelp c;
+    std::uint8_t strike = 0;
+    if (!r.u32(c.city) || !r.u8(strike) || !r.u32(c.target)) {
+        return false;
+    }
+    c.strike = strike != 0;
+    out = c;
+    return true;
 }
 
 }  // namespace bo::core

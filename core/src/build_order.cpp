@@ -39,6 +39,7 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
     base.day = s.value("day", std::uint64_t{0});
     base.retry = s.value("retry", false);
     base.every = s.value("every", std::uint64_t{0});
+    base.until = s.value("until", std::uint64_t{0});
     const json when = s.value("when", json::object());  // a named copy: items() of a temporary dangles
     for (const auto& [good, n] : when.items()) {
         base.when[good] = n.get<std::uint32_t>();
@@ -100,6 +101,12 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         step.fulfill_all = true;
         step.command = FulfillRequest{0};
         out.push_back(std::move(step));
+    } else if (s.contains("gift")) {  // {"city": i, "good": g, "amount": n} (Z:176-177)
+        const json& g = s.at("gift");
+        add(GiftToCity{g.at("city").get<std::uint32_t>(), g.value("good", std::string("drachmas")), g.value("amount", 500U)});
+    } else if (s.contains("military_help")) {  // {"city": i, "strike": bool, "target": j} (Z:174)
+        const json& h = s.at("military_help");
+        add(RequestMilitaryHelp{h.at("city").get<std::uint32_t>(), h.value("strike", false), h.value("target", 0U)});
     } else if (s.contains("summon_hero")) {
         add(SummonHero{0}, pos_of(s.at("summon_hero")));
     } else if (s.contains("hero_quest")) {
@@ -145,7 +152,7 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
     for (const BuildStep& s : order.steps) {
         const auto* place = std::get_if<PlaceBuilding>(&s.command);
         const bool due = s.day == day || (s.retry && place != nullptr && s.day < day && !stands(sim, *place)) ||
-                         (s.every > 0 && day > s.day && (day - s.day) % s.every == 0);
+                         (s.every > 0 && day > s.day && (day - s.day) % s.every == 0 && (s.until == 0 || day <= s.until));
         if (!due) {
             continue;
         }

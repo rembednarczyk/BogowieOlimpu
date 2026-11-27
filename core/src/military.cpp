@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <optional>
+#include <tuple>
 
 #include "bo/core/gods.h"
 #include "bo/core/housing.h"
@@ -66,6 +67,19 @@ TilePos slot(const CityState& city, TilePos standard, std::size_t k) {
 }  // namespace
 
 TilePos company_slot(const CityState& city, TilePos standard, std::size_t k) { return slot(city, standard, k); }
+
+namespace {
+
+std::optional<TilePos> land_entry(const CityState& city) {
+    for (std::size_t i = 0; i < city.map.size(); ++i) {
+        if (city.map.tiles()[i].feature == static_cast<std::uint8_t>(TileFeature::LandEntry)) {
+            return city.map.pos(i);
+        }
+    }
+    return std::nullopt;
+}
+
+}  // namespace
 
 namespace {
 
@@ -215,19 +229,25 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
         return "military.bad_company";
     }
     const UnitStats& unit = stats->second.units.at(c.unit);
-    std::size_t k = 0;
+    std::vector<std::tuple<BuildingId, TilePos, std::uint8_t>> sources;  // home, where they set out, how many
     for (const CompanyMember& member : c.members) {
         const auto house = st.city.buildings.items.find(member.house);
-        if (house == st.city.buildings.items.end()) {
-            continue;
+        if (house != st.city.buildings.items.end()) {
+            sources.emplace_back(member.house, house->second.road_access.value_or(house->second.origin), member.soldiers);
         }
-        const TilePos from = house->second.road_access ? *house->second.road_access : house->second.origin;
-        for (std::uint8_t i = 0; i < member.soldiers; ++i, ++k) {
+    }
+    const auto entry = land_entry(st.city);
+    if (c.lender >= 0 && entry) {
+        sources.emplace_back(kNoBuilding, *entry, static_cast<std::uint8_t>(kCompanySize));  // lent: from abroad
+    }
+    std::size_t k = 0;
+    for (const auto& [home, from, count] : sources) {
+        for (std::uint8_t i = 0; i < count; ++i, ++k) {
             Walker w;
             w.id = st.walkers.next_id;
             w.type = c.unit;
             w.kind = WalkerKind::Destination;
-            w.home = member.house;
+            w.home = home;
             w.tile = from;
             w.speed_raw = c.nation.empty() ? type->second.speed_raw : unit.speed_raw;
             w.variant = c.nation;  // a god's soldier: stats of that nation (combat.cpp stats_of)
@@ -249,6 +269,56 @@ std::string muster_company(WorldState& st, const DataCatalog& catalog, std::uint
     }
     c.status = CompanyStatus::Marching;
     return {};
+}
+
+std::string lend_companies(WorldState& st, const DataCatalog& catalog, std::int32_t city, std::uint32_t count,
+                           std::vector<WalkerId>& spawned) {
+    const auto palace = palace_of(st.city);
+    const auto nation = catalog.combat.nations.find(catalog.world.rival_attack_nation);
+    if (!palace || !land_entry(st.city) || nation == catalog.combat.nations.end() ||
+        nation->second.composition_units.empty()) {
+        return "military.no_way_for_help";
+    }
+    auto& companies = st.military.companies;
+    // Lent companies are not the city's: outside its 20 (Z:136), at most 20 of them [ZAŁOŻENIE, L-125].
+    const auto already = static_cast<std::size_t>(
+        std::count_if(companies.begin(), companies.end(), [](const Company& c) { return c.lender >= 0; }));
+    count = std::min<std::uint32_t>(count, static_cast<std::uint32_t>(kMaxCompanies - std::min(kMaxCompanies, already)));
+    if (count == 0) {
+        return "military.too_many_companies";
+    }
+    const auto sites = standard_sites(st.city, st.city.buildings.items.at(*palace), companies.size() + count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        Company c;
+        c.unit = nation->second.composition_units.front();  // heavy infantry first (doc 22)
+        c.nation = nation->first;  // stats of that army; its morale never drops (Z:140)
+        c.lender = city;
+        const std::size_t at = companies.size();
+        c.standard = at < sites.size() ? sites[at] : st.city.buildings.items.at(*palace).origin;
+        companies.push_back(c);
+        muster_company(st, catalog, static_cast<std::uint32_t>(at), spawned);
+    }
+    return {};
+}
+
+void release_borrowed(WorldState& st) {
+    const auto entry = land_entry(st.city);
+    auto& companies = st.military.companies;
+    for (const Company& c : companies) {
+        for (const WalkerId id : c.lender >= 0 ? c.soldiers : std::vector<WalkerId>{}) {
+            const auto it = st.walkers.items.find(id);
+            if (it == st.walkers.items.end()) {
+                continue;
+            }
+            Walker& w = it->second;
+            w.job = WalkerJob::None;  // removed when they reach the land entry
+            if (!entry || !route(st.city, w, *entry)) {
+                w.phase = WalkerPhase::Done;
+            }
+        }
+    }
+    companies.erase(std::remove_if(companies.begin(), companies.end(), [](const Company& c) { return c.lender >= 0; }),
+                    companies.end());
 }
 
 std::string move_company(WorldState& st, std::uint32_t index, TilePos to) {

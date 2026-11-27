@@ -19,6 +19,7 @@ struct BuildStep {
     std::uint64_t day = 0;
     bool retry = false;                        // place steps: try daily until the building stands
     std::uint64_t every = 0;                   // other steps: again every `every` days from `day` (0: once)
+    std::uint64_t until = 0;                   // with `every`: the last day (0: no end)
     bool fulfill_all = false;                  // send what every open city request asks for (Z:161)
     bool all_companies = false;                // SetCompanyTactic for every company there is when due (Z:138)
     bool dispatch_ready = false;               // attack or raid with every company at home but rabble (Z:177)

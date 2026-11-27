@@ -334,6 +334,12 @@ steps.append({"day": 1000, "every": 64, "tactics": 2})  # special: rabble skirmi
 steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachmas"}})
 steps.append({"day": 1480, "every": 16, "dispatch": {"city": 3}})
 
+# Military help (Z:174): Rhodes lends companies against the landing of year 5 (asked every day of the
+# invasion, refused when there is none); later, with gifts first, Rhodes strikes Sparta.
+steps.append({"day": 5 * 192 + 9 * 16, "every": 1, "until": 5 * 192 + 11 * 16, "military_help": {"city": 2}})
+steps.append({"day": 6 * 192, "every": 32, "until": 9 * 192, "gift": {"city": 2, "good": "drachmas", "amount": 500}})
+steps.append({"day": 6 * 192, "every": 32, "until": 9 * 192, "military_help": {"city": 2, "strike": True, "target": 1}})
+
 # City requests (Z:161): goods from storage, troops from the companies at home; tried twice a month.
 steps.append({"day": 64, "every": 8, "fulfill_requests": True})
 

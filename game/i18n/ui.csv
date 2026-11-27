@@ -201,3 +201,6 @@ ship.order.0,Trzymaj pozycję,Hold station
 ship.order.1,Atakuj wszystkich,Engage all
 ship.order.2,Naprawa,Repair
 ui.invasion_by_sea,Najazd z morza: transporty i okręty wroga płyną do brzegu.,Invasion by sea: enemy transports and warships sail for the shore.
+ui.help,Pomoc,Help
+ui.strike,Uderz,Strike
+event.military_help,Miasto wysłało nam pomoc wojskową.,A city sent us military help.

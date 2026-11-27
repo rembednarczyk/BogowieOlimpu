@@ -173,6 +173,11 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["type"] = "city_rebelled";
                        d["city"] = static_cast<int64_t>(e.city);
                    },
+                   [&d](const bo::core::MilitaryHelpGiven& e) {  // Z:174
+                       d["type"] = "military_help";
+                       d["city"] = static_cast<int64_t>(e.city);
+                       d["strike"] = e.strike;
+                   },
                    [&d](const bo::core::CityGift& e) {
                        d["type"] = "city_gift";
                        d["city"] = static_cast<int64_t>(e.city);
@@ -587,6 +592,12 @@ void BoSimulation::set_ship_order(int64_t ship, int64_t order, int64_t x, int64_
     if (sim_ && ship >= 0 && order >= 0 && order <= 2) {
         sim_->issue(bo::core::SetShipOrder{static_cast<std::uint32_t>(ship), static_cast<std::uint8_t>(order),
                                            static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)});
+    }
+}
+
+void BoSimulation::request_military_help(int64_t city, bool strike, int64_t target) {
+    if (sim_ && city >= 0 && target >= 0) {
+        sim_->issue(bo::core::RequestMilitaryHelp{static_cast<std::uint32_t>(city), strike, static_cast<std::uint32_t>(target)});
     }
 }
 
@@ -1150,6 +1161,8 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
     ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
     ClassDB::bind_method(D_METHOD("get_ships"), &BoSimulation::get_ships);
+    ClassDB::bind_method(D_METHOD("request_military_help", "city", "strike", "target"),
+                         &BoSimulation::request_military_help, DEFVAL(false), DEFVAL(0));
     ClassDB::bind_method(D_METHOD("set_ship_order", "ship", "order", "x", "y"), &BoSimulation::set_ship_order,
                          DEFVAL(-1), DEFVAL(-1));
     ClassDB::bind_method(D_METHOD("get_expeditions"), &BoSimulation::get_expeditions);

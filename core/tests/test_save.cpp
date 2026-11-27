@@ -241,6 +241,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(a.save(), 39, h);  // v40 adds only a per-company field
     check_load(as_v38(a.save()), 38, h);
     check_load(as_v38(a.save()), 37, h);
     check_load(as_v36(a.save()), 36, h);

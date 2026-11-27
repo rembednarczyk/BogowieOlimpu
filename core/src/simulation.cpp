@@ -316,6 +316,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const Surrender&) { apply_combat_command(command, index); },
                    [&](const GiftToCity&) { apply_world_command(command, index); },
                    [&](const RequestFromCity&) { apply_world_command(command, index); },
+                   [&](const RequestMilitaryHelp&) { apply_world_command(command, index); },  // Z:174
                    [&](const DispatchArmy&) { apply_world_command(command, index); },
                    [&](const FulfillRequest&) { apply_world_command(command, index); },
                    [&](const SummonHero&) { apply_myth_command(command, index); },
@@ -367,27 +368,6 @@ void Simulation::apply_myth_command(const Command& command, std::uint32_t index)
     emit(HeroArrived{state_.heroes.back().id});
     for (const WalkerId id : ev.spawned) {
         emit(WalkerSpawned{id, state_.walkers.items.at(id).type});
-    }
-}
-
-// World commands (D4): gifts, requests, armies abroad.
-void Simulation::apply_world_command(const Command& command, std::uint32_t index) {
-    std::string err;
-    if (const auto* g = std::get_if<GiftToCity>(&command)) {
-        err = give_gift(state_, catalog_, g->city, g->good, g->amount);
-    } else if (const auto* r = std::get_if<RequestFromCity>(&command)) {
-        err = request_from_city(state_, catalog_, r->city, r->good);
-    } else if (const auto* d = std::get_if<DispatchArmy>(&command)) {
-        err = dispatch_army(state_, catalog_, d->city, d->raid, d->good, d->companies);
-    } else if (const auto* f = std::get_if<FulfillRequest>(&command)) {
-        const auto city = f->request < state_.scenario.requests.size() ? state_.scenario.requests[f->request].city : 0U;
-        err = fulfill_request(state_, catalog_, f->request);
-        if (err.empty()) {
-            emit(RequestClosed{city, true});
-        }
-    }
-    if (!err.empty()) {
-        emit(CommandRejected{index, err});
     }
 }
 

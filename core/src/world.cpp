@@ -193,6 +193,47 @@ std::string request_from_city(WorldState& st, const DataCatalog& catalog, std::u
     return {};
 }
 
+std::string request_military_help(WorldState& st, const DataCatalog& catalog, std::uint32_t city, bool strike,
+                                  std::uint32_t target, std::vector<WalkerId>& spawned) {
+    if (city >= st.trade.partners.size() || !diplomatic(st.trade.partners[city]) ||
+        (strike && (target >= st.trade.partners.size() || target == city))) {
+        return "world.bad_city";
+    }
+    TradePartner& p = st.trade.partners[city];
+    if (!strike && !st.military.invasion.active) {
+        return "world.no_war";  // lent troops only defend the city and leave when there is no fighting (Z:140)
+    }
+    if (p.relation == "rival") {
+        return "world.request_refused";  // never (Z:174)
+    }
+    const bool ally = p.relation == "ally";
+    const std::int32_t need = attitude(catalog, strike ? (ally ? "adores" : "above_average")
+                                                       : (ally ? "very_high" : "more_willing_than_ally"));
+    if (p.diplomacy.request_cooldown > 0) {
+        return "world.asked_too_recently";
+    }
+    if (p.diplomacy.opinion < need) {
+        return "world.request_refused";
+    }
+    if (!strike) {
+        const std::string err = lend_companies(st, catalog, static_cast<std::int32_t>(city),
+                                               1 + static_cast<std::uint32_t>(std::max(0, p.diplomacy.military)) / 2, spawned);
+        if (!err.empty()) {
+            return err;
+        }
+    } else {
+        TradePartner& t = st.trade.partners[target];
+        std::int32_t& loser = p.diplomacy.military >= t.diplomacy.military ? t.diplomacy.military : p.diplomacy.military;
+        loser = std::max(0, loser - 1);
+        change_opinion(t.diplomacy, catalog.world.attacked_ally_opinion);  // they know who sent them
+    }
+    for (TradePartner& other : st.trade.partners) {
+        change_opinion(other.diplomacy, catalog.world.request_opinion);  // doc 24: every city thinks less of a beggar
+    }
+    p.diplomacy.request_cooldown = static_cast<std::uint16_t>(catalog.world.request_cooldown_days);
+    return {};
+}
+
 // Help a city asked for (Z:161, 13-przeglad): the companies march there and fight its enemy, of the city's own
 // strength [ZAŁOŻENIE, L-122]; nobody's opinion turns.
 std::string dispatch_aid(WorldState& st, const DataCatalog& catalog, std::uint32_t city, std::uint32_t companies) {

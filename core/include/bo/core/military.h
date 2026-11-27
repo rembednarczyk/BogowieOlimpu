@@ -42,10 +42,13 @@ struct Company {
     // Ares's Sparti, "amazon": Artemis's Amazons); empty for the player's own soldiers. Its morale never drops.
     std::string nation;
     Tactic tactic = Tactic::Defensive;  // since v38; defensive by default (Z:138)
+    // Lent by a partner city for the defence (Z:140, Z:174; since v40): its index, -1 for the player's own.
+    // It comes in by the land entry, only defends the city and leaves when the fighting ends.
+    std::int32_t lender = -1;
     friend bool operator==(const Company& a, const Company& b) {
         return a.unit == b.unit && a.members == b.members && a.standard == b.standard && a.status == b.status &&
                a.morale == b.morale && a.soldiers == b.soldiers && a.fled == b.fled && a.nation == b.nation &&
-               a.tactic == b.tactic;
+               a.tactic == b.tactic && a.lender == b.lender;
     }
 };
 
@@ -100,6 +103,14 @@ void form_companies(WorldState& state, const DataCatalog& catalog);
 void update_companies(WorldState& state);
 
 // Commands. Return an error code for CommandRejected, or an empty string.
+// Companies a partner city lends (Z:140, Z:174): `count` of the heavy infantry of the lending army
+// (world.rival_attack_nation [ZAŁOŻENIE, L-125]), mustered at once from the land entry to standards by the
+// Palace. Returns an error key or "".
+std::string lend_companies(WorldState& state, const DataCatalog& catalog, std::int32_t city, std::uint32_t count,
+                           std::vector<WalkerId>& spawned);
+// The fighting is over: the lent companies go home (Z:140).
+void release_borrowed(WorldState& state);
+
 std::string muster_company(WorldState& state, const DataCatalog& catalog, std::uint32_t company,
                            std::vector<WalkerId>& spawned);
 std::string move_company(WorldState& state, std::uint32_t company, TilePos to);

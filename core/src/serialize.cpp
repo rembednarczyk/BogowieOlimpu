@@ -93,6 +93,10 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.u32(cmd.soldiers);
                 w.i32(cmd.city);  // since v21
                 w.u8(cmd.by_sea ? 1 : 0);  // since v39
+            } else if constexpr (std::is_same_v<T, RequestMilitaryHelp>) {
+                w.u32(cmd.city);
+                w.u8(cmd.strike ? 1 : 0);
+                w.u32(cmd.target);
             } else if constexpr (std::is_same_v<T, SetShipOrder>) {
                 w.u32(cmd.ship);
                 w.u8(cmd.order);
@@ -174,16 +178,6 @@ bool read_dispatch(ByteReader& r, Command& out) {
         if (!r.u32(id)) {
             return false;
         }
-    }
-    out = c;
-    return true;
-}
-
-// A trireme order (index 30, since v39, Z:142).
-bool read_ship_order(ByteReader& r, Command& out) {
-    SetShipOrder c;
-    if (!r.u32(c.ship) || !r.u8(c.order) || !r.i32(c.x) || !r.i32(c.y)) {
-        return false;
     }
     out = c;
     return true;
@@ -300,7 +294,7 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             return true;
         }
         default:
-            return index == 30 && read_ship_order(r, out);
+            return (index == 30 && read_ship_order(r, out)) || (index == 31 && read_help_request(r, out));
     }
 }
 

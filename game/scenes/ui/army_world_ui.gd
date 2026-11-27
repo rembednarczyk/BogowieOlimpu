@@ -209,12 +209,26 @@ func refresh_world() -> void:
 		pick.disabled = sells.is_empty()
 		var chosen := func() -> String: return sells[pick.selected] if pick.selected >= 0 and sells.size() > 0 else ""
 		var friendly: bool = c["relation"] in ["ally", "vassal", "colony", "parent"]
+		var target := OptionButton.new()  # the city to strike (Z:174)
+		target.custom_minimum_size = Vector2(150, ui.CELL.y)
+		target.add_theme_font_size_override("font_size", 18)
+		var targets := []
+		for j in cities.size():
+			if j != i and cities[j]["relation"] != "distant":
+				target.add_item(ui._city_name(j))
+				targets.append(j)
+		target.disabled = targets.is_empty() or not friendly
+		var invaded: bool = game.sim.get_invasion().get("active", false)
 		var at_war: bool = c["relation"] in ["ally", "rival"] or c["rebelling"]
 		_row(world_box, text, [
 			_small("ui.gift", func(): game.sim.give_gift(i, "drachmas", 500); refresh_world(), c["relation"] != "distant"),
 			pick,
 			_small("ui.ask", func(): game.sim.request_from_city(i, chosen.call()); refresh_world(),
 				not sells.is_empty() and friendly),
+			_small("ui.help", func(): game.sim.request_military_help(i); refresh_world(), friendly and invaded),
+			target,
+			_small("ui.strike", func(): game.sim.request_military_help(i, true, targets[target.selected]); refresh_world(),
+				friendly and not targets.is_empty()),
 			_small("ui.attack", func(): game.sim.dispatch_army(i, false, "", ready); refresh_world(),
 				at_war and not ready.is_empty()),
 			_small("ui.raid", func(): game.sim.dispatch_army(i, true, chosen.call() if not sells.is_empty() else "drachmas",
