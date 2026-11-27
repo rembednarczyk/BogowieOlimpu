@@ -44,9 +44,13 @@
  "monster_numbers": {
   "destroy_days": 2,
   "rest_days": 16,
-  "hero_hall_goods_from": "city_storage"
+  "hero_hall_goods_from": "city_storage",
+  "excellent_percent": 80,
+  "hall_excellent_culture": 80,
+  "hall_good_appeal": 10,
+  "hall_near_palace_tiles": 20
  },
- "monster_numbers_src": "[ZAŁOŻENIE L-116] potwór niszczy cel po 2 dniach ataku i odpoczywa 16 dni w punkcie startu (S-004 scendesign: wraca do punktu startu); dobra dla herosa liczone z magazynów miasta",
+ "monster_numbers_src": "[ZAŁOŻENIE L-116] potwór niszczy cel po 2 dniach ataku i odpoczywa 16 dni w punkcie startu (S-004 scendesign: wraca do punktu startu); dobra dla herosa liczone z magazynów miasta; \"doskonały\" dostęp miasta do gimnazjonów i pokrycie podatkowe = co najmniej 80% mieszkańców w domach odwiedzonych przez atletę lub poborcę; doskonały dostęp Hall do kultury = 80 punktów kultury (wszystkie cztery rodzaje wykonawców); dobra atrakcyjność Hall = co najmniej 10; blisko Palace = do 20 kafli; Hall chroniony murami = żadna droga pieszo od punktów najazdu (bez nich od wjazdu lądowego, bez niego od krawędzi mapy) bez przebicia muru, wieży lub bramy",
  "prayer_chance_full_days": 16,
  "prayer_chance_min": 10,
  "prayer_chance_src": "[ZAŁOŻENIE L-053] Z:132: panel pokazuje, jak chętnie bóg wysłucha; pełna szansa do 16 dni po ofierze, potem liniowo do 10 % przy utracie łaski (192 dni, L-052); odmowa zużywa połowę odstępu",

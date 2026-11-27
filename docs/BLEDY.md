@@ -36,6 +36,13 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 
 ## Naprawione
 
+### B-024 [S1] Wezwanie Herkulesa lub Tezeusza kończyło się wyjątkiem; czterech herosów nie dało się wezwać
+- Status: naprawione
+- Miejsce i liczba wystąpień: `core/src/monsters.cpp` `requirement_met`; Herkules, Tezeusz (podstawa), Atalanta, Bellerofont (dodatek); każda próba wezwania.
+- Dowód: test "heroes: a city that has all they ask for..." na starym kodzie: `THREW exception: "stoll"`, SIGABRT; wymagania `win_any_panhellenic_game`, `working_stadium`, `citywide_*` zawsze niespełnione.
+- Test "co dziś pada": `core/tests/test_heroes.cpp` (5 przypadków: komplet wymagań każdego herosa, każde wymaganie od stanu miasta, Hall przy pałacu i atrakcyjność, mury z luką i bez, każdy z 16 potworów wzywa swojego herosa); pada bez poprawki.
+- Przyczyna: wymagania z dwukropkiem bez liczby (`hall_appeal:good`, `hall_culture_access:excellent`) trafiały do `std::stoll`, a wymagania czekające na moduły (L-116) zwracały `false` także po ich powstaniu. Teraz wymagania są w `core/src/hero_requirements.cpp`, liczone według L-116, a do `stoll` trafiają tylko cyfry.
+
 ### B-022 [S2] Rzemieślnicy czekali bez końca na placu bez materiału, gdy inne sanktuarium miało go na miejscu
 - Status: naprawione
 - Miejsce i liczba wystąpień: demo bogów: Zeus z kompletem materiałów na placu od dnia ok. 400 bez postępu; wcześniej Afrodyta (marmur, drewno i rzeźby na placu) i Demeter.

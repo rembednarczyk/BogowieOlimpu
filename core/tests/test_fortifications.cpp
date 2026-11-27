@@ -172,7 +172,9 @@ TEST_CASE("a trireme wharf builds a trireme from wood and armor, one at a time (
     sim.run_days(100);
     CHECK(sim.state().city.buildings.items.at(wharf).producer->output_loads == 1);  // one ship a wharf
     CHECK(unmet_requirements(sim.state(), sim.catalog(), "jason", wharf).size() == 5);  // nothing yet
-    sim.mutable_state().city.buildings.items.at(wharf).producer->output_loads = 3;      // as if three wharves
+    while (sim.state().military.ships.size() < 3) {
+        sim.mutable_state().military.ships.push_back(Ship{});  // as if three wharves had launched theirs
+    }
     CHECK(unmet_requirements(sim.state(), sim.catalog(), "jason", wharf).size() == 4);  // triremes>=3 met
 }
 

@@ -25,6 +25,9 @@ struct GamesResult {
 // Percent chance of the city in `game` now (0 when not invited).
 std::int32_t games_chance(const WorldState& state, const DataCatalog& catalog, const GameParams& game);
 
+// A Stadium staffed, on a road and in a performance (L-120): the Olympian games' host, Atalanta's demand.
+bool working_stadium(const CityState& city);
+
 // Daily: on the first day of the closing month the year's games are decided.
 std::optional<GamesResult> advance_games(WorldState& state, const DataCatalog& catalog);
 

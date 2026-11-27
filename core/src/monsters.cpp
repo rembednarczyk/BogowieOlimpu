@@ -74,95 +74,6 @@ std::optional<BuildingId> pick_target(const WorldState& st, const DataCatalog& c
     return std::nullopt;
 }
 
-std::size_t count_houses(const WorldState& st, bool elite) {
-    return static_cast<std::size_t>(std::count_if(st.city.buildings.items.begin(), st.city.buildings.items.end(), [elite](const auto& kv) {
-        return kv.second.house && kv.second.house->elite == elite && kv.second.house->population > 0;
-    }));
-}
-
-std::int64_t companies_of(const WorldState& st, const std::string& unit) {
-    return std::count_if(st.military.companies.begin(), st.military.companies.end(),
-                         [&unit](const Company& c) { return unit.empty() || c.unit == unit; });
-}
-
-std::int64_t horses_in_city(const WorldState& st) {
-    std::int64_t n = 0;
-    for (const auto& [id, b] : st.city.buildings.items) {
-        if (b.house) {
-            n += b.house->goods[static_cast<std::size_t>(HouseGood::Horses)];
-        }
-        if (b.producer && b.type == "horse_ranch") {
-            n += b.producer->output_loads;
-        }
-    }
-    return n;
-}
-
-std::int64_t triremes(const WorldState& st) {
-    std::int64_t n = 0;
-    for (const auto& [id, b] : st.city.buildings.items) {
-        n += b.type == "trireme_wharf" && b.producer ? b.producer->output_loads : 0;
-    }
-    return n;
-}
-
-// One requirement of heroes.json (doc 21), without its note in brackets.
-bool requirement_met(const WorldState& st, const DataCatalog& catalog, std::string req) {
-    req = req.substr(0, req.find(" ("));
-    const auto at_least = [&req](const std::string& key, std::int64_t have) {
-        return req.rfind(key + ">=", 0) == 0 && have >= std::stoll(req.substr(key.size() + 2));
-    };
-    if (at_least("population", city_population(st.city)) || at_least("elite_houses", count_houses(st, true)) ||
-        at_least("horses_in_city", horses_in_city(st)) || at_least("hoplite_companies", companies_of(st, "hoplite")) ||
-        at_least("horsemen_companies", companies_of(st, "horseman")) || at_least("military_companies", companies_of(st, "")) ||
-        at_least("treasury", st.finance.treasury) || at_least("triremes", triremes(st))) {
-        return true;
-    }
-    if (req.rfind("sanctuary:", 0) == 0 || req.rfind("sanctuaries>=", 0) == 0) {
-        const bool many = req.rfind("sanctuaries>=", 0) == 0;
-        const std::int64_t need = many ? std::stoll(req.substr(13)) : 1;
-        const std::string list = req.substr(req.find(many ? " of " : ":") + (many ? 4 : 1));
-        std::int64_t have = 0;
-        std::size_t start = 0;
-        while (start <= list.size()) {
-            const std::size_t bar = list.find('|', start);
-            const std::string god = list.substr(start, bar == std::string::npos ? std::string::npos : bar - start);
-            have += god_blesses(st.city, catalog, god) ? 1 : 0;
-            start = bar == std::string::npos ? list.size() + 1 : bar + 1;
-        }
-        return have >= need;
-    }
-    if (req == "popularity:excellent") {
-        return st.migration.popularity >= 80;  // [ZAŁOŻENIE, L-116]
-    }
-    if (req == "city_health:excellent") {
-        return st.city.hygiene >= 80 && std::none_of(st.city.buildings.items.begin(), st.city.buildings.items.end(),
-                                                      [](const auto& kv) { return kv.second.house && kv.second.house->quarantine_days > 0; });
-    }
-    if (req == "no_unrest") {
-        return god_blesses(st.city, catalog, "dionysus") ||
-               std::none_of(st.city.buildings.items.begin(), st.city.buildings.items.end(), [&catalog](const auto& kv) {
-                   return kv.second.house && kv.second.house->population > 0 &&
-                          kv.second.house->happiness < catalog.risks.crime_happiness_below;
-               });
-    }
-    const auto colon = req.find(':');
-    if (colon != std::string::npos) {
-        const std::string good = req.substr(0, colon);
-        const auto amount = std::stoll(req.substr(colon + 1));
-        if (good == "drachmas") {
-            return st.finance.treasury >= amount;
-        }
-        if (good == "horses") {
-            return horses_in_city(st) >= amount;
-        }
-        if (catalog.goods.count(good) != 0 || good == "food") {
-            return city_stock(st.city, catalog, good) >= amount;  // in city storage [ZAŁOŻENIE, L-116]
-        }
-    }
-    return false;  // triremes, walls, games, stadium, tax coverage, culture access: later modules [L-116]
-}
-
 }  // namespace
 
 std::string spawn_monster(WorldState& st, const DataCatalog& catalog, const std::string& id, std::uint32_t strength,
@@ -287,20 +198,6 @@ bool hero_needed(const WorldState& st) {
                        [](const Quest& q) { return q.status == QuestStatus::Open; });
 }
 
-std::vector<std::string> unmet_requirements(const WorldState& st, const DataCatalog& catalog, const std::string& hero,
-                                            BuildingId) {
-    std::vector<std::string> out;
-    const auto it = catalog.hero_requirements.find(hero);
-    if (it == catalog.hero_requirements.end()) {
-        return {"unknown_hero"};
-    }
-    for (const std::string& r : it->second) {
-        if (!requirement_met(st, catalog, r)) {
-            out.push_back(r);
-        }
-    }
-    return out;
-}
 
 std::string summon_hero(WorldState& st, const DataCatalog& catalog, BuildingId hall, MonsterEvents& ev) {
     const auto h = st.city.buildings.items.find(hall);

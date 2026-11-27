@@ -34,6 +34,7 @@ add_library(bo_core STATIC
     src/map.cpp
     src/migration.cpp
     src/monsters.cpp
+    src/hero_requirements.cpp
     src/military.cpp
     src/path.cpp
     src/placement.cpp
@@ -101,6 +102,7 @@ if(BO_BUILD_TESTS)
         tests/test_migration.cpp
         tests/test_military.cpp
         tests/test_monsters.cpp
+        tests/test_heroes.cpp
         tests/test_combat.cpp
         tests/test_goods.cpp
         tests/test_terrain.cpp

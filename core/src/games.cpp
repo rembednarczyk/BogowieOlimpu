@@ -38,15 +38,14 @@ std::int32_t games_chance(const WorldState& st, const DataCatalog& catalog, cons
     return static_cast<std::int32_t>(std::clamp<std::int64_t>(chance, 1, 100));
 }
 
-namespace {
-
-bool working_stadium(const CityState& city, const DataCatalog& catalog) {
-    (void)catalog;
+bool working_stadium(const CityState& city) {
     return std::any_of(city.buildings.items.begin(), city.buildings.items.end(), [](const auto& kv) {
         const Building& b = kv.second;
         return b.type == "stadium" && b.staffing_percent > 0 && b.road_access && b.performing_days > 0;
     });
 }
+
+namespace {
 
 // Hosting (Z:111): the parade of the athletes of all Greece; other leaders and the city's own people are pleased.
 void host(WorldState& st, const GamesParams& p) {
@@ -78,7 +77,7 @@ std::optional<GamesResult> advance_games(WorldState& st, const DataCatalog& cata
     r.game = game->id;
     if (game->id == "olympian" && st.games_host_year == static_cast<std::int32_t>(year)) {
         st.games_host_year = -1;
-        if (!working_stadium(st.city, catalog)) {
+        if (!working_stadium(st.city)) {
             r.right_lost = true;  // another city hosts and the player is not invited (Z:111)
             return r;
         }
