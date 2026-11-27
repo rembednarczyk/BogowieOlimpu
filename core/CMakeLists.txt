@@ -78,6 +78,7 @@ if(BO_BUILD_TESTS)
         tests/test_fortifications.cpp
         tests/test_naval.cpp
         tests/test_allies.cpp
+        tests/test_blessings.cpp
         tests/test_atlantis.cpp
         tests/test_golden.cpp
         tests/test_map.cpp

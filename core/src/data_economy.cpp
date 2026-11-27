@@ -202,6 +202,13 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
         b.dragon_every_days = bl.value("dragon_every_days", b.dragon_every_days);
         b.grove_plants = bl.value("grove_plants", b.grove_plants);
         b.grove_reach = bl.value("grove_reach", b.grove_reach);
+        b.ore_tiles = bl.value("ore_tiles", b.ore_tiles);
+        b.zeus_opinion = bl.value("zeus_opinion", b.zeus_opinion);
+        b.kraken_every_days = bl.value("kraken_every_days", b.kraken_every_days);
+        b.cerberus_every_days = bl.value("cerberus_every_days", b.cerberus_every_days);
+        b.hunt_every_days = bl.value("hunt_every_days", b.hunt_every_days);
+        b.poseidon_fishing_percent = bl.value("poseidon_fishing_percent", b.poseidon_fishing_percent);
+        b.aphrodite_appeal = bl.value("aphrodite_appeal", b.aphrodite_appeal);
         const json wrath = gr.value("wrath_numbers", json::object());
         for (const auto& [k, v] : wrath.items()) {
             cat.wrath[k] = v.get<std::int32_t>();
@@ -258,6 +265,10 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.spontaneous = help.is_string() ? help.get<std::string>() : "";
             const auto has = [&benefits](const char* b) { return std::find(benefits.begin(), benefits.end(), b) != benefits.end(); };
             p.grove = has("sacred_olive_grove") ? "olive_tree" : has("grapevine_grove") ? "grapevine" : "";
+            p.land = has("silver_ore_at_sanctuary")   ? "silver"
+                     : has("copper_ore_at_sanctuary") ? "copper"
+                     : has("meadow_around_sanctuary") ? "meadow"
+                                                      : "";
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
     }

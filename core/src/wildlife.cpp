@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <optional>
 
+#include "bo/core/blessings.h"
 #include "bo/core/logistics.h"
 #include "bo/core/walker.h"
 
@@ -156,6 +157,9 @@ void dispatch_hunters_and_boats(WorldState& st, const DataCatalog& catalog, Logi
         walker.resource = target;
         walker.roam_target = start;  // boats sail back here
         walker.work_ticks = static_cast<std::uint32_t>(pp.work_days_per_trip) * kTicksPerDay;
+        if (boat) {
+            walker.work_ticks = blessed_fishing_ticks(st.city, catalog, walker.work_ticks);  // Poseidon (Z:119)
+        }
         out.push_back(w);
         ev.spawned.push_back(w);
     }

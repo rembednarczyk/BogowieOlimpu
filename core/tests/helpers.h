@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bo/core/data.h"
+#include "bo/core/simulation.h"
 #include "doctest/doctest.h"
 
 namespace bo::test {
@@ -31,5 +32,36 @@ inline const bo::core::DataCatalog& catalog_isolated() {
     }();
     return kCatalog;
 }
+
+// 60x40: a main street on row 20, a meadow at x 30-40, y 22-27; a finished sanctuary of `god` at (2, 14).
+inline bo::core::Simulation with_god(const std::string& god) {
+    std::vector<std::string> rows(40, std::string(60, '.'));
+    rows[20] = std::string(60, '=');
+    for (std::size_t y = 22; y < 28; ++y) {
+        for (std::size_t x = 30; x < 40; ++x) {
+            rows[y][x] = ',';
+        }
+    }
+    bo::core::Simulation sim(catalog_isolated(), bo::core::SimulationConfig{11, bo::core::Difficulty::Hero, 30000, rows, true});
+    if (god.empty()) {
+        return sim;
+    }
+    sim.issue(bo::core::PlaceBuilding{"storehouse", 50, 17});
+    sim.step(1);
+    auto& store = sim.mutable_state().city.buildings.items.at(sim.state().city.map.at({50, 17}).building);
+    store.storage->loads["marble"] = 60;
+    sim.issue(bo::core::PlaceBuilding{"sanctuary_" + god, 2, 20 - catalog().building_stats.at("sanctuary_" + god).footprint->height});
+    sim.step(1);
+    for (auto& [id, b] : sim.mutable_state().city.buildings.items) {
+        if (b.sanctuary) {
+            for (auto& [g, n] : b.sanctuary->needed) {
+                n = 0;
+            }
+        }
+    }
+    sim.run_days(1);
+    return sim;
+}
+
 
 }  // namespace bo::test

@@ -1,3 +1,4 @@
+#include "bo/core/blessings.h"
 #include "bo/core/appeal.h"
 
 #include <algorithm>
@@ -49,6 +50,11 @@ std::vector<std::int32_t> compute_appeal(const CityState& city, const DataCatalo
             }
         } else {
             emit(field, city.map, a, b.origin, b.width, b.height);
+        }
+    }
+    if (const std::int32_t aphrodite = blessed_appeal(city, catalog); aphrodite != 0) {
+        for (std::int32_t& v : field) {
+            v += aphrodite;  // Aphrodite: the whole city is lovelier (Z:122, L-131)
         }
     }
     return field;

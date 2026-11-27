@@ -183,6 +183,10 @@ void build(WorldState& st, const DataCatalog& catalog, BuildingId site_id, MythE
     for (const BuildingId id : plant_grove(st.city, catalog, st.difficulty, site_id)) {
         ev.planted.push_back(id);  // Athena's olives, Dionysus's vines (L-131)
     }
+    for (const TilePos t : bless_land(st.city, catalog, site_id)) {
+        ev.land.push_back(t);  // Hades's silver, Hephaestus's copper, Demeter's meadow (L-131)
+        ev.land_of = site_id;
+    }
     for (const WalkerId id : artisans) {
         Walker& w = st.walkers.items.at(id);
         w.job = WalkerJob::None;

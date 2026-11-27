@@ -273,6 +273,13 @@ static void run_mythology(Simulation& sim) {
         sim.emit(BuildingPlaced{id, b.type, b.origin.x, b.origin.y, b.width, b.height});
         sim.emit(GodBlessing{b.type == "olive_tree" ? "athena" : "dionysus", "grove"});
     }
+    for (const TilePos t : ev.land) {
+        sim.emit(TileChanged{t.x, t.y});
+    }
+    if (!ev.land.empty()) {
+        const Building& s = sim.state().city.buildings.items.at(ev.land_of);
+        sim.emit(GodBlessing{sim.catalog().sanctuaries.at(s.type).god, "land"});
+    }
 }
 
 // D4: expeditions, request cooldowns, yearly tribute.
@@ -398,8 +405,8 @@ static void run_military(Simulation& sim) {
     CombatEvents fleet;
     advance_fleet(sim.mutable_state(), sim.catalog(), fleet);  // triremes launched, repaired (Z:141-142)
     advance_auto_defend(sim.mutable_state(), sim.catalog(), fleet);  // the generals and admirals (Z:145)
-    if (feed_dragon(sim.mutable_state(), sim.catalog())) {  // Ares's dragon (Z:121)
-        sim.emit(GodBlessing{"ares", "dragon"});
+    for (const auto& [god, kind] : advance_blessings(sim.mutable_state(), sim.catalog())) {  // Z:119-122, L-131
+        sim.emit(GodBlessing{god, kind});
     }
     sim.emit_combat(fleet);
 }

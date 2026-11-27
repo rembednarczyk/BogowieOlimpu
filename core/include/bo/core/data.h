@@ -220,6 +220,7 @@ struct SanctuaryParams {
     std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
     std::string spontaneous;                        // gods.json spontaneous_help condition (Z:119-122, L-130)
     std::string grove;                              // plant of the god's grove: olive_tree, grapevine (L-131)
+    std::string land;                               // what the land around becomes: silver, copper, meadow
 };
 
 // Lasting gifts of the gods (data/gods_rules.json blessings; Z:119-122) [ZAŁOŻENIE, L-131].
@@ -230,6 +231,13 @@ struct BlessingParams {
     std::int32_t dragon_every_days = 8;
     std::int32_t grove_plants = 4;
     std::int32_t grove_reach = 3;
+    std::int32_t ore_tiles = 4;            // Hades's silver, Hephaestus's copper (4_copper_ore_deposits)
+    std::int32_t zeus_opinion = 1;         // a month, every city
+    std::int32_t kraken_every_days = 4;
+    std::int32_t cerberus_every_days = 8;
+    std::int32_t hunt_every_days = 16;
+    std::int32_t poseidon_fishing_percent = 67;  // of the days at sea
+    std::int32_t aphrodite_appeal = 5;
 };
 
 // When a god helps without a prayer (data/gods_rules.json spontaneous_help; Z:119-122) [ZAŁOŻENIE, L-130].
