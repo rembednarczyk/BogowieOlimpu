@@ -8,6 +8,7 @@ add_library(bo_core STATIC
     src/data_economy.cpp
     src/combat.cpp
     src/naval.cpp
+    src/oracle.cpp
     src/extraction.cpp
     src/finance.cpp
     src/fortifications.cpp

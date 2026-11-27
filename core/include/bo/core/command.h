@@ -140,6 +140,11 @@ struct RequestMilitaryHelp {
     std::uint32_t target = 0;
 };
 
+// Consult Oracle (Z:124): at a complete sanctuary of a god with an oracle (Zeus, Apollo).
+struct ConsultOracle {
+    std::uint32_t building = 0;
+};
+
 // Trireme orders (Z:142): 0 Defend Location at (x, y) (-1: where it is), 1 Attack All Enemies, 2 Carry Out Repairs.
 struct SetShipOrder {
     std::uint32_t ship = 0;
@@ -196,7 +201,7 @@ using Command = std::variant<SetTaxRate, SetWageRate, PlaceBuilding, PlaceRoad, 
                              SetTradeOrder, MusterCompany, MoveCompany, SendCompanyHome,
                              StartInvasion, BribeInvaders, Surrender, Pray, GiftToCity, RequestFromCity, DispatchArmy,
                              FulfillRequest, SummonHero, SendHeroOnQuest, SetStockpile, SetNotBuying, ManTowers, SetCompanyTactic, SetShipOrder,
-                             RequestMilitaryHelp>;
+                             RequestMilitaryHelp, ConsultOracle>;
 
 // A command scheduled for execution at the start of `tick`, in issue order (`sequence`).
 struct ScheduledCommand {

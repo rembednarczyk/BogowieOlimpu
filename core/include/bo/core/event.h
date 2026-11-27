@@ -175,6 +175,15 @@ struct MilitaryHelpGiven {  // a partner city lent companies or struck another c
     bool strike = false;
 };
 
+// The oracle's prophecy (Z:124) [L-126]: the next scheduled threat of the scenario, `months` from now; an empty
+// `kind` when none is foreseen. `subject`: the nation, god, monster or disaster kind.
+struct OracleSpoke {
+    std::uint32_t building = 0;
+    std::string kind;  // invasion, god_attack, monster, disaster
+    std::string subject;
+    std::uint32_t months = 0;
+};
+
 struct EpisodeWon {};  // D5: all goals met
 
 struct MonsterAppeared {  // D5: a monster comes to the city (Z:127)
@@ -208,7 +217,7 @@ using Event = std::variant<DayStarted, MonthStarted, YearStarted, TaxRateChanged
                            HouseChanged, MonthlyFinance, PeopleMoved, Disaster, TradeDone, InvasionStarted,
                            InvasionEnded, SanctuaryCompleted, PrayerAnswered,
                            TributePaid, ExpeditionReturned, EpisodeLost, DebtNotice, GamesHeld, CityRebelled, CityGift,
-                           CityRequestReceived, RequestClosed, EpisodeWon, MilitaryHelpGiven,
+                           CityRequestReceived, RequestClosed, EpisodeWon, MilitaryHelpGiven, OracleSpoke,
                            GodAttacked, MonsterAppeared, MonsterSlain, HeroArrived, QuestGiven, QuestCompleted>;
 
 struct TimedEvent {

@@ -321,6 +321,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const FulfillRequest&) { apply_world_command(command, index); },
                    [&](const SummonHero&) { apply_myth_command(command, index); },
                    [&](const SendHeroOnQuest&) { apply_myth_command(command, index); },
+                   [&](const ConsultOracle&) { apply_world_command(command, index); },  // Z:124
                    [&](const Pray&) { apply_myth_command(command, index); },
                    [&](const SetStockpile&) { apply_stock_command(command, index); },  // Z:80
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72

@@ -14,6 +14,8 @@
   "ares": 384
  },
  "prayer_cooldown_days_src": "[ZAŁOŻENIE L-053] kolejność z S-004 trivia, wartości do strojenia",
+ "oracle_silent_days": 192,
+ "oracle_src": "Z:124: Consult Oracle daje przepowiednię i milczy, jeśli niedawno przepowiadała; S-008 eZeus: przepowiednie zapowiadają nadchodzące zdarzenia (najazd, potwór); [ZAŁOŻENIE L-126] milczy rok, zapowiada najbliższe zaplanowane zdarzenie groźne scenariusza",
  "prayer_goods_loads": 24,
  "prayer_goods_loads_src": "S-004 trivia: Artemis 24 ładunki wieprzowiny; [ZAŁOŻENIE L-112] tyle samo dla innych darów",
  "prayer_money": 1000,

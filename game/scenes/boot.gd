@@ -281,6 +281,9 @@ func _handle_events(events: Array) -> void:
 			"games_held":
 				demo_note = "igrzyska %s: %s%s" % [e["game"], "wygrane" if e["won"] else ("przegrane" if e["invited"] else "bez zaproszenia"),
 					", miasto gospodarzem" if e["hosted"] else (", prawo do organizacji przepadło" if e["right_lost"] else "")]
+			"oracle_spoke":
+				if ui != null:
+					ui.show_prophecy(e)
 			"city_rebelled":
 				demo_note = "bunt: %s" % sim.get_cities()[e["city"]]["id"]
 			"city_gift":

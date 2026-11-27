@@ -1,6 +1,7 @@
 // World commands of the Simulation (D4: gifts, requests, help, armies abroad; Z:167-178), apart from
 // simulation.cpp for its size.
 #include "bo/core/military.h"
+#include "bo/core/oracle.h"
 #include "bo/core/scenario.h"
 #include "bo/core/simulation.h"
 #include "bo/core/world.h"
@@ -10,7 +11,13 @@ namespace bo::core {
 // World commands (D4): gifts, requests, armies abroad.
 void Simulation::apply_world_command(const Command& command, std::uint32_t index) {
     std::string err;
-    if (const auto* g = std::get_if<GiftToCity>(&command)) {
+    if (const auto* o = std::get_if<ConsultOracle>(&command)) {  // Z:124 (here for simulation.cpp's size)
+        OracleSpoke spoke;
+        err = consult_oracle(state_, catalog_, o->building, spoke);
+        if (err.empty()) {
+            emit(spoke);
+        }
+    } else if (const auto* g = std::get_if<GiftToCity>(&command)) {
         err = give_gift(state_, catalog_, g->city, g->good, g->amount);
     } else if (const auto* r = std::get_if<RequestFromCity>(&command)) {
         err = request_from_city(state_, catalog_, r->city, r->good);

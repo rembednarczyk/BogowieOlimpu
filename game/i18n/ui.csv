@@ -204,3 +204,10 @@ ui.invasion_by_sea,Najazd z morza: transporty i okręty wroga płyną do brzegu.
 ui.help,Pomoc,Help
 ui.strike,Uderz,Strike
 event.military_help,Miasto wysłało nam pomoc wojskową.,A city sent us military help.
+ui.oracle,Zapytaj wyrocznię,Ask the oracle
+oracle.nothing,Wyrocznia nie widzi zagrożenia.,The oracle sees no danger ahead.
+oracle.foretells,"Wyrocznia: %s (%s) za %d mies.","The oracle: %s (%s) in %d months"
+oracle.kind.invasion,najazd,invasion
+oracle.kind.god_attack,gniew boga,a god's anger
+oracle.kind.monster,potwór,monster
+oracle.kind.disaster,katastrofa,disaster

@@ -235,6 +235,9 @@ void load_sanctuaries(const std::map<std::string, json>& docs, DataCatalog& cat)
             p.sanctifies = g.value("sanctifies", std::vector<std::string>{});
             p.prayer = g.value("prayer", "");
             p.prayer_cooldown_days = cooldowns.value(god, cooldowns.value("default", p.prayer_cooldown_days));
+            const auto benefits = g.value("benefits", std::vector<std::string>{});
+            p.oracle = std::find(benefits.begin(), benefits.end(), "oracle") != benefits.end();
+            p.oracle_silent_days = rules.value("oracle_silent_days", p.oracle_silent_days);
             cat.sanctuaries["sanctuary_" + god + suffix] = p;
         }
     }

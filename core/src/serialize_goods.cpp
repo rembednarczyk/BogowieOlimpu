@@ -90,6 +90,7 @@ void write_goods_state(ByteWriter& w, const Building& b) {
         w.u8(t.favor_lost ? 1 : 0);
         w.u32(t.prayer_cooldown);  // since v20
         w.u32(t.days_to_sanctify);
+        w.u32(t.oracle_silent);  // since v41
     }
 }
 
@@ -205,6 +206,11 @@ bool read_goods_state(ByteReader& r, Building& b, std::uint32_t version) {
         }
         t.prayer_cooldown = static_cast<std::uint16_t>(pray);
         t.days_to_sanctify = static_cast<std::uint16_t>(bless);
+        std::uint32_t silent = 0;
+        if (version >= 41 && (!r.u32(silent) || silent > 0xFFFF)) {
+            return false;
+        }
+        t.oracle_silent = static_cast<std::uint16_t>(silent);
         b.sanctuary = std::move(t);
     }
     return true;

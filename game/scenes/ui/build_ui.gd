@@ -42,6 +42,8 @@ var status: Label
 var card: PanelContainer
 var card_text: Label
 var pray_btn: Button
+var oracle_btn: Button
+var prophecy := ""  # the oracle's last answer, shown on the card
 var buying_btn: Button  # Not Buying on an agora stall's card (Z:72)
 var card_stall := 0
 var card_sanctuary := 0  # the sanctuary on the card, for the prayer
@@ -153,6 +155,8 @@ func _build() -> void:
 	card_box.add_child(card_text)
 	pray_btn = _button("ui.pray", func(): _pray(), Vector2(200, CELL.y))
 	card_box.add_child(pray_btn)
+	oracle_btn = _button("ui.oracle", func(): _consult(), Vector2(200, CELL.y))  # Z:124
+	card_box.add_child(oracle_btn)
 	buying_btn = _button("ui.not_buying", func(): _toggle_buying(), Vector2(200, CELL.y))
 	buying_btn.toggle_mode = true
 	card_box.add_child(buying_btn)
@@ -533,6 +537,19 @@ func _pray() -> void:
 		game.sim.pray(card_sanctuary)
 		pray_btn.disabled = true
 
+func _consult() -> void:
+	if card_sanctuary != 0:
+		game.sim.consult_oracle(card_sanctuary)
+		oracle_btn.disabled = true
+
+# The answer of the oracle (Z:124): what is coming and when.
+func show_prophecy(e: Dictionary) -> void:
+	if e["kind"] == "":
+		prophecy = tr("oracle.nothing")
+	else:
+		prophecy = tr("oracle.foretells") % [tr("oracle.kind." + e["kind"]), e["subject"], e["months"]]
+	card_text.text += "\n" + prophecy
+
 func _open_card(tile: Vector2i) -> void:
 	if tile.x < 0:
 		return
@@ -563,6 +580,9 @@ func _open_card(tile: Vector2i) -> void:
 		if pray_btn.visible:
 			lines.append(tr("ui.prayer_chance") % b["prayer_chance"])
 			pray_btn.disabled = b["prayer_cooldown"] > 0 or b["prayer_chance"] == 0
+		oracle_btn.visible = pray_btn.visible and b.get("oracle", false)
+		if oracle_btn.visible:
+			oracle_btn.disabled = b["oracle_silent"] > 0
 		card_text.text = "\n".join(lines)
 		card.visible = true
 		return

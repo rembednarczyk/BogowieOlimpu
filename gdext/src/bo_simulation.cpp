@@ -173,6 +173,13 @@ Dictionary event_to_dict(const bo::core::TimedEvent& te) {
                        d["type"] = "city_rebelled";
                        d["city"] = static_cast<int64_t>(e.city);
                    },
+                   [&d](const bo::core::OracleSpoke& e) {  // Z:124
+                       d["type"] = "oracle_spoke";
+                       d["building"] = static_cast<int64_t>(e.building);
+                       d["kind"] = String(e.kind.c_str());
+                       d["subject"] = String(e.subject.c_str());
+                       d["months"] = static_cast<int64_t>(e.months);
+                   },
                    [&d](const bo::core::MilitaryHelpGiven& e) {  // Z:174
                        d["type"] = "military_help";
                        d["city"] = static_cast<int64_t>(e.city);
@@ -601,6 +608,12 @@ void BoSimulation::request_military_help(int64_t city, bool strike, int64_t targ
     }
 }
 
+void BoSimulation::consult_oracle(int64_t building) {
+    if (sim_ && building > 0) {
+        sim_->issue(bo::core::ConsultOracle{static_cast<std::uint32_t>(building)});
+    }
+}
+
 void BoSimulation::man_towers(bool on) {
     if (sim_) {
         sim_->issue(bo::core::ManTowers{on});
@@ -963,6 +976,9 @@ Array BoSimulation::get_buildings() const {
             d["favor_lost"] = b.sanctuary->favor_lost;
             d["prayer_cooldown"] = static_cast<int64_t>(b.sanctuary->prayer_cooldown);
             d["prayer_chance"] = static_cast<int64_t>(bo::core::prayer_chance(*b.sanctuary, *catalog_));
+            const auto sp = catalog_->sanctuaries.find(b.type);
+            d["oracle"] = sp != catalog_->sanctuaries.end() && sp->second.oracle;  // Zeus, Apollo (Z:124)
+            d["oracle_silent"] = static_cast<int64_t>(b.sanctuary->oracle_silent);
         }
         if (b.house) {
             d["house_level"] = static_cast<int64_t>(b.house->level);
@@ -1161,6 +1177,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
     ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
     ClassDB::bind_method(D_METHOD("get_ships"), &BoSimulation::get_ships);
+    ClassDB::bind_method(D_METHOD("consult_oracle", "building"), &BoSimulation::consult_oracle);
     ClassDB::bind_method(D_METHOD("request_military_help", "city", "strike", "target"),
                          &BoSimulation::request_military_help, DEFVAL(false), DEFVAL(0));
     ClassDB::bind_method(D_METHOD("set_ship_order", "ship", "order", "x", "y"), &BoSimulation::set_ship_order,

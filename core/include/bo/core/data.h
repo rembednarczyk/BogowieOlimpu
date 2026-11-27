@@ -213,6 +213,8 @@ struct SanctuaryParams {
     std::vector<std::string> sanctifies;            // building types the god blesses ("any": Zeus)
     std::string prayer;                             // gods.json prayer effect id
     std::int32_t prayer_cooldown_days = 96;         // gods_rules.json [ZAŁOŻENIE, L-053]
+    bool oracle = false;                            // gods.json benefit "oracle": Zeus, Apollo (Z:124)
+    std::int32_t oracle_silent_days = 192;          // gods_rules.json [ZAŁOŻENIE, L-126]
 };
 
 // World (data/diplomacy.json; doc 24; assumptions L-063, L-064, L-113).

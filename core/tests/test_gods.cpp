@@ -1,4 +1,6 @@
 // Module D1 stage 2: blessings, sanctification, prayers (docs/gameplay/10, 21; Z:119-124; L-053, L-112).
+#include <optional>
+
 #include "bo/core/gods.h"
 #include "bo/core/migration.h"
 #include "bo/core/sanctuary.h"
@@ -279,4 +281,73 @@ TEST_CASE("Ares gives two companies of Sparti, Artemis two of Amazons; they must
         CHECK(w.variant == nation);
         CHECK(w.hp == sim.catalog().combat.nations.at(nation).units.at(c.unit).hp);
     }
+}
+
+namespace {
+
+std::optional<OracleSpoke> prophecy(Simulation& sim) {
+    for (const auto& e : sim.drain_events()) {
+        if (const auto* o = std::get_if<OracleSpoke>(&e.event)) {
+            return *o;
+        }
+    }
+    return std::nullopt;
+}
+
+ScenarioEvent dated(const std::string& type, std::uint32_t year, std::uint32_t month, bool repeat = false) {
+    ScenarioEvent e;
+    e.type = type;
+    e.year = year;
+    e.month = month;
+    e.repeat = repeat;
+    e.nation = "greek";
+    return e;
+}
+
+}  // namespace
+
+TEST_CASE("oracle: Apollo foretells the next threat, then keeps silent for a while (Z:124, L-126)") {
+    auto sim = with_god("apollo");
+    const BuildingId oracle = sanctuary_id(sim);
+    REQUIRE(sim.state().city.buildings.items.at(oracle).sanctuary->complete);
+    auto& events = sim.mutable_state().scenario.events;
+    events.push_back(dated("request", 0, 3));    // not a threat
+    events.push_back(dated("invasion", 2, 5));  // in 29 months
+    events.push_back(dated("monster", 1, 1));   // in 13 months: the nearest
+    events.back().nation = "hydra";
+    sim.drain_events();
+    sim.issue(ConsultOracle{oracle});
+    sim.step(1);
+    const auto first = prophecy(sim);
+    REQUIRE(first.has_value());
+    CHECK(first->kind == "monster");
+    CHECK(first->subject == "hydra");
+    CHECK(first->months == 13);
+    sim.issue(ConsultOracle{oracle});
+    sim.step(1);
+    CHECK(result(sim) == "myth.oracle_silent");  // it spoke not long ago (Z:124)
+    sim.run_days(200);
+    sim.drain_events();
+    sim.issue(ConsultOracle{oracle});
+    sim.step(1);
+    CHECK(prophecy(sim).has_value());
+}
+
+TEST_CASE("oracle: a yearly invasion is foretold for next year once this year's came; no oracle at Hermes's (Z:124)") {
+    auto sim = with_god("apollo");
+    auto& events = sim.mutable_state().scenario.events;
+    events.push_back(dated("invasion", 0, 0, true));
+    events.back().last_year = 0;  // this year's has come
+    sim.drain_events();
+    sim.issue(ConsultOracle{sanctuary_id(sim)});
+    sim.step(1);
+    const auto p = prophecy(sim);
+    REQUIRE(p.has_value());
+    CHECK(p->kind == "invasion");
+    CHECK(p->months == 12);
+    auto hermes = with_god("hermes");
+    hermes.drain_events();
+    hermes.issue(ConsultOracle{sanctuary_id(hermes)});
+    hermes.step(1);
+    CHECK(result(hermes) == "myth.no_oracle");
 }

@@ -434,6 +434,16 @@ bool read_ship_order(ByteReader& r, Command& out) {
     return true;
 }
 
+// Consult Oracle (index 32, since v41, Z:124).
+bool read_oracle(ByteReader& r, Command& out) {
+    ConsultOracle c;
+    if (!r.u32(c.building)) {
+        return false;
+    }
+    out = c;
+    return true;
+}
+
 // A request for military help (index 31, since v40, Z:174).
 bool read_help_request(ByteReader& r, Command& out) {
     RequestMilitaryHelp c;

@@ -117,7 +117,7 @@ void write_command(ByteWriter& w, const Command& c) {
                 for (const std::uint32_t c : cmd.companies) {
                     w.u32(c);
                 }
-            } else if constexpr (std::is_same_v<T, Pray>) {
+            } else if constexpr (std::is_same_v<T, Pray> || std::is_same_v<T, ConsultOracle>) {
                 w.u32(cmd.building);
             } else if constexpr (std::is_same_v<T, FulfillRequest>) {
                 w.u32(cmd.request);
@@ -294,7 +294,8 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             return true;
         }
         default:
-            return (index == 30 && read_ship_order(r, out)) || (index == 31 && read_help_request(r, out));
+            return (index == 30 && read_ship_order(r, out)) || (index == 31 && read_help_request(r, out)) ||
+                   (index == 32 && read_oracle(r, out));
     }
 }
 

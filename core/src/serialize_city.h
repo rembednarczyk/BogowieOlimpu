@@ -24,6 +24,7 @@ void write_military(ByteWriter& w, const MilitaryState& m);
 bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version);
 bool read_ship_order(ByteReader& r, Command& out);     // command 30 (v39)
 bool read_help_request(ByteReader& r, Command& out);  // command 31 (v40)
+bool read_oracle(ByteReader& r, Command& out);        // command 32 (v41)
 void write_world(ByteWriter& w, const WorldState& s);
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version);
 void write_scenario(ByteWriter& w, const ScenarioState& s);

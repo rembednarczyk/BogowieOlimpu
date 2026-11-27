@@ -80,6 +80,7 @@ public:
     // Triremes (Z:141-144): {"order" (0 defend, 1 attack all, 2 repair), "hp", "max_hp", "x", "y", "station_x",
     // "station_y"}; set_ship_order(ship, order, x, y): Defend Location at a water tile (-1: where it is).
     godot::Array get_ships() const;
+    void consult_oracle(int64_t building);  // Z:124: the answer comes as an "oracle_spoke" event
     // Military help (Z:174): defensive aid while invaded, or with `strike` an attack of `city` on `target`.
     void request_military_help(int64_t city, bool strike = false, int64_t target = 0);
     void set_ship_order(int64_t ship, int64_t order, int64_t x = -1, int64_t y = -1);

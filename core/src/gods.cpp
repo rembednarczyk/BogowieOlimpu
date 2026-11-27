@@ -51,6 +51,7 @@ void advance_gods(WorldState& st, const DataCatalog& catalog) {
         Building& s = city.buildings.items.at(id);
         SanctuaryState& state = *s.sanctuary;
         state.prayer_cooldown = static_cast<std::uint16_t>(state.prayer_cooldown > 0 ? state.prayer_cooldown - 1 : 0);
+        state.oracle_silent = static_cast<std::uint16_t>(state.oracle_silent > 0 ? state.oracle_silent - 1 : 0);  // Z:124
         if (state.favor_lost) {
             continue;
         }

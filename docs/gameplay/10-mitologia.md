@@ -51,7 +51,7 @@ Dodatek: Citadel of Poseidon (wariant atlantydzki) wymaga białego marmuru, rze�
 - Ukończone sanktuarium daje **stałe korzyści**, umożliwia **modlitwę**, a bóg spacerując **sanktyfikuje** budynki (magiczne iskry nad dachem; czasowy bonus). [LUKA: czas trwania sanktyfikacji]
 - **Ofiary** (Z:124): kapłani co jakiś czas wychodzą po kozę lub owcę (dodatek: także bydło). Bez zwierząt biorą żywność z Granary. **Długi brak ofiar = bóg uznaje, że się od niego odwrócono, sanktuarium traci korzyści.** Widok See Immortals: kolumna przed sanktuarium = jak dawno była ofiara.
 - **Modlitwa** (Z:124): przycisk w panelu sanktuarium. Bóg może odmówić; ignoruje zbyt częste prośby. Panel pokazuje szansę wysłuchania.
-- **Wyrocznia** (Z:124): Zeus' Stronghold i Oracle of Apollo. "Consult Oracle" daje przepowiednię; nie odpowiada, jeśli niedawno już przepowiadała.
+- **Wyrocznia** (Z:124): Zeus' Stronghold i Oracle of Apollo. "Consult Oracle" daje przepowiednię; nie odpowiada, jeśli niedawno już przepowiadała. Implementacja: `core/src/oracle.cpp`, komenda `ConsultOracle`, założenia L-126.
 - **Pomoc samorzutna**: wiele bóstw udziela błogosławieństwa modlitewnego z własnej inicjatywy, gdy widzi problem.
 
 ## Sanktuaria i ich efekty
