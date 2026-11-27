@@ -308,7 +308,7 @@ steps.append({"day": ARMY + 1, "at": [71, 46], "storage_order": {"good": "wood",
 for x, y in [(62, 15), (68, 18)]:
     put("flower_garden", x, y, day=ELITE)
 put("gazebo", 62, 17, day=ELITE); put("column", 68, 21, day=ELITE)
-put("fountain", 61, 20, day=ELITE)
+put("gymnasium", 61, 20, day=ELITE)  # athletes along the y = 23 road past the elite plots (20 points)
 for x, y in [(53, 19), (57, 19), (64, 19)]:
     put("elite_housing", x, y, day=ELITE + 200, retry=True)
 put("podium", 70, 18, day=ELITE); put("hedge_maze", 69, 20, day=ELITE)
@@ -346,6 +346,7 @@ for y in (29, 37):
     steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
 steps.append({"day": EAST, "demolish": [2, 12]})
 put("stadium", 78, 12, day=EAST + 1, retry=True)
+put("maintenance_office", 88, 12, day=EAST); put("watchpost", 90, 12, day=EAST)  # or it burns (Z:89-90)
 put("sanctuary_apollo", 94, 12, day=EAST, retry=True, when={"marble": 20})
 put("theater", 94, 24, day=EAST); put("gymnasium", 100, 26, day=EAST); put("podium", 104, 27, day=EAST)
 put("college", 106, 26, day=EAST); put("maintenance_office", 109, 27, day=EAST)
