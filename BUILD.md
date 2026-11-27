@@ -42,7 +42,7 @@ Demo i bramka całej rozgrywki: `python3 tools/make_demo.py` generuje `scenarios
 BO_DEMO_LOG=1 ./build/core/bo_core_tests -tc="demo gate*"
 ```
 
-Podglądy przy strojeniu (zmienne środowiska): `BO_DEMO_LOG=2` (zrzut budynków i domów elity co rok), `BO_DEMO_MAP=1` (mapa na końcu), `BO_DEMO_APPEAL=x0,y0,x1,y1` (atrakcyjność pól), `BO_DEMO_ELITE=1` (domy elity co miesiąc), `BO_DEMO_VENUES=1` (stadiony, gimnazja, zawodnicy), `BO_DEMO_MONTHLY=rok`, `BO_DEMO_TRACE=typ`, `BO_DEMO_YEARS=n`, `BO_DEMO_INV=1` (najazdy i kompanie co 64 dni). Lista `kMechanics` obejmuje też łańcuchy produkcji `kChains` (każdy dobra w magazynie) i najwyższe poziomy domów zwykłych i elity (`core/tests/demo_probes.h`).
+Podglądy przy strojeniu (zmienne środowiska): `BO_DEMO_LOG=2` (zrzut budynków i domów elity co rok), `BO_DEMO_MAP=1` (mapa na końcu), `BO_DEMO_APPEAL=x0,y0,x1,y1` (atrakcyjność pól), `BO_DEMO_ELITE=1` (domy elity co miesiąc), `BO_DEMO_VENUES=1` (stadiony, gimnazja, zawodnicy), `BO_DEMO_MONTHLY=rok`, `BO_DEMO_TRACE=typ`, `BO_DEMO_YEARS=n`, `BO_DEMO_INV=1` (najazdy i kompanie co 64 dni), `BO_DEMO_REJECT=1` (odrzucone komendy z dniem), `BO_DEMO_HOUSE=x,y` (budynek z kafla co miesiąc: ryzyka, nastrój, obchody). Lista `kMechanics` obejmuje też łańcuchy produkcji `kChains` (każdy dobra w magazynie) i najwyższe poziomy domów zwykłych i elity (`core/tests/demo_probes.h`).
 
 ## Zrzut ekranu (renderer Mobile, Vulkan programowy)
 
