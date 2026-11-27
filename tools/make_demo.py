@@ -40,6 +40,7 @@ fill(2, 24, 11, 44, ",")           # meadows: farms, sheep, goats (Z:43-46)
 fill(13, 36, 31, 44, ",")
 fill(0, 50, W - 1, 59, "~")        # the sea; straight coast on row 49 (L-096)
 fill(100, 40, 111, 44, ",")        # east meadow: wheat for the horses (Z:148)
+fill(103, 46, 109, 48, "~")        # a pond on the south-east shore, crossed by a ford (Z:101-103); row 49 keeps the coast
 for x, y in [(18, 53), (24, 55), (30, 53)]:
     grid[y][x] = "f"               # fishing grounds (Z:47)
 for x, y in [(42, 51), (44, 51)]:
@@ -436,6 +437,31 @@ steps.append({"day": 1250, "industry": {"type": "timber_mill", "on": False}})
 steps.append({"day": 1282, "industry": {"type": "timber_mill", "on": True}})
 steps.append({"day": 1250, "at": [23, 8], "storage_order": {"good": "wood", "kind": 2, "limit": 0}})
 steps.append({"day": 1282, "at": [23, 8], "storage_order": {"good": "wood", "kind": 0, "limit": 32}})
+
+# Stage QUARTER (audit 2026-11-27): the rest of the base game's buildings. By the east houses a grand agora
+# over a new street (Z:69-70), a boulevard and an avenue over it, parks, a bench and a fish pond (Z:154-155); a
+# ford over the pond (Z:101-103). On the shore west of it a poor lane behind roadblocks: no superintendent, no
+# water carrier, no vendor walks in (Z:19-20), so its huts go hungry and catch fire (Z:87-90, S-007).
+QUARTER = 1110
+steps.append({"day": QUARTER, "road": [109, 30, 109, 36]})
+put("grand_agora", 107, 30, day=QUARTER + 1)
+for i, (sx, sy) in enumerate([(107, 30), (110, 30), (107, 32)]):
+    put(["food_vendor_stall", "fleece_vendor_stall", "oil_vendor_stall"][i], sx, sy, day=QUARTER + 2)
+steps.append({"day": QUARTER, "road": [100, 32, 100, 36]})
+for y in (32, 33, 34):
+    put("boulevard", 100, y, day=QUARTER + 1)
+put("avenue", 100, 35, rot=1, day=QUARTER + 1)
+put("park", 96, 33, day=QUARTER + 1); put("park", 97, 33, day=QUARTER + 1); put("bench", 98, 35, day=QUARTER + 1)
+put("fish_pond", 102, 32, day=QUARTER + 1)
+put("water_crossing", 106, 46, rot=2, day=QUARTER)  # from the first water tile southwards (Z:101)
+for x in (80, 86):
+    steps.append({"day": QUARTER, "road": [x, 46, x, 49]})
+    steps.append({"day": QUARTER, "roadblock": [x, 46]})
+    put("common_housing", x - 2, 48, day=QUARTER + 1); put("common_housing", x + 1, 48, day=QUARTER + 1)  # 3 tiles off the street (Z:84)
+# Unrest (Z:159-160): after the victory taxes go outrageous and wages stop for three months; the city sours,
+# families leave, then the old rates and very high wages win it back.
+steps.append({"day": 1350, "tax": 6}); steps.append({"day": 1350, "wage": 0})
+steps.append({"day": 1446, "tax": 4}); steps.append({"day": 1446, "wage": 5})
 
 # Perseus (doc 21): summoned when the hall's needs are met, then sent on Hermes's quest.
 steps.append({"day": MYTH, "every": 16, "summon_hero": [64, 12]})

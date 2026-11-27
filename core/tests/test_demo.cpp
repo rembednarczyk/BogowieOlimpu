@@ -106,7 +106,10 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "hero_slew", "wolves", "taxes", "sanctified", "plague", "collapse", "games_won",
                                       "culture_philosopher", "culture_athlete", "culture_actor", "culture_competitor",
                                       "tribute", "gift_sent", "goods_asked", "wages_set", "industry_off",
-                                      "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo"};
+                                      "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo",
+                                      "built_grand_agora", "grand_agora_sells", "built_park", "built_bench",
+                                      "built_fish_pond", "built_boulevard", "built_avenue", "built_water_crossing",
+                                      "fire", "crime", "emigration"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     const auto one = [&seen](const std::string& m) {
@@ -146,6 +149,25 @@ DemoRun run_demo(std::uint64_t years) {
         note_events(events, run.seen);
         note_state(sim, run.seen);
         trace_invasion(sim, day);
+        if (const char* hs = std::getenv("BO_DEMO_HOUSE"); hs != nullptr && sim.state().time.day_in_month() == 0) {
+            int hx = 0, hy = 0;  // BO_DEMO_HOUSE=x,y: the building there once a month (risks, mood, coverage)
+            if (std::sscanf(hs, "%d,%d", &hx, &hy) == 2) {
+                const BuildingId id = sim.state().city.map.at({hx, hy}).building;
+                if (id != kNoBuilding) {
+                    const Building& b = sim.state().city.buildings.items.at(id);
+                    std::printf("d%llu %s fire %u crime %u", static_cast<unsigned long long>(day), b.type.c_str(),
+                                b.fire_counter, b.crime_counter);
+                    if (b.house) {
+                        std::printf(" pop %u level %u happy %u food %u", b.house->population, b.house->level,
+                                    b.house->happiness, b.house->goods[0]);
+                    }
+                    for (const auto& [w, d] : b.coverage) {
+                        std::printf(" %s:%u", w.c_str(), static_cast<unsigned>(d));
+                    }
+                    std::printf("\n");
+                }
+            }
+        }
         if (std::getenv("BO_DEMO_REJECT") != nullptr) {  // every refused command with its day
             for (const auto& e : events) {
                 if (const auto* r = std::get_if<CommandRejected>(&e.event)) {

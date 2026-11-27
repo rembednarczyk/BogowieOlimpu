@@ -241,6 +241,18 @@ inline void note_state(const Simulation& sim, std::map<std::string, std::uint32_
             }
         }
         seen["sanctified"] += b.sanctified ? 1 : 0;  // doc 21
+        for (const char* t : {"grand_agora", "park", "bench", "fish_pond", "boulevard", "avenue", "water_crossing"}) {
+            seen[std::string("built_") + t] += b.type == t ? 1 : 0;  // Z:69-70, Z:101-103, Z:154-155
+        }
+        if (b.type == "grand_agora") {
+            for (const BuildingId s : b.slots) {
+                const auto stall = st.city.buildings.items.find(s);
+                seen["grand_agora_sells"] +=
+                    s != kNoBuilding && stall != st.city.buildings.items.end() && stall->second.stall &&
+                            !stall->second.stall->units.empty()
+                        ? 1 : 0;
+            }
+        }
         if (b.storage) {
             for (const auto& [good, o] : b.storage->orders) {
                 seen["storage_empty"] += o.kind == StorageOrderKind::Empty ? 1 : 0;  // Z:67
