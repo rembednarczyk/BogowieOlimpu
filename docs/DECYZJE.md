@@ -4,6 +4,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Drugie demo dla Atlantydy
+- Decyzja: mechaniki atlantydzkie (nauka zamiast kultury, hipodrom, później piramidy i budynki nauki) pokazuje osobne małe demo `scenarios/demo_atlantis.json` z własnym autopilotem (`tools/make_demo_atlantis.py`) i bramką "demo gate: Atlantis" (`core/tests/test_demo_atlantis.cpp`).
+- Powód: budynki atlantydzkie wolno stawiać tylko w mieście atlantydzkim (P:16-17), a zasada właściciela wymaga, żeby demo pokazywało każdą mechanikę. Demo greckie zostaje bez zmian.
+- Odrzucone: drugi epizod przygody z kolonią atlantydzką (większa praca, przygody wieloepizodowe zostają na później).
+- Niesprawdzone: wybór drugiego demo w menu gry (gra startuje demo greckie).
+
 ### 2026-11-26: Domyślny poziom trudności Hero, R-012 przyjęta
 - Decyzja: 5 poziomów trudności 1:1, domyślny Hero (R-013). Hierarchia źródeł R-012 potwierdzona.
 - Cytat właściciela: "Przyjmuję R-012, domyślnie Hero".
