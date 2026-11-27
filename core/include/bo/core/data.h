@@ -402,6 +402,10 @@ struct DataCatalog {
     TacticsParams tactics;
     NavalParams naval;
     std::vector<HippodromeRow> hippodrome;  // rising stades
+    struct {
+        std::uint32_t mood_from = 60, opinion_from = 100, unrest_above = 200;
+        std::int32_t mood = 2, opinion = 1, unrest_mood = -3;
+    } hippodrome_bonus;  // a big track (P:14) [ZAŁOŻENIE, L-127]
     std::map<std::string, SanctuaryParams> sanctuaries;  // building id (sanctuary_<god>) -> data
     std::int32_t max_sanctuaries = 4;                    // gods_rules.json (S-004 trivia)
     std::int32_t prayer_goods_loads = 24;                // Artemis: 24 loads of pork (S-004 trivia)

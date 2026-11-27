@@ -67,6 +67,12 @@ std::uint32_t working_hippodrome(const WorldState& st, const DataCatalog& catalo
     return r && st.hippodrome_horses >= r->horses ? static_cast<std::uint32_t>(t.segments.size()) : 0;
 }
 
+std::int32_t hippodrome_mood(const WorldState& st, const DataCatalog& catalog) {
+    const std::uint32_t stades = working_hippodrome(st, catalog);
+    const auto& b = catalog.hippodrome_bonus;
+    return stades > b.unrest_above ? b.unrest_mood : stades >= b.mood_from ? b.mood : 0;
+}
+
 void advance_hippodrome(WorldState& st, const DataCatalog& catalog, LogisticsEvents& ev) {
     const Track t = hippodrome_track(st.city);
     const HippodromeRow* r = t.closed ? row_for(catalog, t.segments.size()) : nullptr;
@@ -75,6 +81,11 @@ void advance_hippodrome(WorldState& st, const DataCatalog& catalog, LogisticsEve
     }
     if (st.time.day_in_month() == 0 && st.hippodrome_horses >= r->horses) {
         st.finance.treasury += r->income;  // bets and snacks (P:14, doc 18)
+        if (t.segments.size() >= catalog.hippodrome_bonus.opinion_from) {  // visitors from all over the world (P:14)
+            for (TradePartner& p : st.trade.partners) {
+                p.diplomacy.opinion = std::min(100, p.diplomacy.opinion + catalog.hippodrome_bonus.opinion);
+            }
+        }
     }
     Building& office = st.city.buildings.items.at(t.segments.front());
     const bool out = std::any_of(st.walkers.items.begin(), st.walkers.items.end(), [&](const auto& kv) {

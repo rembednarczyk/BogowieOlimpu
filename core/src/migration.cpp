@@ -1,5 +1,7 @@
 #include "bo/core/migration.h"
 
+#include "bo/core/hippodrome.h"
+
 #include <algorithm>
 #include <optional>
 #include <string>
@@ -173,7 +175,8 @@ void update_moods(WorldState& st, const DataCatalog& catalog) {
     const std::int32_t city_terms = p.tax_mood[static_cast<std::size_t>(st.finance.tax_rate)][di] +
                                     p.wage_mood[static_cast<std::size_t>(st.finance.wage_rate)] +
                                     unemployment_mood(p, st.labour) + (st.finance.treasury < 0 ? p.debt_mood : 0) +
-                                    (idle_army(st.military) ? p.idle_army_mood : 0);
+                                    (idle_army(st.military) ? p.idle_army_mood : 0) +
+                                    hippodrome_mood(st, catalog);  // a big track (P:14, L-127)
     std::int64_t sum = 0;
     std::int64_t houses = 0;
     for (auto& [id, b] : st.city.buildings.items) {

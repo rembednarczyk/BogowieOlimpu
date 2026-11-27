@@ -1,5 +1,7 @@
 // Atlantis stage 1 (docs/gameplay/15-atlantyda.md, P:10-13, P:16-17): the city's culture decides what may be
 // built; science points work in houses as culture points.
+#include <optional>
+
 #include "bo/core/hippodrome.h"
 #include "bo/core/housing.h"
 #include "bo/core/scenario.h"
@@ -125,4 +127,51 @@ TEST_CASE("hippodrome: the handler brings horses from the ranch; with 4 the race
         }
     }
     CHECK(income >= 10);  // the month's 10 dr (with the month's wages and taxes of an empty town: none)
+}
+
+namespace {
+
+// A racing 4-stade track in a catalog whose bonus thresholds are lowered to it.
+struct Racing {
+    DataCatalog catalog;
+    std::optional<Simulation> sim;
+};
+
+void race(Racing& r, std::uint32_t mood_from, std::uint32_t opinion_from, std::uint32_t unrest_above) {
+    r.catalog = bo::test::catalog_isolated();
+    r.catalog.hippodrome_bonus.mood_from = mood_from;
+    r.catalog.hippodrome_bonus.opinion_from = opinion_from;
+    r.catalog.hippodrome_bonus.unrest_above = unrest_above;
+    std::vector<std::string> rows(30, std::string(40, '.'));
+    rows[10] = std::string(40, '=');
+    SimulationConfig cfg{8, Difficulty::Hero, 30000, rows, true};
+    cfg.atlantean = true;
+    TradePartner p;
+    p.id = "athens";
+    p.relation = "ally";
+    p.diplomacy.opinion = 50;
+    cfg.trade_partners = {p};
+    r.sim.emplace(r.catalog, cfg);
+    for (const auto& [x, y] : {std::pair{2, 6}, {6, 6}, {6, 2}, {2, 2}}) {
+        REQUIRE(place(*r.sim, "hippodrome", x, y) == "ok");
+    }
+    r.sim->mutable_state().hippodrome_horses = 4;
+}
+
+}  // namespace
+
+TEST_CASE("hippodrome: a big racing track cheers the city and raises opinions; too big a one brings unrest (P:14, doc 18)") {
+    Racing small;
+    race(small, 60, 100, 200);  // the data: four stades are not big
+    CHECK(hippodrome_mood(small.sim->state(), small.catalog) == 0);
+    Racing big;
+    race(big, 4, 4, 200);
+    CHECK(hippodrome_mood(big.sim->state(), big.catalog) == big.catalog.hippodrome_bonus.mood);
+    big.sim->run_days(16);  // a month: the visitors (P:14)
+    CHECK(big.sim->state().trade.partners[0].diplomacy.opinion > 50);
+    Racing huge;
+    race(huge, 4, 100, 3);
+    CHECK(hippodrome_mood(huge.sim->state(), huge.catalog) == huge.catalog.hippodrome_bonus.unrest_mood);  // doc 18
+    huge.sim->mutable_state().hippodrome_horses = 0;  // not racing: no effect
+    CHECK(hippodrome_mood(huge.sim->state(), huge.catalog) == 0);
 }

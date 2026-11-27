@@ -430,6 +430,14 @@ DataLoadResult load_data_catalog_from_memory(const std::map<std::string, std::st
         detail::load_games(docs, cat.games);
         load_army_rules(docs, cat);
         if (docs.count("hippodrome.json") != 0) {  // [stades_min, stades_max, horses, drachmas_per_month]
+            const json b = docs.at("hippodrome.json").value("bonuses", json::object());
+            auto& hb = cat.hippodrome_bonus;
+            hb.mood_from = b.value("mood_from_stades", hb.mood_from);
+            hb.mood = b.value("mood", hb.mood);
+            hb.opinion_from = b.value("opinion_from_stades", hb.opinion_from);
+            hb.opinion = b.value("opinion_per_month", hb.opinion);
+            hb.unrest_above = b.value("unrest_above_stades", hb.unrest_above);
+            hb.unrest_mood = b.value("unrest_mood", hb.unrest_mood);
             for (const auto& row : docs.at("hippodrome.json").value("segments_to_horses_income", json::array())) {
                 cat.hippodrome.push_back(HippodromeRow{row.at(0).get<std::uint32_t>(), row.at(2).get<std::uint32_t>(),
                                                        row.at(3).get<std::int64_t>()});

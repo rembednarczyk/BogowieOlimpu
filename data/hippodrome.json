@@ -51,5 +51,14 @@
   "drachmas_per_month"
  ],
  "over_200_unrest": true,
- "src": "S-004 buildings/culture, trivia"
+ "src": "S-004 buildings/culture, trivia",
+ "bonuses": {
+  "mood_from_stades": 60,
+  "mood": 2,
+  "opinion_from_stades": 100,
+  "opinion_per_month": 1,
+  "unrest_above_stades": 200,
+  "unrest_mood": -3,
+  "src": "P:14: duży tor podnosi popularność, przybywają goście, rośnie opinia innych przywódców; doc 18: powyżej 200 stadiów niepokój; [ZAŁOŻENIE L-127] progi 60 i 100 stadiów (wiersze tabeli 60-98 i 100-198), +2 nastroju na aktualizację, +1 opinii miesięcznie, -3 nastroju powyżej 200"
+ }
 }

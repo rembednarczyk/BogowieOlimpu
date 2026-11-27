@@ -22,6 +22,10 @@ Track hippodrome_track(const CityState& city);
 // Stades of a working track: closed, with the horses its length needs (doc 18); 0 when it is not racing.
 std::uint32_t working_hippodrome(const WorldState& state, const DataCatalog& catalog);
 
+// The track's effect on every house's mood at each update (P:14): a bonus from mood_from stades of a racing
+// track, unrest above unrest_above (doc 18) [ZAŁOŻENIE, L-127]; 0 otherwise.
+std::int32_t hippodrome_mood(const WorldState& state, const DataCatalog& catalog);
+
 // Daily: the handler fetches horses (one load a trip) while the track has fewer than it needs; on the first
 // day of a month a racing track pays its income into the treasury.
 void advance_hippodrome(WorldState& state, const DataCatalog& catalog, LogisticsEvents& ev);
