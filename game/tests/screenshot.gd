@@ -96,6 +96,27 @@ func _process(_delta: float) -> bool:
 				node.cam_target = Vector3(14, 0, 45)
 				node.cam.size = 26.0
 				node._place_camera()
+		elif build_view == 8:  # the seven levels of the house, close up; then a city house going up and falling apart
+			node.lod_close = true
+			var rows := []
+			for level in 7:
+				rows.append(["common_housing_%d" % (level + 1), {"age_days": 40}, Vector2(2 + level * 2.6, 40)])
+			var phases := [0.15, 0.3, 0.45, 0.6, 0.75, 0.9]
+			for i in phases.size():
+				rows.append(["common_housing_7", {"age_days": phases[i] * 4.0}, Vector2(2 + i * 2.6, 44)])
+			rows.append(["common_housing_7", {"age_days": 1920, "damage_risk": 900}, Vector2(2 + 6 * 2.6, 44)])
+			for r in rows:
+				var mi := MeshInstance3D.new()
+				mi.mesh = node._model(r[0])
+				mi.material_override = node._building_material()
+				mi.position = Vector3(r[2].x, 0.2, r[2].y)
+				node.add_child(mi)
+				node._set_look(mi, r[1])
+			if zoom == 0.0:
+				node.cam_target = Vector3(10, 0, 42.5)
+				node.cam.size = 16.0
+				node._place_camera()
+			node.lod_close = true
 		elif build_view == 1:
 			node.ui._show_tab("husbandry")
 		else:

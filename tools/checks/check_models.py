@@ -4,7 +4,9 @@
   - one mesh with one primitive (one draw call), with POSITION, NORMAL, TEXCOORD_0 (palette), TEXCOORD_1 (pivot)
     and COLOR_0 (the masks of the building's parameters);
   - the mesh lies on the ground inside its footprint from data/building_stats.json (x 0..w, z 0..h, y >= 0);
-  - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader.
+  - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader;
+  - triangles within the budget: the close view (LOD0) at most 40 000, the far view (LOD1) at most 2 000
+    (hundreds of houses at once on the phone, docs/07-TECHNOLOGIA.md).
 Exit code 1 on any violation. Usage: python3 tools/checks/check_models.py [repo_root]
 """
 import json
@@ -14,6 +16,7 @@ import struct
 import sys
 
 EPS = 1e-3
+TRIS = {0: 40000, 1: 2000}
 
 
 def glb_json(path):
@@ -49,11 +52,13 @@ def palette_shader(root):
 
 
 def main():
-    root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")
+    args = [a for a in sys.argv[1:] if a != "-v"]
+    root = pathlib.Path(args[0] if args else ".")
     errors = []
     models = root / "game" / "models"
     provenance = json.loads((models / "provenance.json").read_text())
     files = sorted(p.name for p in models.glob("*.glb"))
+    sizes = []
     for name in files:
         if name not in provenance:
             errors.append(f"{name}: no provenance entry (R-017)")
@@ -71,6 +76,12 @@ def main():
         for a in ("POSITION", "NORMAL", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0"):
             if a not in attrs:
                 errors.append(f"{name}: no {a}")
+        prim = meshes[0]["primitives"][0]
+        tris = (g["accessors"][prim["indices"]]["count"] if "indices" in prim else g["accessors"][attrs["POSITION"]]["count"]) // 3
+        lod = entry.get("lod", 0)
+        sizes.append(f"{name} {tris}")
+        if tris > TRIS[lod]:
+            errors.append(f"{name}: {tris} triangles > {TRIS[lod]} for LOD{lod}")
         if "building" not in entry:
             continue
         w, h = footprint(root, entry["building"])
@@ -88,6 +99,8 @@ def main():
         for (n, cb), (cs, _) in zip(pb, ps):
             if [float(v) for v in cb.split(",")] != [float(v) for v in cs.split(",")]:
                 errors.append(f"palette {n}: blender ({cb}) shader ({cs})")
+    if "-v" in sys.argv:
+        print("\n".join(sizes))
     for e in errors:
         print(e)
     print(f"check_models: {len(files)} model(s), {len(errors)} violation(s)")

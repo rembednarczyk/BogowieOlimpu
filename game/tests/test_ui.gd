@@ -135,11 +135,25 @@ func _process(_d: float) -> bool:
 			continue
 		modelled += 1
 		var mi: MeshInstance3D = node.get_node("Model")
-		var want_build := clampf(b["age_days"] / game.BUILD_VISUAL_DAYS, 0.0, 1.0)
-		looks_ok = looks_ok and is_equal_approx(mi.get_instance_shader_parameter("build"), want_build) \
+		var phase: float = mi.get_instance_shader_parameter("build")  # going up: the exact share; else done
+		var phase_ok: bool = phase >= 0.999 if b["age_days"] >= game.BUILD_VISUAL_DAYS else (phase > 0.0 and phase <= 1.0)
+		looks_ok = looks_ok and phase_ok \
 			and node.get_meta("model") == game._model_name(b["type"], b.get("house_level", 0))
 	check(modelled > 20 and looks_ok, "modelled buildings follow their age and level: %d" % modelled)
 	check(game._model("granary") != null and game._model("palace") == null, "a granary has a model, the palace keeps its box")
+	# Two views of a house: the far one at the start, brick by brick once the camera comes close.
+	var house_node: Node3D = null
+	for id in game.building_nodes:
+		if game.building_nodes[id].has_meta("model") and String(game.building_nodes[id].get_meta("model")).begins_with("common_housing"):
+			house_node = game.building_nodes[id]
+			break
+	var far_tris: int = (house_node.get_node("Model") as MeshInstance3D).mesh.get_faces().size() / 3
+	game.cam.size = 14.0
+	game._place_camera()
+	var close_tris: int = (house_node.get_node("Model") as MeshInstance3D).mesh.get_faces().size() / 3
+	check(game.lod_close and close_tris > 5 * far_tris, "close up the house shows its bricks: %d vs %d triangles" % [close_tris, far_tris])
+	game.cam.size = 44.0
+	game._place_camera()
 	var aw = ui.army_world
 	aw.toggle_army()
 	check(aw.army.visible and aw.army_box.get_child_count() > 2, "the army panel lists the companies")

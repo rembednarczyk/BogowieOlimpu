@@ -69,6 +69,10 @@ const BUILD_VISUAL_DAYS := 4.0  # the visual building phase (O-005); the buildin
 const AGE_FULL_DAYS := 1920.0   # ten years of weathering [ZAŁOŻENIE]
 var model_meshes := {}  # model name -> Mesh, or null when there is none
 var building_material: ShaderMaterial
+# Two views of a house (tools/blender/models.py): brick by brick close up, simple shapes from afar (<name>_lod1).
+const LOD_CLOSE_SIZE := 26.0  # the camera's size in tiles under which the close view shows
+var lod_close := false
+var young := {}  # building id -> placing day: going up, its building phase follows every frame
 var walker_nodes := {}  # id -> MeshInstance3D
 var cam := Camera3D.new()
 var cam_target := Vector3(30, 0, 24)
@@ -222,6 +226,7 @@ func _restore_buildings() -> void:
 	for b in sim.get_buildings():
 		_add_building({"id": b["id"], "building_type": b["type"], "x": b["x"], "y": b["y"], "width": b["width"],
 			"height": b["height"], "parent": b["parent"], "age_days": b.get("age_days", 0),
+			"placed_day": float(b.get("placed_day", 0)),
 			"house_level": b.get("house_level", 0)})
 
 # Demo script: the autopilot's commands for the days that passed; a line of progress for the overlay.
@@ -267,6 +272,7 @@ func _process(delta: float) -> void:
 		_update_race()
 	_sync_walkers()
 	_run_race(delta)
+	_grow_young()
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Two fingers: pinch zoom (06-MOBILE-UX). The mouse wheel zooms on PC.
@@ -308,6 +314,7 @@ func _pan(rel: Vector2) -> void:
 func _zoom(factor: float) -> void:
 	cam.size = clampf(cam.size * factor, 12.0, 80.0)
 	cam.far = 36.0 + 2.0 * cam.size + 20.0  # the depth range of _place_camera
+	_apply_lod()
 
 # The tile under a screen point: the camera ray meets the ground plane (y = 0).
 func screen_to_tile(pos: Vector2) -> Vector2i:
@@ -513,12 +520,16 @@ func _add_building(e: Dictionary) -> void:
 	elif e["parent"] == 0 and _model(_model_name(e["building_type"], e.get("house_level", 0))) != null:
 		var mi := MeshInstance3D.new()  # the building's model, its state set by _update_looks
 		mi.name = "Model"
-		mi.mesh = _model(_model_name(e["building_type"], e.get("house_level", 0)))
+		mi.mesh = _view_mesh(_model_name(e["building_type"], e.get("house_level", 0)))
 		mi.material_override = _building_material()
 		mi.position = Vector3(e["x"], 0, e["y"])
 		node.add_child(mi)
 		node.set_meta("model", _model_name(e["building_type"], e.get("house_level", 0)))
+		var placed: float = e.get("placed_day", sim.get_tick() / float(TICKS_PER_DAY))
 		_set_look(mi, {"age_days": e.get("age_days", 0)})
+		if e.get("age_days", 0) < BUILD_VISUAL_DAYS:
+			young[e["id"]] = placed
+			_grow(mi, placed)
 	else:
 		parts.append(Rect2(e["x"], e["y"], bw, bh))
 	for r in parts:
@@ -566,6 +577,35 @@ func _model(name: String) -> Mesh:
 		model_meshes[name] = mesh
 	return model_meshes[name]
 
+# The mesh for the camera's distance: the far view where a house has one.
+func _view_mesh(name: String) -> Mesh:
+	if not lod_close and _model(name + "_lod1") != null:
+		return _model(name + "_lod1")
+	return _model(name)
+
+# The zoom crossed the line: every modelled building takes the mesh of its view.
+func _apply_lod() -> void:
+	var close := cam.size <= LOD_CLOSE_SIZE
+	if close == lod_close:
+		return
+	lod_close = close
+	for id in building_nodes:
+		var node: Node3D = building_nodes[id]
+		if node.has_meta("model"):
+			(node.get_node("Model") as MeshInstance3D).mesh = _view_mesh(node.get_meta("model"))
+
+# A building going up: its phase from the exact time since it was placed (4 game days, O-005).
+func _grow(mi: MeshInstance3D, placed_day: float) -> float:
+	var done := clampf((sim.get_tick() / float(TICKS_PER_DAY) - placed_day) / BUILD_VISUAL_DAYS, 0.02, 1.0)
+	mi.set_instance_shader_parameter("build", done)
+	return done
+
+func _grow_young() -> void:
+	for id in young.keys():
+		var node: Node3D = building_nodes.get(id)
+		if node == null or not node.has_node("Model") or _grow(node.get_node("Model"), young[id]) >= 1.0:
+			young.erase(id)
+
 func _building_material() -> ShaderMaterial:
 	if building_material == null:
 		building_material = ShaderMaterial.new()
@@ -594,9 +634,11 @@ func _update_looks() -> void:
 		var mi: MeshInstance3D = node.get_node("Model")
 		var name := _model_name(b["type"], b.get("house_level", 0))
 		if name != node.get_meta("model") and _model(name) != null:
-			mi.mesh = _model(name)
+			mi.mesh = _view_mesh(name)
 			node.set_meta("model", name)
 		_set_look(mi, b)
+		if young.has(b["id"]):
+			_grow(mi, young[b["id"]])  # the day's coarse phase gives way to the exact one
 
 # A monument as a stepped pyramid: `built` of its `levels` layers, each a tile narrower on every side (S-008);
 # a bare site shows its foundation only.
@@ -748,3 +790,4 @@ func _place_camera() -> void:
 	cam.look_at_from_position(cam_target + Vector3(20, 22, 20), cam_target)
 	cam.near = 1.0
 	cam.far = 36.0 + 2.0 * cam.size + 20.0
+	_apply_lod()

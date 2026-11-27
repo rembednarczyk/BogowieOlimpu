@@ -1,6 +1,8 @@
 // One material for every building model (docs/ASSETY.md "Parametry budynku", O-005): the part's colour from the
-// palette (UV.x), the building's state from per-instance parameters set daily by boot.gd from the core, the
-// masks of the parts from the vertex colours (R build stage, G plaster, B loose, A animated; UV2 the pivot).
+// palette (UV.x) and each element's shade (UV.y), the building's state from per-instance parameters set by
+// boot.gd from the core, the masks of the parts from the vertex colours (R the share of the building phase after
+// which the element shows, so a wall rises course by course and a roof row by row; 1 the scaffold; G plaster,
+// B loose, A animated; UV2 the pivot).
 // Presentation only. Stage 1a: plain colours by part; CC0 textures (stage 1b) will be sampled here by world
 // position, the models stay as they are.
 shader_type spatial;
@@ -13,7 +15,7 @@ instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
 
 const int PALETTE_SIZE = 16;
-const vec3 PALETTE[12] = vec3[12](
+const vec3 PALETTE[16] = vec3[16](
 	vec3(0.93, 0.89, 0.80),  // plaster
 	vec3(0.78, 0.74, 0.66),  // stone
 	vec3(0.72, 0.36, 0.24),  // roof_tile
@@ -25,7 +27,11 @@ const vec3 PALETTE[12] = vec3[12](
 	vec3(0.62, 0.45, 0.22),  // bronze
 	vec3(0.70, 0.22, 0.18),  // cloth
 	vec3(0.32, 0.22, 0.14),  // dark_wood
-	vec3(0.86, 0.72, 0.38)  // grain
+	vec3(0.86, 0.72, 0.38),  // grain
+	vec3(0.66, 0.60, 0.50),  // mortar
+	vec3(0.78, 0.48, 0.24),  // ochre
+	vec3(0.30, 0.42, 0.56),  // blue_paint
+	vec3(0.40, 0.48, 0.26)  // leaves
 );
 const int STONE = 1;
 const int WATER = 6;
@@ -50,8 +56,8 @@ float noise(vec3 x) {
 
 void vertex() {
 	v_mask = COLOR;
-	int stage = int(round(COLOR.r * 3.0));
-	bool shown = stage == 3 ? build < 1.0 : build * 3.0 >= float(stage) - 0.001 && build > 0.0;
+	bool scaffold = COLOR.r > 0.995;
+	bool shown = scaffold ? build < 1.0 : build >= COLOR.r - 0.0001 && build > 0.0;
 	v_hidden = shown ? 0.0 : 1.0;
 	if (!shown) {
 		VERTEX = vec3(0.0);  // a part not built yet (or the scaffold once done): no area
@@ -72,8 +78,10 @@ void fragment() {
 	if (v_hidden > 0.5) {
 		discard;
 	}
-	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 11);
+	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 15);
 	vec3 base = pow(PALETTE[part], vec3(2.2));  // the palette is in sRGB, ALBEDO linear
+	base *= 0.84 + 0.32 * UV.y;  // no two bricks or tiles alike
+	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground
 	float n = noise(v_local * 9.0);
 	float plaster = v_mask.g;
 	// Age: the colours dull, grime rises from the ground, moss on what faces the sky.
@@ -86,8 +94,8 @@ void fragment() {
 		float crack = 1.0 - smoothstep(0.0, 0.025 * damage, abs(noise(v_local * 4.0) - 0.5));
 		base *= 1.0 - 0.55 * crack;
 	}
-	if (plaster > 0.5 && damage >= 2.0 && n > 0.62) {
-		base = pow(PALETTE[STONE], vec3(2.2)) * 0.85;
+	if (plaster > 0.5 && damage >= 2.0 && noise(v_local * 5.0) > 0.58) {
+		discard;  // the plaster has fallen: the bricks under it show
 	}
 	// Fire: soot and embers, then charred.
 	vec3 glow = vec3(0.0);

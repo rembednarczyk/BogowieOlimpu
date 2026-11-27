@@ -1228,8 +1228,18 @@ void BoSimulation::set_wage_rate(int64_t rate) {
 Array BoSimulation::drain_events() {
     Array out;
     if (sim_) {
+        const auto& items = sim_->state().city.buildings.items;
+        const auto today = static_cast<int64_t>(sim_->state().time.total_days());
         for (const auto& e : sim_->drain_events()) {
-            out.push_back(event_to_dict(e));
+            Dictionary d = event_to_dict(e);
+            if (const auto* placed = std::get_if<bo::core::BuildingPlaced>(&e.event)) {
+                const auto it = items.find(placed->id);  // its age for its look (O-005), drained late or not
+                if (it != items.end()) {
+                    d["placed_day"] = it->second.placed_day;
+                    d["age_days"] = today - static_cast<int64_t>(it->second.placed_day);
+                }
+            }
+            out.push_back(d);
         }
     }
     return out;
