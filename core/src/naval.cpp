@@ -9,6 +9,7 @@
 #include <optional>
 #include <tuple>
 
+#include "bo/core/labour.h"
 #include "bo/core/logistics.h"
 #include "combat_internal.h"
 
@@ -113,6 +114,42 @@ void launch(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
     }
 }
 
+// Z:141 with L-124: a crew under orders_min_crew_percent of its places cannot sail or fight.
+bool short_handed(const DataCatalog& catalog, const Ship& sh) {
+    return sh.hands * 100 < catalog.naval.crew_workers * catalog.naval.orders_min_crew_percent;
+}
+
+// Every crewed ship fills its places, in ship order, from the workers of the houses not away as rabble or with a
+// trireme abroad (they leave their jobs, military.cpp workers_in_the_field). A ship sails at its speed times its
+// share of the crew (Z:141, L-124).
+void man_ships(WorldState& st, const DataCatalog& catalog) {
+    std::uint32_t held = 0;
+    for (const Ship& sh : st.military.ships) {
+        held += sh.hands;
+    }
+    const std::uint32_t pool = labour_pool(st.city, catalog, st.difficulty, st.finance.wage_rate);
+    const std::uint32_t rabble = workers_in_the_field(st, catalog) - held;
+    std::uint32_t free = st.labour.full_staffing ? 0xFFFFFFFFU : pool - std::min(pool, rabble);  // dev switch: full
+    for (const Ship& sh : st.military.ships) {
+        free = sh.crew == Crew::Abroad ? free - std::min(free, std::uint32_t{sh.hands}) : free;  // away with the army
+    }
+    const auto places = static_cast<std::uint32_t>(std::max(0, catalog.naval.crew_workers));
+    for (Ship& sh : st.military.ships) {
+        if (sh.crew == Crew::None) {
+            sh.hands = 0;
+        }
+        if (sh.crew != Crew::Aboard && sh.crew != Crew::GoingHome) {
+            continue;
+        }
+        sh.hands = static_cast<std::uint8_t>(std::min({places, free, 255U}));
+        free -= sh.hands;
+        Walker& w = st.walkers.items.at(sh.walker);
+        if (const UnitStats* s = stats_of(catalog, w); s && places > 0) {
+            w.speed_raw = std::max<std::int64_t>(1, s->speed_raw * sh.hands / places);
+        }
+    }
+}
+
 }  // namespace
 
 bool is_ship(const Walker& w) {
@@ -130,8 +167,8 @@ std::int32_t ship_engage(const WorldState& st, const DataCatalog& catalog, const
     }
     for (const Ship& sh : st.military.ships) {
         if (sh.walker == w.id) {
-            if (sh.crew != Crew::Aboard) {
-                return -1;  // unmanned, or the crew going home: no fighting (Z:141)
+            if (sh.crew != Crew::Aboard || short_handed(catalog, sh)) {
+                return -1;  // unmanned, short-handed or the crew going home: no fighting (Z:141)
             }
             return sh.order == ShipOrder::AttackAll                                   ? catalog.naval.attack_all_engage
                    : sh.order == ShipOrder::Defend || sh.order == ShipOrder::Patrol ? s.missile_range
@@ -174,10 +211,10 @@ std::optional<std::pair<std::int32_t, WalkerId>> naval_foe(const WorldState& st,
 }
 
 // A trireme with nothing to fight sails back to its post (Defend Location, Z:142); on patrol it sails between
-// the post and the wharf [ZAŁOŻENIE, L-124]. Without a crew it does not move (Z:141).
-void ship_idle(WorldState& st, Walker& w) {
+// the post and the wharf [ZAŁOŻENIE, L-124]. Without a crew, or short-handed, it does not move (Z:141).
+void ship_idle(WorldState& st, const DataCatalog& catalog, Walker& w) {
     const Ship* sh = ship_of(st, w.id);
-    if (!sh || sh->crew != Crew::Aboard || sh->order == ShipOrder::Repair || w.phase != WalkerPhase::AtTarget) {
+    if (!sh || sh->crew != Crew::Aboard || short_handed(catalog, *sh) || sh->order == ShipOrder::Repair || w.phase != WalkerPhase::AtTarget) {
         return;
     }
     const TilePos moor = mooring_of(st, *sh);
@@ -321,6 +358,7 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
         return;  // no Palace, no crews (Z:135)
     }
     launch(st, catalog, ev);
+    man_ships(st, catalog);
     for (Ship& sh : ships) {
         if (sh.crew == Crew::Abroad) {
             continue;  // with an army abroad (Z:177)
@@ -331,6 +369,7 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
         const TilePos moor = mooring_of(st, sh);
         if (sh.crew == Crew::GoingHome && w.tile == moor) {
             sh.crew = Crew::None;  // back at the wharf: the crew goes back to work (Z:141)
+            sh.hands = 0;
         }
         if (sh.crew == Crew::None) {
             continue;  // unmanned: it waits at the wharf
@@ -346,7 +385,7 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
             route(st.city, w, moor);
         }
         if (sh.order != ShipOrder::Repair) {
-            ship_idle(st, w);
+            ship_idle(st, catalog, w);
         } else if (w.tile == moor) {
             w.hp = std::min(full, w.hp + catalog.naval.repair_hp_per_day);
             if (w.hp >= full) {
@@ -361,7 +400,6 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
 
 std::string set_ship_order(WorldState& st, const DataCatalog& catalog, std::uint32_t ship, std::uint8_t order,
                            TilePos at) {
-    (void)catalog;
     if (ship >= st.military.ships.size() || order > 5) {
         return "military.bad_ship";
     }
@@ -370,8 +408,9 @@ std::string set_ship_order(WorldState& st, const DataCatalog& catalog, std::uint
         return "military.ship_abroad";
     }
     Walker& w = st.walkers.items.at(sh.walker);
-    if (order == 4) {  // Call Crew to Ship (Z:141)
+    if (order == 4) {  // Call Crew to Ship (Z:141): as many free workers as there are
         sh.crew = Crew::Aboard;
+        man_ships(st, catalog);
         return {};
     }
     if (order == 5) {  // Send Crew Home: to the wharf, then the crew goes back to work (Z:141)
@@ -383,6 +422,9 @@ std::string set_ship_order(WorldState& st, const DataCatalog& catalog, std::uint
     }
     if (sh.crew == Crew::None) {
         return "military.no_crew";  // an unmanned ship takes no orders (Z:141)
+    }
+    if (short_handed(catalog, sh)) {
+        return "military.crew_short";  // too few hands to carry out orders (Z:141)
     }
     const auto o = static_cast<ShipOrder>(order);
     if ((o == ShipOrder::Defend || o == ShipOrder::Patrol) && at.x >= 0 && !open_water(st.city, at)) {

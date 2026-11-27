@@ -53,6 +53,9 @@ std::uint32_t workers_needed(const Building& b, const DataCatalog& catalog, cons
 // Daily allocation: workforce from common houses, then sectors in priority order, then buildings inside each
 // sector by equal staffing fraction. Sets Building::workers and Building::staffing_percent.
 // `absent`: common-house residents in the field as soldiers (D3), not available for work.
+// The workers of the common houses (Z:29) at the difficulty's and wage's share (doc 22), before soldiers and crews.
+std::uint32_t labour_pool(const CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage);
+
 void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage, LabourState& labour,
                      std::uint32_t absent = 0);
 

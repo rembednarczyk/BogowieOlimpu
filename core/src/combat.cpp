@@ -375,7 +375,7 @@ void combat_tick(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
             if (target) {
                 fight(st, catalog, w, *s, nullptr, *target, rechase);
             } else if (w.job == WalkerJob::Ship) {
-                ship_idle(st, w);
+                ship_idle(st, catalog, w);
             }
             continue;
         }

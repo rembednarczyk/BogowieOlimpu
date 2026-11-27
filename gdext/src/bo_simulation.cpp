@@ -601,6 +601,8 @@ Array BoSimulation::get_ships() const {
         d["station_x"] = sh.station.x;
         d["station_y"] = sh.station.y;
         d["crew"] = static_cast<int64_t>(sh.crew);  // 0 unmanned, 1 aboard, 2 going home (Z:141, Z:150)
+        d["hands"] = static_cast<int64_t>(sh.hands);  // a short-handed ship is slower (Z:141)
+        d["places"] = static_cast<int64_t>(catalog_->naval.crew_workers);
         out.append(d);
     }
     return out;

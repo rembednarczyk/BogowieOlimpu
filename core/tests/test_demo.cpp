@@ -365,6 +365,8 @@ DemoRun run_demo(std::uint64_t years) {
         run.seen["trireme"] += sim.state().military.ships.empty() ? 0 : 1;  // launched from a wharf (Z:141)
         for (const Ship& sh : sim.state().military.ships) {
             run.seen["crew_called"] += sh.crew == Crew::Aboard ? 1 : 0;  // Z:141
+            run.seen["crew_short"] +=
+                sh.crew == Crew::Aboard && sh.hands < sim.catalog().naval.crew_workers ? 1 : 0;  // Z:141
             run.seen["ship_patrol"] += sh.order == ShipOrder::Patrol ? 1 : 0;  // Z:142
         }
         run.seen["monument_built"] += std::any_of(sim.state().city.buildings.items.begin(), sim.state().city.buildings.items.end(),

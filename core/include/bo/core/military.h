@@ -80,9 +80,10 @@ struct Ship {
     ShipOrder order = ShipOrder::Defend;
     TilePos station{0, 0};  // Defend Location: where it holds; the wharf's mooring at first
     Crew crew = Crew::None;  // launched unmanned (Z:150); Call Crew to Ship takes workers from their jobs
+    std::uint8_t hands = 0;  // crew aboard (since v47): a short-handed ship is slower (Z:141, L-124)
     friend bool operator==(const Ship& a, const Ship& b) {
         return a.walker == b.walker && a.wharf == b.wharf && a.order == b.order && a.station == b.station &&
-               a.crew == b.crew;
+               a.crew == b.crew && a.hands == b.hands;
     }
 };
 

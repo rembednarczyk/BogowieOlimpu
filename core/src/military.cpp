@@ -369,7 +369,7 @@ std::uint32_t workers_in_the_field(const WorldState& st, const DataCatalog& cata
     }
     n *= static_cast<std::uint32_t>(catalog.combat.rabble_workers_per_soldier);  // 6 each (S-004, doc 22)
     for (const Ship& s : st.military.ships) {
-        n += s.crew != Crew::None ? static_cast<std::uint32_t>(catalog.naval.crew_workers) : 0U;  // Z:141
+        n += s.hands;  // the crew aboard, home or abroad (Z:141)
     }
     return n;
 }

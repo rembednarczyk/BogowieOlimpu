@@ -302,3 +302,57 @@ TEST_CASE("fleet: crewed triremes sail with an army to a city on a sea route and
     CHECK(sim.state().military.ships[0].crew == Crew::Aboard);
     CHECK(trireme(sim).tile.y == 12);  // at its mooring again
 }
+
+TEST_CASE("fleet: a crew takes the free workers there are; short-handed a ship is slower, under half it stays (Z:141)") {
+    auto sim = with_trireme(false);
+    sim.mutable_state().labour.full_staffing = false;  // the city's real workforce
+    const auto pct = sim.catalog().worker_percent[static_cast<std::size_t>(sim.state().difficulty)]
+                                                 [static_cast<std::size_t>(sim.state().finance.wage_rate)];
+    const BuildingId house = sim.mutable_state().city.buildings.next_id++;
+    // A house that keeps `workers` workers whatever happens to it (no roads, no food in this city).
+    auto keep = [&sim, house, pct](std::uint32_t workers) {
+        Building h;
+        h.id = house;
+        h.type = "common_housing";
+        h.house = HouseState{};
+        h.house->population = static_cast<std::uint32_t>(workers * 100 / pct + 1);
+        sim.mutable_state().city.buildings.items[house] = h;
+    };
+    auto days = [&sim, &keep](int n, std::uint32_t workers) {
+        for (int d = 0; d < n; ++d) {
+            keep(workers);
+            sim.run_days(1);
+        }
+    };
+    keep(12);
+    REQUIRE(labour_pool(sim.state().city, sim.catalog(), sim.state().difficulty, sim.state().finance.wage_rate) == 12);
+    sim.issue(SetShipOrder{0, 4, -1, -1});  // Call Crew to Ship: 12 of 20 places
+    sim.step(1);
+    CHECK(sim.state().military.ships[0].hands == 12);
+    CHECK(workers_in_the_field(sim.state(), sim.catalog()) == 12);
+    const auto& full = sim.catalog().combat.nations.at("player_greek").units.at("trireme");
+    CHECK(trireme(sim).speed_raw == full.speed_raw * 12 / 20);  // slower (Z:141, L-124)
+    sim.issue(SetShipOrder{0, 0, 20, 15});  // 12 of 20 is above half: it takes orders
+    days(20, 12);
+    CHECK(trireme(sim).tile == TilePos{20, 15});
+    days(1, 6);  // workers leave the city: 6 hands left
+    CHECK(sim.state().military.ships[0].hands == 6);
+    sim.drain_events();
+    sim.issue(SetShipOrder{0, 1, -1, -1});  // under half: no orders (Z:141)
+    sim.step(1);
+    std::string reason;
+    for (const auto& e : sim.drain_events()) {
+        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+            reason = r->reason_key;
+        }
+    }
+    CHECK(reason == "military.crew_short");
+    sim.issue(SetShipOrder{0, 0, 25, 15});
+    days(10, 6);
+    CHECK(trireme(sim).tile == TilePos{20, 15});  // it stays where it was
+    std::string error;
+    auto copy = Simulation::load(bo::test::catalog_isolated(), sim.save(), error);
+    REQUIRE(copy.has_value());
+    CHECK(copy->state().military.ships[0].hands == 6);
+    CHECK(copy->state_hash() == sim.state_hash());
+}

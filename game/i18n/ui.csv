@@ -222,6 +222,7 @@ ship.order.3,Patrol,Patrol
 ship.crew.0,bez załogi,no crew
 ship.crew.1,załoga na pokładzie,crew aboard
 ship.crew.2,załoga wraca,crew going home
+ui.ship_hands,(%d z %d),(%d of %d)
 ui.crew_all,Wezwij wszystkie załogi,Call all crews
 ui.crew_call,Wezwij załogę,Call crew
 ui.crew_home,Odeślij załogę,Send crew home

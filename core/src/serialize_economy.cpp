@@ -4,6 +4,10 @@
 
 namespace bo::core {
 
+namespace {
+constexpr std::uint8_t kFullCrewBeforeV47 = 20;  // data/military.json crew_workers when v47 came in
+}  // namespace
+
 // Labour and finance details (v5). Written after the city block, before the walkers.
 void write_economy(ByteWriter& w, const WorldState& s) {
     const LabourState& l = s.labour;
@@ -173,6 +177,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
         w.i32(sh.station.x);
         w.i32(sh.station.y);
         w.u8(static_cast<std::uint8_t>(sh.crew));  // since v42
+        w.u8(sh.hands);                              // since v47
     }
 }
 
@@ -261,6 +266,10 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
         }
         sh.order = static_cast<ShipOrder>(order);
         sh.crew = static_cast<Crew>(crew);
+        sh.hands = sh.crew == Crew::None ? 0 : kFullCrewBeforeV47;  // before v47 a crew was always whole
+        if (version >= 47 && !r.u8(sh.hands)) {
+            return false;
+        }
     }
     return true;
 }

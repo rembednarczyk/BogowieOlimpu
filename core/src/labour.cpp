@@ -76,8 +76,7 @@ std::uint32_t workers_needed(const Building& b, const DataCatalog& catalog, cons
     return static_cast<std::uint32_t>(*stats->second.workers);
 }
 
-void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage, LabourState& labour,
-                     std::uint32_t absent) {
+std::uint32_t labour_pool(const CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage) {
     std::uint64_t people = 0;
     for (const auto& [id, b] : city.buildings.items) {
         if (b.house && !b.house->elite) {
@@ -86,7 +85,12 @@ void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, 
     }
     const auto pct = static_cast<std::uint64_t>(
         catalog.worker_percent[static_cast<std::size_t>(d)][static_cast<std::size_t>(wage)]);
-    const auto pool = static_cast<std::uint32_t>(people * pct / 100);
+    return static_cast<std::uint32_t>(people * pct / 100);
+}
+
+void allocate_labour(CityState& city, const DataCatalog& catalog, Difficulty d, WageRate wage, LabourState& labour,
+                     std::uint32_t absent) {
+    const std::uint32_t pool = labour_pool(city, catalog, d, wage);
     labour.workforce = pool - std::min(pool, absent);
 
     // Needs per sector, buildings per sector in id order. A building gets workers when they can walk to it from

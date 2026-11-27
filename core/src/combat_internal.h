@@ -37,7 +37,7 @@ std::int32_t ship_engage(const WorldState& st, const DataCatalog& catalog, const
 std::optional<std::pair<std::int32_t, WalkerId>> naval_foe(const WorldState& st, const DataCatalog& catalog,
                                                            const Walker& w, const std::vector<WalkerId>& fighters,
                                                            std::int32_t limit);
-void ship_idle(WorldState& st, Walker& w);
+void ship_idle(WorldState& st, const DataCatalog& catalog, Walker& w);
 void land_transports(WorldState& st, const DataCatalog& catalog, CombatEvents& ev);
 
 }  // namespace bo::core::combat_detail

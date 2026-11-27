@@ -160,7 +160,7 @@ func _ships() -> void:
 		var crew: Button = ui._button("ui.crew_home" if manned else "ui.crew_call",
 			func(): game.sim.set_ship_order(i, 5 if manned else 4); refresh_army(), Vector2(170, ui.CELL.y))
 		crew.disabled = sh["crew"] == 2
-		_row(army_box, tr("ui.ship_line") % [i + 1, sh["hp"], sh["max_hp"]] + ", " + tr("ship.crew.%d" % sh["crew"]),
+		_row(army_box, tr("ui.ship_line") % [i + 1, sh["hp"], sh["max_hp"]] + ", " + tr("ship.crew.%d" % sh["crew"]) + (" " + tr("ui.ship_hands") % [sh["hands"], sh["places"]] if sh["crew"] != 0 else ""),
 			[crew, order, _small("ui.ship_post", func(): posting = i; army.visible = false, manned)])
 
 func _each(ids: Array, f: Callable) -> void:
