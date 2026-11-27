@@ -70,6 +70,7 @@ Każdy wiersz kosztował sondę. „Warstwa” mówi, co go złapie w przyszło�
 | 28 | Demo wrażliwe na każdą zmianę | dziesiątki przebiegów | brak | W6 (później) |
 | 29 | 30 domów z zarazą jednego dnia | sonda zdarzeń | licznik | W3 raport |
 | 30 | Ludność spada o połowę w rok | raport | brak | W3 raport |
+| 31 | Wyprawa z indeksem miasta spoza listy partnerów: SIGSEGV | test modlitw (test_prayers.cpp) | brak | W1 niezmiennik |
 
 ## 4. Warstwy
 
