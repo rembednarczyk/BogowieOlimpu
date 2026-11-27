@@ -254,10 +254,15 @@ func _process(_d: float) -> bool:
 	for b in agods.sim.get_buildings():
 		houses += 1 if b.has("population") and b["population"] > 0 else 0
 	check(agods.overlay_nodes.size() == agods.sim.get_overlay("water").size(), "a column for every house in the water view")
+	check(agods.ui.legend.visible and agods.ui.legend_text.text == tr("legend.water"), "the legend tells what the columns measure")
+	check(agods.ui.view_pick.selected == agods.OVERLAY_VIEWS.find("water") + 1, "the panel's view picker follows the view")
+	agods.ui.view_pick.item_selected.emit(agods.OVERLAY_VIEWS.find("fire") + 1)
+	check(agods.overlay == "fire" and agods.ui.legend_high.text == tr("legend.high_risk"), "picked on the panel: the fire view, its risk scale")
 	agods.set_overlay("appeal")
 	check(agods.overlay_nodes.is_empty(), "the appeal view tints the tiles, no columns")
 	agods.set_overlay("")
 	check(agods.overlay == "" and agods.overlay_nodes.is_empty(), "back to the normal view")
+	check(not agods.ui.legend.visible, "no legend in the normal view")
 	# A monument (P:26-28): its card holds the building, its layers show as it goes up.
 	agods.sim.place_building("pyramid_modest", 30, 21, 0)
 	agods.sim.step(1)

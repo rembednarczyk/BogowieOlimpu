@@ -36,6 +36,7 @@ func _init() -> void:
 
 func _process(_delta: float) -> bool:
 	if view != "" and frames_left == 5:
+		TranslationServer.set_locale("pl")
 		node.set_overlay(view)
 	if build_view > 0 and frames_left == 5:
 		TranslationServer.set_locale("pl")

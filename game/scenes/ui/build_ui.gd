@@ -9,6 +9,12 @@ const TABS := ["general", "population", "husbandry", "industry", "distribution",
 var tabs: Array = TABS  # Atlantis: science in place of culture (P:10-13)
 const PANEL_W := 300.0
 const CELL := Vector2(144, 60)      # at least 44 pt on a 6" phone at the 720 px base height
+var view_pick: OptionButton  # the special view, on the panel
+var legend: PanelContainer
+var legend_text: Label
+var legend_scale: TextureRect
+var legend_low: Label
+var legend_high: Label
 const ITEM := Vector2(210, 60)
 const ITEMS_PER_COLUMN := 9
 const TAP_SLOP := 14.0
@@ -142,6 +148,15 @@ func _build() -> void:
 	more.add_child(_button("ui.army", func(): report.visible = false; army_world.toggle_army(), Vector2(144, CELL.y)))
 	more.add_child(_button("ui.world", func(): report.visible = false; army_world.toggle_world(), Vector2(144, CELL.y)))
 	col.add_child(more)
+	view_pick = OptionButton.new()  # the special views (See ..., docs/gameplay/16): one tap from the map
+	view_pick.add_theme_font_size_override("font_size", 18)
+	view_pick.custom_minimum_size = Vector2(292, CELL.y)
+	view_pick.add_item("ui.view_none")  # keys: translated on screen in the current language
+	for v in game.OVERLAY_VIEWS:
+		view_pick.add_item("ui.view_" + v)
+	view_pick.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
+	col.add_child(view_pick)
+	_build_legend(root)
 	_build_report(root)
 	army_world.setup(self, root)
 
@@ -213,6 +228,64 @@ func toggle_report() -> void:
 	report_note = ""
 	if report.visible:
 		refresh_report()
+
+# The legend of a special view: what the columns (or the tiles) measure and the scale of their colour, bottom
+# left over the map; hidden in the normal view.
+func _build_legend(root: Control) -> void:
+	legend = PanelContainer.new()
+	legend.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	legend.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	legend.offset_left = 16
+	legend.offset_bottom = -16
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.13, 0.14, 0.17, 0.9)
+	bg.set_content_margin_all(12)
+	legend.add_theme_stylebox_override("panel", bg)
+	var box := VBoxContainer.new()
+	legend.add_child(box)
+	legend_text = _label("")
+	legend_text.custom_minimum_size = Vector2(360, 0)
+	box.add_child(legend_text)
+	legend_scale = TextureRect.new()
+	legend_scale.custom_minimum_size = Vector2(360, 18)
+	legend_scale.stretch_mode = TextureRect.STRETCH_SCALE
+	legend_scale.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	box.add_child(legend_scale)
+	var ends := HBoxContainer.new()
+	legend_low = _label("", 16)
+	legend_low.autowrap_mode = TextServer.AUTOWRAP_OFF
+	legend_low.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	legend_high = _label("", 16)
+	legend_high.autowrap_mode = TextServer.AUTOWRAP_OFF
+	legend_high.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ends.add_child(legend_low)
+	ends.add_child(legend_high)
+	box.add_child(ends)
+	legend.visible = false
+	root.add_child(legend)
+
+# Called by boot.gd set_overlay: the legend and the picker follow the view, whoever changed it.
+func update_legend(view: String) -> void:
+	view_pick.select(0 if view == "" else game.OVERLAY_VIEWS.find(view) + 1)
+	legend.visible = view != ""
+	if view == "":
+		return
+	legend_text.text = tr("legend." + view)
+	var g := Gradient.new()
+	var bad := Color(0.85, 0.2, 0.15)
+	var good := Color(0.2, 0.75, 0.3)
+	if view == "appeal":
+		g.set_color(0, Color(0.15, 0.12, 0.25))
+		g.set_color(1, Color(1.0, 0.95, 0.6))
+	else:
+		g.set_color(0, good if view in game.RISK_VIEWS else bad)
+		g.set_color(1, bad if view in game.RISK_VIEWS else good)
+	var tex := GradientTexture1D.new()
+	tex.gradient = g
+	legend_scale.texture = tex
+	var kind := "appeal" if view == "appeal" else ("risk" if view in game.RISK_VIEWS else "level")
+	legend_low.text = tr("legend.low_" + kind)
+	legend_high.text = tr("legend.high_" + kind)
 
 func _label(text: String, size := 18) -> Label:
 	var l := Label.new()
@@ -355,15 +428,6 @@ func refresh_report() -> void:
 	var order: Array = game.DEMO_ORDER
 	var other: String = order[(order.find(game.demo) + 1) % order.size()]
 	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
-	var views := OptionButton.new()  # the special views (See ...)
-	views.add_theme_font_size_override("font_size", 18)
-	views.custom_minimum_size = Vector2(220, CELL.y)
-	views.add_item(tr("ui.view_none"))
-	for v in game.OVERLAY_VIEWS:
-		views.add_item(tr("ui.view_" + v))
-	views.selected = 0 if game.overlay == "" else game.OVERLAY_VIEWS.find(game.overlay) + 1
-	views.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
-	settings.add_child(views)
 	settings.add_child(_button("ui.bench", func(): get_tree().change_scene_to_file("res://scenes/bench_crowd.tscn"),
 		Vector2(200, CELL.y)))  # prototype E4: the crowd on this phone
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))

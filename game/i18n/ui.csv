@@ -296,3 +296,20 @@ history.request_lapsed,prośba miasta niespełniona,the city's request not met
 history.request_done,prośba miasta spełniona,the city's request met
 history.request_late,prośba miasta spełniona po terminie,the city's request met late
 history.wrath,gniew Hery,Hera's wrath
+legend.water,"Kolumny nad domami: zasięg nosiciela wody z fontanny.","Columns over the houses: the water carrier's reach from a fountain."
+legend.hygiene,"Kolumny nad domami: zasięg lekarza z przychodni.","Columns over the houses: the doctor's reach from the infirmary."
+legend.taxes,"Kolumny nad domami: zasięg poborcy podatków.","Columns over the houses: the tax collector's reach."
+legend.culture,"Kolumny nad domami: punkty kultury z teatrów, gimnazjów i podiów.","Columns over the houses: culture points from theatres, gymnasiums and podiums."
+legend.fire,"Kolumny nad budynkami: jak blisko pożaru; obniża je przegląd konserwatora.","Columns over the buildings: how near a fire; a maintenance visit lowers them."
+legend.collapse,"Kolumny nad budynkami: jak blisko zawalenia; obniża je przegląd konserwatora.","Columns over the buildings: how near a collapse; a maintenance visit lowers them."
+legend.unrest,"Kolumny nad domami: niepokoje, z których rodzą się przestępcy.","Columns over the houses: the unrest that breeds criminals."
+legend.employment,"Kolumny nad budynkami: obsada miejsc pracy.","Columns over the buildings: the jobs filled."
+legend.security,"Kolumny nad budynkami wojska (pełne) i domami elity: ilu żołnierzy daje dom.","Columns over the military buildings (full) and the elite houses: how many soldiers a house gives."
+legend.supplies,"Kolumny nad domami: ile z potrzebnych domowi towarów ma w zapasie.","Columns over the houses: how many of the goods the house needs it holds."
+legend.appeal,"Kolor kafli: atrakcyjność miejsca dla domów.","Tile colour: how attractive a place is to houses."
+legend.low_level,brak,none
+legend.high_level,pełny,full
+legend.low_risk,bezpiecznie,safe
+legend.high_risk,zaraz wybuchnie,about to break out
+legend.low_appeal,odpycha,repels
+legend.high_appeal,przyciąga,attracts

@@ -389,6 +389,8 @@ var overlay_nodes: Array = []
 
 func set_overlay(view: String) -> void:
 	var was_appeal := overlay == "appeal"
+	if ui != null and view != overlay:
+		ui.update_legend(view)
 	overlay = view
 	for n in overlay_nodes:
 		n.queue_free()
