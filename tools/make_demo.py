@@ -396,7 +396,7 @@ steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "
 # while the first company helps Corinth, then the rising vassal Argos is put down.
 steps.append({"day": 1000, "every": 64, "tactics": 2})  # special: rabble skirmish, hoplite wedge (Z:139)
 steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachmas"}})
-steps.append({"day": 1480, "every": 16, "until": 1650, "dispatch": {"city": 3}})  # then home: companies form only when all are in (Z:140)
+steps.append({"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3}})  # then home: companies form only when all are in (Z:140)
 
 # Military help (Z:174): Rhodes lends companies against the landing of year 5 (asked every day of the
 # invasion, refused when there is none); later, with gifts first, Rhodes strikes Sparta.
