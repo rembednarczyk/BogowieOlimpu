@@ -29,7 +29,7 @@ void Simulation::apply_world_command(const Command& command, std::uint32_t index
             emit(MilitaryHelpGiven{h->city, h->strike});
         }
     } else if (const auto* d = std::get_if<DispatchArmy>(&command)) {
-        err = dispatch_army(state_, catalog_, d->city, d->raid, d->good, d->companies);
+        err = dispatch_army(state_, catalog_, d->city, d->raid, d->good, d->companies, d->ships);
     } else if (const auto* f = std::get_if<FulfillRequest>(&command)) {
         const auto city = f->request < state_.scenario.requests.size() ? state_.scenario.requests[f->request].city : 0U;
         err = fulfill_request(state_, catalog_, f->request);

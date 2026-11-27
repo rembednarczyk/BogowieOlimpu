@@ -109,7 +109,8 @@ public:
     // World (D4): `city` indexes the partners given to start_with_map; "drachmas" is money.
     void give_gift(int64_t city, const godot::String& good, int64_t amount);
     void request_from_city(int64_t city, const godot::String& good);
-    void dispatch_army(int64_t city, bool raid, const godot::String& good, const godot::Array& companies);
+    // `ships`: with every crewed trireme, to a city on a sea route (Z:123, Z:177).
+    void dispatch_army(int64_t city, bool raid, const godot::String& good, const godot::Array& companies, bool ships = false);
     // Array of {"id", "relation", "opinion", "military", "economy", "tribute", "tribute_demand", "rebelling"}
     godot::Array get_cities() const;
     godot::Array get_expeditions() const;

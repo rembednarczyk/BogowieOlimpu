@@ -111,7 +111,7 @@ void write_command(ByteWriter& w, const Command& c) {
                 w.str(cmd.good);
             } else if constexpr (std::is_same_v<T, DispatchArmy>) {
                 w.u32(cmd.city);
-                w.u8(cmd.raid ? 1 : 0);
+                w.u8(static_cast<std::uint8_t>((cmd.raid ? 1U : 0U) | (cmd.ships ? 2U : 0U)));  // bit 1: triremes
                 w.str(cmd.good);
                 w.u32(static_cast<std::uint32_t>(cmd.companies.size()));
                 for (const std::uint32_t c : cmd.companies) {
@@ -172,7 +172,8 @@ bool read_dispatch(ByteReader& r, Command& out) {
     if (!r.u32(c.city) || !r.u8(raid) || !r.str(c.good) || !r.u32(n) || n > kMaxCompanies) {
         return false;
     }
-    c.raid = raid != 0;
+    c.raid = (raid & 1U) != 0;
+    c.ships = (raid & 2U) != 0;
     c.companies.resize(n);
     for (std::uint32_t& id : c.companies) {
         if (!r.u32(id)) {

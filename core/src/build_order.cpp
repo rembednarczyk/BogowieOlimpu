@@ -103,7 +103,8 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         const json& d = s.at("dispatch");
         BuildStep step = base;
         step.dispatch_ready = true;
-        step.command = DispatchArmy{d.at("city").get<std::uint32_t>(), d.value("raid", false), d.value("good", ""), {}};
+        step.command = DispatchArmy{d.at("city").get<std::uint32_t>(), d.value("raid", false), d.value("good", ""), {},
+                                    d.value("ships", false)};
         out.push_back(std::move(step));
     } else if (s.contains("fulfill_requests")) {
         BuildStep step = base;

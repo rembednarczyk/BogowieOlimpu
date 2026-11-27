@@ -249,3 +249,56 @@ TEST_CASE("fleet: on patrol a trireme sails between its post and the wharf (Z:14
     CHECK(post);
     CHECK(wharf);
 }
+
+TEST_CASE("fleet: crewed triremes sail with an army to a city on a sea route and come back (Z:123, Z:177, L-124)") {
+    std::vector<std::string> rows(20, std::string(30, '.'));
+    rows[8] = std::string(30, '=');
+    for (std::size_t y = 12; y < 20; ++y) {
+        rows[y] = std::string(30, '~');
+    }
+    SimulationConfig cfg{16, Difficulty::Hero, 30000, rows, true};
+    TradePartner island;
+    island.id = "melos";
+    island.relation = "rival";
+    island.by_sea = true;
+    island.diplomacy.military = 1;  // 10 x 2 = 20 against a trireme's 16 and nothing else: lost
+    TradePartner inland = island;
+    inland.id = "thebes";
+    inland.by_sea = false;
+    cfg.trade_partners = {island, inland};
+    Simulation sim(bo::test::catalog_isolated(), cfg);
+    sim.issue(PlaceBuilding{"palace", 2, 2});
+    sim.step(1);
+    sim.issue(PlaceBuilding{"trireme_wharf", 10, 9});
+    sim.step(1);
+    sim.mutable_state().city.buildings.items.at(wharf_of(sim)).producer->output_loads = 1;
+    sim.run_days(1);
+    REQUIRE(sim.state().military.ships.size() == 1);
+    sim.issue(SetShipOrder{0, 4, -1, -1});
+    sim.step(1);
+    sim.drain_events();
+    sim.issue(DispatchArmy{1, false, "", {}, true});  // Thebes: no water leads there (Z:123)
+    sim.step(1);
+    std::string reason;
+    for (const auto& e : sim.drain_events()) {
+        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+            reason = r->reason_key;
+        }
+    }
+    CHECK(reason == "world.no_sea_route");
+    sim.issue(DispatchArmy{0, true, "drachmas", {}, true});  // a raid on Melos by sea, triremes only
+    sim.step(1);
+    REQUIRE(sim.state().expeditions.size() == 1);
+    CHECK(sim.state().expeditions[0].ships.size() == 1);
+    CHECK(sim.state().military.ships[0].crew == Crew::Abroad);
+    CHECK(sim.state().military.ships[0].walker == kNoWalker);  // off the map
+    std::string error;
+    auto copy = Simulation::load(bo::test::catalog_isolated(), sim.save(), error);
+    REQUIRE(copy.has_value());
+    CHECK(copy->state().expeditions == sim.state().expeditions);
+    sim.run_days(2 * 200 + 2);  // there and back (march_days)
+    CHECK(sim.state().expeditions.empty());
+    REQUIRE(sim.state().military.ships.size() == 1);
+    CHECK(sim.state().military.ships[0].crew == Crew::Aboard);
+    CHECK(trireme(sim).tile.y == 12);  // at its mooring again
+}

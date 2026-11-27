@@ -73,7 +73,7 @@ world = [
 ]
 # Argos: a vassal that dislikes the player and rises after a year (L-121); Rhodes above is fond of the player
 # and sends a goodwill gift after two years.
-world.append({"id": "argos", "relation": "vassal", "opinion": 25, "military": 1, "economy": 2, "tribute": 300,
+world.append({"id": "argos", "relation": "vassal", "by_sea": True, "opinion": 25, "military": 1, "economy": 2, "tribute": 300,
               "sells": {}, "buys": {}})
 for c in world:
     c["buys"].pop("drachmas_note", None)
@@ -400,7 +400,7 @@ steps.append({"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "
 # while the first company helps Corinth, then the rising vassal Argos is put down.
 steps.append({"day": 1000, "every": 64, "tactics": 2})  # special: rabble skirmish, hoplite wedge (Z:139)
 steps.append({"day": 1070, "dispatch": {"city": 1, "raid": True, "good": "drachmas"}})
-steps.append({"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3}})  # then home: companies form only when all are in (Z:140)
+steps.append({"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3, "ships": True}})  # the triremes too (Z:177)  # then home: companies form only when all are in (Z:140)
 
 # Military help (Z:174): Rhodes lends companies against the landing of year 5 (asked every day of the
 # invasion, refused when there is none); a year before, Rhodes, who adores the player, strikes Sparta.

@@ -237,10 +237,10 @@ func refresh_world() -> void:
 			target,
 			_small("ui.strike", func(): game.sim.request_military_help(i, true, targets[target.selected]); refresh_world(),
 				friendly and not targets.is_empty()),
-			_small("ui.attack", func(): game.sim.dispatch_army(i, false, "", ready); refresh_world(),
+			_small("ui.attack", func(): game.sim.dispatch_army(i, false, "", ready, c["by_sea"]); refresh_world(),
 				at_war and not ready.is_empty()),
 			_small("ui.raid", func(): game.sim.dispatch_army(i, true, chosen.call() if not sells.is_empty() else "drachmas",
-				ready); refresh_world(), at_war and not ready.is_empty())])
+				ready, c["by_sea"]); refresh_world(), at_war and not ready.is_empty())])
 	var exps: Array = game.sim.get_expeditions()
 	if not exps.is_empty():
 		world_box.add_child(ui._label(tr("ui.expeditions"), 20))

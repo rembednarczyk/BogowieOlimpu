@@ -180,6 +180,7 @@ struct DispatchArmy {
     bool raid = false;
     std::string good;  // raid only
     std::vector<std::uint32_t> companies;
+    bool ships = false;  // with every crewed trireme, to a city on a sea route (Z:123, Z:177)
 };
 
 // Sends what an open city request asks for (Z:162); `request` indexes ScenarioState::requests.

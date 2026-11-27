@@ -470,7 +470,7 @@
   {"day": 700, "at": [34, 46], "trade_order": {"good": "olive_oil", "export_keep": 12}},
   {"day": 1000, "every": 64, "tactics": 2},
   {"day": 1070, "dispatch": {"city": 1, "raid": true, "good": "drachmas"}},
-  {"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3}},
+  {"day": 1480, "every": 16, "until": 1520, "dispatch": {"city": 3, "ships": true}},
   {"day": 1104, "every": 1, "until": 1136, "military_help": {"city": 2}},
   {"day": 768, "every": 32, "until": 832, "military_help": {"city": 2, "strike": true, "target": 1}},
   {"day": 64, "every": 8, "fulfill_requests": true},

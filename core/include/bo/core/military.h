@@ -71,7 +71,7 @@ struct Invasion {
 // Trireme orders (Z:142-143). Stored in saves: append only.
 enum class ShipOrder : std::uint8_t { Defend = 0, AttackAll, Repair, Patrol };
 // Crew (Z:141, Z:150; since v42): none (Unmanned), aboard, or going home with the ship to the wharf.
-enum class Crew : std::uint8_t { None = 0, Aboard, GoingHome };
+enum class Crew : std::uint8_t { None = 0, Aboard, GoingHome, Abroad };  // Abroad: with an army (Z:177)
 
 // A player's warship (Z:141-144; since v39): one per wharf, the walker on the water, its post.
 struct Ship {

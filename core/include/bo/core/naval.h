@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "bo/core/data.h"
 #include "bo/core/military.h"
@@ -29,5 +30,10 @@ std::string set_ship_order(WorldState& state, const DataCatalog& catalog, std::u
 // transports_per_warship, from the sea entry to the water by the shore nearest the goal. "" or an error key.
 std::string start_sea_invasion(WorldState& state, const DataCatalog& catalog, std::uint32_t soldiers,
                                BuildingId goal, CombatEvents& ev);
+
+// Triremes with an army abroad (Z:123, Z:177): every crewed one leaves the city's waters; returns their wharves.
+std::vector<BuildingId> sail_abroad(WorldState& state);
+// Back from abroad: the trireme of `wharf` is at its mooring again, crewed and whole [ZAŁOŻENIE, L-124].
+void sail_home(WorldState& state, const DataCatalog& catalog, BuildingId wharf);
 
 }  // namespace bo::core

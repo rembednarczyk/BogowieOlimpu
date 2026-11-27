@@ -34,7 +34,7 @@ Każdy krok ma `day` (dzień od startu, 0 = od razu) i jedno polecenie:
 | `summon_hero: [x, y]`, `hero_quest: n`, `pray: [x, y]` | mitologia: przyzwij herosa z Sali, wyślij na zadanie n, módl się w sanktuarium |
 | `stockpile: towar`, `on` | gromadzenie towaru (Z:80) |
 | `not_buying: [x, y]`, `on` | "Nie kupuj" stoiska na kaflu agory `at` (pierwsze stoisko) albo stoiska (Z:72) |
-| `dispatch: {"city": n, "raid": bool, "good": towar}` | atak albo rajd wszystkimi kompaniami z domu poza motłochem (Z:177-178) |
+| `dispatch: {"city": n, "raid": bool, "good": towar, "ships": bool}` | atak albo rajd wszystkimi kompaniami z domu poza motłochem (Z:177-178) |
 | `tactics: n` | taktyka wszystkich kompanii: 0 obronna, 1 ofensywna, 2 specjalna (Z:138-139) |
 | `fulfill_requests: true` | spełnij wszystkie otwarte prośby miast (towar z magazynu, wojsko z domu) |
 | `ships: n` | rozkaz dla każdej triery: 0-3 rozkazy (obrona, atak, naprawa, patrol), 4 wezwij załogę (Z:141-142) |

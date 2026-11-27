@@ -6,6 +6,7 @@
 
 #include "bo/core/housing.h"
 #include "bo/core/military.h"
+#include "bo/core/naval.h"
 #include "bo/core/state.h"
 #include "bo/core/storage.h"
 
@@ -53,7 +54,9 @@ void lose_soldier(WorldState& st, const std::string& unit, BuildingId house) {
 
 void battle_abroad(WorldState& st, const DataCatalog& catalog, Expedition& e) {
     TradePartner& p = st.trade.partners[e.city];
-    const std::int64_t ours_x2 = army_strength_x2(st, e.companies);
+    // A trireme fights abroad like a full company of hoplites [ZAŁOŻENIE, L-124].
+    const std::int64_t ours_x2 = army_strength_x2(st, e.companies) +
+                                 static_cast<std::int64_t>(e.ships.size()) * 2 * static_cast<std::int64_t>(kCompanySize);
     const std::int64_t theirs_x2 = 2LL * p.diplomacy.military * catalog.world.city_strength_per_shield;
     e.won = ours_x2 > theirs_x2 || st.ares_with_army;  // Ares marches with the army (Z:121, L-112)
     st.ares_with_army = false;
@@ -98,6 +101,9 @@ void come_home(WorldState& st, const DataCatalog& catalog, Expedition& e) {
             }
         }
         company.status = CompanyStatus::AtHome;
+    }
+    for (const BuildingId wharf : e.ships) {
+        sail_home(st, catalog, wharf);
     }
     if (e.won && e.raid && e.loot > 0) {
         if (e.good == "drachmas") {
@@ -260,11 +266,17 @@ std::string dispatch_aid(WorldState& st, const DataCatalog& catalog, std::uint32
 }
 
 std::string dispatch_army(WorldState& st, const DataCatalog& catalog, std::uint32_t city, bool raid,
-                          const std::string& good, const std::vector<std::uint32_t>& companies) {
-    if (city >= st.trade.partners.size() || !diplomatic(st.trade.partners[city]) || companies.empty()) {
+                          const std::string& good, const std::vector<std::uint32_t>& companies, bool ships) {
+    const bool crewed = std::any_of(st.military.ships.begin(), st.military.ships.end(),
+                                    [](const Ship& s) { return s.crew == Crew::Aboard; });
+    if (city >= st.trade.partners.size() || !diplomatic(st.trade.partners[city]) ||
+        (companies.empty() && !(ships && crewed))) {
         return "world.bad_city";
     }
     TradePartner& p = st.trade.partners[city];
+    if (ships && !p.by_sea) {
+        return "world.no_sea_route";  // triremes only where the water leads (Z:123)
+    }
     const bool own = p.relation == "vassal" || p.relation == "colony";
     if (own && !p.diplomacy.rebelling) {
         return "world.not_at_war";  // vassals and colonies only while they rebel (Z:177)
@@ -286,6 +298,7 @@ std::string dispatch_army(WorldState& st, const DataCatalog& catalog, std::uint3
     e.raid = raid;
     e.good = good;
     e.companies = companies;
+    e.ships = ships ? sail_abroad(st) : std::vector<BuildingId>{};
     e.days_left = static_cast<std::uint32_t>(catalog.world.march_days);
     st.expeditions.push_back(e);
     const WorldParams& w = catalog.world;

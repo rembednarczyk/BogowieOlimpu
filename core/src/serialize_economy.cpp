@@ -256,7 +256,7 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
         std::uint8_t order = 0;
         std::uint8_t crew = 1;  // before v42 every ship had its crew
         if (!r.u32(sh.walker) || !r.u32(sh.wharf) || !r.u8(order) || order > static_cast<std::uint8_t>(ShipOrder::Patrol) ||
-            !r.i32(sh.station.x) || !r.i32(sh.station.y) || (version >= 42 && (!r.u8(crew) || crew > 2))) {
+            !r.i32(sh.station.x) || !r.i32(sh.station.y) || (version >= 42 && (!r.u8(crew) || crew > 3))) {
             return false;
         }
         sh.order = static_cast<ShipOrder>(order);
@@ -285,7 +285,7 @@ void write_world(ByteWriter& w, const WorldState& s) {
     for (const Expedition& e : s.expeditions) {
         w.u32(e.city);
         w.u8(static_cast<std::uint8_t>((e.raid ? 1U : 0U) | (e.returning ? 2U : 0U) | (e.won ? 4U : 0U) |
-                                       (e.aid ? 8U : 0U)));
+                                       (e.aid ? 8U : 0U) | (e.ships.empty() ? 0U : 16U)));
         w.str(e.good);
         w.u32(static_cast<std::uint32_t>(e.companies.size()));
         for (const std::uint32_t c : e.companies) {
@@ -294,6 +294,12 @@ void write_world(ByteWriter& w, const WorldState& s) {
         w.u32(e.days_left);
         w.u32(e.losses);
         w.u32(e.loot);
+        if (!e.ships.empty()) {  // flag bit 4 (Z:177)
+            w.u32(static_cast<std::uint32_t>(e.ships.size()));
+            for (const BuildingId b : e.ships) {
+                w.u32(b);
+            }
+        }
     }
     w.u8(s.episode_lost ? 1 : 0);
     w.u32(static_cast<std::uint32_t>(s.deliveries.size()));  // since v27
@@ -359,8 +365,16 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
                 return false;
             }
         }
-        if (!r.u32(e.days_left) || !r.u32(e.losses) || !r.u32(e.loot)) {
+        std::uint32_t ships = 0;
+        if (!r.u32(e.days_left) || !r.u32(e.losses) || !r.u32(e.loot) ||
+            ((flags & 16U) != 0 && (!r.u32(ships) || ships > 256))) {
             return false;
+        }
+        e.ships.resize(ships);
+        for (BuildingId& b : e.ships) {
+            if (!r.u32(b)) {
+                return false;
+            }
         }
     }
     std::uint8_t lost = 0;

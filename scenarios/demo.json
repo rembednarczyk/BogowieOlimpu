@@ -218,6 +218,7 @@
   {
    "id": "argos",
    "relation": "vassal",
+   "by_sea": true,
    "opinion": 25,
    "military": 1,
    "economy": 2,

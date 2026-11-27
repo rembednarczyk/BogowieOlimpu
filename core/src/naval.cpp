@@ -265,10 +265,48 @@ std::string start_sea_invasion(WorldState& st, const DataCatalog& catalog, std::
     return {};
 }
 
+std::vector<BuildingId> sail_abroad(WorldState& st) {
+    std::vector<BuildingId> out;
+    for (Ship& sh : st.military.ships) {
+        const auto w = st.walkers.items.find(sh.walker);
+        if (sh.crew != Crew::Aboard || w == st.walkers.items.end()) {
+            continue;
+        }
+        w->second.phase = WalkerPhase::Done;  // off the map until it comes back
+        sh.walker = kNoWalker;
+        sh.crew = Crew::Abroad;
+        out.push_back(sh.wharf);
+    }
+    return out;
+}
+
+void sail_home(WorldState& st, const DataCatalog& catalog, BuildingId wharf) {
+    for (Ship& sh : st.military.ships) {
+        if (sh.wharf != wharf || sh.crew != Crew::Abroad) {
+            continue;
+        }
+        const UnitStats& s = catalog.combat.nations.at("player_greek").units.at("trireme");
+        Walker w;
+        w.id = st.walkers.next_id++;
+        w.type = "trireme";
+        w.job = WalkerJob::Ship;
+        w.home = wharf;
+        w.tile = mooring_of(st, sh);
+        w.phase = WalkerPhase::AtTarget;
+        w.speed_raw = s.speed_raw;
+        w.hp = s.hp;
+        sh.walker = w.id;
+        sh.crew = Crew::Aboard;
+        sh.station = w.tile;
+        st.walkers.items.emplace(w.id, std::move(w));
+        return;
+    }
+}
+
 void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev) {
     auto& ships = st.military.ships;
     for (auto it = ships.begin(); it != ships.end();) {
-        if (st.walkers.items.count(it->walker) != 0) {
+        if (it->crew == Crew::Abroad || st.walkers.items.count(it->walker) != 0) {
             ++it;
             continue;
         }
@@ -284,6 +322,9 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
     }
     launch(st, catalog, ev);
     for (Ship& sh : ships) {
+        if (sh.crew == Crew::Abroad) {
+            continue;  // with an army abroad (Z:177)
+        }
         Walker& w = st.walkers.items.at(sh.walker);
         const UnitStats* s = stats_of(catalog, w);
         const std::int32_t full = s ? s->hp : w.hp;
@@ -325,6 +366,9 @@ std::string set_ship_order(WorldState& st, const DataCatalog& catalog, std::uint
         return "military.bad_ship";
     }
     Ship& sh = st.military.ships[ship];
+    if (sh.crew == Crew::Abroad) {
+        return "military.ship_abroad";
+    }
     Walker& w = st.walkers.items.at(sh.walker);
     if (order == 4) {  // Call Crew to Ship (Z:141)
         sh.crew = Crew::Aboard;

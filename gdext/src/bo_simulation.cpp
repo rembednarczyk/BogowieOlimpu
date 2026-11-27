@@ -581,13 +581,14 @@ Array BoSimulation::get_ships() const {
     }
     const auto& player = catalog_->combat.nations.at("player_greek").units;
     for (const auto& sh : sim_->state().military.ships) {
-        const auto& w = sim_->state().walkers.items.at(sh.walker);
+        const auto it = sim_->state().walkers.items.find(sh.walker);  // none while abroad (Z:177)
+        const std::int64_t full = player.count("trireme") != 0 ? player.at("trireme").hp : 0;
         Dictionary d;
         d["order"] = static_cast<int64_t>(sh.order);
-        d["hp"] = static_cast<int64_t>(w.hp);
-        d["max_hp"] = static_cast<int64_t>(player.count(w.type) != 0 ? player.at(w.type).hp : w.hp);
-        d["x"] = w.tile.x;
-        d["y"] = w.tile.y;
+        d["hp"] = it != sim_->state().walkers.items.end() ? static_cast<int64_t>(it->second.hp) : full;
+        d["max_hp"] = full;
+        d["x"] = it != sim_->state().walkers.items.end() ? it->second.tile.x : -1;
+        d["y"] = it != sim_->state().walkers.items.end() ? it->second.tile.y : -1;
         d["station_x"] = sh.station.x;
         d["station_y"] = sh.station.y;
         d["crew"] = static_cast<int64_t>(sh.crew);  // 0 unmanned, 1 aboard, 2 going home (Z:141, Z:150)
@@ -663,11 +664,11 @@ void BoSimulation::request_from_city(int64_t city, const String& good) {
     }
 }
 
-void BoSimulation::dispatch_army(int64_t city, bool raid, const String& good, const Array& companies) {
+void BoSimulation::dispatch_army(int64_t city, bool raid, const String& good, const Array& companies, bool ships) {
     if (!sim_ || city < 0) {
         return;
     }
-    bo::core::DispatchArmy c{static_cast<std::uint32_t>(city), raid, to_std(good), {}};
+    bo::core::DispatchArmy c{static_cast<std::uint32_t>(city), raid, to_std(good), {}, ships};
     for (int64_t i = 0; i < companies.size(); ++i) {
         c.companies.push_back(static_cast<std::uint32_t>(int64_t(companies[i])));
     }
@@ -721,6 +722,7 @@ Array BoSimulation::get_cities() const {
         d["opinion"] = p.diplomacy.opinion;
         d["military"] = p.diplomacy.military;
         d["economy"] = p.diplomacy.economy;
+        d["by_sea"] = p.by_sea;  // triremes can sail there (Z:123)
         d["tribute"] = p.diplomacy.tribute;
         d["tribute_demand"] = p.diplomacy.tribute_demand;
         d["rebelling"] = p.diplomacy.rebelling;
@@ -1166,7 +1168,8 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_monsters"), &BoSimulation::get_monsters);
     ClassDB::bind_method(D_METHOD("give_gift", "city", "good", "amount"), &BoSimulation::give_gift);
     ClassDB::bind_method(D_METHOD("request_from_city", "city", "good"), &BoSimulation::request_from_city);
-    ClassDB::bind_method(D_METHOD("dispatch_army", "city", "raid", "good", "companies"), &BoSimulation::dispatch_army);
+    ClassDB::bind_method(D_METHOD("dispatch_army", "city", "raid", "good", "companies", "ships"), &BoSimulation::dispatch_army,
+                         DEFVAL(false));
     ClassDB::bind_method(D_METHOD("get_cities"), &BoSimulation::get_cities);
     ClassDB::bind_method(D_METHOD("start_scenario", "data_dir", "scenario_path", "full_staffing"),
                          &BoSimulation::start_scenario, DEFVAL(false));

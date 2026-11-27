@@ -50,7 +50,7 @@ std::string request_from_city(WorldState& state, const DataCatalog& catalog, std
 // Attack or raid (Z:177-178): companies at home, no rabble; 200 days there, a battle by strength (L-063),
 // 200 days back.
 std::string dispatch_army(WorldState& state, const DataCatalog& catalog, std::uint32_t city, bool raid,
-                          const std::string& good, const std::vector<std::uint32_t>& companies);
+                          const std::string& good, const std::vector<std::uint32_t>& companies, bool ships = false);
 // Daily: expeditions march, fight and come back; request cooldowns run down. Yearly: tribute both ways.
 WorldEvents advance_world(WorldState& state, const DataCatalog& catalog);
 // An invasion sent by `city` ended (InvasionEnded::result): taken or surrendered, the rival demands tribute

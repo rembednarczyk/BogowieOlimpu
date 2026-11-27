@@ -240,7 +240,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "ships_abroad", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
@@ -389,6 +389,7 @@ DemoRun run_demo(std::uint64_t years) {
             run.seen["aid_sent"] += e.aid ? 1 : 0;  // companies sent where a city asked for them (Z:161)
             run.seen["raid_sent"] += e.raid ? 1 : 0;  // Z:178
             run.seen[e.raid || e.aid ? "aid_sent" : "attack_sent"] += 1;  // Z:177
+            run.seen["ships_abroad"] += e.ships.empty() ? 0 : 1;  // Z:177
         }
         for (const auto& [id, b] : sim.state().city.buildings.items) {
             if (log && b.house && b.house->elite && b.house->population > 0 && !watched[id]) {
