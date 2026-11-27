@@ -78,6 +78,7 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: przebiegi demo z 2026-11-27 kosztowały kilkadziesiąt sond; inwentarz 30 przypadków w planie, rozdz. 3.
 - Cytat właściciela: „wszystko, co kosztuje sondowanie powinno stawać się kandydatami do determinizmu”.
 - Niesprawdzone: koszt czasu bramek po dodaniu niezmienników (szacunek 10-20 %).
+- Uzupełnienie 2026-11-27: wdrożenie etapów odłożone („Zapisz plan i na razie lecimy po staremu”); R-016 stosowana doraźnie przy każdej nowej sondzie.
 
 ### 2026-11-26: Termin "spacerujący" zamiast "chodzik"
 - Decyzja: postacie wykonujące zadania budynków (ang. walkers) nazywamy w dokumentacji "spacerujący" (losowy, celowy, dwufazowy). W kodzie zostaje angielskie `walker`.
