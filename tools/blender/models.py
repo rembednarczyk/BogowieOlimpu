@@ -32,7 +32,7 @@ def model(name, building, note):
 # the level reads from afar (docs/08-OPRAWA.md). Built brick by brick and tile by tile (bo_detail); b.detail
 # False gives the far view (LOD1). Positions in metres from the plot's north-west corner.
 def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, doors=(), windows=(), stage=(0.08, 0.5),
-          block=None):
+          block=None, ornate=False):
     """Four walls of a room; doors and windows as (side, at[, w]) with side "n", "s", "w" or "e"."""
     walls = {"n": D.Wall(x, y, w, "x", z, h, thick), "s": D.Wall(x, y + d, w, "x", z, h, thick, outward=-1),
              "w": D.Wall(x, y + thick, d - 2 * thick, "y", z, h, thick),
@@ -42,22 +42,34 @@ def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, d
     for side, at, *rest in windows:
         walls[side].window(at, *rest)
     for wall in walls.values():
+        wall.ornate = ornate
         D.brick_wall(b, wall, rng, part=part, stage=stage, plaster=plaster, block=block)
 
 
-@model("common_housing_1", "common_housing", "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie")
+def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.22):
+    """Palmettes on the gable's apex and its corners (a roof along x)."""
+    for gx in (x - overhang, x + w + overhang):
+        out = -1 if gx < x else 1
+        D.palmette(b, (gx + out * 0.02, y + d / 2, z + rise + 0.06), False, out, size)
+        for gy in (y - overhang, y + d + overhang):
+            D.palmette(b, (gx + out * 0.02, gy, z + 0.02), False, out, size * 0.6)
+
+
+# The goods a level needs to grow (data/housing.json: Fd food from level 2, W water from 3, Fl fleece from 4, Oil
+# olive oil from 6) stand by the house from that level on; those it keeps show only while it holds them.
+
+@model("common_housing_1", "common_housing", "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą")
 def hut(b, rng):
     D.footing(b, 0.5, 0.7, 3.0, 2.6, h=0.25, rng=rng)
     _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
           windows=[("e", 0.55, 0.40, 0.95, 0.35)])
     D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35, rng, hip=0.3, overhang=0.35)
-    D.woodpile(b, 3.55, 1.2, rng, along_x=False)
-    D.pithos(b, 0.3, 3.62, scale=0.9, rng=rng)
-    D.amphora(b, 3.7, 3.6, scale=0.9, rng=rng)
+    D.woodpile(b, 3.55, 0.85, rng, along_x=False, length=1.0)
+    D.pithos(b, 0.3, 3.62, scale=0.9, rng=rng, lid=True)
     b.scaffold(height=2.4 * M)
 
 
-@model("common_housing_2", "common_housing", "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków")
+@model("common_housing_2", "common_housing", "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność")
 def shelter(b, rng):
     x0, x1, y0, y1, eave, ridge = 0.5, 3.5, 0.7, 3.3, 1.55, 2.55
     b.solid("tent", t(x0 - 0.17), t(y0 - 0.14), 0, t(x1 + 0.17), t(y1 + 0.14), t(ridge + 0.2))
@@ -65,17 +77,22 @@ def shelter(b, rng):
     for i in range(posts + 1):  # the side posts along both eaves
         px = x0 + (x1 - x0) * i / posts
         for py in (y0, y1):
-            b.log((t(px), t(py), 0), (t(px), t(py), t(eave + 0.05)), t(0.05), sides=10 if b.detail else 5, stage=0.15,
+            b.log((t(px), t(py), 0), (t(px), t(py), t(eave + 0.05)), t(0.05), sides=12 if b.detail else 5, stage=0.15,
                   tint=rng.uniform(0.3, 0.7))
     for px in (x0 - 0.02, x1 + 0.02):  # the forked posts and the ridge pole
         b.log((t(px), t((y0 + y1) / 2), 0), (t(px), t((y0 + y1) / 2), t(ridge + 0.1)), t(0.07),
-              sides=12 if b.detail else 6, stage=0.2)
+              sides=14 if b.detail else 6, stage=0.2)
+        if b.detail:
+            for side in (-1, 1):  # the fork's two prongs
+                b.tube_path([(t(px), t((y0 + y1) / 2), t(ridge - 0.02)), (t(px), t((y0 + y1) / 2 + side * 0.09), t(ridge + 0.16))],
+                            t(0.03), "bark", sides=8, stage=0.2)
     b.log((t(x0 - 0.15), t((y0 + y1) / 2), t(ridge)), (t(x1 + 0.15), t((y0 + y1) / 2), t(ridge)), t(0.06),
-          sides=12 if b.detail else 6, stage=0.3)
+          sides=14 if b.detail else 6, stage=0.3)
     for py in (y0, y1):  # the eave poles
-        b.log((t(x0 - 0.1), t(py), t(eave)), (t(x1 + 0.1), t(py), t(eave)), t(0.04), sides=10 if b.detail else 5,
+        b.log((t(x0 - 0.1), t(py), t(eave)), (t(x1 + 0.1), t(py), t(eave)), t(0.04), sides=12 if b.detail else 5,
               stage=0.35)
-    nu, nv = (36, 10) if b.detail else (6, 2)
+    nu, nv = (48, 14) if b.detail else (6, 2)
+    rng_wave = {-1: rng.uniform(0, 6), 1: rng.uniform(0, 6)}
 
     def roof(side):
         def fn(u, v):  # from the ridge (v 0) to the eave (v 1); sags between the posts, folds along the slope
@@ -88,11 +105,10 @@ def shelter(b, rng):
             z = ridge + 0.05 + (eave - 0.04 - ridge - 0.05) * v - sag + fold
             return (t(x), t(y), t(z))
         return fn
-    rng_wave = {-1: rng.uniform(0, 6), 1: rng.uniform(0, 6)}
     for side in (-1, 1):
         b.surface(roof(side), nu, nv, "linen", stage=0.7, tint=rng.uniform(0.35, 0.65))
 
-    def wall(xa, ya, xb, yb, top0, top1, part, door=False):
+    def wall(xa, ya, xb, yb, top0, top1):
         def fn(u, v):  # from the ground (v 0) up; folds hang down, the hem lies a little out on the ground
             x = xa + (xb - xa) * u
             y = ya + (yb - ya) * u
@@ -103,44 +119,50 @@ def shelter(b, rng):
             out = fold + 0.05 * (1.0 - v) ** 3
             return (t(x + nx / ln * out), t(y + ny / ln * out), t(top * v + 0.01))
         return fn
-    b.surface(wall(x0, y0, x1, y0, eave, eave, "hide"), nu, nv // 2 + 1, "hide", stage=0.5, tint=rng.uniform(0.3, 0.7))
-    b.surface(wall(x0, y0, x0, y1, eave, ridge, "linen"), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.4)
-    b.surface(wall(x1, y1, x1, y0, eave, ridge, "linen"), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.6)
+    b.surface(wall(x0, y0, x1, y0, eave, eave), nu, nv // 2 + 1, "hide", stage=0.5, tint=rng.uniform(0.3, 0.7))
+    b.surface(wall(x0, y0, x0, y1, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.4)
+    b.surface(wall(x1, y1, x1, y0, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.6)
     for xa, xb in ((x0, 1.55), (2.35, x1)):  # the south side, the door between
-        b.surface(wall(xb, y1, xa, y1, eave, eave, "hide"), max(2, nu // 3), nv // 2 + 1, "hide", stage=0.5,
+        b.surface(wall(xb, y1, xa, y1, eave, eave), max(2, nu // 3), nv // 2 + 1, "hide", stage=0.5,
                   tint=rng.uniform(0.3, 0.7))
     if b.detail:  # the door flap rolled up under the eave, tied with rope
         b.tube_path([(t(1.5), t(y1 + 0.06), t(eave - 0.12)), (t(2.4), t(y1 + 0.06), t(eave - 0.12))], t(0.06), "hide",
-                    sides=12, stage=0.75)
+                    sides=14, stage=0.75)
         for px in (1.65, 2.25):
             b.tube_path([(t(px), t(y1 + 0.02), t(eave)), (t(px), t(y1 + 0.13), t(eave - 0.1)),
-                         (t(px), t(y1 + 0.02), t(eave - 0.2))], t(0.008), "rope", sides=5, stage=0.75)
+                         (t(px), t(y1 + 0.02), t(eave - 0.2))], t(0.008), "rope", sides=6, stage=0.75)
         for cx, cy, gx, gy in ((x0, y0, x0 - 0.3, y0 - 0.45), (x1, y0, x1 + 0.3, y0 - 0.45), (x0, y1, x0 - 0.3, y1 + 0.45),
                                (x1, y1, x1 + 0.3, y1 + 0.45)):  # guy ropes to pegs
             gx, gy = min(max(gx, 0.08), 3.92), min(max(gy, 0.08), 3.92)
-            b.tube_path([(t(cx), t(cy), t(eave)), (t(gx), t(gy), t(0.06))], t(0.008), "rope", sides=5, stage=0.8)
-            b.log((t(gx), t(gy), 0), (t(gx), t(gy), t(0.12)), t(0.02), sides=6, stage=0.8)
-        b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=16, stage=0.2)
-    D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5)
-    D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng)
+            b.tube_path([(t(cx), t(cy), t(eave)), (t(gx), t(gy), t(0.06))], t(0.008), "rope", sides=6, stage=0.8)
+            b.log((t(gx), t(gy), 0), (t(gx), t(gy), t(0.12)), t(0.02), sides=8, stage=0.8)
+        b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=20, stage=0.2)
+    D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5, block=False)
+    D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng, lid=True)
+    with D.goods(b, "food"):
+        D.sack(b, 1.0, 3.72, scale=0.8, rng=rng)
+        D.sack(b, 1.42, 3.74, scale=0.72, rng=rng, name="sack 2")
+        D.basket(b, 2.85, 3.72, "onions", rng=rng)
     b.scaffold(height=2.7 * M)
 
 
-@model("common_housing_3", "common_housing", "lepianka: bielony dom pod dachówką, murek z bramką przed wejściem")
+@model("common_housing_3", "common_housing", "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy")
 def cabin(b, rng):
     D.footing(b, 0.35, 0.35, 3.3, 2.6, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 2.5, 0.3, 2.2, plaster="plaster", doors=[("s", 1.2, 0.85, 1.75)],
           windows=[("s", 2.3), ("e", 0.9), ("w", 0.9)])
     D.tiled_roof(b, 0.4, 0.4, 3.2, 2.5, 2.5, 0.85, rng, along_x=True, overhang=0.3)
     for x, length in ((0.25, 1.1), (2.35, 1.4)):  # the yard's low wall, a gate between
-        D.brick_wall(b, D.Wall(x, 3.55, length, "x", 0.0, 0.8, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
-    D.pithos(b, 0.55, 3.25, scale=0.8, rng=rng)
-    D.pithos(b, 3.4, 3.25, scale=0.7, rng=rng, name="pithos 2")
-    D.amphora(b, 1.75, 3.75, scale=0.6, rng=rng)
+        D.brick_wall(b, D.Wall(x, 3.55, length, "x", 0.0, 0.8, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
+    with D.goods(b, "food"):
+        D.sack(b, 0.6, 3.25, scale=0.7, rng=rng)
+        D.basket(b, 1.0, 3.25, "figs", scale=0.8, rng=rng)
+    D.hydria(b, 2.6, 3.25, scale=0.9, rng=rng)
+    D.potted_plant(b, 3.3, 3.25, scale=0.8, rng=rng)
     b.scaffold(height=2.9 * M)
 
 
-@model("common_housing_4", "common_housing", "zagroda chłopska: dom na planie litery L z dziedzińcem, dachówka, cokół z kamienia")
+@model("common_housing_4", "common_housing", "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria")
 def homestead(b, rng):
     D.footing(b, 0.25, 0.25, 3.5, 2.0, h=0.45, rng=rng)
     _room(b, rng, 0.3, 0.3, 3.4, 1.9, 0.45, 2.3, plaster="plaster", doors=[("s", 0.6, 0.85, 1.8)],
@@ -150,72 +172,132 @@ def homestead(b, rng):
           windows=[("s", 0.5), ("e", 0.4)], stage=(0.15, 0.55))
     D.tiled_roof(b, 0.3, 0.3, 3.4, 1.9, 2.75, 0.75, rng, along_x=True, overhang=0.16)
     D.tiled_roof(b, 2.3, 2.2, 1.4, 1.5, 2.4, 0.55, rng, along_x=False, overhang=0.22)
-    D.brick_wall(b, D.Wall(0.2, 3.65, 2.0, "x", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
-    D.brick_wall(b, D.Wall(0.2, 2.35, 1.3, "y", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
-    for k, (x, y, sc) in enumerate(((0.76, 2.6, 0.9), (1.35, 2.6, 0.8), (0.76, 3.16, 0.75))):
-        D.pithos(b, x, y, scale=sc, rng=rng, name="pithos %d" % k)
-    D.woodpile(b, 1.38, 3.2, rng, length=0.8)
+    D.brick_wall(b, D.Wall(0.2, 3.65, 2.0, "x", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
+    D.brick_wall(b, D.Wall(0.2, 2.35, 1.3, "y", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
+    with D.goods(b, "food"):
+        D.sack(b, 0.75, 2.55, scale=0.75, rng=rng)
+        D.sack(b, 1.12, 2.52, scale=0.7, rng=rng, name="sack 2")
+        D.basket(b, 0.8, 3.3, "onions", scale=0.8, rng=rng)
+    with D.goods(b, "fleece"):
+        D.wool_bale(b, 1.6, 2.55, scale=0.9, rng=rng)
+        D.wool_bale(b, 1.55, 3.1, scale=0.8, rng=rng, name="wool 2")
+    D.hydria(b, 2.0, 3.35, scale=0.8, rng=rng)
     b.scaffold(height=3.2 * M)
 
 
-@model("common_housing_5", "common_housing", "kamienica czynszowa: parter z kamiennych bloków, piętro z cegły w tynku, drewniany balkon")
+@model("common_housing_5", "common_housing", "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria")
 def row_house(b, rng):
     D.footing(b, 0.35, 0.35, 3.3, 3.1, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 3.0, 0.3, 2.3, thick=0.45, part="stone", block=(0.62, 0.32),
           doors=[("s", 0.6, 0.9, 1.9)], windows=[("s", 2.2, 0.4, 1.2, 0.45), ("e", 1.2, 0.4, 1.2, 0.45)])
     _room(b, rng, 0.4, 0.4, 3.2, 3.0, 2.6, 2.1, plaster="plaster", windows=[("s", 0.7), ("s", 2.2), ("e", 1.2),
           ("w", 1.2), ("n", 1.5)], stage=(0.5, 0.68))
-    if b.detail:  # the balcony: a floor on beams, a railing of posts
+    if b.detail:  # the balcony: carved consoles, beams, a floor of planks, a railing of turned balusters
         for i in range(5):
-            b.box(t(0.5 + i * 0.7), t(3.3), t(2.5), t(0.08), t(0.6), t(0.1), "dark_wood", stage=0.55)
-        b.box(t(0.45), t(3.35), t(2.6), t(3.1), t(0.55), t(0.06), "wood", stage=0.56)
-        for i in range(12):
-            b.box(t(0.5 + i * 0.27), t(3.82), t(2.66), t(0.04), t(0.04), t(0.85), "wood", stage=0.6)
-        b.box(t(0.45), t(3.8), t(3.5), t(3.1), t(0.08), t(0.06), "dark_wood", stage=0.6)
+            bx = 0.5 + i * 0.7
+            b.box(t(bx), t(3.3), t(2.5), t(0.08), t(0.6), t(0.1), "dark_wood", stage=0.55)
+            b.tube_path([(t(bx + 0.04), t(3.4), t(2.5)), (t(bx + 0.04), t(3.42), t(2.3)), (t(bx + 0.04), t(3.48), t(2.18))],
+                        t(0.035), "dark_wood", sides=8, stage=0.55)  # the console under the beam
+        for i in range(10):
+            b.box(t(0.45 + i * 0.31), t(3.35), t(2.6), t(0.3), t(0.55), t(0.05), "wood", stage=0.56, tint=rng.uniform(0.3, 0.7))
+        for i in range(14):
+            D.baluster(b, 0.52 + i * 0.235, 3.84, 2.65, 0.78, stage=0.6)
+        b.box(t(0.45), t(3.8), t(3.43), t(3.1), t(0.09), t(0.07), "dark_wood", stage=0.6)
+        for x, s_ in ((0.75, 0.55), (3.2, 0.5)):  # potted herbs on the balcony
+            D.potted_plant(b, x, 3.6, scale=s_, rng=rng, z=2.65, name="balcony plant %d" % int(x * 10))
     D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
-    D.amphora(b, 3.76, 3.74, scale=0.8, rng=rng)
+    with D.goods(b, "food"):
+        D.sack(b, 2.3, 3.72, scale=0.65, rng=rng)
+        D.basket(b, 2.75, 3.72, "carrots", scale=0.7, rng=rng)
+    with D.goods(b, "fleece"):
+        D.wool_bale(b, 0.5, 3.75, scale=0.7, rng=rng)
+        D.loom(b, 0.0, 1.0, along_x=False, rng=rng)
+    D.hydria(b, 3.32, 3.72, scale=0.8, rng=rng)
     b.scaffold(height=5.2 * M)
 
 
-@model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i dwa skrzydła wokół dziedzińca ze studnią, pas malowany ochrą")
+@model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa")
 def flat(b, rng):
     D.footing(b, 0.3, 0.3, 3.4, 1.6, h=0.35, rng=rng)
     _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, 2.2, plaster="plaster", doors=[("s", 1.3, 0.9, 1.85)],
           windows=[("s", 0.45), ("s", 2.5), ("n", 0.9), ("n", 2.3)])
     _room(b, rng, 0.35, 0.35, 3.3, 1.5, 2.55, 2.0, plaster="plaster", windows=[("s", 0.5), ("s", 1.5), ("s", 2.5),
-          ("w", 0.5), ("e", 0.5)], stage=(0.5, 0.66))
+          ("w", 0.5), ("e", 0.5)], stage=(0.5, 0.66), ornate=True)
     b.box(t(0.32), t(0.32), t(2.5), t(3.36), t(1.56), t(0.12), "ochre", stage=0.5, plaster=True)  # the band
+    if b.detail:
+        D.meander(b, 0.4, 1.875, 3.2, 2.505, along_x=True, outward=1, unit=0.055, part="stone", stage=0.52)
+        D.cornice(b, 0.35, 0.35, 3.3, 1.5, 4.43, stage=0.62)
     for x in (0.35, 2.6):  # the wings
         _room(b, rng, x, 1.85, 1.05, 1.85, 0.3, 2.0, plaster="plaster", doors=[("e" if x < 1 else "w", 0.6, 0.75, 1.7)],
               windows=[("s", 0.3)], stage=(0.15, 0.55))
         D.tiled_roof(b, x, 1.85, 1.05, 1.85, 2.3, 0.45, rng, along_x=False, overhang=0.15)
-    D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.55, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
+    D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
+    if b.detail:
+        _acroteria(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, 0.16)
     b.box(t(1.7), t(2.6), 0, t(0.6), t(0.6), t(0.15), "stone", stage=0.05)  # the yard's paving and its well
-    b.column(t(2.0), t(2.9), 0, t(0.28), t(0.55), "stone", sides=14 if b.detail else 6, stage=0.3)
-    b.column(t(2.0), t(2.9), t(0.55), t(0.2), t(0.02), "water", sides=12 if b.detail else 6, stage=0.35)
-    D.pithos(b, 1.75, 3.55, scale=0.75, rng=rng)
-    D.amphora(b, 2.3, 3.6, scale=0.8, rng=rng)
+    b.solid("well", t(1.7), t(2.6), 0, t(2.3), t(3.2), t(1.4))
+    b.lathe(t(2.0), t(2.9), 0, [(t(0.28), 0), (t(0.29), t(0.5)), (t(0.31), t(0.55)), (t(0.2), t(0.55))], "stone",
+            sides=24 if b.detail else 6, stage=0.3, top="water")
+    if b.detail:  # the well's frame, its beam and the rope to the bucket
+        for px in (1.74, 2.26):
+            b.log((t(px), t(2.9), t(0.55)), (t(px), t(2.9), t(1.3)), t(0.025), sides=8, stage=0.35)
+        b.log((t(1.7), t(2.9), t(1.3)), (t(2.3), t(2.9), t(1.3)), t(0.03), sides=10, stage=0.35)
+        b.tube_path([(t(2.0), t(2.9), t(1.28)), (t(2.0), t(2.9), t(0.8))], t(0.006), "rope", sides=5, stage=0.35)
+        b.lathe(t(2.0), t(2.9), t(0.66), [(t(0.07), 0), (t(0.09), t(0.14))], "wood", sides=14, stage=0.35, top="water")
+    with D.goods(b, "food"):
+        D.sack(b, 1.62, 2.15, scale=0.6, rng=rng)
+        D.basket(b, 2.38, 2.15, "olives", scale=0.6, rng=rng)
+    with D.goods(b, "fleece"):
+        D.wool_bale(b, 1.62, 3.45, scale=0.6, rng=rng)
+    with D.goods(b, "olive_oil"):
+        D.pithos(b, 2.35, 3.42, scale=0.55, rng=rng, lid=True)
+        D.amphora(b, 2.0, 3.86, scale=0.55, rng=rng)
+    D.hydria(b, 1.99, 2.25, scale=0.55, rng=rng)
     b.scaffold(height=5.0 * M)
 
 
-@model("common_housing_7", "common_housing", "dom miejski: piętrowy, z portykiem na kolumnach doryckich, fryz i antefiksy")
+@model("common_housing_7", "common_housing", "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku")
 def city_house(b, rng):
     D.footing(b, 0.25, 0.25, 3.5, 2.5, h=0.55, rng=rng)
     _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, 2.4, thick=0.42, part="stone", block=(0.58, 0.3),
           doors=[("s", 1.25, 0.95, 2.0)], windows=[("e", 0.9, 0.4, 1.3, 0.5), ("w", 0.9, 0.4, 1.3, 0.5)])
     _room(b, rng, 0.3, 0.3, 3.4, 2.4, 2.95, 2.2, plaster="plaster", windows=[("s", 0.6), ("s", 1.5), ("s", 2.4),
-          ("e", 0.9), ("w", 0.9), ("n", 1.5)], stage=(0.5, 0.68))
+          ("e", 0.9), ("w", 0.9), ("n", 1.5)], stage=(0.5, 0.68), ornate=True)
     b.box(t(0.27), t(0.27), t(2.85), t(3.46), t(2.46), t(0.16), "cloth", stage=0.5, plaster=True)  # red frieze
+    if b.detail:
+        D.meander(b, 0.32, 2.745, 3.36, 2.865, along_x=True, outward=1, unit=0.06, part="ochre", stage=0.52)
+        D.cornice(b, 0.3, 0.3, 3.4, 2.4, 5.0, stage=0.66)
     b.box(t(0.3), t(2.7), 0, t(3.4), t(1.1), t(0.55), "stone", stage=0.05)  # the porch's floor and steps
     b.box(t(1.0), t(3.8), 0, t(2.0), t(0.15), t(0.28), "stone", stage=0.06)
     for x in (0.75, 1.9, 3.05):
         D.doric_column(b, x, 3.45, 0.55, 2.25, radius=0.15, stage=0.45)
-    b.box(t(0.4), t(3.2), t(2.8), t(3.2), t(0.5), t(0.25), "stone", stage=0.5)  # the porch's beam
-    D.tiled_roof(b, 0.3, 2.7, 3.4, 0.95, 3.05, 0.35, rng, along_x=True, overhang=0.15, gable="stone",
-                 stage=(0.62, 0.7))
+    b.box(t(0.4), t(3.2), t(2.8), t(3.2), t(0.5), t(0.16), "stone", stage=0.5)  # the architrave
+    if b.detail:  # the Doric frieze over it: triglyphs (three grooved bars) and painted metopes between
+        n = 7
+        for i in range(n):
+            fx = 0.4 + i * 3.2 / (n - 1) - 0.08
+            for g in range(3):
+                b.box(t(fx + g * 0.055), t(3.66), t(2.96), t(0.04), t(0.04), t(0.2), "stone", stage=0.52)
+            if i < n - 1:
+                b.box(t(fx + 0.17), t(3.68), t(2.98), t(3.2 / (n - 1) - 0.18), t(0.02), t(0.16), "blue_paint", stage=0.52,
+                      tint=0.4)
+        b.box(t(0.36), t(3.18), t(3.16), t(3.28), t(0.56), t(0.05), "stone", stage=0.53)
+    else:
+        b.box(t(0.4), t(3.2), t(2.96), t(3.2), t(0.5), t(0.2), "stone", stage=0.52)
+    D.tiled_roof(b, 0.3, 2.7, 3.4, 0.95, 3.21, 0.35, rng, along_x=True, overhang=0.15, gable="stone",
+                 stage=(0.62, 0.7), antefix=True)
     D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
-    D.pithos(b, 1.32, 3.12, scale=0.5, rng=rng, z=0.55)
-    D.amphora(b, 2.47, 3.12, scale=0.6, rng=rng, z=0.55)
+    if b.detail:
+        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, 0.16, size=0.26)
+    with D.goods(b, "olive_oil"):
+        D.pithos(b, 1.32, 3.0, scale=0.5, rng=rng, z=0.55, lid=True)
+        D.amphora(b, 2.8, 3.0, scale=0.6, rng=rng, z=0.55)
+    with D.goods(b, "food"):
+        D.basket(b, 0.65, 2.98, "figs", scale=0.55, rng=rng, z=0.55)
+    with D.goods(b, "fleece"):
+        D.wool_bale(b, 3.25, 2.98, scale=0.55, rng=rng, z=0.55)
+    D.potted_plant(b, 0.35, 3.8, scale=0.6, rng=rng)
+    D.potted_plant(b, 3.65, 3.8, scale=0.6, rng=rng, name="plant 2")
     b.scaffold(height=5.6 * M)
 
 

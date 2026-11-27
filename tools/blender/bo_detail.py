@@ -70,6 +70,7 @@ class Wall:
         self.x, self.y, self.length, self.axis = x, y, length, axis
         self.z, self.height, self.thick, self.outward = z, height, thick, outward
         self.openings = []
+        self.ornate = False  # stone surrounds and a small pediment over the windows (the higher houses)
 
     def door(self, at, w=0.85, h=1.85):
         self.openings.append({"at": at, "w": w, "z": 0.0, "h": h, "kind": "door"})
@@ -91,13 +92,21 @@ class Wall:
             return (t(half_along), 0, 0), (0, t(half_depth), 0), (0, 0, t(half_up))
         return (0, t(half_along), 0), (t(half_depth), 0, 0), (0, 0, t(half_up))
 
+    def put_c(self, b, along, depth, up, size_along, size_depth, size_up, chamfer, part, **kw):
+        """As put, the edges chamfered (a brick or a block that catches the light)."""
+        p0 = self.frame(along, depth, up)
+        p1 = self.frame(along + size_along, depth + size_depth, up + size_up)
+        x0, x1 = sorted((p0[0], p1[0]))
+        y0, y1 = sorted((p0[1], p1[1]))
+        return b.cbox(t(x0), t(y0), t(p0[2]), t(x1 - x0), t(y1 - y0), t(p1[2] - p0[2]), t(chamfer), part, **kw)
+
     def put(self, b, along, depth, up, size_along, size_depth, size_up, part, **kw):
         cx, cy, cz = self.frame(along + size_along / 2, depth + size_depth / 2, up + size_up / 2)
         ax, ay, az = self.axes(size_along / 2, size_depth / 2, size_up / 2)
         return b.obox((t(cx), t(cy), t(cz)), ax, ay, az, part, **kw)
 
 
-def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, block=None):
+def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, block=None, both=False):
     """Lays the wall course by course; `plaster` (a palette part) coats the outer face; `block` (length, height)
     for stone blocks instead of mudbricks."""
     s0, s1 = stage
@@ -126,8 +135,12 @@ def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, bl
                     continue
                 jitter = rng.uniform(-0.006, 0.006)
                 share = s0 + (s1 - s0) * (k + (a / max(wall.length, 0.01)) * 0.9) / courses
-                wall.put(b, a + JOINT / 2, 0.004 + jitter, z0 + JOINT / 2, c - a - JOINT, wall.thick - 0.008,
-                         real_h - JOINT, part, stage=share, tint=rng.uniform(0.22, 0.78))
+                if plaster:  # under the plaster: plain bricks (they show only where it falls)
+                    wall.put(b, a + JOINT / 2, 0.004 + jitter, z0 + JOINT / 2, c - a - JOINT, wall.thick - 0.008,
+                             real_h - JOINT, part, stage=share, tint=rng.uniform(0.22, 0.78))
+                else:  # bare: each brick or block with its edges worn
+                    wall.put_c(b, a + JOINT / 2, 0.004 + jitter, z0 + JOINT / 2, c - a - JOINT, wall.thick - 0.008,
+                               real_h - JOINT, 0.03 if block else 0.012, part, stage=share, tint=rng.uniform(0.22, 0.78))
             s += bl
         for a, c in _cut((0.0, wall.length), holes):  # the mortar inside the joints, rising with the course
             share = s0 + (s1 - s0) * k / courses
@@ -135,6 +148,10 @@ def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, bl
     if plaster:
         for a, c, z0, z1 in _rects(wall.length, wall.height, wall.openings):
             wall.put(b, a, -0.018, z0, c - a, 0.018, z1 - z0, plaster, stage=s1, plaster=True)
+            if both:  # a free-standing wall: plastered on both faces, a coping on top
+                wall.put(b, a, wall.thick, z0, c - a, 0.018, z1 - z0, plaster, stage=s1, plaster=True)
+        if both:
+            wall.put_c(b, -0.02, -0.04, wall.height, wall.length + 0.04, wall.thick + 0.08, 0.06, 0.015, "stone", stage=s1)
     _openings(b, wall, rng, s0, s1)
 
 
@@ -161,6 +178,18 @@ def _openings(b, wall, rng, s0, s1):
         else:
             wall.put(b, o["at"] - 0.06, -0.05, o["z"] - 0.06, o["w"] + 0.12, wall.thick + 0.08, 0.06, "stone",
                      stage=mid)  # the sill
+            if b.detail and wall.ornate:  # a stone surround and a pediment on two consoles
+                for a, w_ in ((o["at"] - 0.08, 0.08), (o["at"] + o["w"], 0.08)):
+                    wall.put_c(b, a, -0.04, o["z"] - 0.06, w_, 0.04, o["h"] + 0.12, 0.01, "stone", stage=s1)
+                wall.put_c(b, o["at"] - 0.14, -0.07, o["z"] + o["h"] + 0.12, o["w"] + 0.28, 0.07, 0.06, 0.012, "stone", stage=s1)
+                for a in (o["at"] - 0.12, o["at"] + o["w"] + 0.06):
+                    wall.put_c(b, a, -0.06, o["z"] + o["h"] + 0.02, 0.06, 0.06, 0.10, 0.01, "stone", stage=s1)
+                apex = wall.frame(o["at"] + o["w"] / 2, -0.05, o["z"] + o["h"] + 0.36)
+                left = wall.frame(o["at"] - 0.14, -0.05, o["z"] + o["h"] + 0.18)
+                right = wall.frame(o["at"] + o["w"] + 0.14, -0.05, o["z"] + o["h"] + 0.18)
+                tri = [tuple(t(v) for v in left), tuple(t(v) for v in right), tuple(t(v) for v in apex)]
+                b.poly(tri, "stone", stage=s1)
+                b.poly(list(reversed(tri)), "stone", stage=s1)
             if b.detail:  # two shutters, open against the wall
                 for side, at in ((-1, o["at"] - o["w"] / 2), (1, o["at"] + o["w"])):
                     for i in range(3):
@@ -239,9 +268,8 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 rad = (bb - a) / 2
                 low = tuple(p_low[i] + normal[i] * (lift + rad * 0.55) for i in range(3))
                 high = tuple(p_high[i] + normal[i] * (rad * 0.55) for i in range(3))
-                down = tuple(-v for v in normal)
-                b.half_tube(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), down, "roof_tile", sides=8,
-                            stage=share, tint=rng.uniform(0.25, 0.75), two_sided=True)
+                b.shell(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), t(0.016), tuple(normal), "roof_tile",
+                        sides=10, stage=share, tint=rng.uniform(0.25, 0.75), hollow_up=True)
             for c in range(cols + 1):  # cover tiles over the joints
                 along = min(max(c * pan_w, 0.06), run_len - 0.06)
                 p_low = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f0)
@@ -250,16 +278,13 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 lift = thick * 1.2 + 0.075 * 0.55
                 start = tuple(t(p_low[i] + normal[i] * lift) for i in range(3))
                 end = tuple(t(p_high[i] + normal[i] * lift) for i in range(3))
-                b.half_tube(start, end, t(0.075), tuple(normal), "roof_tile", sides=8, stage=share,
-                            tint=rng.uniform(0.2, 0.6))
-            if antefix and r == 0:  # upright tiles at the eaves, a palmette's shape left to the light
+                b.shell(start, end, t(0.075), t(0.014), tuple(normal), "roof_tile", sides=10, stage=share,
+                        tint=rng.uniform(0.2, 0.6))
+            if antefix and r == 0:  # an antefix closes each cover tile at the eaves: a palmette of seven leaves
                 for c in range(cols + 1):
                     along = min(max(c * pan_w, 0.06), run_len - 0.06)
                     p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, 0.0)
-                    centre = (t(p[0]), t(p[1]), t(p[2] + 0.10))
-                    half_w = (t(0.07), 0, 0) if along_x else (0, t(0.07), 0)
-                    half_d = (0, t(0.015), 0) if along_x else (t(0.015), 0, 0)
-                    b.obox(centre, half_w, half_d, (0, 0, t(0.09)), "ochre", stage=share)
+                    palmette(b, p, along_x, side, 0.13, stage=share)
     # The verges: the roof's ends closed by a barge board along each gable slope and a row of cover tiles on
     # its edge (no open edge of the tiles or the boards shows from the side).
     normal_s = {side: _roof_normal(span, rise, along_x, side) for side in (-1, 1)}
@@ -284,18 +309,18 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 f0, f1 = r / rows_v, min(1.0, (r + 1.15) / rows_v)
                 pa = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, edge, f0)
                 pb = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, edge, f1)
-                lift = thick * 2.6
-                b.half_tube(tuple(t(pa[i] + n[i] * lift) for i in range(3)), tuple(t(pb[i] + n[i] * lift) for i in range(3)),
-                            t(0.085), tuple(n), "roof_tile", sides=6, stage=s0 + (s1 - s0) * r / rows_v,
-                            tint=rng.uniform(0.2, 0.5))
+                lift = thick * 1.2 + 0.085 * 0.55
+                b.shell(tuple(t(pa[i] + n[i] * lift) for i in range(3)), tuple(t(pb[i] + n[i] * lift) for i in range(3)),
+                        t(0.085), t(0.014), tuple(n), "roof_tile", sides=10, stage=s0 + (s1 - s0) * r / rows_v,
+                        tint=rng.uniform(0.2, 0.5))
     ridge_n = max(1, int(run_len / 0.5))
     for i in range(ridge_n):  # the ridge
         a0 = run_len * i / ridge_n
         a1 = run_len * (i + 1) / ridge_n + 0.03
         p0 = _roof_point(x0, y0, x1, y1, z, rise, along_x, 1, a0, 1.0)
         p1 = _roof_point(x0, y0, x1, y1, z, rise, along_x, 1, min(a1, run_len), 1.0)
-        b.half_tube(tuple(t(v) for v in (p0[0], p0[1], p0[2] + 0.02)), tuple(t(v) for v in (p1[0], p1[1], p1[2] + 0.02)),
-                    t(0.11), (0, 0, 1), "roof_tile", sides=8, stage=s1, tint=rng.uniform(0.3, 0.5))
+        b.shell(tuple(t(v) for v in (p0[0], p0[1], p0[2] - 0.02)), tuple(t(v) for v in (p1[0], p1[1], p1[2] - 0.02)),
+                t(0.12), t(0.016), (0, 0, 1), "roof_tile", sides=12, stage=s1, tint=rng.uniform(0.3, 0.5))
     for side in (-1, 1):  # the rafters' ends under the eaves
         for c in range(cols + 1):
             along = c * pan_w
@@ -392,87 +417,293 @@ def thatch_roof(b, x, y, w, d, z, rise, rng, hip=0.3, along_x=True, overhang=0.3
         b.tube_path(ring, t(0.012), "rope", sides=5, stage=s1, caps=False)
 
 
-def pithos(b, x, y, scale=1.0, stage=0.9, rng=None, name="pithos", z=0.0):
-    """A storage jar for oil or grain: tall and round-bellied, a thick lip, the oil dark in its mouth. One closed
-    body of revolution, 32 sides."""
+class goods:
+    """Props of a good the house keeps (food, fleece, olive_oil, wine): they show only while it holds it."""
+
+    def __init__(self, b, good):
+        self.b, self.good = b, good
+
+    def __enter__(self):
+        self.b.good = self.good
+
+    def __exit__(self, *exc):
+        self.b.good = None
+
+
+def pithos(b, x, y, scale=1.0, stage=0.9, rng=None, name="pithos", z=0.0, lid=False):
+    """A storage jar: tall and round-bellied on a narrow foot, a thick rolled lip, two lugs on the shoulder,
+    three bands round the belly; the oil dark in its mouth or a lid on it. A smooth body of revolution."""
     h, r = 1.05 * scale, 0.30 * scale
-    b.prop(name, t(x - r), t(y - r), t(z), t(x + r), t(y + r), t(z + h))
+    b.prop(name, t(x - r * 1.05), t(y - r * 1.05), t(z), t(x + r * 1.05), t(y + r * 1.05), t(z + h + 0.04))
     if not b.detail:
         b.column(t(x), t(y), t(z), t(r * 0.85), t(h * 0.95), "roof_tile", sides=8, stage=stage)
         return
-    # (radius, height) as shares of r and h: the foot, the swelling belly, the shoulder, the neck, the lip.
-    shape = [(0.38, 0.0), (0.46, 0.03), (0.62, 0.10), (0.80, 0.20), (0.93, 0.32), (1.0, 0.44), (0.98, 0.55),
-             (0.90, 0.66), (0.76, 0.76), (0.58, 0.84), (0.46, 0.89), (0.44, 0.93), (0.52, 0.95), (0.56, 0.98),
-             (0.52, 1.0), (0.42, 1.0)]
-    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in shape], "roof_tile", sides=32, stage=stage,
-            tint=rng.uniform(0.35, 0.65) if rng else 0.5, top="oil")
-    for zz in (0.30, 0.58):  # two incised bands round the belly
-        rr = r * (0.94 if zz < 0.4 else 0.97)
-        b.lathe(t(x), t(y), t(z + h * zz), [(t(rr + 0.004), 0), (t(rr + 0.004), t(0.025))], "dark_wood", sides=32,
-                stage=stage, tint=0.3)
+    ctrl = [(0.36, 0.0), (0.42, 0.04), (0.60, 0.12), (0.82, 0.24), (0.97, 0.38), (1.0, 0.48), (0.96, 0.58),
+            (0.86, 0.68), (0.70, 0.77), (0.54, 0.84), (0.45, 0.89), (0.44, 0.93), (0.50, 0.95), (0.57, 0.97),
+            (0.58, 0.995), (0.52, 1.0), (0.44, 0.99)]
+    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=48, stage=stage,
+            tint=rng.uniform(0.35, 0.65) if rng else 0.5, top="dark_wood" if lid else "oil", smooth=4)
+    for zz, k in ((0.26, 0.90), (0.48, 1.0), (0.66, 0.88)):  # three raised bands
+        b.lathe(t(x), t(y), t(z + h * zz), [(t(r * k + 0.003), 0), (t(r * k + 0.012), t(0.012)), (t(r * k + 0.003), t(0.024))],
+                "roof_tile", sides=48, stage=stage, tint=0.25)
+    for side in (-1, 1):  # two lugs on the shoulder
+        b.tube_path([(t(x + side * r * 0.62), t(y), t(z + h * 0.80)), (t(x + side * r * 0.78), t(y), t(z + h * 0.79)),
+                     (t(x + side * r * 0.80), t(y), t(z + h * 0.74)), (t(x + side * r * 0.70), t(y), t(z + h * 0.72))],
+                    t(0.018 * scale), "roof_tile", sides=10, stage=stage)
+    if lid:
+        b.lathe(t(x), t(y), t(z + h * 0.99), [(t(r * 0.52), 0), (t(r * 0.50), t(0.03)), (t(r * 0.15), t(0.05)),
+                                              (t(r * 0.10), t(0.08)), (t(r * 0.02), t(0.08))], "dark_wood", sides=32,
+                stage=stage, smooth=3)
 
 
-def amphora(b, x, y, scale=1.0, stage=0.9, rng=None, name="amphora", z=0.0):
-    """A transport amphora: slim, a pointed foot standing in a ring of stones, two handles."""
+def amphora(b, x, y, scale=1.0, stage=0.9, rng=None, name="amphora", z=0.0, stopper=True):
+    """A transport amphora: a slim egg of a body, a knob of a toe, a long neck, two handles from neck to
+    shoulder; a stopper of cork and pitch; standing in a ring of stones."""
     h, r = 0.75 * scale, 0.17 * scale
-    b.prop(name, t(x - r * 1.5), t(y - r * 1.5), t(z), t(x + r * 1.5), t(y + r * 1.5), t(z + h))
+    b.prop(name, t(x - r * 1.5), t(y - r * 1.5), t(z), t(x + r * 1.5), t(y + r * 1.5), t(z + h + 0.03))
     if not b.detail:
         return
-    shape = [(0.12, 0.0), (0.30, 0.06), (0.62, 0.20), (0.92, 0.38), (1.0, 0.52), (0.92, 0.64), (0.62, 0.74),
-             (0.36, 0.80), (0.30, 0.92), (0.38, 0.96), (0.34, 1.0)]
-    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in shape], "roof_tile", sides=28, stage=stage,
-            tint=rng.uniform(0.4, 0.8) if rng else 0.6, top="oil")
+    ctrl = [(0.06, 0.0), (0.16, 0.03), (0.20, 0.07), (0.40, 0.14), (0.70, 0.26), (0.92, 0.40), (1.0, 0.52),
+            (0.94, 0.63), (0.70, 0.73), (0.42, 0.79), (0.32, 0.84), (0.30, 0.93), (0.36, 0.965), (0.38, 0.99),
+            (0.32, 1.0)]
+    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=40, stage=stage,
+            tint=rng.uniform(0.4, 0.8) if rng else 0.6, top="oil", smooth=4)
     for side in (-1, 1):
-        pts = [(x + side * r * 0.33, y, z + h * 0.90), (x + side * r * 0.85, y, z + h * 0.92),
-               (x + side * r * 1.0, y, z + h * 0.84), (x + side * r * 0.85, y, z + h * 0.70)]
-        b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.018 * scale), "roof_tile", sides=8, stage=stage)
-    b.lathe(t(x), t(y), t(z), [(t(r * 0.9), 0), (t(r * 0.9), t(0.05)), (t(r * 0.6), t(0.06))], "stone", sides=16,
+        pts = []
+        for i in range(9):
+            f = i / 8
+            ang = math.pi * f
+            pts.append((x + side * r * (0.33 + 0.62 * math.sin(ang)), y, z + h * (0.93 - 0.24 * f + 0.06 * math.sin(ang))))
+        b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.017 * scale), "roof_tile", sides=12, stage=stage)
+    if stopper:
+        b.lathe(t(x), t(y), t(z + h * 0.99), [(t(r * 0.30), 0), (t(r * 0.33), t(0.02)), (t(r * 0.25), t(0.04))], "dark_wood",
+                sides=20, stage=stage)
+    b.lathe(t(x), t(y), t(z), [(t(r * 0.95), 0), (t(r * 0.95), t(0.05)), (t(r * 0.6), t(0.06))], "stone", sides=20,
             stage=stage)
 
 
-def woodpile(b, x, y, rng, along_x=True, length=0.9, depth=0.42, height=0.55, stage=0.9, name="woodpile"):
-    """Firewood from different parts of trees: round logs of the trunk and the branches, halves and quarters split
-    off, a few crooked branches on top; bark round them, the cut faces in end grain."""
+def hydria(b, x, y, scale=1.0, stage=0.9, rng=None, name="hydria", z=0.0):
+    """A water jar: a round belly, a flat shoulder, two side handles to lift it and one at the back to pour."""
+    h, r = 0.55 * scale, 0.20 * scale
+    b.prop(name, t(x - r * 1.3), t(y - r * 1.3), t(z), t(x + r * 1.3), t(y + r * 1.3), t(z + h + 0.02))
+    if not b.detail:
+        return
+    ctrl = [(0.5, 0.0), (0.56, 0.04), (0.80, 0.18), (0.98, 0.38), (1.0, 0.52), (0.94, 0.64), (0.70, 0.72),
+            (0.40, 0.76), (0.32, 0.84), (0.34, 0.94), (0.46, 0.99), (0.40, 1.0)]
+    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=40, stage=stage,
+            tint=rng.uniform(0.3, 0.6) if rng else 0.45, top="water", smooth=4)
+    for side in (-1, 1):  # the lifting handles, level, on the belly
+        pts = [(x + side * r * 0.95, y - r * 0.35, z + h * 0.50), (x + side * r * 1.22, y - r * 0.2, z + h * 0.53),
+               (x + side * r * 1.22, y + r * 0.2, z + h * 0.53), (x + side * r * 0.95, y + r * 0.35, z + h * 0.50)]
+        b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.014 * scale), "roof_tile", sides=10, stage=stage)
+    pts = [(x, y - r * 0.34, z + h * 0.92), (x, y - r * 0.85, z + h * 0.92), (x, y - r * 1.02, z + h * 0.74), (x, y - r * 0.86, z + h * 0.62)]
+    b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.016 * scale), "roof_tile", sides=10, stage=stage)
+
+
+def sack(b, x, y, scale=1.0, stage=0.9, rng=None, name="sack", z=0.0, part="linen"):
+    """A sack of grain: a slumped body, the neck gathered and tied with rope."""
+    h, r = 0.62 * scale, 0.22 * scale
+    b.prop(name, t(x - r), t(y - r), t(z), t(x + r), t(y + r), t(z + h))
+    if not b.detail:
+        return
+    lumps = rng.uniform(0, 6.28) if rng else 0
+    ctrl = [(0.55, 0.0), (0.90, 0.05), (1.0, 0.18), (0.97, 0.42), (0.88, 0.62), (0.62, 0.78), (0.30, 0.86),
+            (0.26, 0.90), (0.36, 0.96), (0.20, 1.0)]
+    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], part, sides=32, stage=stage,
+            tint=rng.uniform(0.3, 0.7) if rng else 0.5, smooth=3, shape=lambda a: 1.0 + 0.05 * math.sin(5 * a + lumps))
+    b.lathe(t(x), t(y), t(z + h * 0.86), [(t(r * 0.30), 0), (t(r * 0.30), t(0.02))], "rope", sides=16, stage=stage)
+
+
+def basket(b, x, y, produce, scale=1.0, stage=0.9, rng=None, name="basket", z=0.0):
+    """A woven basket of produce (onions, figs, carrots' tops): ribs round its side, a rolled rim, the fruit
+    heaped above it."""
+    h, r = 0.26 * scale, 0.24 * scale
+    b.prop(name, t(x - r * 1.1), t(y - r * 1.1), t(z), t(x + r * 1.1), t(y + r * 1.1), t(z + h + 0.12))
+    if not b.detail:
+        return
+    b.lathe(t(x), t(y), t(z), [(t(r * 0.7), 0), (t(r * 0.95), t(h * 0.5)), (t(r), t(h))], "wood", sides=36, stage=stage,
+            tint=0.65, smooth=3, shape=lambda a: 1.0 + 0.03 * abs(math.sin(18 * a)), top="dark_wood")
+    b.lathe(t(x), t(y), t(z + h - 0.01), [(t(r * 1.03), 0), (t(r * 1.06), t(0.015)), (t(r * 1.03), t(0.03))], "wood", sides=36,
+            stage=stage, tint=0.4)
+    colour = {"onions": "ochre", "figs": "dark_wood", "carrots": "ochre", "olives": "leaves"}[produce]
+    n = 9 if produce != "olives" else 16
+    for i in range(n):  # the heap: small round bodies
+        a = 2 * math.pi * i / n + (rng.uniform(0, 0.4) if rng else 0)
+        rr = r * (0.55 if i % 2 else 0.25)
+        fx, fy = x + rr * math.cos(a), y + rr * math.sin(a)
+        fr = 0.045 if produce != "olives" else 0.022
+        b.lathe(t(fx), t(fy), t(z + h - 0.02 + (0.03 if i % 2 == 0 else 0.0)),
+                [(t(fr * 0.3), 0), (t(fr), t(fr * 0.8)), (t(fr * 0.9), t(fr * 1.4)), (t(fr * 0.2), t(fr * 2.0))],
+                colour, sides=10, stage=stage, tint=rng.uniform(0.3, 0.8) if rng else 0.5, smooth=2)
+
+
+def wool_bale(b, x, y, scale=1.0, stage=0.9, rng=None, name="wool", z=0.0):
+    """Fleece rolled into a bale: lumpy, tied twice with rope."""
+    h, r = 0.40 * scale, 0.24 * scale
+    b.prop(name, t(x - r * 1.1), t(y - r * 1.1), t(z), t(x + r * 1.1), t(y + r * 1.1), t(z + h))
+    if not b.detail:
+        return
+    phase = rng.uniform(0, 6.28) if rng else 0
+    ctrl = [(0.6, 0.0), (0.96, 0.08), (1.0, 0.35), (0.98, 0.65), (0.88, 0.9), (0.4, 1.0), (0.0, 1.0)]
+    b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "linen", sides=36, stage=stage, tint=0.85, smooth=3,
+            shape=lambda a: 1.0 + 0.07 * math.sin(7 * a + phase) * math.sin(3 * a))
+    for zz in (0.3, 0.68):
+        b.lathe(t(x), t(y), t(z + h * zz), [(t(r * 1.01), 0), (t(r * 1.03), t(0.012)), (t(r * 1.01), t(0.024))], "rope",
+                sides=36, stage=stage)
+
+
+def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom"):
+    """A warp-weighted loom leaning on a wall: two uprights, the cloth beam, the warp threads, the clay weights
+    hanging in a row, a part of the cloth woven."""
+    w, d, h = (1.1, 0.35, 1.7)
+    sx, sy = (w, d) if along_x else (d, w)
+    b.prop(name, t(x), t(y), 0, t(x + sx), t(y + sy), t(h))
+    if not b.detail:
+        return
+    def p(a, dd, zz):
+        return (t(x + a), t(y + dd), t(zz)) if along_x else (t(x + dd), t(y + a), t(zz))
+    for a in (0.04, w - 0.04):
+        b.log(p(a, 0.28, 0.03), p(a, 0.06, h), t(0.03), sides=10, stage=stage)
+    b.log(p(0.0, 0.07, h - 0.08), p(w, 0.07, h - 0.08), t(0.035), sides=12, stage=stage)  # the cloth beam
+    b.log(p(0.02, 0.18, 0.55), p(w - 0.02, 0.18, 0.55), t(0.02), sides=8, stage=stage)  # the shed rod
+    for i in range(22):
+        a = 0.1 + (w - 0.2) * i / 21
+        b.strand(p(a, 0.075, h - 0.1), p(a, 0.2, 0.38), t(0.006), "linen", stage=stage)
+        b.lathe(*(p(a, 0.205, 0.24)[:2]), t(0.24), [(t(0.012), 0), (t(0.03), t(0.04)), (t(0.012), t(0.10))], "roof_tile",
+                sides=8, stage=stage, tint=0.4)
+    cloth = lambda u, v: p(0.1 + (w - 0.2) * u, 0.075 + 0.02 * v, h - 0.12 - 0.45 * v)
+    b.surface(cloth, 8, 3, "cloth", stage=stage, tint=0.5)
+
+
+def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0):
+    """A terracotta pot with a herb or a young laurel: leaves on short stems round a stalk."""
+    hp, rp = 0.32 * scale, 0.16 * scale
+    b.prop(name, t(x - rp * 1.8), t(y - rp * 1.8), t(z), t(x + rp * 1.8), t(y + rp * 1.8), t(z + hp + 0.55 * scale))
+    if not b.detail:
+        return
+    b.lathe(t(x), t(y), t(z), [(t(rp * 0.6), 0), (t(rp * 0.8), t(hp * 0.4)), (t(rp), t(hp * 0.9)), (t(rp * 1.12), t(hp)),
+                            (t(rp * 1.0), t(hp))], "roof_tile", sides=24, stage=stage, top="dark_wood", smooth=2)
+    for i in range(26):
+        a = rng.uniform(0, 6.28)
+        up = rng.uniform(0.05, 0.5) * scale
+        reach = rng.uniform(0.05, 0.26) * scale * (1.0 - up)
+        root = (x + 0.02 * math.cos(a), y + 0.02 * math.sin(a), z + hp + up * 0.6)
+        tip = (x + reach * math.cos(a), y + reach * math.sin(a), z + hp + up + 0.08)
+        b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(rng.uniform(0.03, 0.05)), "leaves", stage=stage,
+                 tint=rng.uniform(0.2, 0.8))
+
+
+def woodpile(b, x, y, rng, along_x=True, length=0.9, depth=0.42, height=0.55, stage=0.9, name="woodpile", block=True):
+    """Firewood stacked as it would lie: the bottom row on two bearers, round logs and halves (flat side down)
+    side by side, every log above resting on the two below it at the points where they touch; a chopping block
+    with an axe in it beside the pile. Bark round the logs, end grain on the cuts."""
     sx, sy = (length, depth) if along_x else (depth, length)
-    b.prop(name, t(x), t(y), 0, t(x + sx), t(y + sy), t(height + 0.12))
+    b.prop(name, t(x), t(y), 0, t(x + sx), t(y + sy), t(height + 0.06))
     if not b.detail:
         b.box(t(x), t(y), 0, t(sx), t(sy), t(height), "bark", loose=True, stage=stage)
         return
-    b.box(t(x + 0.02), t(y + 0.02), 0, t(sx - 0.04), t(sy - 0.04), t(0.05), "dark_wood", stage=stage)  # bearers
-    zz = 0.05
-    while zz < height - 0.05:
-        s = 0.03
-        top_r = 0.0
-        while s < (length - 0.03):
-            kind = rng.random()
-            r = rng.uniform(0.035, 0.09) if kind < 0.75 else rng.uniform(0.09, 0.12)
-            split = None if kind < 0.45 else ("half" if kind < 0.8 else "quarter")
-            if s + 2 * r > length - 0.03:
-                break
-            c = s + r
-            l0 = rng.uniform(0.0, 0.04)
-            l1 = depth - rng.uniform(0.0, 0.04)
+    base = 0.06
+    for dd in (0.06, depth - 0.06):  # the bearers keep the wood off the ground
+        a, e = ((x + 0.02, y + dd, 0.03), (x + sx - 0.02, y + dd, 0.03)) if along_x else ((x + dd, y + 0.02, 0.03), (x + dd, y + sy - 0.02, 0.03))
+        b.log(tuple(t(v) for v in a), tuple(t(v) for v in e), t(0.03), sides=8, stage=stage, tint=0.3)
+    # The bottom row: (centre along the row, radius, centre height, piece).
+    row = []
+    s = 0.02
+    while True:
+        r = rng.uniform(0.045, 0.085)
+        half = rng.random() < 0.3
+        if s + 2 * r > length - 0.02:
+            break
+        row.append((s + r, r, base if half else base + r, "half" if half else None))
+        s += 2 * r + rng.uniform(0.0, 0.01)
+    layers = [row]
+    while len(layers[-1]) >= 2:
+        below, above = layers[-1], []
+        for (c1, r1, z1, _), (c2, r2, z2, _) in zip(below, below[1:]):
+            r = rng.uniform(0.04, 0.08)
+            # The centre at distance r1 + r from one and r2 + r from the other: where it rests on both.
+            dx, dz = c2 - c1, z2 - z1
+            dist = math.hypot(dx, dz)
+            if dist > r1 + r2 + 2 * r - 0.005 or dist < 1e-6:
+                continue  # the gap is too wide: it would fall through
+            a_ = ((r1 + r) ** 2 - (r2 + r) ** 2 + dist ** 2) / (2 * dist)
+            hgt = math.sqrt(max((r1 + r) ** 2 - a_ ** 2, 0.0))
+            mx, mz = c1 + a_ * dx / dist, z1 + a_ * dz / dist
+            cx, cz = mx - hgt * dz / dist, mz + hgt * dx / dist
+            if cz + r > height + base:
+                continue
+            above.append((cx, r, cz, None))
+        if not above:
+            break
+        layers.append(above)
+    for layer in layers:
+        for c, r, cz, piece in layer:
+            l0, l1 = rng.uniform(0.0, 0.05), depth - rng.uniform(0.0, 0.05)
+            skew = rng.uniform(-0.015, 0.015)
             if along_x:
-                a, e = (x + c, y + l0, zz + r), (x + c, y + l1, zz + r)
+                a, e = (x + c - skew, y + l0, cz), (x + c + skew, y + l1, cz)
             else:
-                a, e = (x + l0, y + c, zz + r), (x + l1, y + c, zz + r)
-            b.log(tuple(t(v) for v in a), tuple(t(v) for v in e), t(r), sides=12, stage=stage, split=split,
+                a, e = (x + l0, y + c - skew, cz), (x + l1, y + c + skew, cz)
+            b.log(tuple(t(v) for v in a), tuple(t(v) for v in e), t(r), sides=14, stage=stage, split=piece,
                   tint=rng.uniform(0.2, 0.8), grain_tint=rng.uniform(0.3, 0.8))
-            s += 2 * r + 0.006
-            top_r = max(top_r, r)
-        zz += 2 * top_r + 0.004
-    for k in range(2):  # crooked branches laid on top
-        along = rng.uniform(0.15, length - 0.15)
-        pts = []
-        for i in range(5):
-            f = i / 4
-            off = rng.uniform(-0.03, 0.03)
+    if block:  # the chopping block and its axe, beside the pile
+        bx, by = (x + length + 0.2, y + depth / 2) if along_x else (x + depth / 2, y + length + 0.2)
+        hx, hy = (1, 0) if along_x else (0, 1)  # the axe's handle points away from the pile, along it
+        b.prop(name + " block", t(bx - 0.17), t(by - 0.17), 0, t(bx + 0.17 + hx * 0.2), t(by + 0.17 + hy * 0.2), t(0.5))
+        b.log((t(bx), t(by), 0), (t(bx), t(by), t(0.34)), t(0.16), sides=18, stage=stage, tint=0.5)
+        b.tube_path([(t(bx + hx * 0.02), t(by + hy * 0.02), t(0.34)), (t(bx + hx * 0.18 + hy * 0.03), t(by + hy * 0.18 + hx * 0.03), t(0.42)),
+                     (t(bx + hx * 0.34 + hy * 0.05), t(by + hy * 0.34 + hx * 0.05), t(0.47))], t(0.014), "wood", sides=8,
+                    stage=stage)
+        b.obox((t(bx), t(by), t(0.34)), (t(0.05), 0, 0), (0, t(0.012), 0), (0, 0, t(0.04)), "iron", stage=stage)
+
+
+def palmette(b, p, along_x, side, size, stage=0.9, part="ochre"):
+    """An antefix or an acroterion: a fan of leaves standing on the eave, faced outwards, seen from both sides."""
+    for i in range(7):
+        a = math.pi * (0.15 + 0.7 * i / 6)
+        reach = size * (1.0 if i == 3 else 0.82 if i in (2, 4) else 0.66)
+        base = (p[0], p[1], p[2] + 0.02)
+        if along_x:
+            tip = (p[0] + reach * math.cos(a), p[1] + side * 0.01, p[2] + 0.02 + reach * math.sin(a))
+        else:
+            tip = (p[0] + side * 0.01, p[1] + reach * math.cos(a), p[2] + 0.02 + reach * math.sin(a))
+        b.strand(tuple(t(v) for v in base), tuple(t(v) for v in tip), t(size * 0.28), part, stage=stage, tint=0.4 + 0.05 * i)
+
+
+def cornice(b, x, y, w, d, z, steps=((0.06, 0.05), (0.10, 0.04), (0.14, 0.05)), part="stone", stage=0.6):
+    """A moulded cornice round the top of the walls: steps standing out further as they rise."""
+    zz = z
+    for out, hh in steps:
+        b.box(t(x - out), t(y - out), t(zz), t(w + 2 * out), t(d + 2 * out), t(hh), part, stage=stage)
+        zz += hh
+    return zz
+
+
+def meander(b, x0, y0, length, z, along_x=True, outward=-1, unit=0.10, part="ochre", stage=0.6):
+    """A meander (Greek key) in low relief along a facade: its strokes as small raised bars."""
+    n = int(length / (unit * 2))
+    strokes = [(0, 0, 1, 0), (1, 0, 1, 1), (1, 1, 0.33, 1), (0.33, 1, 0.33, 0.33), (0.33, 0.33, 0.66, 0.33),
+               (0.66, 0.33, 0.66, 0.66)]
+    for k in range(n):
+        o = k * unit * 2
+        for a0, z0, a1, z1 in strokes + [(1, 0, 2, 0), (0, 1.15, 2, 1.15), (0, -0.15, 2, -0.15)]:
+            la, lb = sorted((a0, a1))
+            za, zb = sorted((z0, z1))
+            lw = max((lb - la) * unit, 0.018)
+            zh = max((zb - za) * unit, 0.018)
             if along_x:
-                pts.append((x + along + off, y + 0.03 + f * (depth - 0.06), zz + 0.03 + 0.02 * math.sin(f * 3)))
+                b.box(t(x0 + o + la * unit), t(y0 + (0.012 if outward > 0 else -0.012) - 0.012), t(z + za * unit), t(lw),
+                      t(0.012), t(zh), part, stage=stage)
             else:
-                pts.append((x + 0.03 + f * (depth - 0.06), y + along + off, zz + 0.03 + 0.02 * math.sin(f * 3)))
-        b.tube_path([tuple(t(v) for v in p) for p in pts], lambda f: t(0.03 * (1.0 - 0.5 * f)), "bark", sides=8,
-                    stage=stage, tint=rng.uniform(0.3, 0.7))
+                b.box(t(x0 + (0.012 if outward > 0 else -0.012) - 0.012), t(y0 + o + la * unit), t(z + za * unit), t(0.012),
+                      t(lw), t(zh), part, stage=stage)
+
+
+def baluster(b, x, y, z, height, stage=0.6):
+    """A turned wooden baluster."""
+    b.lathe(t(x), t(y), t(z), [(t(0.03), 0), (t(0.03), t(height * 0.08)), (t(0.018), t(height * 0.2)),
+                              (t(0.034), t(height * 0.45)), (t(0.016), t(height * 0.75)), (t(0.024), t(height * 0.9)),
+                              (t(0.03), t(height))], "wood", sides=12, stage=stage, smooth=2, top="wood")
 
 
 def doric_column(b, x, y, z, height, radius=0.16, stage=0.5):

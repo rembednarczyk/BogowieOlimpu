@@ -624,6 +624,13 @@ func _set_look(mi: MeshInstance3D, b: Dictionary) -> void:
 	var phase := 0.0 if burning == 0 else (1.0 if burning > 21 else (2.0 if burning > 10 else 3.0))  # 32 days a fire
 	mi.set_instance_shader_parameter("fire", phase)
 	mi.set_instance_shader_parameter("working", 1.0 if b.get("workers", 0) > 0 else 0.0)
+	var held := 15  # not a house: every prop shows
+	if b.has("house_goods"):  # food, fleece, olive oil, wine (data.h HouseGood): the props of the goods it holds
+		held = 0
+		var stock: Array = b["house_goods"]
+		for g in mini(stock.size(), 4):
+			held |= (1 << g) if stock[g] > 0 else 0
+	mi.set_instance_shader_parameter("goods", float(held))
 
 # Daily: every modelled building follows its state; a house that changed its level changes its model.
 func _update_looks() -> void:

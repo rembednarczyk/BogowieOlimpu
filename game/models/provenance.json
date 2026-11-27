@@ -9,7 +9,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie"
+  "note": "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą"
  },
  "common_housing_1_lod1.glb": {
   "building": "common_housing",
@@ -21,7 +21,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie"
+  "note": "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą"
  },
  "common_housing_2.glb": {
   "building": "common_housing",
@@ -33,7 +33,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków"
+  "note": "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
  },
  "common_housing_2_lod1.glb": {
   "building": "common_housing",
@@ -45,7 +45,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków"
+  "note": "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
  },
  "common_housing_3.glb": {
   "building": "common_housing",
@@ -57,7 +57,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "lepianka: bielony dom pod dachówką, murek z bramką przed wejściem"
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy"
  },
  "common_housing_3_lod1.glb": {
   "building": "common_housing",
@@ -69,7 +69,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "lepianka: bielony dom pod dachówką, murek z bramką przed wejściem"
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy"
  },
  "common_housing_4.glb": {
   "building": "common_housing",
@@ -81,7 +81,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "zagroda chłopska: dom na planie litery L z dziedzińcem, dachówka, cokół z kamienia"
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria"
  },
  "common_housing_4_lod1.glb": {
   "building": "common_housing",
@@ -93,7 +93,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "zagroda chłopska: dom na planie litery L z dziedzińcem, dachówka, cokół z kamienia"
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria"
  },
  "common_housing_5.glb": {
   "building": "common_housing",
@@ -105,7 +105,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: parter z kamiennych bloków, piętro z cegły w tynku, drewniany balkon"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria"
  },
  "common_housing_5_lod1.glb": {
   "building": "common_housing",
@@ -117,7 +117,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: parter z kamiennych bloków, piętro z cegły w tynku, drewniany balkon"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria"
  },
  "common_housing_6.glb": {
   "building": "common_housing",
@@ -129,7 +129,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i dwa skrzydła wokół dziedzińca ze studnią, pas malowany ochrą"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa"
  },
  "common_housing_6_lod1.glb": {
   "building": "common_housing",
@@ -141,7 +141,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i dwa skrzydła wokół dziedzińca ze studnią, pas malowany ochrą"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa"
  },
  "common_housing_7.glb": {
   "building": "common_housing",
@@ -153,7 +153,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "dom miejski: piętrowy, z portykiem na kolumnach doryckich, fryz i antefiksy"
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku"
  },
  "common_housing_7_lod1.glb": {
   "building": "common_housing",
@@ -165,7 +165,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "dom miejski: piętrowy, z portykiem na kolumnach doryckich, fryz i antefiksy"
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku"
  },
  "fountain.glb": {
   "building": "fountain",

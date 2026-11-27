@@ -13,6 +13,7 @@ instance uniform float age = 0.0;      // 0-1: ten years of weathering
 instance uniform float damage = 0.0;   // 0-3: cracks, plaster gone, loose parts tilting
 instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
+instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
 
 const int PALETTE_SIZE = 32;
 const vec3 PALETTE[23] = vec3[23](
@@ -65,6 +66,10 @@ void vertex() {
 	v_mask = COLOR;
 	bool scaffold = COLOR.r > 0.995;
 	bool shown = scaffold ? build < 1.0 : build >= COLOR.r - 0.0001 && build > 0.0;
+	if (UV2.x < -0.5) {  // a good's prop (UV2.x = -1 - the good): only while the house holds it
+		int good = int(round(-UV2.x)) - 1;
+		shown = shown && ((int(goods) >> good) & 1) == 1;
+	}
 	v_hidden = shown ? 0.0 : 1.0;
 	if (!shown) {
 		VERTEX = vec3(0.0);  // a part not built yet (or the scaffold once done): no area

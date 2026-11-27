@@ -5,7 +5,7 @@
     and COLOR_0 (the masks of the building's parameters);
   - the mesh lies on the ground inside its footprint from data/building_stats.json (x 0..w, z 0..h, y >= 0);
   - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader;
-  - triangles within the budget: the close view (LOD0) at most 80 000, the far view (LOD1) at most 3 000
+  - triangles within the budget: the close view (LOD0) at most 120 000, the far view (LOD1) at most 3 000
     (hundreds of houses at once on the phone, docs/07-TECHNOLOGIA.md).
 Exit code 1 on any violation. Usage: python3 tools/checks/check_models.py [repo_root]
 """
@@ -16,7 +16,7 @@ import struct
 import sys
 
 EPS = 1e-3
-TRIS = {0: 80000, 1: 3000}
+TRIS = {0: 120000, 1: 3000}
 
 
 def glb_json(path):

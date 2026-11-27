@@ -110,7 +110,14 @@ class Builder:
         if bad:
             raise ValueError(self.name + ": " + "; ".join(bad))
 
+    # A good the house keeps (data.h HouseGood): its props show only while the house holds it. Stored in UV1.x as
+    # -1 - index (the pivot of animated parts is >= 0), read by building.gdshader.
+    GOODS = {"food": 0, "fleece": 1, "olive_oil": 2, "wine": 3}
+    good = None
+
     def _tag(self, faces, part, stage, plaster, loose, anim, pivot, tint=0.5):
+        if self.good is not None and pivot == (0, 0):
+            pivot = (-1.0 - self.GOODS[self.good], 0.0)
         u = (PALETTE_INDEX[part] + 0.5) / PALETTE_SIZE
         for f in faces:
             for loop in f.loops:
@@ -127,6 +134,76 @@ class Builder:
         idx = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
         faces = [self.bm.faces.new([verts[i] for i in q]) for q in idx]
         self._tag(faces, part, stage, plaster, loose, anim, pivot, tint)
+        return faces
+
+    def cbox(self, x, y, z, sx, sy, sz, chamfer, part, stage=WALLS, plaster=False, tint=0.5):
+        """An axis-aligned box with its edges chamfered by `chamfer` (tiles): a brick or a stone block that
+        catches the light on its edges. 26 faces."""
+        c = min(chamfer, sx / 3, sy / 3, sz / 3)
+        hx, hy, hz = sx / 2, sy / 2, sz / 2
+        cx, cy, cz = x + hx, y + hy, z + hz
+        verts = {}
+        for s_x in (-1, 1):
+            for s_y in (-1, 1):
+                for s_z in (-1, 1):
+                    k = (s_x, s_y, s_z)
+                    verts[k] = [self.bm.verts.new(self._b((cx + s_x * hx, cy + s_y * (hy - c), cz + s_z * (hz - c)))),
+                                self.bm.verts.new(self._b((cx + s_x * (hx - c), cy + s_y * hy, cz + s_z * (hz - c)))),
+                                self.bm.verts.new(self._b((cx + s_x * (hx - c), cy + s_y * (hy - c), cz + s_z * hz)))]
+        faces = []
+        order = {0: [(-1, -1), (1, -1), (1, 1), (-1, 1)]}
+        for axis in range(3):  # the six main faces
+            for sgn in (-1, 1):
+                quad = []
+                for a, b2 in order[0]:
+                    k = [0, 0, 0]
+                    k[axis] = sgn
+                    others = [i for i in range(3) if i != axis]
+                    k[others[0]], k[others[1]] = a, b2
+                    quad.append(verts[tuple(k)][axis])
+                faces.append(self.bm.faces.new(quad))
+        for a1 in range(3):  # the twelve chamfers along the edges
+            for a2 in range(a1 + 1, 3):
+                free = 3 - a1 - a2
+                for s1 in (-1, 1):
+                    for s2 in (-1, 1):
+                        k0 = [0, 0, 0]; k1 = [0, 0, 0]
+                        k0[a1] = k1[a1] = s1
+                        k0[a2] = k1[a2] = s2
+                        k0[free], k1[free] = -1, 1
+                        faces.append(self.bm.faces.new((verts[tuple(k0)][a1], verts[tuple(k0)][a2], verts[tuple(k1)][a2],
+                                                        verts[tuple(k1)][a1])))
+        for k, (fx, fy, fz) in verts.items():  # the eight corners
+            faces.append(self.bm.faces.new((fx, fy, fz)))
+        self._tag(faces, part, stage, plaster, False, STILL, (0, 0), tint)
+        return faces
+
+    def shell(self, start, end, radius, thick, up, part, sides=10, stage=ROOF, tint=0.5, hollow_up=False):
+        """A curved tile with its thickness: a half pipe from `start` to `end` (tiles), closed on every side.
+        `up` the side its round back faces; `hollow_up` turns it into a trough (a pan tile)."""
+        import mathutils
+        a = mathutils.Vector(start)
+        e = mathutils.Vector(end)
+        axis = (e - a).normalized()
+        u = mathutils.Vector(up)
+        u = (u - axis * u.dot(axis)).normalized()
+        if hollow_up:
+            u = -u
+        side = axis.cross(u)
+        def ring(p, r):
+            return [self.bm.verts.new(self._b(p + side * (r * math.cos(math.pi * i / sides)) +
+                                               u * (r * math.sin(math.pi * i / sides)))) for i in range(sides + 1)]
+        oa, ia = ring(a, radius), ring(a, radius - thick)
+        oe, ie = ring(e, radius), ring(e, radius - thick)
+        faces = []
+        for i in range(sides):
+            faces.append(self.bm.faces.new((oa[i], oe[i], oe[i + 1], oa[i + 1])))   # the outer face
+            faces.append(self.bm.faces.new((ia[i], ia[i + 1], ie[i + 1], ie[i])))   # the inner face
+            faces.append(self.bm.faces.new((oa[i], oa[i + 1], ia[i + 1], ia[i])))   # the end at start
+            faces.append(self.bm.faces.new((oe[i], ie[i], ie[i + 1], oe[i + 1])))   # the end at end
+        for j in (0, sides):  # the two long edges
+            faces.append(self.bm.faces.new((oa[j], ia[j], ie[j], oe[j])))
+        self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
         return faces
 
     def obox(self, center, ax, ay, az, part, stage=WALLS, plaster=False, loose=False, tint=0.5):
@@ -171,9 +248,20 @@ class Builder:
         self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
         return faces
 
-    def lathe(self, cx, cy, z, profile, part, sides=28, stage=WALLS, tint=0.5, top=None, shape=None):
+    def lathe(self, cx, cy, z, profile, part, sides=28, stage=WALLS, tint=0.5, top=None, shape=None, smooth=0):
         """A closed body of revolution about the vertical through (cx, cy): `profile` (radius, height) from the
         bottom up, in tiles; the bottom is capped, the top capped with `top` (a part) or left to the profile."""
+        if smooth and len(profile) >= 3:  # Catmull-Rom through the control points: a smooth body
+            pts = [profile[0]] + list(profile) + [profile[-1]]
+            dense = []
+            for k in range(1, len(pts) - 2):
+                p0, p1, p2, p3 = pts[k - 1], pts[k], pts[k + 1], pts[k + 2]
+                for s in range(smooth):
+                    f = s / smooth
+                    dense.append(tuple(0.5 * ((2 * p1[i]) + (-p0[i] + p2[i]) * f + (2 * p0[i] - 5 * p1[i] + 4 * p2[i] - p3[i]) * f * f +
+                                              (-p0[i] + 3 * p1[i] - 3 * p2[i] + p3[i]) * f ** 3) for i in range(2)))
+            dense.append(profile[-1])
+            profile = dense
         rings = []
         for r, h in profile:
             ring = []
@@ -229,6 +317,9 @@ class Builder:
         ref = mathutils.Vector((0, 0, 1)) if abs(d.z) < 0.9 else mathutils.Vector((1, 0, 0))
         u = d.cross(ref).normalized()
         v = d.cross(u).normalized()
+        if v.z < 0:  # a split piece lies with its flat face down: its arc rises from the axis
+            v = -v
+            u = -u
         span = {None: 2 * math.pi, "half": math.pi, "quarter": math.pi / 2}[split]
         steps = sides if split is None else max(3, int(sides * span / (2 * math.pi)) + 1)
         def ring(p):

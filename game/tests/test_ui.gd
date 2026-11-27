@@ -140,6 +140,16 @@ func _process(_d: float) -> bool:
 		looks_ok = looks_ok and phase_ok \
 			and node.get_meta("model") == game._model_name(b["type"], b.get("house_level", 0))
 	check(modelled > 20 and looks_ok, "modelled buildings follow their age and level: %d" % modelled)
+	var goods_ok := true  # the props of a house's goods follow its stock (docs/ASSETY.md)
+	for b in game.sim.get_buildings():
+		var node: Node3D = game.building_nodes.get(b["id"])
+		if node == null or not node.has_meta("model") or not b.has("house_goods"):
+			continue
+		var want := 0
+		for g in 4:
+			want |= (1 << g) if b["house_goods"][g] > 0 else 0
+		goods_ok = goods_ok and int((node.get_node("Model") as MeshInstance3D).get_instance_shader_parameter("goods")) == want
+	check(goods_ok, "every house shows the goods it holds")
 	check(game._model("granary") != null and game._model("palace") == null, "a granary has a model, the palace keeps its box")
 	# Two views of a house: the far one at the start, brick by brick once the camera comes close.
 	var house_node: Node3D = null
