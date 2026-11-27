@@ -116,10 +116,19 @@ constexpr std::size_t kWorldBlock = 9 + kDeliveries + kDebt + kGodHelp + kTradeC
 
 constexpr std::size_t kCulture = 1;  // v44: the city's culture
 constexpr std::size_t kHorses = 4;   // v45: no horses at a hippodrome
-constexpr std::size_t kTakings = 16;  // v46: the hippodrome's takings, this year and last (the end of the world block)
+constexpr std::size_t kTakings = 16;  // v46: the hippodrome's takings, this year and last
+constexpr std::size_t kGenerals = 1;  // v48: Auto-Defend (the end of the world block)
+
+// The save without the v48 Auto-Defend switch: the layout of v47 (v47 adds only a per-ship field).
+std::vector<std::uint8_t> as_v47(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kGenerals), end);
+    return bytes;
+}
 
 // The save without the v46 takings: the layout of v45.
 std::vector<std::uint8_t> as_v45(std::vector<std::uint8_t> bytes) {
+    bytes = as_v47(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kTakings), end);
     return bytes;
@@ -278,7 +287,8 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
-    check_load(a.save(), 46, h);  // v47 adds only a per-ship field
+    check_load(as_v47(a.save()), 47, h);
+    check_load(as_v47(a.save()), 46, h);  // v47 adds only a per-ship field
     check_load(as_v45(a.save()), 45, h);
     check_load(as_v44(a.save()), 44, h);
     check_load(as_v43(a.save()), 43, h);

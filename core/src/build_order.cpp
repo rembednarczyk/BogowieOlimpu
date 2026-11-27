@@ -81,6 +81,8 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
             pos_of(s.at("at")));
     } else if (s.contains("man_towers")) {
         add(ManTowers{s.at("man_towers").get<bool>()});
+    } else if (s.contains("auto_defend")) {
+        add(SetAutoDefend{s.at("auto_defend").get<bool>()});  // Z:145
     } else if (s.contains("stockpile")) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {

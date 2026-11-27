@@ -1,5 +1,6 @@
 // Module D3 stage 2: invasions, combat, morale (docs/gameplay/11, 22, 24; Z:137-144; assumptions L-062, L-110).
 #include "combat_internal.h"
+#include "bo/core/auto_defend.h"
 #include <algorithm>
 #include <cstdlib>
 #include <optional>
@@ -188,6 +189,7 @@ void end_invasion(WorldState& st, std::uint8_t result, CombatEvents& ev) {
             c.status = CompanyStatus::Marching;
         }
     }
+    auto_defend_stand_down(st);  // Z:145, L-129
     ev.ended = result;
 }
 

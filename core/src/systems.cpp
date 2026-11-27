@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <type_traits>
 #include "bo/core/appeal.h"
+#include "bo/core/auto_defend.h"
 #include "bo/core/culture.h"
 #include "bo/core/games.h"
 #include "bo/core/finance.h"
@@ -387,6 +388,7 @@ static void run_military(Simulation& sim) {
     form_companies(sim.mutable_state(), sim.catalog());
     CombatEvents fleet;
     advance_fleet(sim.mutable_state(), sim.catalog(), fleet);  // triremes launched, repaired (Z:141-142)
+    advance_auto_defend(sim.mutable_state(), sim.catalog(), fleet);  // the generals and admirals (Z:145)
     sim.emit_combat(fleet);
 }
 

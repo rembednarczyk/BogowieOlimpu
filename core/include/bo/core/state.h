@@ -145,6 +145,7 @@ struct WorldState {
     // Goods the player keeps (Z:80; since v35): not for industry, traders, sanctuary sites or agora vendors.
     std::set<std::string> stockpiled;
     bool towers_manned = false;
+    bool auto_defend = false;  // Auto-Defend (Z:22, Z:145; since v48): the generals command on their own
     // Loads made this year and in the best year so far, per good (goal yearly_production, S-008; since v43).
     std::map<std::string, std::uint32_t> produced_this_year;
     std::map<std::string, std::uint32_t> produced_best_year;

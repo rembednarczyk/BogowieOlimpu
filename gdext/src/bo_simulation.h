@@ -76,6 +76,7 @@ public:
     void set_stockpile(const godot::String& good, bool on);   // Z:80
     void set_not_buying(int64_t stall, bool on);              // Z:72
     void man_towers(bool on);                                 // Man All, Z:146
+    void set_auto_defend(bool on);                            // Auto-Defend, Z:145 (on only before a battle)
     void set_company_tactic(int64_t company, int64_t tactic); // 0 defensive, 1 offensive, 2 special (Z:138-139)
     // Triremes (Z:141-144): {"order" (0 defend, 1 attack all, 2 repair, 3 patrol), "crew", "hp", "max_hp", "x", "y",
     // "station_x", "station_y"}; set_ship_order(ship, order, x, y): Defend Location or Patrol at a water tile

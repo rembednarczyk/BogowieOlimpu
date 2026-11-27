@@ -66,6 +66,7 @@ At Home, Still, Marching, Going Home, Fleeing, Fighting, Serving Abroad. Panel p
 
 - Włączone: generałowie i admirałowie dowodzą sami.
 - Można włączyć w dowolnym momencie **przed** rozpoczęciem walki. Jeśli walka się zaczęła przy wyłączonym, gracz dowodzi sam, ale może w trakcie przejąć dowodzenie od generałów.
+- U nas: `core/src/auto_defend.cpp`, założenia w L-129 (co dokładnie robią generałowie i admirałowie). Demo greckie broni się z włączonym przełącznikiem od dnia 0.
 
 ## Flota: triery (Z:141-144)
 

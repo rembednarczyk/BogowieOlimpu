@@ -97,6 +97,11 @@ func refresh_army() -> void:
 	var top := HBoxContainer.new()
 	top.add_child(all)
 	top.add_child(man)
+	var generals: Button = ui._button("ui.auto_defend",
+		func(): game.sim.set_auto_defend(not game.sim.get_scenario().get("auto_defend", false)), Vector2(240, ui.CELL.y))
+	generals.toggle_mode = true  # Auto-Defend (Z:145): the generals command; on only before the fighting
+	generals.set_pressed_no_signal(sc.get("auto_defend", false))
+	top.add_child(generals)
 	army_box.add_child(top)
 	var companies: Array = game.sim.get_companies()
 	if companies.is_empty():

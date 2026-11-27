@@ -454,6 +454,7 @@ Dictionary BoSimulation::get_scenario() const {
     d["atlantean"] = sim_->state().city.atlantean;  // the city's culture (P:16-17)
     d["lost"] = sim_->state().episode_lost;
     d["towers_manned"] = sim_->state().towers_manned;
+    d["auto_defend"] = sim_->state().auto_defend;  // Z:145
     d["games_host_year"] = sim_->state().games_host_year;  // -1: no right to host (Z:111)
     const auto track = bo::core::hippodrome_track(sim_->state().city);  // P:13-15
     d["hippodrome_stades"] = static_cast<int64_t>(track.segments.size());
@@ -630,6 +631,12 @@ void BoSimulation::consult_oracle(int64_t building) {
 void BoSimulation::man_towers(bool on) {
     if (sim_) {
         sim_->issue(bo::core::ManTowers{on});
+    }
+}
+
+void BoSimulation::set_auto_defend(bool on) {
+    if (sim_) {
+        sim_->issue(bo::core::SetAutoDefend{on});
     }
 }
 
@@ -1191,6 +1198,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_not_buying", "stall", "on"), &BoSimulation::set_not_buying);
     ClassDB::bind_method(D_METHOD("get_stockpiled"), &BoSimulation::get_stockpiled);
     ClassDB::bind_method(D_METHOD("man_towers", "on"), &BoSimulation::man_towers);
+    ClassDB::bind_method(D_METHOD("set_auto_defend", "on"), &BoSimulation::set_auto_defend);
     ClassDB::bind_method(D_METHOD("set_company_tactic", "company", "tactic"), &BoSimulation::set_company_tactic);
     ClassDB::bind_method(D_METHOD("get_ships"), &BoSimulation::get_ships);
     ClassDB::bind_method(D_METHOD("consult_oracle", "building"), &BoSimulation::consult_oracle);

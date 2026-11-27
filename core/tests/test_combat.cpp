@@ -370,3 +370,66 @@ TEST_CASE("special tactics: horsemen harass, riding back to their standard after
     CHECK(gap(harass) > 1);
     CHECK(gap(charge) <= 1);
 }
+
+TEST_CASE("Auto-Defend: the generals muster the companies, beat the invaders and send them home (Z:145, L-129)") {
+    auto off = city(true);  // without it the companies stay at home and the invaders take the Palace (Z:144)
+    fill_hovels(off);
+    run_battle(off, 2);
+    REQUIRE(off.state().military.companies.size() == 2);
+    off.issue(StartInvasion{"greek", 2});
+    CHECK(run_battle(off, 30) == 3);
+
+    auto sim = city(true);
+    fill_hovels(sim);
+    run_battle(sim, 2);
+    sim.issue(SetAutoDefend{true});
+    sim.step(1);
+    CHECK(rejection(sim).empty());
+    CHECK(sim.state().auto_defend);
+    sim.issue(StartInvasion{"greek", 2});
+    CHECK(run_battle(sim, 30) == 0);  // beaten by the rabble the generals sent
+    run_battle(sim, 20);
+    for (const Company& c : sim.state().military.companies) {
+        CHECK(c.status == CompanyStatus::AtHome);  // home again after the fighting
+    }
+    std::string error;
+    auto copy = Simulation::load(bo::test::catalog_isolated(), sim.save(), error);
+    REQUIRE(copy.has_value());
+    CHECK(copy->state().auto_defend);
+    CHECK(copy->state_hash() == sim.state_hash());
+}
+
+TEST_CASE("Auto-Defend goes on only before the fighting starts; off at any time (Z:145)") {
+    auto sim = city(true);
+    sim.issue(StartInvasion{"greek", 2});
+    sim.step(1);
+    sim.drain_events();
+    sim.issue(SetAutoDefend{true});
+    sim.step(1);
+    CHECK(rejection(sim) == "military.battle_started");
+    CHECK_FALSE(sim.state().auto_defend);
+    sim.mutable_state().auto_defend = true;
+    sim.issue(SetAutoDefend{false});
+    sim.step(1);
+    CHECK(rejection(sim).empty());
+    CHECK_FALSE(sim.state().auto_defend);
+}
+
+TEST_CASE("B-018: a company whose soldiers all fell is at home again and forms anew from its houses (Z:136)") {
+    auto sim = city(true);
+    fill_hovels(sim);
+    run_battle(sim, 2);
+    REQUIRE_FALSE(sim.state().military.companies.empty());
+    sim.issue(MusterCompany{0});
+    run_battle(sim, 8);
+    REQUIRE(sim.state().military.companies[0].status == CompanyStatus::Still);
+    for (const WalkerId id : sim.state().military.companies[0].soldiers) {
+        sim.mutable_state().walkers.items.erase(id);  // every soldier fell
+    }
+    run_battle(sim, 2);
+    CHECK(sim.state().military.companies[0].status == CompanyStatus::AtHome);
+    sim.drain_events();
+    sim.issue(MusterCompany{0});  // and can be called again
+    sim.step(1);
+    CHECK(rejection(sim).empty());
+}

@@ -30,6 +30,20 @@ Brak otwartych błędów (stan 2026-11-26).
 
 ## Naprawione
 
+### B-019 [S2] Łowiska, przystań jeżowców i chata łowców dzików w demo nic nie dawały
+- Status: naprawione
+- Miejsce i liczba wystąpień: demo greckie, przez całe 10 lat; 4 łowiska i przystań z obsadą 0 %, chata z 4 ładunkami bez odbiorcy.
+- Dowód: `BO_DEMO_LOG=2`, linie `fishery ... road 0 staff 0`, `boar_hunters_lodge ... out 4`; licznik bramki `made_fish`, `made_urchins`, `made_pork` = 0.
+- Test "co dziś pada": bramka demo, mechaniki `made_fish`, `made_urchins`, `made_pork` (`core/tests/test_demo.cpp` kChains).
+- Przyczyna: budynki stały po skosie od drogi (dostęp tylko przez krawędź), oba spichlerze pełne marchwi i cebuli, a chata łowców 27+ kafli od spichlerza przy zasięgu dostawy 27 (S-004). Poprawka w `tools/make_demo.py`: przesunięcie pod drogę, limity 8 ładunków marchwi, cebuli i pszenicy w spichlerzach, chata i stado przy spichlerzu (68,14).
+
+### B-018 [S2] Kompania wybita do nogi zostawała w polu na zawsze i blokowała formowanie armii
+- Status: naprawione
+- Miejsce i liczba wystąpień: demo greckie, najazd Sparty w roku 6: 17 pustych kompanii motłochu w stanie Marching do końca gry, jeźdźcy z majątków nigdy się nie uformowali.
+- Dowód: `BO_DEMO_INV=1`, linie `rabble/ st1 ... n0`.
+- Test "co dziś pada": "B-018: a company whose soldiers all fell is at home again and forms anew from its houses (Z:136)" (`core/tests/test_combat.cpp`).
+- Przyczyna: `update_companies` wracał kompanię do domu tylko ze stanu GoingHome lub Fleeing; kompania bez żołnierzy w każdym stanie poza służbą za granicą jest teraz w domu.
+
 Od najnowszego. Źródła zgłoszeń: B-002 do B-007 agent weryfikujący, B-008 do B-011 agent przeglądu referencji, B-012 do B-015 przebudowa demo i autopilot, B-016 i B-017 testy taktyk i bramka demo.
 
 ### B-017 [S2] Rozkaz taktyki ginął przy codziennym przeformowaniu kompanii

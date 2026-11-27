@@ -1,4 +1,5 @@
 #include "bo/core/simulation.h"
+#include "bo/core/auto_defend.h"
 #include "bo/core/culture.h"
 
 #include "systems.h"
@@ -330,6 +331,7 @@ void Simulation::apply(const Command& command, std::uint32_t index) {
                    [&](const SetStockpile&) { apply_stock_command(command, index); },  // Z:80
                    [&](const SetNotBuying&) { apply_stock_command(command, index); },  // Z:72
                    [&](const ManTowers& c) { state_.towers_manned = c.on; },          // Z:146
+                   [&](const SetAutoDefend& c) { reject(set_auto_defend(state_, c.on)); },  // Z:145
                    [&](const SetCompanyTactic&) { apply_stock_command(command, index); },  // Z:138-139
                    [&](const SetShipOrder&) { apply_combat_command(command, index); },     // Z:142
                    [&](const SetIndustryEnabled&) { apply_stock_command(command, index); },

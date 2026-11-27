@@ -340,6 +340,26 @@ void write_world(ByteWriter& w, const WorldState& s) {
     w.u32(s.hippodrome_horses);      // since v45 (P:14)
     w.i64(s.hippodrome_this_year);   // since v46
     w.i64(s.hippodrome_last_year);
+    w.u8(s.auto_defend ? 1 : 0);  // since v48
+}
+
+// The end of the world block: Man All (v36) and the fields added since v37.
+static bool read_world_tail(ByteReader& r, WorldState& s, std::uint32_t version) {
+    std::uint8_t manned = 0;
+    if (version >= 36 && !r.u8(manned)) {
+        return false;
+    }
+    s.towers_manned = manned != 0;
+    std::uint8_t atlantean = 0;
+    std::uint8_t generals = 0;
+    const bool ok = (version < 37 || r.i32(s.games_host_year)) &&
+                    (version < 43 || (read_counts(r, s.produced_this_year) && read_counts(r, s.produced_best_year))) &&
+                    (version < 44 || r.u8(atlantean)) && (version < 45 || r.u32(s.hippodrome_horses)) &&
+                    (version < 46 || (r.i64(s.hippodrome_this_year) && r.i64(s.hippodrome_last_year))) &&
+                    (version < 48 || r.u8(generals));
+    s.city.atlantean = atlantean != 0;
+    s.auto_defend = generals != 0;
+    return ok;
 }
 
 bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
@@ -448,50 +468,7 @@ bool read_world(ByteReader& r, WorldState& s, std::uint32_t version) {
         }
         s.stockpiled.insert(g);
     }
-    std::uint8_t manned = 0;
-    if (version >= 36 && !r.u8(manned)) {
-        return false;
-    }
-    s.towers_manned = manned != 0;
-    std::uint8_t atlantean = 0;
-    const bool ok = (version < 37 || r.i32(s.games_host_year)) &&
-                    (version < 43 || (read_counts(r, s.produced_this_year) && read_counts(r, s.produced_best_year))) &&
-                    (version < 44 || r.u8(atlantean)) && (version < 45 || r.u32(s.hippodrome_horses)) &&
-                    (version < 46 || (r.i64(s.hippodrome_this_year) && r.i64(s.hippodrome_last_year)));
-    s.city.atlantean = atlantean != 0;
-    return ok;
-}
-
-// A trireme order (index 30, since v39, Z:142).
-bool read_ship_order(ByteReader& r, Command& out) {
-    SetShipOrder c;
-    if (!r.u32(c.ship) || !r.u8(c.order) || !r.i32(c.x) || !r.i32(c.y)) {
-        return false;
-    }
-    out = c;
-    return true;
-}
-
-// Consult Oracle (index 32, since v41, Z:124).
-bool read_oracle(ByteReader& r, Command& out) {
-    ConsultOracle c;
-    if (!r.u32(c.building)) {
-        return false;
-    }
-    out = c;
-    return true;
-}
-
-// A request for military help (index 31, since v40, Z:174).
-bool read_help_request(ByteReader& r, Command& out) {
-    RequestMilitaryHelp c;
-    std::uint8_t strike = 0;
-    if (!r.u32(c.city) || !r.u8(strike) || !r.u32(c.target)) {
-        return false;
-    }
-    c.strike = strike != 0;
-    out = c;
-    return true;
+    return read_world_tail(r, s, version);
 }
 
 }  // namespace bo::core

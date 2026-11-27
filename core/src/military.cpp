@@ -204,8 +204,8 @@ void update_companies(WorldState& st) {
         if (c.status == CompanyStatus::Fighting && !st.military.invasion.active) {
             c.status = CompanyStatus::Marching;
         }
-        if ((c.status == CompanyStatus::GoingHome || c.status == CompanyStatus::Fleeing) && s.empty()) {
-            c.status = CompanyStatus::AtHome;
+        if (c.status != CompanyStatus::AtHome && c.status != CompanyStatus::ServingAbroad && s.empty()) {
+            c.status = CompanyStatus::AtHome;  // home, or all fallen (B-018): it forms again from its houses
         }
     }
 }

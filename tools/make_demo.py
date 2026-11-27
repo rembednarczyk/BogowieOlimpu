@@ -113,7 +113,7 @@ scenario = {
         {"type": "trading_partners", "value": 2},
         {"type": "support", "target": "rabble", "value": 40},
         {"type": "set_aside_goods", "target": "marble", "value": 20},
-        {"type": "survive_until", "value": 4},
+        {"type": "survive_until", "value": 6},  # year 6: after the sea invasion and the horsemen of the east (Z:144)
         {"type": "yearly_production", "target": "onions", "value": 20},
         {"type": "complete_before", "value": 9},
     ],
@@ -151,6 +151,7 @@ priorities(FOOD, [4, 1, 5, 5, 3, 2, 2, 1])
 priorities(CULTURE, [4, 3, 5, 5, 3, 4, 3, 1])
 priorities(ARMY, [4, 3, 5, 5, 3, 4, 3, 2])
 priorities(MYTH + 400, [4, 3, 5, 5, 3, 4, 3, 4])  # the armory staffed: armour for the mansions (Z:33)
+steps.append({"day": 0, "auto_defend": True})  # the generals defend the city on their own (Z:145)
 put("palace", 53, 12)  # first: the Tax Office, the trireme wharf and the towers need it (Z:96, Z:141, Z:146)
 
 # Stage FOOD: houses, water, maintenance, safety, farms, granaries, the first agora, fishing.

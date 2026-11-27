@@ -131,7 +131,7 @@ void write_command(ByteWriter& w, const Command& c) {
             } else if constexpr (std::is_same_v<T, SetNotBuying>) {
                 w.u32(cmd.building);
                 w.u8(cmd.on ? 1 : 0);
-            } else if constexpr (std::is_same_v<T, ManTowers>) {
+            } else if constexpr (std::is_same_v<T, ManTowers> || std::is_same_v<T, SetAutoDefend>) {
                 w.u8(cmd.on ? 1 : 0);
             } else if constexpr (std::is_same_v<T, SetCompanyTactic>) {
                 w.u32(cmd.company);
@@ -295,8 +295,7 @@ bool read_module_d_command(ByteReader& r, std::uint32_t index, Command& out, std
             return true;
         }
         default:
-            return (index == 30 && read_ship_order(r, out)) || (index == 31 && read_help_request(r, out)) ||
-                   (index == 32 && read_oracle(r, out));
+            return read_late_command(index, r, out);  // serialize_commands.cpp
     }
 }
 

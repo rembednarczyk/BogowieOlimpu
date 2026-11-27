@@ -3,11 +3,13 @@ add_library(bo_core STATIC
     src/adventure.cpp
     src/agora.cpp
     src/appeal.cpp
+    src/auto_defend.cpp
     src/city.cpp
     src/data.cpp
     src/data_economy.cpp
     src/combat.cpp
     src/crosswalk.cpp
+    src/serialize_commands.cpp
     src/naval.cpp
     src/oracle.cpp
     src/extraction.cpp
