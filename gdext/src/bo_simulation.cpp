@@ -459,6 +459,8 @@ Dictionary BoSimulation::get_scenario() const {
     d["hippodrome_stades"] = static_cast<int64_t>(track.segments.size());
     d["hippodrome_closed"] = track.closed;
     d["hippodrome_horses"] = static_cast<int64_t>(sim_->state().hippodrome_horses);
+    d["hippodrome_this_year"] = sim_->state().hippodrome_this_year;  // bets and snacks (P:14)
+    d["hippodrome_last_year"] = sim_->state().hippodrome_last_year;
     d["hippodrome_working"] = static_cast<int64_t>(bo::core::working_hippodrome(sim_->state(), *catalog_));
     const auto year = static_cast<std::uint32_t>(sim_->state().time.year());
     for (const auto& g : catalog_->games.games) {  // this year's Panhellenic games and the city's chance (L-123)

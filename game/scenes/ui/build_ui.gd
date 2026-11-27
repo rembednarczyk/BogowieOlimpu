@@ -280,6 +280,7 @@ func refresh_report() -> void:
 		report_box.add_child(_label(tr("ui.hippodrome_line") % [sc["hippodrome_stades"], sc["hippodrome_horses"],
 			tr("ui.hippodrome_racing" if sc["hippodrome_working"] > 0 else ("ui.hippodrome_waiting" if sc["hippodrome_closed"]
 			else "ui.hippodrome_open"))], 18))
+		report_box.add_child(_label(tr("ui.hippodrome_takings") % [sc["hippodrome_this_year"], sc["hippodrome_last_year"]], 18))
 	report_box.add_child(_label(tr("ui.goals"), 20))
 	for g in sc.get("goals", []):
 		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))

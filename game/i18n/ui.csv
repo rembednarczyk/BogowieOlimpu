@@ -235,3 +235,4 @@ ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
 ui.demo_greek,Demo: Grecja,Demo: Greece
 scenario.demo_atlantis.name,Atlantyda,Atlantis
 tab.science,Nauka,Science
+ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"

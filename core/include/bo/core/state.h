@@ -149,6 +149,9 @@ struct WorldState {
     std::map<std::string, std::uint32_t> produced_this_year;
     std::map<std::string, std::uint32_t> produced_best_year;
     std::uint32_t hippodrome_horses = 0;  // horses at the track (P:14; since v45)
+    // Bets and snacks (P:14): the hippodrome's takings this year and last year, apart from taxes (since v46).
+    std::int64_t hippodrome_this_year = 0;
+    std::int64_t hippodrome_last_year = 0;
     std::int32_t games_host_year = -1;  // the year the city has the right to host the Olympian games (Z:111; v37)  // Man All (Z:146; since v36): the generals send sentries to every tower
     std::uint16_t caravan_curse_days = 0;
     std::uint16_t ship_curse_days = 0;

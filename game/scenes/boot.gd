@@ -196,7 +196,9 @@ func _process(delta: float) -> void:
 					save_game()  # once a month of game time
 		_update_label()
 		ui.update_status()
+		_update_race()
 	_sync_walkers()
+	_run_race(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Two fingers: pinch zoom (06-MOBILE-UX). The mouse wheel zooms on PC.
@@ -398,6 +400,59 @@ func _add_building(e: Dictionary) -> void:
 	node.set_meta("placed", e)
 	add_child(node)
 	building_nodes[e["id"]] = node
+
+# The race (P:14; presentation only, as in eZeus): while the track races, its horses run round the loop of
+# stade centres; the core keeps only how many there are.
+var race_loop: Array = []  # Vector3 centres of the stades in track order
+var race_horses: Array = []  # MeshInstance3D
+var race_t := 0.0
+
+func _update_race() -> void:
+	var sc: Dictionary = sim.get_scenario()
+	var n: int = mini(int(sc.get("hippodrome_horses", 0)), 24) if sc.get("hippodrome_working", 0) > 0 else 0
+	if n == race_horses.size() and (n == 0 or race_loop.size() == int(sc["hippodrome_stades"])):
+		return
+	for h in race_horses:
+		h.queue_free()
+	race_horses.clear()
+	race_loop.clear()
+	if n == 0:
+		return
+	var stades := []
+	for b in sim.get_buildings():
+		if b["type"] == "hippodrome":
+			stades.append(Vector2i(b["x"], b["y"]))
+	var order := [stades[0]]
+	while order.size() < stades.size():
+		var last: Vector2i = order[-1]
+		var next = stades.filter(func(s): return not order.has(s) and absi(s.x - last.x) + absi(s.y - last.y) == 4 \
+			and (s.x == last.x or s.y == last.y))
+		if next.is_empty():
+			break
+		order.append(next[0])
+	for s in order:
+		race_loop.append(Vector3(s.x + 2.0, 0.3, s.y + 2.0))
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.45, 0.28, 0.12)
+	for i in n:
+		var horse := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(0.6, 0.35, 0.25)
+		box.material = mat
+		horse.mesh = box
+		add_child(horse)
+		race_horses.append(horse)
+
+func _run_race(delta: float) -> void:
+	if race_horses.is_empty() or race_loop.size() < 2:
+		return
+	race_t += delta * 0.8  # stades a second
+	var m := race_loop.size()
+	for i in race_horses.size():
+		var p := fmod(race_t + float(i) * m / race_horses.size(), m)
+		var a: Vector3 = race_loop[int(p) % m]
+		var b: Vector3 = race_loop[(int(p) + 1) % m]
+		race_horses[i].position = a.lerp(b, p - floorf(p)) + Vector3(0, 0, 0.6 if i % 2 else -0.6)
 
 # A crosswalk was built (P:14): its stade is drawn again with the walkway.
 func _redraw_track_at(x: int, y: int) -> void:

@@ -80,7 +80,8 @@ void advance_hippodrome(WorldState& st, const DataCatalog& catalog, LogisticsEve
         return;
     }
     if (st.time.day_in_month() == 0 && st.hippodrome_horses >= r->horses) {
-        st.finance.treasury += r->income;  // bets and snacks (P:14, doc 18)
+        st.finance.treasury += r->income;  // the residents bet and buy snacks (P:14, doc 18)
+        st.hippodrome_this_year += r->income;
         if (t.segments.size() >= catalog.hippodrome_bonus.opinion_from) {  // visitors from all over the world (P:14)
             for (TradePartner& p : st.trade.partners) {
                 p.diplomacy.opinion = std::min(100, p.diplomacy.opinion + catalog.hippodrome_bonus.opinion);

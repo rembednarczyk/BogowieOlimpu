@@ -127,6 +127,10 @@ TEST_CASE("hippodrome: the handler brings horses from the ranch; with 4 the race
         }
     }
     CHECK(income >= 10);  // the month's 10 dr (with the month's wages and taxes of an empty town: none)
+    CHECK(sim.state().hippodrome_this_year >= 10);  // bets and snacks, apart from taxes (P:14)
+    const auto takings = sim.state().hippodrome_this_year;
+    sim.run_days(16 * 12);  // a new year: last year's takings kept for the report
+    CHECK(sim.state().hippodrome_last_year >= takings);
 }
 
 namespace {

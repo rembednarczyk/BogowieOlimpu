@@ -163,6 +163,8 @@ static void run_finance(Simulation& sim) {
             best = std::max(best, n);
         }
         st.produced_this_year.clear();
+        st.hippodrome_last_year = st.hippodrome_this_year;  // the track's takings (P:14)
+        st.hippodrome_this_year = 0;
     }
     const auto r = settle_month(st, sim.catalog());
     sim.emit(MonthlyFinance{r.taxes, r.wages});
