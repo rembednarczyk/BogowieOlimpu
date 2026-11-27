@@ -60,11 +60,13 @@ func setup(g: Node3D) -> void:
 
 func _load_catalog() -> void:
 	var list = JSON.parse_string(FileAccess.get_file_as_string("res://data/buildings.json"))
+	# The city's culture (P:16-17): Atlantean buildings only in Atlantis, Greek-only ones never there.
+	var foreign := "greek" if game.sim.get_scenario().get("atlantean", false) else "atlantean"
 	for tab in TABS:
 		buildings_by_tab[tab] = []
 	for b in list:
 		var tab: String = b.get("tab", "")
-		if not buildings_by_tab.has(tab) or not b.get("player_placeable", true) or b.get("culture", "any") == "atlantean":
+		if not buildings_by_tab.has(tab) or not b.get("player_placeable", true) or b.get("culture", "any") == foreign:
 			continue
 		if b.has("per_god"):
 			continue  # the generic sanctuary is only the base of the per-god ones

@@ -119,10 +119,12 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
     const BuildingType& bt = type_it->second;
     const BuildingStats& stats = stats_it->second;
     // B-009: one Palace (Z:95), one Stadium (Z:109)
-    r.reason = rotation > 3            ? "build.bad_rotation"
-               : !bt.player_placeable  ? "build.unknown_type"
-               : bt.unique && already_built(city, type) ? "build.only_one"
-                                                        : "";
+    r.reason = rotation > 3                              ? "build.bad_rotation"
+               : !bt.player_placeable                    ? "build.unknown_type"
+               : bt.culture == "atlantean" && !city.atlantean ? "build.atlantean_only"  // P:16-17
+               : bt.culture == "greek" && city.atlantean      ? "build.greek_only"
+               : bt.unique && already_built(city, type)  ? "build.only_one"
+                                                         : "";
     if (!r.reason.empty()) {
         return r;
     }

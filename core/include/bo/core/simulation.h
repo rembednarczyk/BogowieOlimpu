@@ -23,6 +23,7 @@ struct SimulationConfig {
     std::vector<std::string> elevation_map;  // optional heights for text_map (one hex digit per tile)
     std::vector<TradePartner> trade_partners;  // scenario partner cities (C9)
     ScenarioState scenario;                    // goals and events (D5)
+    bool atlantean = false;                    // an Atlantean city (P:16-17; scenario "culture")
 };
 
 class Simulation;

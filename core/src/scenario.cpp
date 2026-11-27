@@ -149,6 +149,7 @@ std::optional<SimulationConfig> parse_scenario(const std::string& text, std::str
             cfg.difficulty = difficulty_from_code(j.at("difficulty").get<std::string>());
         }
         cfg.text_map = strings(j, "map");
+        cfg.atlantean = j.value("culture", "greek") == "atlantean";  // P:16-17
         cfg.elevation_map = strings(j, "elevation");
         for (const auto& c : j.value("cities", json::array())) {
             cfg.trade_partners.push_back(parse_city(c));

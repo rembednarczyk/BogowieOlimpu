@@ -2,6 +2,8 @@
 
 Dodatek wprowadza drugą kulturę miast: **atlantydzką**. Budynki atlantydzkie (piramidy, hipodrom, Frigate Wharf, Chariot Factory, Chariot Vendor's Stall, budynki nauki) **wolno stawiać tylko w Atlantydzie i jej koloniach** (P:16-17). Wspólne z Grecją pozostają m.in. spichlerze, magazyny, agory, Horse Ranch, Timber Mill, sanktuaria.
 
+Implementacja etapu 1: kultura miasta (`CityState::atlantean`, w przygodzie klucz `culture`), reguła budowy w `core/src/city.cpp` (`build.atlantean_only`, `build.greek_only`), punkty nauki liczone w domach jak kultura (`house_culture`), panel budowy pokazuje tylko budynki kultury miasta; testy `core/tests/test_atlantis.cpp`. Nazwy poziomów domów atlantydzkich zostają otwarte (L-080).
+
 ## Fabuła ramowa (P:3-4)
 
 Atlantydę chroni pakt z bogami (w instrukcji: "Symphonia Ithikos"): dopóki Atlantydzi nie atakują innych ludów poza samoobroną, bogowie nie wkraczają w gniewie na kontynent. Kampania obejmuje rozkwit i upadek Atlantydy. Nazwy fabularne z dodatku podlegają przeglądowi z `docs/02-ORYGINALNOSC.md`.

@@ -250,6 +250,9 @@ struct CityState {
     BuildingStore buildings;
     UndoRecord undo;
     std::uint32_t homeless = 0;          // people pushed out of houses, waiting for module C8
+    // The city's culture (P:16-17): Atlantean buildings only in an Atlantean city, Greek-only ones never there;
+    // science points work in its houses as culture points (P:10-13). Since v44, saved with the world block.
+    bool atlantean = false;
     std::vector<std::int32_t> appeal;    // derived (C1): recomputed daily, not saved
 };
 

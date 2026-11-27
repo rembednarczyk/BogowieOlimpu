@@ -49,6 +49,7 @@ Simulation::Simulation(const DataCatalog& catalog, const SimulationConfig& confi
     state_.finance.treasury = config.initial_treasury;
     state_.labour.full_staffing = config.full_staffing;
     state_.trade.partners = config.trade_partners;
+    state_.city.atlantean = config.atlantean;
     state_.scenario = config.scenario;
     state_.migration.popularity =
         static_cast<std::uint8_t>(catalog.migration.base_happiness[static_cast<std::size_t>(state_.difficulty)]);

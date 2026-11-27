@@ -450,6 +450,7 @@ Dictionary BoSimulation::get_scenario() const {
     d["goals"] = goals;
     d["requests"] = requests;
     d["won"] = s.won;
+    d["atlantean"] = sim_->state().city.atlantean;  // the city's culture (P:16-17)
     d["lost"] = sim_->state().episode_lost;
     d["towers_manned"] = sim_->state().towers_manned;
     d["games_host_year"] = sim_->state().games_host_year;  // -1: no right to host (Z:111)

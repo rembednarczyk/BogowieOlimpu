@@ -103,7 +103,10 @@ TEST_CASE("water crossing: straight shores, at most kMaxCrossingSpan, no crossin
     CHECK(c.map.is_road({2, 2}));
     CHECK(c.map.is_road({2, 3}));
     CHECK(put(c, "water_crossing", {3, 2}, static_cast<std::uint8_t>(Dir::South)).reason == "build.crossing_adjacent");
+    CHECK(put(c, "bridge", {4, 2}, static_cast<std::uint8_t>(Dir::South)).reason == "build.atlantean_only");  // P:16-17
+    c.atlantean = true;
     CHECK(put(c, "bridge", {4, 2}, static_cast<std::uint8_t>(Dir::South)).ok());
+    c.atlantean = false;
     CHECK(put(c, "water_crossing", {2, 1}, static_cast<std::uint8_t>(Dir::South)).reason == "build.needs_coast");
     demolish(c, {2, 3});
     CHECK_FALSE(c.map.is_road({2, 2}));  // its own road goes with it

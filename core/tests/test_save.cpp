@@ -114,8 +114,18 @@ constexpr std::size_t kSea = 13;  // v39: invasion by sea flag, landing tile, no
 constexpr std::size_t kWorldBlock = 9 + kDeliveries + kDebt + kGodHelp + kTradeCurses + kStockpiled + kTowersManned +
                                     kHostYear;  // the world block of an empty city up to v42, after the army block
 
+constexpr std::size_t kCulture = 1;  // v44: the city's culture (the end of the world block)
+
+// The save without the v44 culture flag: the layout of v43.
+std::vector<std::uint8_t> as_v43(std::vector<std::uint8_t> bytes) {
+    const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
+    bytes.erase(end - static_cast<std::ptrdiff_t>(kCulture), end);
+    return bytes;
+}
+
 // The save without the v43 production record: the layout of v42.
 std::vector<std::uint8_t> as_v42(std::vector<std::uint8_t> bytes) {
+    bytes = as_v43(std::move(bytes));
     const auto end = bytes.end() - static_cast<std::ptrdiff_t>(kScenario + kQuests + kAwarded + kMonsters);
     bytes.erase(end - static_cast<std::ptrdiff_t>(kProduced), end);
     return bytes;
@@ -250,6 +260,7 @@ TEST_CASE("older saves (v1-v6) migrate to the current format") {
     Simulation a(bo::test::catalog(), SimulationConfig{3, Difficulty::Hero, 100});
     a.step(10);
     const std::uint64_t h = a.state_hash();
+    check_load(as_v43(a.save()), 43, h);
     check_load(as_v42(a.save()), 42, h);
     check_load(as_v42(a.save()), 41, h);  // v42 adds only a per-ship field
     check_load(as_v42(a.save()), 40, h);  // v41 adds only a per-sanctuary field

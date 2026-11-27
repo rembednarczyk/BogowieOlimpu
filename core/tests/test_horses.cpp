@@ -83,6 +83,7 @@ TEST_CASE("a storehouse supplies wheat to the ranch, a granary never does (Z:148
 
 TEST_CASE("the hostler brings horses to the chariot factory; wood and a horse make a chariot (P:18)") {
     auto sim = town();
+    sim.mutable_state().city.atlantean = true;  // the chariot factory is Atlantean (P:16-17)
     sim.issue(PlaceBuilding{"horse_ranch", 14, 2, 0});
     sim.issue(PlaceBuilding{"chariot_factory", 26, 2});
     sim.step(1);
