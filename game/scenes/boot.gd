@@ -104,10 +104,12 @@ func switch_demo(id: String) -> void:
 	cfg.set_value("demo", "id", id)
 	cfg.save(DEMO_CFG)
 	get_tree().reload_current_scene()
+const MAX_FPS := 60
 var demo_status := ""
 var demo_note := ""
 
 func _ready() -> void:
+	Engine.max_fps = MAX_FPS  # docs/07-TECHNOLOGIA.md: 60 steady, the 120 Hz screen not used in full (heat)
 	demo = chosen_demo() if use_save else demo
 	if save_path == "user://autosave.bo":  # tests set their own
 		save_path = DEMOS[demo][2]
@@ -296,6 +298,7 @@ func _pan(rel: Vector2) -> void:
 
 func _zoom(factor: float) -> void:
 	cam.size = clampf(cam.size * factor, 12.0, 80.0)
+	cam.far = 36.0 + 2.0 * cam.size + 20.0  # the depth range of _place_camera
 
 # The tile under a screen point: the camera ray meets the ground plane (y = 0).
 func screen_to_tile(pos: Vector2) -> Vector2i:
@@ -666,5 +669,9 @@ func _build_environment() -> void:
 	add_child(cam)
 	_place_camera()
 
+# The camera's depth range follows what it sees: an orthographic camera at the default far plane (4 000 m)
+# spreads the sun's shadow map so thin that the shadows blur away (checked 2026-11-27: crisp at 120 m).
 func _place_camera() -> void:
 	cam.look_at_from_position(cam_target + Vector3(20, 22, 20), cam_target)
+	cam.near = 1.0
+	cam.far = 36.0 + 2.0 * cam.size + 20.0

@@ -23,6 +23,15 @@ func _process(_delta: float) -> bool:
 		check(calls > 0 and calls < 600, "draw calls under the budget of 600 (07-TECHNOLOGIA.md): %d" % calls)
 		check(node.walkers.multimesh.instance_count == 3000, "3 000 walkers in one MultiMesh")
 		check(node.walkers.multimesh.buffer.size() == 3000 * 16, "one buffer of transforms and custom data")
+		check(Engine.max_fps == 0, "the bench runs without the game's cap")
+		node.set_shadows(true)  # the shadow pass's draw calls
+	if frames == 50:
+		var shadow_calls: int = node.draw_calls()
+		print("BENCH with shadows: draw calls %d, gpu %.2f ms, cpu %.2f ms (llvmpipe, a report)" % [shadow_calls,
+			node._mean(node.gpu_ms), node._mean(node.cpu_ms)])
+		check(node.sun.shadow_enabled, "the shadows switch on")
+		check(shadow_calls > 0 and shadow_calls < 600, "with shadows still under 600 draw calls: %d" % shadow_calls)
+		check(node.gpu_ms.size() > 0 and node.cpu_ms.size() > 0, "GPU and CPU times are measured")
 		for arg in OS.get_cmdline_user_args():  # out=/abs/path.png: a picture of the close view
 			if arg.begins_with("out="):
 				root.get_texture().get_image().save_png(arg.substr(4))

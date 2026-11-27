@@ -320,3 +320,7 @@ ui.chosen_line,"Zaznaczone, kompanie: %d","Selected, companies: %d"
 ui.deselect_area,Odznacz obszar,Drop an area
 ui.deselect_all,Odznacz wszystko,Drop all
 ui.scale,Skala interfejsu: %d %%,Interface scale: %d %%
+ui.bench_shadows,Cienie,Shadows
+ui.bench_split,"GPU śr. %.2f ms, najgorzej %.2f ms   CPU śr. %.2f ms, najgorzej %.2f ms   %s","GPU avg %.2f ms, worst %.2f ms   CPU avg %.2f ms, worst %.2f ms   %s"
+ui.bench_shadows_on,cienie włączone,shadows on
+ui.bench_shadows_off,cienie wyłączone,shadows off

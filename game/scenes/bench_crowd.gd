@@ -4,6 +4,10 @@
 # - characters: one MultiMesh of a low-poly figure; its walk is a vertex animation texture (VAT) sampled in the
 #   vertex shader by VERTEX_ID and frame (the Blender pipeline will bake real ones, F3); the positions move on
 #   the CPU and go to the GPU in one buffer write a frame, as walkers from the core will.
+# - the frame's GPU time and the renderer's CPU time are measured apart from the frame rate: the screen's refresh
+#   (120 Hz on the reference phone) caps the rate and hides the headroom;
+# - the sun's shadows can be switched on, to price them before the game uses them.
+# The bench runs without the game's 60 fps cap (docs/07-TECHNOLOGIA.md budgets).
 # Presentation only: nothing here touches the simulation.
 extends Node3D
 
@@ -27,9 +31,15 @@ var frame_ms: Array[float] = []
 var vat_material := ShaderMaterial.new()
 var rng := RandomNumberGenerator.new()
 var seconds := 0.0
+var sun := DirectionalLight3D.new()
+var shadows := false
+var gpu_ms: Array[float] = []
+var cpu_ms: Array[float] = []
 
 func _ready() -> void:
 	rng.seed = 20261128  # the same town every run
+	Engine.max_fps = 0  # no cap here: the game's 60 is set again by boot.gd
+	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 	var env := WorldEnvironment.new()
 	env.environment = Environment.new()
 	env.environment.background_mode = Environment.BG_COLOR
@@ -37,8 +47,8 @@ func _ready() -> void:
 	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.environment.ambient_light_color = Color(0.7, 0.7, 0.7)
 	add_child(env)
-	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55, 35, 0)
+	sun.directional_shadow_max_distance = 200.0  # the far view holds the whole town
 	add_child(sun)
 	_ground()
 	_buildings()
@@ -195,6 +205,8 @@ func _place_camera() -> void:
 	cam.size = 18.0 if close else 60.0
 	var target := Vector3(GRID / 2.0, 0, GRID / 2.0)
 	cam.look_at_from_position(target + Vector3(20, 22, 20) * (0.5 if close else 1.5), target)
+	cam.near = 1.0
+	cam.far = 36.0 * (0.5 if close else 1.5) + 2.0 * cam.size + 20.0  # as boot.gd: crisp shadows
 
 func _hud() -> void:
 	var layer := CanvasLayer.new()
@@ -202,21 +214,27 @@ func _hud() -> void:
 	var box := VBoxContainer.new()
 	box.position = Vector2(16, 16)
 	layer.add_child(box)
-	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_font_size_override("font_size", 18)
 	box.add_child(label)
-	var row := HBoxContainer.new()
+	var row := HFlowContainer.new()  # wraps on a narrow screen
+	row.custom_minimum_size = Vector2(get_viewport().get_visible_rect().size.x - 32, 0)
 	box.add_child(row)
 	for n in CROWDS:
 		row.add_child(_button(str(n), func(): _set_crowd(n)))
 	row.add_child(_button("ui.bench_animation", func(): animate = not animate; vat_material.set_shader_parameter("animate", animate)))
 	row.add_child(_button("ui.bench_zoom", func(): close = not close; _place_camera()))
+	row.add_child(_button("ui.bench_shadows", func(): set_shadows(not shadows)))
 	row.add_child(_button("ui.close", func(): get_tree().change_scene_to_file("res://scenes/boot.tscn")))
+
+func set_shadows(on: bool) -> void:
+	shadows = on
+	sun.shadow_enabled = on
 
 func _button(text: String, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size = Vector2(150, 72)
-	b.add_theme_font_size_override("font_size", 22)
+	b.custom_minimum_size = Vector2(120, 56)
+	b.add_theme_font_size_override("font_size", 18)
 	b.pressed.connect(cb)
 	return b
 
@@ -224,8 +242,12 @@ func _process(delta: float) -> void:
 	seconds += delta
 	_move(delta)
 	frame_ms.append(delta * 1000.0)
-	if frame_ms.size() > 120:
-		frame_ms.pop_front()
+	var rid := get_viewport().get_viewport_rid()
+	gpu_ms.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+	cpu_ms.append(RenderingServer.viewport_get_measured_render_time_cpu(rid) + Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+	for a in [frame_ms, gpu_ms, cpu_ms]:
+		if a.size() > 120:
+			a.pop_front()
 	var avg := 0.0
 	var worst := 0.0
 	for ms in frame_ms:
@@ -234,8 +256,25 @@ func _process(delta: float) -> void:
 	avg /= frame_ms.size()
 	label.text = "\n".join([tr("ui.bench_fps") % [Engine.get_frames_per_second(), avg, worst],
 		tr("ui.bench_scene") % [crowd, BUILDINGS, draw_calls()],
+		tr("ui.bench_split") % [_mean(gpu_ms), _worst(gpu_ms), _mean(cpu_ms), _worst(cpu_ms),
+			tr("ui.bench_shadows_on") if shadows else tr("ui.bench_shadows_off")],
 		tr("ui.bench_device") % [Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
 			RenderingServer.get_video_adapter_name()]])
 
+func _mean(a: Array[float]) -> float:
+	var t := 0.0
+	for v in a:
+		t += v
+	return t / maxi(a.size(), 1)
+
+func _worst(a: Array[float]) -> float:
+	var w := 0.0
+	for v in a:
+		w = maxf(w, v)
+	return w
+
+# Draw calls of the frame, the interface's included (comparable with the phone's 19 in 0.0.43). The Mobile
+# renderer of Godot 4.7 reports no shadow pass in the render info (checked on a bare scene, 2026-11-27): the
+# shadows' price is the GPU time.
 func draw_calls() -> int:
 	return RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)

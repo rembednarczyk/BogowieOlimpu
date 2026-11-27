@@ -20,6 +20,7 @@ func _process(_d: float) -> bool:
 		return false
 	var ui = game.ui
 	game.ticks_per_second = 0.0
+	check(Engine.max_fps == game.MAX_FPS, "the game caps the frame rate at 60 (07-TECHNOLOGIA.md)")
 	ui.instant = false
 	check(ui.buildings_by_tab["hygiene_safety"].has("fountain"), "fountain in its tab")
 	check(not ui.buildings_by_tab["mythology"].has("sanctuary"), "no generic sanctuary")
