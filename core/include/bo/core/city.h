@@ -285,6 +285,9 @@ BuildingId add_building(CityState& city, Building b);
 // B3: recomputes road network ids (connected components in tile-index order) and every building's road access.
 void update_roads(CityState& city);
 
+// A crosswalk over the hippodrome stade at `at` (P:14; crosswalk.cpp): the tiles across become road.
+BuildResult place_crosswalk(CityState& city, const DataCatalog& catalog, Difficulty difficulty, TilePos at);
+
 // Exit tile search (S-004 units; S-007 road_access): perimeter tiles starting north of the north-west corner,
 // clockwise; the first road tile wins. A boulevard or avenue tile counts as its road (Z:154).
 std::optional<TilePos> find_road_access(const CityState& city, TilePos origin, std::int32_t width,

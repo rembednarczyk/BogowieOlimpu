@@ -38,11 +38,12 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     const bool log = std::getenv("BO_DEMO_LOG") != nullptr;
     bool science = false;
     bool racing = false;
+    bool crosswalk = false;
     std::vector<std::string> refused;
     std::uint64_t day = 0;
     const char* years = std::getenv("BO_DEMO_YEARS");
     const std::uint64_t cap = (years != nullptr ? std::strtoull(years, nullptr, 10) : 4) * kDaysPerMonth * kMonthsPerYear;
-    for (; day < cap && !(sim.state().scenario.won && science && racing); ++day) {
+    for (; day < cap && !(sim.state().scenario.won && science && racing && crosswalk); ++day) {
         for (const auto& c : due_commands(*order, sim, day)) {
             sim.issue(c);
         }
@@ -57,6 +58,11 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
             science = science || (b.house && s != b.coverage.end() && s->second > 0);
         }
         racing = racing || working_hippodrome(sim.state(), sim.catalog()) > 0;
+        for (const BuildingId id : hippodrome_track(sim.state().city).segments) {
+            for (const TilePos p : sim.state().city.buildings.items.at(id).tiles) {
+                crosswalk = crosswalk || sim.state().city.map.at(p).road;  // P:14
+            }
+        }
         if (log && day % 96 == 95) {
             const Track t = hippodrome_track(sim.state().city);
             std::printf("day %llu: pop %llu treasury %lld track %zu closed %d horses %u goals",
@@ -91,4 +97,5 @@ TEST_CASE("demo gate: Atlantis, the autopilot builds the Atlantean demo and wins
     CHECK(sim.state().scenario.won);
     CHECK(science);  // scholars in the houses (P:10-11)
     CHECK(racing);   // the hippodrome with its horses (P:13-15)
+    CHECK(crosswalk);  // a crosswalk over it (P:14)
 }

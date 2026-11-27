@@ -175,3 +175,27 @@ TEST_CASE("hippodrome: a big racing track cheers the city and raises opinions; t
     huge.sim->mutable_state().hippodrome_horses = 0;  // not racing: no effect
     CHECK(hippodrome_mood(huge.sim->state(), huge.catalog) == 0);
 }
+
+TEST_CASE("crosswalk: across a straight stade, ends open, never next to another; the tiles become road (P:14)") {
+    std::vector<std::string> rows(20, std::string(24, '.'));
+    SimulationConfig cfg{8, Difficulty::Hero, 30000, rows, true};
+    cfg.atlantean = true;
+    Simulation sim(bo::test::catalog_isolated(), cfg);
+    // A ring of 4 x 3 stades around an empty middle (x 6-13, y 6-9).
+    for (const auto& [x, y] : {std::pair{2, 2}, {6, 2}, {10, 2}, {14, 2}, {14, 6}, {14, 10}, {10, 10}, {6, 10},
+                               {2, 10}, {2, 6}}) {
+        REQUIRE(place(sim, "hippodrome", x, y) == "ok");
+    }
+    REQUIRE(hippodrome_track(sim.state().city).closed);
+    CHECK(place(sim, "crosswalk", 3, 3) == "build.crosswalk_not_straight");  // a corner
+    CHECK(place(sim, "crosswalk", 20, 3) == "build.needs_hippodrome");
+    CHECK(place(sim, "crosswalk", 7, 2) == "ok");  // north to south across the top stade (6, 2)
+    for (std::int32_t y = 2; y < 6; ++y) {
+        CHECK(sim.state().city.map.at({7, y}).road);
+    }
+    CHECK(place(sim, "crosswalk", 11, 2) == "build.crosswalk_adjacent");  // the next stade
+    REQUIRE(place(sim, "column", 1, 7) == "ok");
+    CHECK(place(sim, "crosswalk", 2, 7) == "build.crosswalk_blocked");  // the west end is built over
+    CHECK(place(sim, "crosswalk", 2, 6) == "ok");  // west to east across the side stade (2, 6), row 6
+    CHECK(hippodrome_track(sim.state().city).closed);  // still a loop
+}

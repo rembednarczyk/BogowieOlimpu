@@ -10,7 +10,7 @@ Run: python3 tools/make_demo_atlantis.py   (then tools/sync_game_data.py copies 
 import json
 import os
 
-W, H = 48, 34
+W, H = 48, 40
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 grid = [["."] * W for _ in range(H)]
 
@@ -23,10 +23,10 @@ def fill(x0, y0, x1, y1, c):
 
 fill(31, 23, 46, 29, ",")     # meadow: farms (Z:43)
 grid[6][0] = "E"              # land entry: immigrants (Z:17)
-for y in (6, 14, 22, 31):      # streets
+for y in (6, 14, 22, 37):      # streets
     fill(1, y, W - 1, y, "=")
 for x in (12, 30):
-    fill(x, 6, x, 31, "=")
+    fill(x, 6, x, 37, "=")
 
 steps = []
 
@@ -61,16 +61,17 @@ put("food_vendor_stall", 19, 15, day=1)
 put("bibliotheke", 5, 12, day=SCIENCE); put("bibliotheke", 19, 12, day=SCIENCE)
 put("maintenance_office", 21, 12, day=SCIENCE)
 put("carrot_farm", 38, 23, day=SCIENCE); put("onion_farm", 41, 23, day=SCIENCE)
-# Stage TRACK: the hippodrome (P:13-15): four stades in a loop, the first by the y = 22 street keeps the horses;
-# the ranch takes wheat from the storehouse.
+# Stage TRACK: the hippodrome (P:13-15): a ring of eight stades round an empty middle, the first by the y = 22
+# street keeps the horses; a crosswalk over the top stade (P:14); the ranch takes wheat from the storehouse.
 put("wheat_farm", 44, 23, day=TRACK)
 put("horse_ranch", 32, 15, day=TRACK)
 put("storehouse", 40, 15, day=TRACK)
 steps.append({"day": TRACK + 1, "at": [40, 15], "storage_order": {"good": "wheat", "kind": 1, "limit": 8}})
-for x, y in [(13, 23), (17, 23), (17, 27), (13, 27)]:
+for x, y in [(13, 23), (17, 23), (21, 23), (21, 27), (21, 31), (17, 31), (13, 31), (13, 27)]:
     put("hippodrome", x, y, day=TRACK)
+put("crosswalk", 18, 23, day=TRACK + 1)
 put("maintenance_office", 25, 15, day=TRACK); put("watchpost", 27, 15, day=TRACK)
-put("maintenance_office", 22, 23, day=TRACK); put("watchpost", 24, 23, day=TRACK)
+put("maintenance_office", 26, 23, day=TRACK); put("watchpost", 28, 23, day=TRACK)
 
 scenario = {
     "id": "demo_atlantis",
@@ -86,7 +87,7 @@ scenario = {
     "goals": [
         {"type": "population", "value": 250},
         {"type": "houses", "target": "hovel", "value": 6},  # 15 points: the scholars' science (P:10-11)
-        {"type": "hippodrome", "value": 4},
+        {"type": "hippodrome", "value": 8},
     ],
 }
 build = {"note": "Autopilot demo Atlantydy (tools/make_demo_atlantis.py). Do not edit by hand.", "steps": steps}

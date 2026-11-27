@@ -36,11 +36,16 @@
   {"day": 301, "at": [40, 15], "storage_order": {"good": "wheat", "kind": 1, "limit": 8}},
   {"day": 300, "place": "hippodrome", "x": 13, "y": 23},
   {"day": 300, "place": "hippodrome", "x": 17, "y": 23},
-  {"day": 300, "place": "hippodrome", "x": 17, "y": 27},
+  {"day": 300, "place": "hippodrome", "x": 21, "y": 23},
+  {"day": 300, "place": "hippodrome", "x": 21, "y": 27},
+  {"day": 300, "place": "hippodrome", "x": 21, "y": 31},
+  {"day": 300, "place": "hippodrome", "x": 17, "y": 31},
+  {"day": 300, "place": "hippodrome", "x": 13, "y": 31},
   {"day": 300, "place": "hippodrome", "x": 13, "y": 27},
+  {"day": 301, "place": "crosswalk", "x": 18, "y": 23},
   {"day": 300, "place": "maintenance_office", "x": 25, "y": 15},
   {"day": 300, "place": "watchpost", "x": 27, "y": 15},
-  {"day": 300, "place": "maintenance_office", "x": 22, "y": 23},
-  {"day": 300, "place": "watchpost", "x": 24, "y": 23}
+  {"day": 300, "place": "maintenance_office", "x": 26, "y": 23},
+  {"day": 300, "place": "watchpost", "x": 28, "y": 23}
  ]
 }

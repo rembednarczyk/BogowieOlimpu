@@ -146,6 +146,9 @@ BuildResult place_building(CityState& city, const DataCatalog& catalog, Difficul
         return r;
     }
     const std::string& rule = bt.placement;
+    if (rule == "straight_hippodrome_segment") {
+        return place_crosswalk(city, catalog, difficulty, origin);
+    }
     Building b;
     b.type = type;
     b.origin = origin;
