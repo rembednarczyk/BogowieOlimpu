@@ -145,7 +145,8 @@ struct ConsultOracle {
     std::uint32_t building = 0;
 };
 
-// Trireme orders (Z:142): 0 Defend Location at (x, y) (-1: where it is), 1 Attack All Enemies, 2 Carry Out Repairs.
+// Trireme orders (Z:142): 0 Defend Location at (x, y) (-1: where it is), 1 Attack All Enemies, 2 Carry Out Repairs,
+// 3 Patrol Area (between the post and the wharf), 4 Call Crew to Ship, 5 Send Crew Home (Z:141).
 struct SetShipOrder {
     std::uint32_t ship = 0;
     std::uint8_t order = 0;

@@ -301,6 +301,9 @@ put("horse_ranch", 56, 46, day=ARMY)
 put("maintenance_office", 64, 46, day=ARMY)
 steps.append({"day": ARMY, "road": [49, 46, 49, 46]})
 put("trireme_wharf", 50, 47, day=ARMY)
+# Crews (Z:141): every trireme is launched unmanned; its crew is called from the workforce (Crew All, Z:150).
+steps.append({"day": ARMY, "every": 32, "ships": 4})
+steps.append({"day": 1200, "ship_order": [0, 3, 60, 54]})  # after the landing: the first one patrols (Z:142)
 put("storehouse", 71, 46, day=ARMY)  # wood for the triremes (Z:141): the timber mills are 50 tiles away
 steps.append({"day": ARMY + 1, "at": [71, 46], "storage_order": {"good": "wood", "kind": 1, "limit": 8}})
 

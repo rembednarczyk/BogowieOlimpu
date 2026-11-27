@@ -272,6 +272,8 @@
   "repair_below_percent": 30,
   "repair_hp_per_day": 30,
   "attack_all_engage_tiles": 200,
+  "crew_workers": 20,
+  "crew_src": "Z:141: załoga (wioślarze, marines) z puli pracowników, Send Crew Home zwraca ich do pracy; [ZAŁOŻENIE L-124] 20 robotników na trierę, statek bez załogi nie płynie i nie walczy; Patrol Area kursuje między posterunkiem a stocznią",
   "src": "Z:141-144 (rozkazy, naprawa, priorytety celów); [ZAŁOŻENIE L-124] jeden okręt wroga na 2 transporty, kapitan wraca na naprawę poniżej 30 % kadłuba, naprawa 30 punktów dziennie przy stoczni, Defend Location walczy na zasięg pocisku, Attack All bez limitu; desant na wodzie najbliżej celu najeźdźców, przy lądzie"
  },
  "tactics_rules": {

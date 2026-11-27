@@ -218,3 +218,10 @@ goal.survive_until,Przetrwaj do roku %d,Survive until year %d
 goal.complete_before,Ukończ przed rokiem %d,Complete before year %d
 goal.trading_partners,Partnerzy handlowi: %d,Trading partners: %d
 goal.yearly_profit,Zysk roczny: %d dr,Yearly profit: %d dr
+ship.order.3,Patrol,Patrol
+ship.crew.0,bez załogi,no crew
+ship.crew.1,załoga na pokładzie,crew aboard
+ship.crew.2,załoga wraca,crew going home
+ui.crew_all,Wezwij wszystkie załogi,Call all crews
+ui.crew_call,Wezwij załogę,Call crew
+ui.crew_home,Odeślij załogę,Send crew home

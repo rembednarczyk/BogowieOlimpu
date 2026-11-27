@@ -350,6 +350,8 @@
   {"day": 320, "place": "maintenance_office", "x": 64, "y": 46},
   {"day": 320, "road": [49, 46, 49, 46]},
   {"day": 320, "place": "trireme_wharf", "x": 50, "y": 47},
+  {"day": 320, "every": 32, "ships": 4},
+  {"day": 1200, "ship_order": [0, 3, 60, 54]},
   {"day": 320, "place": "storehouse", "x": 71, "y": 46},
   {"day": 321, "at": [71, 46], "storage_order": {"good": "wood", "kind": 1, "limit": 8}},
   {"day": 400, "place": "flower_garden", "x": 62, "y": 15},

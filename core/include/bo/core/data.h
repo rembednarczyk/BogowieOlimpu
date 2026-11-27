@@ -242,6 +242,7 @@ struct NavalParams {
     std::int32_t repair_below_percent = 30;
     std::int32_t repair_hp_per_day = 30;
     std::int32_t attack_all_engage = 200;
+    std::int32_t crew_workers = 20;  // taken from the workforce while a trireme is crewed (Z:141)
 };
 
 struct GamesParams {

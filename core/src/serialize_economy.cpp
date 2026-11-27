@@ -172,6 +172,7 @@ void write_military(ByteWriter& w, const MilitaryState& m) {
         w.u8(static_cast<std::uint8_t>(sh.order));
         w.i32(sh.station.x);
         w.i32(sh.station.y);
+        w.u8(static_cast<std::uint8_t>(sh.crew));  // since v42
     }
 }
 
@@ -253,11 +254,13 @@ bool read_military(ByteReader& r, MilitaryState& m, std::uint32_t version) {
     m.ships.resize(ships);
     for (Ship& sh : m.ships) {
         std::uint8_t order = 0;
-        if (!r.u32(sh.walker) || !r.u32(sh.wharf) || !r.u8(order) || order > static_cast<std::uint8_t>(ShipOrder::Repair) ||
-            !r.i32(sh.station.x) || !r.i32(sh.station.y)) {
+        std::uint8_t crew = 1;  // before v42 every ship had its crew
+        if (!r.u32(sh.walker) || !r.u32(sh.wharf) || !r.u8(order) || order > static_cast<std::uint8_t>(ShipOrder::Patrol) ||
+            !r.i32(sh.station.x) || !r.i32(sh.station.y) || (version >= 42 && (!r.u8(crew) || crew > 2))) {
             return false;
         }
         sh.order = static_cast<ShipOrder>(order);
+        sh.crew = static_cast<Crew>(crew);
     }
     return true;
 }

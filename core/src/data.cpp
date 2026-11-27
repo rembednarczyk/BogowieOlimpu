@@ -245,6 +245,7 @@ void load_army_rules(const std::map<std::string, json>& docs, DataCatalog& cat) 
         np.repair_below_percent = n.value("repair_below_percent", np.repair_below_percent);
         np.repair_hp_per_day = n.value("repair_hp_per_day", np.repair_hp_per_day);
         np.attack_all_engage = n.value("attack_all_engage_tiles", np.attack_all_engage);
+        np.crew_workers = n.value("crew_workers", np.crew_workers);
     }
 }
 

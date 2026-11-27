@@ -76,7 +76,8 @@ TEST_CASE("golden hash") {
     // 2026-11-27: save format v39 (version field; no invasion by sea, no ships), fleets Z:141-144.
     // 2026-11-27: save format v40 (version field; no companies here), lent companies Z:140, Z:174.
     // 2026-11-27: save format v41 (version field; no sanctuary here), the oracle Z:124.
-    const std::uint64_t kGolden = 0x89c2bb8e6f1eb369ULL;
+    // 2026-11-27: save format v42 (version field; no ships here), trireme crews Z:141.
+    const std::uint64_t kGolden = 0x24d711716c57e42eULL;
     if (h.value() != kGolden) {
         std::printf("golden hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }
@@ -230,7 +231,8 @@ TEST_CASE("golden hash: city with buildings and walkers") {
     // 2026-11-27: save format v39 (soldiers aboard per walker, sea invasion fields, no ships; no wharf here), Z:141-144.
     // 2026-11-27: save format v40 (a lender field per company; none lent here), Z:140, Z:174.
     // 2026-11-27: save format v41 (an oracle silence field per sanctuary; the sanctuary here is no oracle), Z:124.
-    const std::uint64_t kGolden = 0x98ba4d4a3d48e98cULL;
+    // 2026-11-27: save format v42 (a crew byte per ship; no wharf here), Z:141.
+    const std::uint64_t kGolden = 0x5c22f80728a03bb1ULL;
     if (h.value() != kGolden) {
         std::printf("golden city hash is 0x%016llx\n", static_cast<unsigned long long>(h.value()));
     }

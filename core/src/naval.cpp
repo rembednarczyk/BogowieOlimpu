@@ -130,9 +130,12 @@ std::int32_t ship_engage(const WorldState& st, const DataCatalog& catalog, const
     }
     for (const Ship& sh : st.military.ships) {
         if (sh.walker == w.id) {
-            return sh.order == ShipOrder::AttackAll ? catalog.naval.attack_all_engage
-                   : sh.order == ShipOrder::Defend  ? s.missile_range
-                                                    : -1;  // under repair: no fighting
+            if (sh.crew != Crew::Aboard) {
+                return -1;  // unmanned, or the crew going home: no fighting (Z:141)
+            }
+            return sh.order == ShipOrder::AttackAll                                   ? catalog.naval.attack_all_engage
+                   : sh.order == ShipOrder::Defend || sh.order == ShipOrder::Patrol ? s.missile_range
+                                                                                    : -1;  // under repair
         }
     }
     return s.missile_range;
@@ -170,10 +173,17 @@ std::optional<std::pair<std::int32_t, WalkerId>> naval_foe(const WorldState& st,
     return std::make_pair(std::get<1>(*best), std::get<2>(*best));
 }
 
-// A trireme with nothing to fight sails back to its post (Defend Location, Z:142).
+// A trireme with nothing to fight sails back to its post (Defend Location, Z:142); on patrol it sails between
+// the post and the wharf [ZAŁOŻENIE, L-124]. Without a crew it does not move (Z:141).
 void ship_idle(WorldState& st, Walker& w) {
     const Ship* sh = ship_of(st, w.id);
-    if (sh && sh->order != ShipOrder::Repair && w.phase == WalkerPhase::AtTarget && w.tile != sh->station) {
+    if (!sh || sh->crew != Crew::Aboard || sh->order == ShipOrder::Repair || w.phase != WalkerPhase::AtTarget) {
+        return;
+    }
+    const TilePos moor = mooring_of(st, *sh);
+    if (sh->order == ShipOrder::Patrol) {
+        route(st.city, w, w.tile == sh->station ? moor : sh->station);
+    } else if (w.tile != sh->station) {
         route(st.city, w, sh->station);
     }
 }
@@ -278,6 +288,18 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
         const UnitStats* s = stats_of(catalog, w);
         const std::int32_t full = s ? s->hp : w.hp;
         const TilePos moor = mooring_of(st, sh);
+        if (sh.crew == Crew::GoingHome && w.tile == moor) {
+            sh.crew = Crew::None;  // back at the wharf: the crew goes back to work (Z:141)
+        }
+        if (sh.crew == Crew::None) {
+            continue;  // unmanned: it waits at the wharf
+        }
+        if (sh.crew == Crew::GoingHome) {
+            if (w.phase == WalkerPhase::AtTarget && !route(st.city, w, moor)) {
+                stand(w);
+            }
+            continue;
+        }
         if (sh.order != ShipOrder::Repair && w.hp * 100 < full * catalog.naval.repair_below_percent) {
             sh.order = ShipOrder::Repair;  // the captain turns back on his own (Z:142)
             route(st.city, w, moor);
@@ -299,19 +321,33 @@ void advance_fleet(WorldState& st, const DataCatalog& catalog, CombatEvents& ev)
 std::string set_ship_order(WorldState& st, const DataCatalog& catalog, std::uint32_t ship, std::uint8_t order,
                            TilePos at) {
     (void)catalog;
-    if (ship >= st.military.ships.size() || order > static_cast<std::uint8_t>(ShipOrder::Repair)) {
+    if (ship >= st.military.ships.size() || order > 5) {
         return "military.bad_ship";
     }
     Ship& sh = st.military.ships[ship];
     Walker& w = st.walkers.items.at(sh.walker);
+    if (order == 4) {  // Call Crew to Ship (Z:141)
+        sh.crew = Crew::Aboard;
+        return {};
+    }
+    if (order == 5) {  // Send Crew Home: to the wharf, then the crew goes back to work (Z:141)
+        if (sh.crew == Crew::Aboard) {
+            sh.crew = Crew::GoingHome;
+            route(st.city, w, mooring_of(st, sh));
+        }
+        return {};
+    }
+    if (sh.crew == Crew::None) {
+        return "military.no_crew";  // an unmanned ship takes no orders (Z:141)
+    }
     const auto o = static_cast<ShipOrder>(order);
-    if (o == ShipOrder::Defend && at.x >= 0 && !open_water(st.city, at)) {
+    if ((o == ShipOrder::Defend || o == ShipOrder::Patrol) && at.x >= 0 && !open_water(st.city, at)) {
         return "military.not_water";
     }
     sh.order = o;
     if (sh.order == ShipOrder::Repair) {
         route(st.city, w, mooring_of(st, sh));
-    } else if (sh.order == ShipOrder::Defend && at.x >= 0) {
+    } else if ((sh.order == ShipOrder::Defend || sh.order == ShipOrder::Patrol) && at.x >= 0) {
         sh.station = at;
         route(st.city, w, at);
     } else if (sh.order == ShipOrder::Defend) {

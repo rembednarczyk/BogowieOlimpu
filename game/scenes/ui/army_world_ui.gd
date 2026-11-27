@@ -144,17 +144,24 @@ func _ships() -> void:
 	if ships.is_empty():
 		return
 	army_box.add_child(ui._label(tr("ui.ships"), 20))
+	army_box.add_child(ui._button("ui.crew_all", func(): _each(range(ships.size()), func(i): game.sim.set_ship_order(i, 4)),
+		Vector2(240, ui.CELL.y)))  # Crew All (Z:150)
 	for i in ships.size():
 		var sh: Dictionary = ships[i]
+		var manned: bool = sh["crew"] == 1
 		var order := OptionButton.new()
 		order.custom_minimum_size = Vector2(200, ui.CELL.y)
 		order.add_theme_font_size_override("font_size", 18)
-		for o in 3:
+		for o in 4:
 			order.add_item(tr("ship.order.%d" % o))
 		order.select(int(sh["order"]))
+		order.disabled = not manned
 		order.item_selected.connect(func(o): game.sim.set_ship_order(i, o); refresh_army())
-		_row(army_box, tr("ui.ship_line") % [i + 1, sh["hp"], sh["max_hp"]], [order,
-			_small("ui.ship_post", func(): posting = i; army.visible = false)])
+		var crew: Button = ui._button("ui.crew_home" if manned else "ui.crew_call",
+			func(): game.sim.set_ship_order(i, 5 if manned else 4); refresh_army(), Vector2(170, ui.CELL.y))
+		crew.disabled = sh["crew"] == 2
+		_row(army_box, tr("ui.ship_line") % [i + 1, sh["hp"], sh["max_hp"]] + ", " + tr("ship.crew.%d" % sh["crew"]),
+			[crew, order, _small("ui.ship_post", func(): posting = i; army.visible = false, manned)])
 
 func _each(ids: Array, f: Callable) -> void:
 	for i in ids:
@@ -176,7 +183,8 @@ func start_move(ids) -> void:
 # Called by build_ui.tap: true when the tap moved a company.
 func map_tap(tile: Vector2i) -> bool:
 	if posting >= 0 and tile.x >= 0:
-		game.sim.set_ship_order(posting, 0, tile.x, tile.y)  # Hold station there (rejected off the water)
+		var o: int = game.sim.get_ships()[posting]["order"]
+		game.sim.set_ship_order(posting, 3 if o == 3 else 0, tile.x, tile.y)  # a new post (rejected off the water)
 		posting = -1
 		return true
 	if moving.is_empty() or tile.x < 0:

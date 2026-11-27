@@ -240,7 +240,7 @@ void dump(const Simulation& sim) {
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
-                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "stockpile", "not_buying", "towers_manned"};
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "stockpile", "not_buying", "towers_manned"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
@@ -363,6 +363,10 @@ DemoRun run_demo(std::uint64_t years) {
         run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
         run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
         run.seen["trireme"] += sim.state().military.ships.empty() ? 0 : 1;  // launched from a wharf (Z:141)
+        for (const Ship& sh : sim.state().military.ships) {
+            run.seen["crew_called"] += sh.crew == Crew::Aboard ? 1 : 0;  // Z:141
+            run.seen["ship_patrol"] += sh.order == ShipOrder::Patrol ? 1 : 0;  // Z:142
+        }
         run.seen["monument_built"] += std::any_of(sim.state().city.buildings.items.begin(), sim.state().city.buildings.items.end(),
                                                   [](const auto& kv) { return kv.second.type == "commemorative_monument"; })
                                           ? 1 : 0;  // earned and built (Z:155)

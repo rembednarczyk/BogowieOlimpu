@@ -85,6 +85,15 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(SetStockpile{s.at("stockpile").get<std::string>(), s.value("on", true)});
     } else if (s.contains("not_buying")) {
         add(SetNotBuying{0, s.value("on", true)}, pos_of(s.at("not_buying")));
+    } else if (s.contains("ship_order")) {  // [ship, order, x, y]: one trireme's order or post (Z:142)
+        const json& o = s.at("ship_order");
+        add(SetShipOrder{o.at(0).get<std::uint32_t>(), o.at(1).get<std::uint8_t>(), o.size() > 3 ? o.at(2).get<std::int32_t>() : -1,
+                         o.size() > 3 ? o.at(3).get<std::int32_t>() : -1});
+    } else if (s.contains("ships")) {  // every trireme's order: 0-3 orders, 4 call the crew (Z:141-142)
+        BuildStep step = base;
+        step.all_ships = true;
+        step.command = SetShipOrder{0, s.at("ships").get<std::uint8_t>(), -1, -1};
+        out.push_back(std::move(step));
     } else if (s.contains("tactics")) {  // every company's tactic: 0 defensive, 1 offensive, 2 special
         BuildStep step = base;
         step.all_companies = true;
@@ -166,6 +175,13 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
             stocked = stocked && city_stock(sim.state().city, sim.catalog(), good) >= n;  // without trade buildings (Z:79)
         }
         if (!stocked) {
+            continue;
+        }
+        if (s.all_ships) {
+            const auto order = std::get<SetShipOrder>(s.command).order;
+            for (std::uint32_t i = 0; i < sim.state().military.ships.size(); ++i) {
+                out.emplace_back(SetShipOrder{i, order, -1, -1});
+            }
             continue;
         }
         if (s.all_companies) {

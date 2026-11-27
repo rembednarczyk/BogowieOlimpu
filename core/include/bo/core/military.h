@@ -69,7 +69,9 @@ struct Invasion {
 };
 
 // Trireme orders (Z:142-143). Stored in saves: append only.
-enum class ShipOrder : std::uint8_t { Defend = 0, AttackAll, Repair };
+enum class ShipOrder : std::uint8_t { Defend = 0, AttackAll, Repair, Patrol };
+// Crew (Z:141, Z:150; since v42): none (Unmanned), aboard, or going home with the ship to the wharf.
+enum class Crew : std::uint8_t { None = 0, Aboard, GoingHome };
 
 // A player's warship (Z:141-144; since v39): one per wharf, the walker on the water, its post.
 struct Ship {
@@ -77,8 +79,10 @@ struct Ship {
     BuildingId wharf = kNoBuilding;
     ShipOrder order = ShipOrder::Defend;
     TilePos station{0, 0};  // Defend Location: where it holds; the wharf's mooring at first
+    Crew crew = Crew::None;  // launched unmanned (Z:150); Call Crew to Ship takes workers from their jobs
     friend bool operator==(const Ship& a, const Ship& b) {
-        return a.walker == b.walker && a.wharf == b.wharf && a.order == b.order && a.station == b.station;
+        return a.walker == b.walker && a.wharf == b.wharf && a.order == b.order && a.station == b.station &&
+               a.crew == b.crew;
     }
 };
 

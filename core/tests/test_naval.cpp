@@ -1,6 +1,7 @@
 // Fleets (docs/gameplay/11-wojsko.md Z:141-144; naval.cpp; assumptions L-124).
 #include <algorithm>
 
+#include "bo/core/military.h"
 #include "bo/core/naval.h"
 #include "bo/core/serialize.h"
 #include "bo/core/simulation.h"
@@ -36,13 +37,18 @@ BuildingId wharf_of(const Simulation& sim) {
     return kNoBuilding;
 }
 
-// The wharf has built its trireme: it is launched the next day.
-Simulation with_trireme() {
+// The wharf has built its trireme: it is launched the next day, unmanned (Z:150); `crew`: its crew called.
+Simulation with_trireme(bool crew = true) {
     auto sim = sea_city();
     REQUIRE(wharf_of(sim) != kNoBuilding);
     sim.mutable_state().city.buildings.items.at(wharf_of(sim)).producer->output_loads = 1;
     sim.run_days(1);
     REQUIRE(sim.state().military.ships.size() == 1);
+    CHECK(sim.state().military.ships[0].crew == Crew::None);
+    if (crew) {
+        sim.issue(SetShipOrder{0, 4, -1, -1});  // Call Crew to Ship (Z:141)
+        sim.step(1);
+    }
     return sim;
 }
 
@@ -200,4 +206,46 @@ TEST_CASE("fleet: when the soldiers ashore are beaten the invasion is over and t
     CHECK(std::none_of(walkers.begin(), walkers.end(), [](const auto& kv) {
         return kv.second.type == "transport" || kv.second.type == "warship";
     }));
+}
+
+TEST_CASE("fleet: an unmanned trireme takes no orders; its crew comes from the workforce and goes back (Z:141)") {
+    auto sim = with_trireme(false);
+    const auto workforce = workers_in_the_field(sim.state(), sim.catalog());
+    sim.drain_events();
+    sim.issue(SetShipOrder{0, 1, -1, -1});
+    sim.step(1);
+    std::size_t rejected = 0;
+    for (const auto& e : sim.drain_events()) {
+        rejected += std::holds_alternative<CommandRejected>(e.event) ? 1 : 0;
+    }
+    CHECK(rejected == 1);  // military.no_crew
+    sim.issue(SetShipOrder{0, 4, -1, -1});
+    sim.step(1);
+    CHECK(sim.state().military.ships[0].crew == Crew::Aboard);
+    CHECK(workers_in_the_field(sim.state(), sim.catalog()) == workforce + 20);  // 20 rowers and marines [L-124]
+    sim.issue(SetShipOrder{0, 0, 20, 15});
+    sim.run_days(10);
+    REQUIRE(trireme(sim).tile == TilePos{20, 15});
+    sim.issue(SetShipOrder{0, 5, -1, -1});  // Send Crew Home
+    sim.step(1);
+    CHECK(sim.state().military.ships[0].crew == Crew::GoingHome);
+    sim.run_days(10);
+    CHECK(trireme(sim).tile.y == 12);  // at the wharf
+    CHECK(sim.state().military.ships[0].crew == Crew::None);
+    CHECK(workers_in_the_field(sim.state(), sim.catalog()) == workforce);
+}
+
+TEST_CASE("fleet: on patrol a trireme sails between its post and the wharf (Z:142, L-124)") {
+    auto sim = with_trireme();
+    sim.issue(SetShipOrder{0, 3, 24, 16});
+    sim.step(1);
+    bool post = false;
+    bool wharf = false;
+    for (int day = 0; day < 40; ++day) {
+        sim.run_days(1);
+        post = post || trireme(sim).tile == TilePos{24, 16};
+        wharf = wharf || (post && trireme(sim).tile.y == 12);
+    }
+    CHECK(post);
+    CHECK(wharf);
 }

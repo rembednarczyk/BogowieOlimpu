@@ -22,6 +22,7 @@ struct BuildStep {
     std::uint64_t until = 0;                   // with `every`: the last day (0: no end)
     bool fulfill_all = false;                  // send what every open city request asks for (Z:161)
     bool all_companies = false;                // SetCompanyTactic for every company there is when due (Z:138)
+    bool all_ships = false;                    // SetShipOrder for every trireme there is when due (Z:141-142)
     bool dispatch_ready = false;               // attack or raid with every company at home but rabble (Z:177)
     std::map<std::string, std::uint32_t> when;  // loads in the city's storage needed first
     Command command;

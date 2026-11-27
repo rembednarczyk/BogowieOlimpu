@@ -77,8 +77,9 @@ public:
     void set_not_buying(int64_t stall, bool on);              // Z:72
     void man_towers(bool on);                                 // Man All, Z:146
     void set_company_tactic(int64_t company, int64_t tactic); // 0 defensive, 1 offensive, 2 special (Z:138-139)
-    // Triremes (Z:141-144): {"order" (0 defend, 1 attack all, 2 repair), "hp", "max_hp", "x", "y", "station_x",
-    // "station_y"}; set_ship_order(ship, order, x, y): Defend Location at a water tile (-1: where it is).
+    // Triremes (Z:141-144): {"order" (0 defend, 1 attack all, 2 repair, 3 patrol), "crew", "hp", "max_hp", "x", "y",
+    // "station_x", "station_y"}; set_ship_order(ship, order, x, y): Defend Location or Patrol at a water tile
+    // (-1: where it is); 4 calls the crew, 5 sends it home (Z:141).
     godot::Array get_ships() const;
     void consult_oracle(int64_t building);  // Z:124: the answer comes as an "oracle_spoke" event
     // Military help (Z:174): defensive aid while invaded, or with `strike` an attack of `city` on `target`.

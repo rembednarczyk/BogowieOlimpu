@@ -590,13 +590,14 @@ Array BoSimulation::get_ships() const {
         d["y"] = w.tile.y;
         d["station_x"] = sh.station.x;
         d["station_y"] = sh.station.y;
+        d["crew"] = static_cast<int64_t>(sh.crew);  // 0 unmanned, 1 aboard, 2 going home (Z:141, Z:150)
         out.append(d);
     }
     return out;
 }
 
 void BoSimulation::set_ship_order(int64_t ship, int64_t order, int64_t x, int64_t y) {
-    if (sim_ && ship >= 0 && order >= 0 && order <= 2) {
+    if (sim_ && ship >= 0 && order >= 0 && order <= 5) {
         sim_->issue(bo::core::SetShipOrder{static_cast<std::uint32_t>(ship), static_cast<std::uint8_t>(order),
                                            static_cast<std::int32_t>(x), static_cast<std::int32_t>(y)});
     }
