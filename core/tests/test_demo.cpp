@@ -71,32 +71,6 @@ void count_events(const std::vector<TimedEvent>& events, std::map<std::string, s
     }
 }
 
-// Trial of the day's placements on a copy, in order (stalls need the agora placed just before them).
-void note_refusals(const Simulation& sim, const std::vector<Command>& cmds, std::uint64_t day,
-                   std::vector<std::string>& refused) {
-    CityState copy = sim.state().city;
-    for (const Command& c : cmds) {
-        if (const auto* p = std::get_if<PlaceBuilding>(&c)) {
-            const auto r = place_building(copy, sim.catalog(), sim.state().difficulty, p->type, {p->x, p->y}, p->rotation);
-            const bool waits = r.reason == "build.elite_needs_goods" || r.reason.rfind("myth.", 0) == 0 ||
-                               r.reason.rfind("build.sanctuary", 0) == 0;  // retry steps wait for their goods
-            const std::string key = p->type + " " + std::to_string(p->x) + "," + std::to_string(p->y);
-            const bool seen = std::any_of(refused.begin(), refused.end(),
-                                          [&key](const std::string& s) { return s.find(key) != std::string::npos; });
-            const char* trace = std::getenv("BO_DEMO_TRACE");  // e.g. BO_DEMO_TRACE=elite_housing
-            if (!r.ok() && trace != nullptr && p->type == trace && day % 32 == 0) {
-                std::printf("trace day %llu %s: %s\n", static_cast<unsigned long long>(day), key.c_str(), r.reason.c_str());
-            }
-            if (!r.ok() && !waits && !seen) {
-                refused.push_back(std::to_string(day) + " " + p->type + " " + std::to_string(p->x) + "," +
-                                  std::to_string(p->y) + ": " + r.reason);
-            }
-        } else if (const auto* road = std::get_if<PlaceRoad>(&c)) {
-            place_road(copy, sim.catalog(), sim.state().difficulty, {road->x, road->y});
-        }
-    }
-}
-
 // Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
 constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
@@ -165,37 +139,7 @@ DemoRun run_demo(std::uint64_t years) {
             }
             std::printf(" expeditions %zu\n", sim.state().expeditions.size());
         }
-        if (const char* hs = std::getenv("BO_DEMO_HOUSE"); hs != nullptr && sim.state().time.day_in_month() == 0) {
-            int hx = 0, hy = 0;  // BO_DEMO_HOUSE=x,y: the building there once a month (risks, mood, coverage)
-            if (std::sscanf(hs, "%d,%d", &hx, &hy) == 2) {
-                const BuildingId id = sim.state().city.map.at({hx, hy}).building;
-                if (id != kNoBuilding) {
-                    const Building& b = sim.state().city.buildings.items.at(id);
-                    std::printf("d%llu %s fire %u crime %u staffing %u", static_cast<unsigned long long>(day),
-                                b.type.c_str(), b.fire_counter, b.crime_counter, b.staffing_percent);
-                    if (b.house) {
-                        std::printf(" pop %u level %u happy %u food %u", b.house->population, b.house->level,
-                                    b.house->happiness, b.house->goods[0]);
-                    }
-                    for (const auto& [wid, w] : sim.state().walkers.items) {
-                        if (w.home == id) {
-                            std::printf(" [%s job%d ph%d @%d,%d t%u]", w.type.c_str(), static_cast<int>(w.job),
-                                        static_cast<int>(w.phase), w.tile.x, w.tile.y, w.target);
-                        }
-                    }
-                    if (b.sanctuary) {
-                        std::printf(" staff %u", b.staffing_percent);
-                        for (const auto& [g, n] : b.sanctuary->on_site) {
-                            std::printf(" on_site %s %u", g.c_str(), n);
-                        }
-                    }
-                    for (const auto& [w, d] : b.coverage) {
-                        std::printf(" %s:%u", w.c_str(), static_cast<unsigned>(d));
-                    }
-                    std::printf("\n");
-                }
-            }
-        }
+        probe_tile(sim, day);  // BO_DEMO_HOUSE=x,y
         if (std::getenv("BO_DEMO_REJECT") != nullptr) {  // every refused command with its day
             for (const auto& e : events) {
                 if (const auto* gh = std::get_if<GodHelped>(&e.event)) {
