@@ -165,7 +165,7 @@ Stan: E1 w wersji minimalnej (klasa `BoSimulation` w `gdext/`, scena `game/scene
 | E1 Wiązanie z rdzeniem | interpolacja pozycji między tickami, mapowanie zdarzeń na efekty | GDExtension |
 | E2 Teren | siatka terenu z kafli, woda animowana, łąka, skały, las | Blender + shader |
 | E3 Budynki | instancing (MultiMesh), stany: wizualna faza budowy, praca, 3 stopnie uszkodzenia z licznika ryzyka, ogień w fazach, ruina per kategoria, sanktyfikacja | O-005: oprawa tylko czyta stan rdzenia |
-| E4 Tłum | tysiące postaci: MultiMesh + animacja w teksturach (VAT), LOD | kluczowe ryzyko wydajności |
+| E4 Tłum | tysiące postaci: MultiMesh + animacja w teksturach (VAT), LOD | kluczowe ryzyko wydajności; prototyp 2026-11-28: `game/scenes/bench_crowd.gd` (2 000 budynków w 4 MultiMeshach, 3 000 postaci w jednym, chód z tekstury przesunięć wierzchołków, ruch jednym zapisem bufora), przycisk „Test wydajności” w ustawieniach, bramka `game/tests/bench_check.gd` (19 wywołań rysowania przy budżecie 600); pomiar FPS na Xiaomi 15T Pro czeka na właściciela |
 | E5 Kamera | izometryczna, zoom, obrót (pyt. 7), zakładki lokalizacji | `06-MOBILE-UX.md` |
 | E6 Nakładki | widoki "See ..." z danych rdzenia (kolumny, kolory kafli) | jedno źródło prawdy |
 | E7 Budowanie dotykiem | podgląd ducha, przeciąganie dróg, precyzyjny kursor | `06-MOBILE-UX.md` |

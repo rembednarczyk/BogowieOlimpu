@@ -240,6 +240,12 @@ ui.demo_greek,Demo: Grecja,Demo: Greece
 ui.demo_gods,Demo: bogowie,Demo: the gods
 ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
 ui.hold_building,Wstrzymaj budowę,Hold the building
+ui.bench,Test wydajności,Performance test
+ui.bench_animation,Animacja,Animation
+ui.bench_zoom,Zbliżenie,Zoom
+ui.bench_fps,"FPS %d   klatka śr. %.1f ms, najgorsza %.1f ms","FPS %d   frame avg %.1f ms, worst %.1f ms"
+ui.bench_scene,postacie %d   budynki %d   wywołania rysowania %d,characters %d   buildings %d   draw calls %d
+ui.bench_device,pamięć %.0f MB   GPU %s,memory %.0f MB   GPU %s
 ui.monument_progress,Budowa: %d z %d ładunków,Building: %d of %d loads
 ui.demo_atlantis_gods,Demo: bogowie Atlantydy,Demo: the Atlantean gods
 ui.demo_atlantis_elite,Demo: elita Atlantydy,Demo: the Atlantean elite

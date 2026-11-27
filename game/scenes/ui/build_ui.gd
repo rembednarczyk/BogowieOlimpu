@@ -355,6 +355,8 @@ func refresh_report() -> void:
 	var order: Array = game.DEMO_ORDER
 	var other: String = order[(order.find(game.demo) + 1) % order.size()]
 	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
+	settings.add_child(_button("ui.bench", func(): get_tree().change_scene_to_file("res://scenes/bench_crowd.tscn"),
+		Vector2(200, CELL.y)))  # prototype E4: the crowd on this phone
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
 	report_box.add_child(settings)
 	if report_note != "":

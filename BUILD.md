@@ -74,6 +74,16 @@ adb install -r build-android/bogowie-olimpu.apk
 
 Klucze wydania nie trafiają do repo: eksport wydania czyta je ze zmiennych `GODOT_ANDROID_KEYSTORE_RELEASE_PATH`, `GODOT_ANDROID_KEYSTORE_RELEASE_USER`, `GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD`.
 
+## Prototyp tłumu E4
+
+Bramka liczb deterministycznych (wywołania rysowania i instancje; FPS pod llvmpipe to raport); `out=` zapisuje zrzut zbliżenia:
+
+```bash
+xvfb-run -a -s "-screen 0 1280x720x24" godot --path game --rendering-driver vulkan --rendering-method mobile --resolution 1280x720 --script res://tests/bench_check.gd
+```
+
+Na telefonie: Raport, przycisk „Test wydajności”; przyciski 800 / 3000 / 6000 postaci, Animacja, Zbliżenie.
+
 ## Złoty hash
 
 `core/tests/test_golden.cpp`. Dwa scenariusze: sam kalendarz i finanse oraz miasto 32×32 (drogi, blokada, las, łąka, 4 budynki usługowe, agora ze stoiskiem, bulwar, cofnięta droga, spacerujący, 2 lata). Zmieniany wyłącznie ręcznie; commit, który go zmienia, nazywa regułę, która go zmieniła (`docs/PRAKTYKI.md`, rozdz. 3).
