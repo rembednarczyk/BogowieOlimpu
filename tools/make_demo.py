@@ -428,6 +428,7 @@ steps.append({"day": 1000, "every": 48, "pray": [37, 37]})
 # Corinth (Z:174-175); after the war with Argos a gift brings its tribute back (Z:172, Z:176); for two months
 # the sawmills stand idle and a north storehouse empties its wood (Z:62-63, Z:67).
 steps.append({"day": 433, "bribe": True})
+steps.append({"day": 1521, "surrender": True})  # Sparta's attack of year 7 (one defeat: two lose the episode, Z:172)
 steps.append({"day": 1, "clear": [23, 6]})
 put("fountain", 58, 7, day=2)
 steps.append({"day": 2, "later": True, "undo": True})  # a tick after the fountain went up

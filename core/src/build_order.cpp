@@ -127,6 +127,8 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         add(RequestFromCity{a.at("city").get<std::uint32_t>(), a.value("good", std::string("drachmas"))});
     } else if (s.contains("bribe")) {  // pay the invaders to leave (Z:137)
         add(BribeInvaders{});
+    } else if (s.contains("surrender")) {  // give in: the rival takes tribute every year (Z:137, Z:172)
+        add(Surrender{});
     } else if (s.contains("clear")) {  // [x, y]: trees or rubble cleared (Z:19)
         const TilePos p = pos_of(s.at("clear"));
         add(ClearLand{p.x, p.y});

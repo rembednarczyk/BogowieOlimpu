@@ -484,6 +484,7 @@
   {"day": 64, "every": 8, "fulfill_requests": true},
   {"day": 1000, "every": 48, "pray": [37, 37]},
   {"day": 433, "bribe": true},
+  {"day": 1521, "surrender": true},
   {"day": 1, "clear": [23, 6]},
   {"day": 2, "place": "fountain", "x": 58, "y": 7},
   {"day": 2, "later": true, "undo": true},

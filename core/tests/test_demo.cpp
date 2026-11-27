@@ -109,7 +109,7 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo",
                                       "built_grand_agora", "grand_agora_sells", "built_park", "built_bench",
                                       "built_fish_pond", "built_boulevard", "built_avenue", "built_water_crossing",
-                                      "fire", "crime", "emigration"};
+                                      "fire", "crime", "emigration", "surrendered", "tribute_paid"};
 
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     const auto one = [&seen](const std::string& m) {

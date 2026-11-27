@@ -184,8 +184,10 @@ inline void note_events(const std::vector<TimedEvent>& events, std::map<std::str
             seen["request_fulfilled"] += r->fulfilled ? 1 : 0;  // Z:161-164
         } else if (const auto* tr = std::get_if<TributePaid>(&e.event)) {
             seen["tribute"] += tr->amount > 0 ? 1 : 0;  // Z:172
+            seen["tribute_paid"] += tr->amount < 0 ? 1 : 0;  // to the rival who won (Z:172)
         } else if (const auto* end = std::get_if<InvasionEnded>(&e.event)) {
             seen["bribed"] += end->result == 1 ? 1 : 0;  // Z:137
+            seen["surrendered"] += end->result == 2 ? 1 : 0;
         } else if (std::holds_alternative<UndoApplied>(e.event)) {
             ++seen["undo"];  // Z:20
         } else if (const auto* x = std::get_if<ExpeditionReturned>(&e.event)) {
