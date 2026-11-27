@@ -17,6 +17,9 @@ var posting := -1  # the trireme whose station the next map tap sets (Z:142)
 # phone a pick in the company's row. Presentation state, not in the save [ZAŁOŻENIE].
 const GROUPS := 5
 var group_of := {}
+const WorldMap := preload("res://scenes/ui/world_map.gd")
+var world_map: Control
+var city := 0  # the city picked on the world map; its orders under the map
 
 func setup(owner_ui, root: Control) -> void:
 	ui = owner_ui
@@ -253,7 +256,19 @@ func refresh_world() -> void:
 	world_box.add_child(ui._label(tr("ui.world_title"), 24))
 	var cities: Array = game.sim.get_cities()
 	var ready := _companies_for_abroad()
+	city = clampi(city, 0, maxi(cities.size() - 1, 0))
+	world_map = WorldMap.new()
+	world_map.custom_minimum_size = Vector2(0, 340)
+	world_map.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	world_map.picked = func(i): city = i; refresh_world()
+	var names := []
 	for i in cities.size():
+		names.append(ui._city_name(i))
+	world_map.show_cities(cities, names, city)
+	world_box.add_child(world_map)
+	for i in cities.size():
+		if i != city:
+			continue  # one city at a time: the one picked on the map
 		var c: Dictionary = cities[i]
 		var rel: String = tr("relation." + c["relation"]) + (", " + tr("ui.rebelling") if c["rebelling"] else "")
 		var text := "%s (%s): %s %d, %s %d, %s %d" % [ui._city_name(i), rel, tr("ui.opinion"), c["opinion"],
@@ -280,7 +295,10 @@ func refresh_world() -> void:
 		target.disabled = targets.is_empty() or not friendly
 		var invaded: bool = game.sim.get_invasion().get("active", false)
 		var at_war: bool = c["relation"] in ["ally", "rival"] or c["rebelling"]
-		_row(world_box, text, [
+		world_box.add_child(ui._label(text))
+		var orders := HFlowContainer.new()  # wraps on a narrow screen
+		world_box.add_child(orders)
+		for b in [
 			_small("ui.gift", func(): game.sim.give_gift(i, "drachmas", 500); refresh_world(), c["relation"] != "distant"),
 			pick,
 			_small("ui.ask", func(): game.sim.request_from_city(i, chosen.call()); refresh_world(),
@@ -292,7 +310,8 @@ func refresh_world() -> void:
 			_small("ui.attack", func(): game.sim.dispatch_army(i, false, "", ready, c["by_sea"]); refresh_world(),
 				at_war and not ready.is_empty()),
 			_small("ui.raid", func(): game.sim.dispatch_army(i, true, chosen.call() if not sells.is_empty() else "drachmas",
-				ready, c["by_sea"]); refresh_world(), at_war and not ready.is_empty())])
+				ready, c["by_sea"]); refresh_world(), at_war and not ready.is_empty())]:
+			orders.add_child(b)
 	var exps: Array = game.sim.get_expeditions()
 	if not exps.is_empty():
 		world_box.add_child(ui._label(tr("ui.expeditions"), 20))
