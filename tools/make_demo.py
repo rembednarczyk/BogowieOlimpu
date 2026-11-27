@@ -8,7 +8,7 @@ Run: python3 tools/make_demo.py   (then tools/sync_game_data.py copies scenarios
 import json
 import os
 
-W, H = 80, 60
+W, H = 120, 60  # the east district (x 76-113, stage EAST) beyond the first wall line
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
 grid = [["."] * W for _ in range(H)]
@@ -35,29 +35,34 @@ fill(27, 1, 32, 6, "c")            # open to the south: miners walk up to the or
 fill(36, 0, 41, 5, "s")            # silver ore: the mint (Z:54)
 fill(44, 0, 55, 6, "q")            # marble quarry (Z:52)
 fill(58, 0, 61, 3, "k")            # black marble (expansion terrain, shown only)
-fill(62, 0, 79, 7, "#")            # rock closes the north-east corner
+fill(62, 0, W - 1, 7, "#")         # rock closes the north-east corner
 fill(2, 24, 11, 44, ",")           # meadows: farms, sheep, goats (Z:43-46)
 fill(13, 36, 31, 44, ",")
-fill(0, 50, 79, 59, "~")           # the sea; straight coast on row 49 (L-096)
+fill(0, 50, W - 1, 59, "~")        # the sea; straight coast on row 49 (L-096)
+fill(100, 40, 111, 44, ",")        # east meadow: wheat for the horses (Z:148)
 for x, y in [(18, 53), (24, 55), (30, 53)]:
     grid[y][x] = "f"               # fishing grounds (Z:47)
 for x, y in [(42, 51), (44, 51)]:
     grid[y][x] = "u"               # urchins (Z:47)
-grid[56][79] = "S"                 # sea entry: trade ships, enemy ships
+grid[56][W - 1] = "S"              # sea entry: trade ships, enemy ships
 grid[8][14] = "h"                  # boars (Z:46)
 grid[8][20] = "d"                  # deer
 grid[47][3] = "w"                  # wolves by the south-west shore (Z:45)
-grid[30][78] = "i"                 # invasion point east of the wall (Z:136)
+grid[30][W - 2] = "i"              # invasion point east of the wall (Z:136)
 grid[9][66] = "M"                  # monster point (doc 23)
 
 # --- Roads ----------------------------------------------------------------------------------------------
 grid[11][1] = "E"
-hline(11, 2, 79)                   # main road from the land entry, through the gate to the east edge
+hline(11, 2, W - 1)                # main road from the land entry, through the gate to the east edge
 for x in (12, 32, 52, 72):
     vline(x, 11, 45)
 hline(23, 2, 73)
 hline(35, 2, 52)
-hline(45, 2, 73)
+hline(45, 2, 112)
+for x in (92, 112):                # the east district (stage EAST)
+    vline(x, 11, 45)
+hline(29, 76, 112)
+hline(37, 76, 112)
 hline(17, 12, 52)                  # inner streets of the house blocks
 hline(29, 12, 52)
 
@@ -265,13 +270,14 @@ put("heros_hall", 64, 12, day=MYTH, retry=True)
 put("sanctuary_ares", 37, 37, day=800, retry=True, when={"marble": 13})  # only once a hero is needed (Z:130)
 
 # Stage ARMY (Z:145-146): the east wall two thick, a gatehouse on the main road, towers, horses, the wharf.
+WALL = W - 6  # the east wall beyond the east district
 for y in list(range(8, 9)) + list(range(14, 50)):
-    for x in (74, 75):
+    for x in (WALL, WALL + 1):
         put("wall", x, y, day=ARMY)
-put("gatehouse", 73, 9, rot=1, day=ARMY)
-put("tower", 74, 22, day=ARMY + 1)
+put("gatehouse", WALL - 1, 9, rot=1, day=ARMY)
+put("tower", WALL, 22, day=ARMY + 1)
 steps.append({"day": ARMY + 2, "man_towers": True})  # Man All: the generals send sentries (Z:146)
-put("tower", 74, 44, day=ARMY + 1)
+put("tower", WALL, 44, day=ARMY + 1)
 
 # Stage JOBS: work for the people of the grown city (unemployment lowers the popularity, Z:159): culture in
 # the west block, more fishing, a third sawmill; wood and bronze go to Corinth.
@@ -326,6 +332,41 @@ for y0, stalls in [(32, ["food_vendor_stall", "fleece_vendor_stall", "oil_vendor
 
 # A commemorative monument (Z:155-156) once the city has earned one (population, games, a slain monster...).
 put("commemorative_monument", 33, 42, day=600, retry=True)
+
+# Stage EAST (after the victory): the east district. The stadium moves by the estate (its competitors walk
+# 35 tiles, walkers.json): an estate needs 80 culture points and 100 appeal (Z:34, housing.json M), and its
+# horsemen (Z:136). Apollo's Oracle foretells (Z:124). Two agoras, a granary and a storehouse for the estate
+# and the new houses; a horse ranch with its wheat.
+EAST = 960
+steps.append({"day": EAST, "demolish": [2, 12]})
+put("stadium", 78, 12, day=EAST + 1, retry=True)
+put("sanctuary_apollo", 94, 12, day=EAST, retry=True, when={"marble": 20})
+put("theater", 94, 24, day=EAST); put("gymnasium", 100, 26, day=EAST); put("podium", 104, 27, day=EAST)
+put("college", 106, 26, day=EAST); put("maintenance_office", 109, 27, day=EAST)
+for x in (76, 79, 82, 85, 88):  # hedge mazes around the estate plot (82, 25)
+    put("hedge_maze", x, 18, day=EAST)
+    put("hedge_maze", x, 21, day=EAST)
+for x in (76, 79, 86, 89):
+    put("hedge_maze", x, 25, day=EAST)
+for x in range(76, 92):
+    put("column", x, 24, day=EAST)
+put("commemorative_monument", 79, 25, day=EAST + 200, retry=True)  # a second one, as earned (Z:155)
+put("elite_housing", 82, 25, day=EAST + 120, retry=True)
+put("granary", 76, 30, day=EAST); put("storehouse", 80, 30, day=EAST)
+for good in ["onions", "carrots"]:
+    steps.append({"day": EAST + 1, "at": [76, 30], "storage_order": {"good": good, "kind": 1, "limit": 8}})
+for good, limit in [("fleece", 8), ("olive_oil", 8), ("armor", 4), ("wine", 4)]:
+    steps.append({"day": EAST + 1, "at": [80, 30], "storage_order": {"good": good, "kind": 1, "limit": limit}})
+for x0, stalls in [(93, ["food_vendor_stall", "fleece_vendor_stall", "oil_vendor_stall"]),
+                   (100, ["arms_vendor_stall", "wine_vendor_stall", "horse_trainer_stall"])]:
+    put("common_agora", x0, 29, rot=1, day=EAST)
+    for i, stall in enumerate(stalls):
+        put(stall, x0 + 2 * i, 30, day=EAST + 1)
+put("horse_ranch", 93, 38, day=EAST); put("wheat_farm", 104, 41, day=EAST)
+for y in (38, 43):  # houses for the workers of the district, a fountain, upkeep and a watch in each row
+    houses(76, y, 6, day=EAST); put("fountain", 88, y, day=EAST); put("watchpost", 90, y, day=EAST)
+houses(93, 43, 3, day=EAST); put("maintenance_office", 99, 43, day=EAST)
+steps.append({"day": EAST + 400, "every": 200, "oracle": [94, 12]})  # Consult Oracle (Z:124)
 
 # Stockpiling (Z:80): oil kept from the stalls before the elite plots, so a load waits in storage (doc 18).
 steps.append({"day": ELITE + 120, "stockpile": "olive_oil", "on": True})

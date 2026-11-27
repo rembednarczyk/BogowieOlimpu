@@ -101,6 +101,11 @@ void parse_step(const json& s, std::vector<BuildStep>& out) {
         step.fulfill_all = true;
         step.command = FulfillRequest{0};
         out.push_back(std::move(step));
+    } else if (s.contains("demolish")) {  // the building on a tile (Z:20), e.g. a unique one moved elsewhere
+        const TilePos p = pos_of(s.at("demolish"));
+        add(Demolish{p.x, p.y});
+    } else if (s.contains("oracle")) {  // Consult Oracle at the sanctuary on a tile (Z:124)
+        add(ConsultOracle{0}, pos_of(s.at("oracle")));
     } else if (s.contains("gift")) {  // {"city": i, "good": g, "amount": n} (Z:176-177)
         const json& g = s.at("gift");
         add(GiftToCity{g.at("city").get<std::uint32_t>(), g.value("good", std::string("drachmas")), g.value("amount", 500U)});
@@ -206,6 +211,8 @@ std::vector<Command> due_commands(const BuildOrder& order, const Simulation& sim
                 sh->hall = id;
             } else if (auto* pr = std::get_if<Pray>(&c)) {
                 pr->building = id;
+            } else if (auto* oc = std::get_if<ConsultOracle>(&c)) {
+                oc->building = id;
             } else if (auto* nb = std::get_if<SetNotBuying>(&c)) {
                 const auto& b = sim.state().city.buildings.items.at(id);
                 nb->building = b.slots.empty() ? id : b.slots.front();  // a tile of an agora: its first stall
