@@ -165,7 +165,7 @@ Stan: E1 w wersji minimalnej (klasa `BoSimulation` w `gdext/`, scena `game/scene
 | E1 Wiązanie z rdzeniem | interpolacja pozycji między tickami, mapowanie zdarzeń na efekty | GDExtension |
 | E2 Teren | siatka terenu z kafli, woda animowana, łąka, skały, las | Blender + shader |
 | E3 Budynki | instancing (MultiMesh), stany: wizualna faza budowy, praca, 3 stopnie uszkodzenia z licznika ryzyka, ogień w fazach, ruina per kategoria, sanktyfikacja | O-005: oprawa tylko czyta stan rdzenia |
-| E4 Tłum | tysiące postaci: MultiMesh + animacja w teksturach (VAT), LOD | kluczowe ryzyko wydajności; prototyp 2026-11-28: `game/scenes/bench_crowd.gd` (2 000 budynków w 4 MultiMeshach, 3 000 postaci w jednym, chód z tekstury przesunięć wierzchołków, ruch jednym zapisem bufora), przycisk „Test wydajności” w ustawieniach, bramka `game/tests/bench_check.gd` (19 wywołań rysowania przy budżecie 600); pomiar FPS na Xiaomi 15T Pro czeka na właściciela |
+| E4 Tłum | tysiące postaci: MultiMesh + animacja w teksturach (VAT), LOD | kluczowe ryzyko wydajności; prototyp 2026-11-28: `game/scenes/bench_crowd.gd` (2 000 budynków w 4 MultiMeshach, 3 000 postaci w jednym, chód z tekstury przesunięć wierzchołków, ruch jednym zapisem bufora), przycisk „Test wydajności” w ustawieniach, bramka `game/tests/bench_check.gd` (19 wywołań rysowania przy budżecie 600); pomiar na Xiaomi 15T Pro 2026-11-27: 6 000 postaci z animacją, 120 klatek/s (odświeżanie ekranu), 8,3 ms średnio i najgorzej, 19 wywołań, 53 MB (`07-TECHNOLOGIA.md`) |
 | E5 Kamera | izometryczna, zoom, obrót (pyt. 7), zakładki lokalizacji | `06-MOBILE-UX.md` |
 | E6 Nakładki | widoki "See ..." z danych rdzenia (kolumny, kolory kafli) | jedno źródło prawdy |
 
@@ -199,5 +199,5 @@ Stan E7/E8 (krok 1, układ według decyzji właściciela w `DECYZJE.md`): `game/
 | Ryzyko | Środek |
 |---|---|
 | Lavapipe różni się od GPU Mali w szczegółach i wydajności | zrzuty w kontenerze do oceny wyglądu; pomiar wydajności i weryfikacja wizualna na Xiaomi 15T Pro |
-| Wydajność tłumu na telefonie | prototyp E4 jako pierwszy pomiar w Godocie (3 000 postaci, 2 000 budynków) |
+| Wydajność tłumu na telefonie | zmierzona 2026-11-27: 6 000 postaci z animacją przy 120 klatkach/s na Xiaomi 15T Pro; zostaje koszt cieni i słabszy telefon |
 | Złożoność GDExtension na Androidzie | szkielet `gdext/` z buildem Android na samym początku |

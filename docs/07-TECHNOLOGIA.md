@@ -44,6 +44,8 @@ Renderer gry: **Mobile (Vulkan)** (R-015). Compatibility (OpenGL ES 3, poziom We
 
 Bramka: liczby deterministyczne (wywołania rysowania, instancje, czas ticku w natywnym benchmarku rdzenia). Czas klatki pod llvmpipe to raport.
 
+Pomiar E4 na Xiaomi 15T Pro (właściciel, 2026-11-27, APK 0.0.43, scena `bench_crowd`): 6 000 postaci z animacją VAT i 2 000 budynków, 120 klatek/s, czas klatki średnio 8,3 ms i najgorszy 8,3 ms w oknie 120 klatek, 19 wywołań rysowania, 53 MB pamięci. 120 klatek/s to odświeżanie ekranu (synchronizacja pionowa), więc zapasu nie widać: dwa razy budżet postaci bez jednego spadku klatki. Bez cieni i bez LOD; czas GPU i CPU osobno nie zmierzony.
+
 ## Środowisko
 
 Godot i Blender instalowane w `/opt/tools`; skrypt instalacyjny do zapisania w ustawieniach środowiska chmurowego, żeby kolejne sesje miały narzędzia od startu.
