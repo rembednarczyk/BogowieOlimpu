@@ -44,7 +44,7 @@ for x, y in [(18, 53), (24, 55), (30, 53)]:
     grid[y][x] = "f"               # fishing grounds (Z:47)
 for x, y in [(42, 51), (44, 51)]:
     grid[y][x] = "u"               # urchins (Z:47)
-grid[56][W - 1] = "S"              # sea entry: trade ships, enemy ships
+grid[56][79] = "S"                 # sea entry: trade ships, enemy ships
 grid[8][14] = "h"                  # boars (Z:46)
 grid[8][20] = "d"                  # deer
 grid[47][3] = "w"                  # wolves by the south-west shore (Z:45)
@@ -58,11 +58,7 @@ for x in (12, 32, 52, 72):
     vline(x, 11, 45)
 hline(23, 2, 73)
 hline(35, 2, 52)
-hline(45, 2, 112)
-for x in (92, 112):                # the east district (stage EAST)
-    vline(x, 11, 45)
-hline(29, 76, 112)
-hline(37, 76, 112)
+hline(45, 2, 73)                   # the roads of the east district come with stages ARMY and EAST
 hline(17, 12, 52)                  # inner streets of the house blocks
 hline(29, 12, 52)
 
@@ -271,6 +267,13 @@ put("sanctuary_ares", 37, 37, day=800, retry=True, when={"marble": 13})  # only 
 
 # Stage ARMY (Z:145-146): the east wall two thick, a gatehouse on the main road, towers, horses, the wharf.
 WALL = W - 6  # the east wall beyond the east district
+# Roadblocks at the district's edge keep the roaming walkers of the old city at home (Z:19-20); the road along
+# the wall reaches its towers (they need a road to the Palace, Z:146).
+steps.append({"day": 0, "roadblock": [76, 11]})
+steps.append({"day": ARMY, "road": [WALL - 2, 11, WALL - 2, 45]})
+steps.append({"day": ARMY, "road": [74, 45, WALL - 1, 45]})
+steps.append({"day": ARMY + 1, "roadblock": [76, 45]})
+steps.append({"day": ARMY, "road": [WALL - 1, 23, WALL - 1, 23]})
 for y in list(range(8, 9)) + list(range(14, 50)):
     for x in (WALL, WALL + 1):
         put("wall", x, y, day=ARMY)
@@ -338,6 +341,9 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # horsemen (Z:136). Apollo's Oracle foretells (Z:124). Two agoras, a granary and a storehouse for the estate
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
+steps.append({"day": EAST, "road": [92, 11, 92, 45]})
+for y in (29, 37):
+    steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
 steps.append({"day": EAST, "demolish": [2, 12]})
 put("stadium", 78, 12, day=EAST + 1, retry=True)
 put("sanctuary_apollo", 94, 12, day=EAST, retry=True, when={"marble": 20})
@@ -346,7 +352,7 @@ put("college", 106, 26, day=EAST); put("maintenance_office", 109, 27, day=EAST)
 for x in (76, 79, 82, 85, 88):  # hedge mazes around the estate plot (82, 25)
     put("hedge_maze", x, 18, day=EAST)
     put("hedge_maze", x, 21, day=EAST)
-for x in (76, 79, 86, 89):
+for x in (76, 86, 89):  # (79, 25): the monument
     put("hedge_maze", x, 25, day=EAST)
 for x in range(76, 92):
     put("column", x, 24, day=EAST)
