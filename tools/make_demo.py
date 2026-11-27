@@ -45,7 +45,7 @@ for x, y in [(18, 53), (24, 55), (30, 53)]:
 for x, y in [(42, 51), (44, 51)]:
     grid[y][x] = "u"               # urchins (Z:47)
 grid[56][79] = "S"                 # sea entry: trade ships, enemy ships
-grid[8][14] = "h"                  # boars (Z:46)
+grid[8][72] = "h"                  # boars (Z:46), by the north-east granary: pork goes 27 tiles at most (S-004)
 grid[8][20] = "d"                  # deer
 grid[47][3] = "w"                  # wolves by the south-west shore (Z:45)
 grid[30][W - 2] = "i"              # invasion point east of the wall (Z:136)
@@ -174,11 +174,14 @@ for y in (24, 27, 30, 36, 39, 42):
 put("wheat_farm", 2, 24)
 put("maintenance_office", 7, 33); put("maintenance_office", 7, 43)
 put("granary", 13, 36); put("granary", 17, 36)
+for x in (13, 17):  # room for fish, urchins and game too: farm food up to 8 loads of each (Z:66-67)
+    for good in ("carrots", "onions", "wheat"):
+        steps.append({"day": 1, "at": [x, 36], "storage_order": {"good": good, "kind": 0, "limit": 8}})
 put("maintenance_office", 21, 36)
 put("maintenance_office", 17, 9); put("maintenance_office", 42, 9); put("maintenance_office", 62, 9)
 for x in (18, 25):
     steps.append({"day": 0, "road": [x, 46, x, 47]})
-    put("fishery", x - 2, 48)
+    put("fishery", x - 1, 48)  # its corner under the lane: road access by an edge
 put("maintenance_office", 20, 46)
 
 # Stage FLEECE: sheep and goats, the storehouse, fleece and cheese, the trading post, oil.
@@ -234,7 +237,8 @@ for x, y in [(29, 18), (49, 18), (29, 27), (49, 33), (62, 12)]:
 steps.append({"day": CULTURE, "tax": 3})
 
 # Stage INDUSTRY: timber, marble, bronze, silver, sculpture, armour, wine; the north storehouses.
-for t, x in [("timber_mill", 4), ("timber_mill", 6), ("boar_hunters_lodge", 14), ("hunting_lodge", 20),
+put("boar_hunters_lodge", 72, 9, day=INDUSTRY)
+for t, x in [("timber_mill", 4), ("timber_mill", 6), ("hunting_lodge", 20),
              ("foundry", 27), ("foundry", 30), ("sculpture_studio", 33), ("sculpture_studio", 35), ("mint", 37), ("masonry_shop", 45),
              ("masonry_shop", 48)]:
     put(t, x, 9, day=INDUSTRY)
@@ -251,7 +255,7 @@ put("common_agora", 50, 36, day=INDUSTRY)  # along the x = 52 road, for the sout
 for i, stall in enumerate(["food_vendor_stall", "fleece_vendor_stall", "oil_vendor_stall"]):
     put(stall, 50, 36 + 2 * i, day=[INDUSTRY + 1, INDUSTRY + 1, OIL][i])
 steps.append({"day": 0, "road": [41, 46, 41, 47]})
-put("urchin_quay", 42, 48, day=INDUSTRY)
+put("urchin_quay", 41, 48, day=INDUSTRY)
 put("maintenance_office", 44, 46, day=INDUSTRY)
 put("pier", 34, 46, day=INDUSTRY)
 steps.append({"day": INDUSTRY + 1, "at": [34, 46], "trade_partner": 2})
@@ -291,7 +295,7 @@ put("infirmary", 2, 19, day=JOBS)
 put("college", 9, 20, day=JOBS); put("gymnasium", 6, 20, day=JOBS); put("fountain", 10, 17, day=JOBS)
 for x in (30, 46):
     steps.append({"day": JOBS, "road": [x, 46, x, 47]})
-    put("fishery", x - 2, 48, day=JOBS)
+    put("fishery", x - 1, 48, day=JOBS)
 put("timber_mill", 8, 9, day=JOBS)
 put("masonry_shop", 50, 9, day=JOBS); put("masonry_shop", 53, 9, day=JOBS)
 steps.append({"day": JOBS, "road": [54, 46, 54, 46]})

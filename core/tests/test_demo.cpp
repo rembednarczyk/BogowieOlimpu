@@ -206,9 +206,10 @@ void dump(const Simulation& sim) {
             std::printf("\n");
         }
         if (b.type == "growers_lodge" || b.type == "olive_press" || b.type == "foundry" || b.type == "sculpture_studio" || b.type == "trireme_wharf" ||
-            b.type == "timber_mill") {
-            std::printf("  %s %d,%d staff %u in %u out %u progress %u", b.type.c_str(), b.origin.x, b.origin.y,
-                        b.staffing_percent, b.producer->input_loads, b.producer->output_loads, b.producer->progress);
+            b.type == "timber_mill" || b.type == "fishery" || b.type == "urchin_quay" || b.type == "boar_hunters_lodge" ||
+            b.type == "horse_ranch") {
+            std::printf("  %s %d,%d road %d staff %u in %u out %u progress %u", b.type.c_str(), b.origin.x, b.origin.y,
+                        b.road_access ? 1 : 0, b.staffing_percent, b.producer->input_loads, b.producer->output_loads, b.producer->progress);
             for (const auto& [g, n] : b.producer->units) {
                 std::printf(" %s %u", g.c_str(), n);
             }
@@ -242,6 +243,64 @@ constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "mons
                                       "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
                                       "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "ships_abroad", "stockpile", "not_buying", "towers_manned"};
 
+// The goods every chain of the demo must bring to storage (Z:39-58, Z:147): farms, herds, the sea, the hunt,
+// orchards and vines, woods and quarries, foundries, workshops and the ranch.
+constexpr const char* kChains[] = {"wheat", "carrots", "onions", "cheese", "fish", "urchins", "pork", "olives",
+                                   "grapes", "fleece", "olive_oil", "wine", "wood", "marble", "bronze", "sculpture",
+                                   "armor"};  // horses go to the estates, not to storage: "horsemen"
+
+// Mechanics shown by events beyond count_events: hazards by kind, trade both ways, the world's answers.
+void note_events(const std::vector<TimedEvent>& events, std::map<std::string, std::uint32_t>& seen) {
+    for (const auto& e : events) {
+        if (const auto* d = std::get_if<Disaster>(&e.event)) {
+            constexpr const char* kKinds[] = {"fire", "burned_down", "collapse", "plague", "crime"};  // Z:84-90
+            ++seen[kKinds[static_cast<std::size_t>(d->kind)]];
+        } else if (const auto* t = std::get_if<TradeDone>(&e.event)) {
+            seen["import"] += t->loads_bought > 0 ? 1 : 0;  // Z:74-79
+            seen["export"] += t->loads_sold > 0 ? 1 : 0;
+        } else if (const auto* r = std::get_if<RequestClosed>(&e.event)) {
+            seen["request_fulfilled"] += r->fulfilled ? 1 : 0;  // Z:161-164
+        } else if (const auto* tr = std::get_if<TributePaid>(&e.event)) {
+            seen["tribute"] += tr->amount > 0 ? 1 : 0;  // Z:172
+        } else if (const auto* x = std::get_if<ExpeditionReturned>(&e.event)) {
+            seen["army_won_abroad"] += x->won ? 1 : 0;  // Z:177-178
+        } else if (const auto* g = std::get_if<GodAttacked>(&e.event)) {
+            seen["god_repelled"] += g->repelled ? 1 : 0;  // Z:119, Z:122
+        } else if (const auto* m = std::get_if<MonsterSlain>(&e.event)) {
+            seen["hero_slew"] += m->by_hero ? 1 : 0;  // Z:129-131
+        } else if (const auto* w = std::get_if<WalkerSpawned>(&e.event)) {
+            seen["wolves"] += w->type == "wolf" ? 1 : 0;  // Z:45
+        } else if (const auto* pm = std::get_if<PeopleMoved>(&e.event)) {
+            seen["emigration"] += pm->left > 0 ? 1 : 0;  // Z:159-160
+        } else if (const auto* h = std::get_if<HouseChanged>(&e.event)) {
+            auto& top = seen[h->elite ? "top_elite_level" : "top_common_level"];
+            top = std::max<std::uint32_t>(top, h->level);
+        }
+    }
+}
+
+// Mechanics shown by the city's state: what the chains made, culture and blessings in the houses (Z:105-109).
+void note_state(const Simulation& sim, std::map<std::string, std::uint32_t>& seen) {
+    const WorldState& st = sim.state();
+    for (const char* g : kChains) {
+        const auto a = st.produced_this_year.find(g);
+        const auto b = st.produced_best_year.find(g);
+        seen[std::string("made_") + g] += (a != st.produced_this_year.end() && a->second > 0) ||
+                                                  (b != st.produced_best_year.end() && b->second > 0)
+                                              ? 1 : 0;
+    }
+    seen["taxes"] += st.finance.last_year.taxes > 0 ? 1 : 0;  // Z:95-97
+    for (const auto& [id, b] : st.city.buildings.items) {
+        if (b.house) {
+            for (const char* w : {"philosopher", "athlete", "actor", "competitor"}) {
+                const auto c = b.coverage.find(w);
+                seen[std::string("culture_") + w] += c != b.coverage.end() && c->second > 0 ? 1 : 0;
+            }
+        }
+        seen["sanctified"] += b.sanctified ? 1 : 0;  // doc 21
+    }
+}
+
 bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
     return std::all_of(std::begin(kMechanics), std::end(kMechanics), [&seen](const char* m) {
         const auto it = seen.find(m);  // a tally can hold a zero: seen means at least once
@@ -271,6 +330,8 @@ DemoRun run_demo(std::uint64_t years) {
         sim.run_days(1);
         const auto events = sim.drain_events();
         count_events(events, run.seen);
+        note_events(events, run.seen);
+        note_state(sim, run.seen);
         for (const auto& e : events) {
             if (const auto* g = std::get_if<GamesHeld>(&e.event)) {
                 run.seen[g->invited ? "games_invited" : "games_not_invited"] += 1;  // Z:110-112
@@ -390,7 +451,7 @@ DemoRun run_demo(std::uint64_t years) {
         for (const Expedition& e : sim.state().expeditions) {
             run.seen["aid_sent"] += e.aid ? 1 : 0;  // companies sent where a city asked for them (Z:161)
             run.seen["raid_sent"] += e.raid ? 1 : 0;  // Z:178
-            run.seen[e.raid || e.aid ? "aid_sent" : "attack_sent"] += 1;  // Z:177
+            run.seen["attack_sent"] += e.raid || e.aid ? 0 : 1;  // Z:177
             run.seen["ships_abroad"] += e.ships.empty() ? 0 : 1;  // Z:177
         }
         for (const auto& [id, b] : sim.state().city.buildings.items) {
