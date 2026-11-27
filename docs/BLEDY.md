@@ -36,6 +36,13 @@ Priorytet = ważność × zasięg / koszt. S1 zawsze pierwsze.
 
 ## Naprawione
 
+### B-026 [S2] Przy dwóch potworach w mieście żaden heros nie przychodził, gdy pierwszy nie miał spełnionych wymagań
+- Status: naprawione
+- Miejsce i liczba wystąpień: `core/src/monsters.cpp` `summon_hero`; każde miasto z dwoma potworami (demo herosów: Bellerofont spełniał wszystko od dnia 512, a wezwanie odmawiało, bo pierwszy był Sfinks Atalanty).
+- Dowód: sonda bramki "demo gate: heroes": `bellerophon` bez braków, `myth.hero_requirements` przy każdym wezwaniu.
+- Test "co dziś pada": "B-026: with two monsters in the city the hero whose demands are met comes; a hall holds one hero" (`core/tests/test_heroes.cpp`), pada bez poprawki.
+- Przyczyna: wezwanie brało herosa pierwszego żywego potwora i odmawiało, gdy ten nie miał kompletu. Teraz przychodzi pierwszy potrzebny heros ze spełnionymi wymaganiami; jeden dom herosa mieści jednego herosa (`myth.hall_taken`, buildings.json `per_hero`).
+
 ### B-025 [S2] Cytadela Posejdona nigdy się nie kończyła: nikt nie wbudowywał orichalku
 - Status: naprawione
 - Miejsce i liczba wystąpień: `core/src/sanctuary.cpp` `phase_goods`; każda cytadela (demo bogów Atlantydy: cała budowa stała przez 6 lat z 16 orichalku do wbudowania). Przy okazji `data_economy.cpp` nie wczytywał orichalku cytadeli do materiałów.

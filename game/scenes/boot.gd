@@ -88,8 +88,10 @@ const DEMOS := {"greek": ["res://scenarios/demo.json", "res://scenarios/demo_bui
 		"user://autosave_atlantis_gods.bo"],
 	# The Atlantean elite (tools/make_demo_atlantis_elite.py, P:15, P:18-19): spearmen, charioteers, chariots.
 	"atlantis_elite": ["res://scenarios/demo_atlantis_elite.json", "res://scenarios/demo_atlantis_elite_build.json",
-		"user://autosave_atlantis_elite.bo"]}
-const DEMO_ORDER := ["greek", "atlantis", "gods", "atlantis_army", "atlantis_gods", "atlantis_elite"]
+		"user://autosave_atlantis_elite.bo"],
+	# The expansion's heroes (tools/make_demo_heroes.py, P:23-24): Atalanta and Bellerophon at work.
+	"heroes": ["res://scenarios/demo_heroes.json", "res://scenarios/demo_heroes_build.json", "user://autosave_heroes.bo"]}
+const DEMO_ORDER := ["greek", "atlantis", "gods", "atlantis_army", "atlantis_gods", "atlantis_elite", "heroes"]
 var demo := "greek"
 
 static func chosen_demo() -> String:

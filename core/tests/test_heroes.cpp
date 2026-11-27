@@ -286,3 +286,26 @@ TEST_CASE("heroes: for each of the 16 monsters its own hero answers the summons 
         CHECK(c.sim.state().heroes.front().id == slayer);
     }
 }
+
+TEST_CASE("B-026: with two monsters in the city the hero whose demands are met comes; a hall holds one hero") {
+    auto c = hero_city();
+    meet_all(c);
+    auto& st = c.sim.mutable_state();
+    st.monsters.clear();
+    with_monster(c.sim, "minotaur");  // Theseus: his hall has no walls round it here
+    with_monster(c.sim, "medusa");    // Perseus: all met
+    c.sim.drain_events();
+    c.sim.issue(SummonHero{c.hall});
+    c.sim.step(1);
+    REQUIRE(c.sim.state().heroes.size() == 1);
+    CHECK(c.sim.state().heroes.front().id == "perseus");
+    c.sim.issue(SummonHero{c.hall});
+    c.sim.step(1);
+    bool taken = false;
+    for (const auto& e : c.sim.drain_events()) {
+        if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+            taken = taken || r->reason_key == "myth.hall_taken";
+        }
+    }
+    CHECK(taken);
+}

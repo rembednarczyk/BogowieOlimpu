@@ -259,28 +259,37 @@ std::string summon_hero(WorldState& st, const DataCatalog& catalog, BuildingId h
     if (h == st.city.buildings.items.end() || h->second.type != "heros_hall" || !h->second.road_access) {
         return "myth.no_hall";
     }
-    std::string hero;
+    if (std::any_of(st.heroes.begin(), st.heroes.end(), [hall](const HeroState& x) { return x.hall == hall; })) {
+        return "myth.hall_taken";  // a hall for each hero (buildings.json per_hero)
+    }
     const auto absent = [&st](const std::string& id) {
         return std::none_of(st.heroes.begin(), st.heroes.end(), [&id](const HeroState& x) { return x.id == id; });
     };
+    std::vector<std::string> needed;  // the heroes the city has a task for, monsters first (Z:129-130)
     for (const MonsterState& m : st.monsters) {
         const auto s = catalog.monster_slayer.find(m.id);
-        if (!m.slain && s != catalog.monster_slayer.end() && absent(s->second)) {
-            hero = s->second;
-            break;
+        if (!m.slain && s != catalog.monster_slayer.end() && absent(s->second) &&
+            std::find(needed.begin(), needed.end(), s->second) == needed.end()) {
+            needed.push_back(s->second);
         }
     }
     for (const Quest& q : st.scenario.quests) {  // a quest is also a reason for a hero to come (Z:129)
-        if (hero.empty() && q.status == QuestStatus::Open && !q.hero.empty() && absent(q.hero)) {
-            hero = q.hero;
+        if (q.status == QuestStatus::Open && !q.hero.empty() && absent(q.hero) &&
+            std::find(needed.begin(), needed.end(), q.hero) == needed.end()) {
+            needed.push_back(q.hero);
         }
     }
-    if (hero.empty()) {
+    if (needed.empty()) {
         return "myth.no_hero_needed";
     }
-    if (!unmet_requirements(st, catalog, hero, hall).empty()) {
+    // B-026: the first of them whose demands the city meets comes; one not met does not hold back the others.
+    const auto ready = std::find_if(needed.begin(), needed.end(), [&](const std::string& id) {
+        return unmet_requirements(st, catalog, id, hall).empty();
+    });
+    if (ready == needed.end()) {
         return "myth.hero_requirements";
     }
+    const std::string hero = *ready;
     for (const std::string& r : catalog.hero_requirements.at(hero)) {
         if (r.rfind("drachmas:", 0) == 0 && r.find("pobierane") != std::string::npos &&
             r.find("nie pobierane") == std::string::npos) {

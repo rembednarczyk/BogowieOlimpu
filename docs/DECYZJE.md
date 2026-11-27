@@ -4,6 +4,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-28: Siódme demo, herosi
+- Decyzja: Atalanta przeciw Sfinksowi i Bellerofont przeciw Echidnie (P:23-24, Z:130) w demo `scenarios/demo_heroes.json` (`tools/make_demo_heroes.py`, bramka `core/tests/test_demo_heroes.cpp`, siódmy przycisk demo): greckie miasto bez Apolla (zabiłby potwory pierwszy, Z:129), Artemida i Ares, działający stadion, trzy stadniny z farmami, urzędy podatkowe na każdej ulicy, trzy faktorie po grupach towarów, każdy magazyn tylko na swoje.
+- Powód: polecenie właściciela z 2026-11-28. Demo greckie ma limit czterech sanktuariów wyczerpany, miasta Atlantydy nie udźwignęły sanktuarium Artemidy i 8 kompanii obok elity.
+- Niesprawdzone: herosi przeciw Chimerze i Harpiom w demo (ci sami herosi, test wymagań i test wezwania).
+
 ### 2026-11-28: Szóste demo, elita Atlantydy
 - Decyzja: włóczników, rydwanników, stoisko z rydwanami i majątek w Atlantydzie (P:15, P:18-19, Z:32-34) pokazuje demo `scenarios/demo_atlantis_elite.json` (`tools/make_demo_atlantis_elite.py`, bramka `core/tests/test_demo_atlantis_elite.cpp`, szósty przycisk demo). Nauka stoi po drugiej stronie ulicy elity, dwie agory z sześcioma stoiskami między działkami, osobna faktoria na pszenicę. Cel: 500 mieszkańców; majątek bramka widzi po drodze (rodziny odchodzą, gdy pokrycie nauką spada, Z:34).
 - Powód: polecenie właściciela z 2026-11-28 („Robimy: włócznicy, rydwannicy i stoisko z rydwanami…”). Próba z dzielnicą elity w demo wojska Atlantydy odrzucona: dzielnica i stare miasto dzielą pulę pracowników i losowe ruchy, każda poprawka psuła fregatę albo wieżę.
