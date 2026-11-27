@@ -351,6 +351,9 @@ static void run_scenario(Simulation& sim) {
     for (const std::string& god : ev.quests_done) {
         sim.emit(QuestCompleted{god});
     }
+    if (ev.lost) {
+        sim.emit(EpisodeLost{});
+    }
     if (ev.won) {
         sim.emit(EpisodeWon{});
     }

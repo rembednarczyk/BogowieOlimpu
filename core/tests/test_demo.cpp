@@ -375,6 +375,9 @@ DemoRun run_demo(std::uint64_t years) {
         }
         if (sim.state().scenario.won && run.won_day == 0) {
             run.won_day = day;
+            if (log) {
+                std::printf("won on day %llu\n", static_cast<unsigned long long>(day));
+            }
         }
         if (run.won_day != 0 && day > run.won_day + kDaysPerMonth * kMonthsPerYear && all_seen(run.seen) && !log) {
             break;  // a year after the victory, every mechanic seen: enough for the gate

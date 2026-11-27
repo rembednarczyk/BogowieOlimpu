@@ -227,6 +227,16 @@ func _goal_text(g: Dictionary) -> String:
 			return tr("goal.houses") % [tr("house." + g["target"]), g["value"]]
 		"vassal":
 			return tr("goal.vassal") % String(g["target"]).capitalize()
+		"support":
+			return tr("goal.support") % [g["value"], tr("unit." + g["target"]) if g["target"] != "trireme" else tr("ui.ships")]
+		"slay":
+			return tr("goal.slay") % (g["target"] if g["target"] != "" else str(g["value"]))
+		"set_aside_goods":
+			return tr("goal.set_aside_goods") % [g["value"], tr("good." + g["target"])]
+		"survive_until", "complete_before":
+			return tr("goal." + g["type"]) % (int(g["value"]) + 1)
+		"trading_partners", "yearly_profit":
+			return tr("goal." + g["type"]) % g["value"]
 	return g["type"]
 
 # Loads of a good in the city's storehouses and granaries (trade buildings left out, as the core does).

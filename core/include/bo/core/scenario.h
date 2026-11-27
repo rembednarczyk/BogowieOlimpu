@@ -97,6 +97,9 @@ struct ScenarioState {
 // map, heights, treasury, difficulty, partner cities with diplomacy, goals and events. Empty error = success.
 std::optional<SimulationConfig> parse_scenario(const std::string& json_text, std::string& error);
 
+// Whether goal `g` is met now (goals.cpp; the types in scenarios/README.md).
+bool goal_met(const WorldState& state, const DataCatalog& catalog, const ScenarioGoal& goal);
+
 struct ScenarioEvents {
     std::vector<std::size_t> new_requests;  // indices into ScenarioState::requests
     std::vector<std::pair<std::uint32_t, bool>> closed;  // city, fulfilled (false: withdrawn)
@@ -109,6 +112,7 @@ struct ScenarioEvents {
     std::vector<std::string> quests_given;       // god
     std::vector<std::string> quests_done;        // god
     bool won = false;
+    bool lost = false;  // a complete_before goal's year came first (S-008)
 };
 
 // Daily: events of the month fire on its first day; requests turn overdue and are withdrawn 96 days after the

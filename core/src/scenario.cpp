@@ -56,47 +56,6 @@ std::int32_t city_index(const std::vector<TradePartner>& cities, const json& e) 
     return -1;
 }
 
-bool goal_met(const WorldState& st, const DataCatalog& catalog, const ScenarioGoal& g) {
-    if (g.type == "population") {
-        return city_population(st.city) >= static_cast<std::uint64_t>(g.value);
-    }
-    if (g.type == "treasury") {
-        return st.finance.treasury >= g.value;
-    }
-    if (g.type == "sanctuary") {
-        // B-011, owner's decision: the sanctuary must be finished and standing; the god's favour does not count.
-        return std::any_of(st.city.buildings.items.begin(), st.city.buildings.items.end(), [&](const auto& kv) {
-            const auto p = catalog.sanctuaries.find(kv.second.type);
-            return kv.second.sanctuary && kv.second.sanctuary->complete && p != catalog.sanctuaries.end() &&
-                   p->second.god == g.target;
-        });
-    }
-    if (g.type == "vassal") {
-        return std::any_of(st.trade.partners.begin(), st.trade.partners.end(),
-                           [&g](const TradePartner& p) { return p.id == g.target && p.relation == "vassal"; });
-    }
-    if (g.type == "quest") {
-        return std::any_of(st.scenario.quests.begin(), st.scenario.quests.end(),
-                           [&g](const Quest& q) { return q.god == g.target && q.status == QuestStatus::Done; });
-    }
-    if (g.type == "houses") {
-        std::int64_t n = 0;
-        for (const auto& [id, b] : st.city.buildings.items) {
-            if (!b.house || b.house->population == 0) {
-                continue;
-            }
-            const auto& levels = b.house->elite ? catalog.elite_levels : catalog.common_levels;
-            const auto it = std::find_if(levels.begin(), levels.end(),
-                                         [&g](const HousingLevel& lv) { return lv.id == g.target; });
-            if (it != levels.end() && b.house->level >= static_cast<std::size_t>(it - levels.begin())) {
-                ++n;
-            }
-        }
-        return n >= g.value;
-    }
-    return false;
-}
-
 void fire(WorldState& st, const DataCatalog& catalog, const ScenarioEvent& e, ScenarioEvents& ev) {
     const bool has_city = e.city >= 0 && static_cast<std::size_t>(e.city) < st.trade.partners.size();
     if (e.type == "invasion") {
@@ -302,7 +261,12 @@ ScenarioEvents advance_scenario(WorldState& st, const DataCatalog& catalog) {
         for (ScenarioGoal& g : s.goals) {
             g.met = goal_met(st, catalog, g);
             all = all && g.met;
+            if (g.type == "complete_before" && !g.met && !st.episode_lost) {
+                st.episode_lost = true;  // the year came before the goals were met (S-008)
+                ev.lost = true;
+            }
         }
+        all = all && !st.episode_lost;
         if (all) {
             s.won = true;
             ev.won = true;

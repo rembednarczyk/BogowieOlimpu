@@ -174,7 +174,7 @@ func _init() -> void:
 	var sc := BoSimulation.new()
 	check(sc.start_scenario("res://data", "res://scenarios/demo.json") == "", "start the demo adventure")
 	check(sc.get_map_width() == 80 and sc.get_cities().size() == 4, "adventure map and cities")
-	check(sc.get_scenario()["goals"].size() == 5, "adventure goals")
+	check(sc.get_scenario()["goals"].size() == 10, "adventure goals")
 	sc.run_days(16 * 5 + 1)
 	check(sc.get_scenario()["requests"].size() == 1, "the request of month 6 is open")
 	# The autopilot (tools/make_demo.py): the build order runs through the binding, day 0 builds the first town.

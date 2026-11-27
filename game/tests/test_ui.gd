@@ -96,7 +96,7 @@ func _process(_d: float) -> bool:
 	ui.toggle_report()
 	check(ui.report.visible, "the report opens")
 	var sc: Dictionary = game.sim.get_scenario()
-	check(sc["goals"].size() == 5, "five goals in the demo")
+	check(sc["goals"].size() == 10, "ten goals in the demo")
 	check(ui._goal_text(sc["goals"][0]).length() > 0, "a goal line")
 	for d in 16 * 5 + 1:  # Corinth asks for fleece in month 6; the autopilot builds on meanwhile
 		game.sim.apply_build_order()

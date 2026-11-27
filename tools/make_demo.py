@@ -108,6 +108,12 @@ scenario = {
         {"type": "houses", "target": "residence", "value": 2},
         {"type": "sanctuary", "target": "hermes"},
         {"type": "quest", "target": "hermes"},
+        # Goals of the editor (S-008, L-093b), met before the ones above: trade, an army, goods set aside, time.
+        {"type": "trading_partners", "value": 2},
+        {"type": "support", "target": "rabble", "value": 40},
+        {"type": "set_aside_goods", "target": "marble", "value": 20},
+        {"type": "survive_until", "value": 4},
+        {"type": "complete_before", "value": 9},
     ],
 }
 

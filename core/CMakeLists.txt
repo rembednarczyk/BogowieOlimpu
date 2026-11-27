@@ -17,6 +17,7 @@ add_library(bo_core STATIC
     src/culture.cpp
     src/tactics.cpp
     src/games.cpp
+    src/goals.cpp
     src/relations.cpp
     src/prayers.cpp
     src/housing.cpp

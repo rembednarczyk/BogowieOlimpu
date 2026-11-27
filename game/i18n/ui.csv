@@ -211,3 +211,10 @@ oracle.kind.invasion,najazd,invasion
 oracle.kind.god_attack,gniew boga,a god's anger
 oracle.kind.monster,potwór,monster
 oracle.kind.disaster,katastrofa,disaster
+goal.support,Wojsko: %d (%s),Army: %d (%s)
+goal.slay,Pokonaj potwora: %s,Slay the monster: %s
+goal.set_aside_goods,Odłóż w magazynach %d: %s,Set aside %d in storage: %s
+goal.survive_until,Przetrwaj do roku %d,Survive until year %d
+goal.complete_before,Ukończ przed rokiem %d,Complete before year %d
+goal.trading_partners,Partnerzy handlowi: %d,Trading partners: %d
+goal.yearly_profit,Zysk roczny: %d dr,Yearly profit: %d dr
