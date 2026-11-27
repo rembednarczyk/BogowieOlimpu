@@ -9,7 +9,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach"
+  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie"
  },
  "common_housing_1_lod1.glb": {
   "building": "common_housing",
@@ -21,7 +21,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach"
+  "note": "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie"
  },
  "common_housing_2.glb": {
   "building": "common_housing",
@@ -33,7 +33,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: tynkowany dom z przybudówką z nieotynkowanej cegły, trzcina dwuspadowa"
+  "note": "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków"
  },
  "common_housing_2_lod1.glb": {
   "building": "common_housing",
@@ -45,7 +45,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: tynkowany dom z przybudówką z nieotynkowanej cegły, trzcina dwuspadowa"
+  "note": "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków"
  },
  "common_housing_3.glb": {
   "building": "common_housing",

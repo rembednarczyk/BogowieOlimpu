@@ -42,9 +42,16 @@ PALETTE = [
     ("ochre", (0.78, 0.48, 0.24)),       # painted bands and shutters
     ("blue_paint", (0.30, 0.42, 0.56)),  # painted doors and frames
     ("leaves", (0.40, 0.48, 0.26)),
+    ("end_grain", (0.80, 0.66, 0.46)),   # a log's cut face
+    ("bark", (0.36, 0.28, 0.20)),
+    ("linen", (0.86, 0.80, 0.66)),       # undyed cloth
+    ("hide", (0.58, 0.44, 0.30)),        # tanned hides
+    ("rope", (0.66, 0.56, 0.38)),
+    ("oil", (0.28, 0.24, 0.08)),         # olive oil in a jar's mouth
+    ("iron", (0.30, 0.30, 0.32)),
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
-PALETTE_SIZE = 16  # UV0.x = (index + 0.5) / PALETTE_SIZE
+PALETTE_SIZE = 32  # UV0.x = (index + 0.5) / PALETTE_SIZE
 
 FOUNDATION, WALLS, ROOF, SCAFFOLD = 0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0
 STILL, FLOW, ROTATE = 0.0, 0.5, 1.0  # kinds of animated part (alpha)
@@ -76,6 +83,32 @@ class Builder:
         self.uv = self.bm.loops.layers.uv.new("UVMap")
         self.pivot = self.bm.loops.layers.uv.new("Pivot")
         self.col = self.bm.loops.layers.float_color.new("Mask")
+        self.solids = []  # (name, aabb) of the building's walls and footings, in tiles
+        self.props = []   # (name, aabb) of the things around it: jars, wood, carts
+        self.two_sided = set()  # faces drawn from both sides on purpose: their normals stay as built
+
+    # Props must not go into the building or into each other (the owner's rule, 2026-11-27); finish() checks.
+    def solid(self, name, x0, y0, z0, x1, y1, z1):
+        self.solids.append((name, (min(x0, x1), min(y0, y1), min(z0, z1), max(x0, x1), max(y0, y1), max(z0, z1))))
+
+    def prop(self, name, x0, y0, z0, x1, y1, z1):
+        self.props.append((name, (min(x0, x1), min(y0, y1), min(z0, z1), max(x0, x1), max(y0, y1), max(z0, z1))))
+
+    def check_props(self, eps=0.004):
+        def hit(a, b):
+            return all(a[i] < b[i + 3] - eps and b[i] < a[i + 3] - eps for i in range(3))
+        bad = []
+        for i, (pn, pa) in enumerate(self.props):
+            if pa[0] < -eps or pa[1] < -eps or pa[3] > self.width + eps or pa[4] > self.height + eps:
+                bad.append(f"{pn} leaves the plot")
+            for sn, sa in self.solids:
+                if hit(pa, sa):
+                    bad.append(f"{pn} goes into {sn}")
+            for qn, qa in self.props[i + 1:]:
+                if hit(pa, qa):
+                    bad.append(f"{pn} goes into {qn}")
+        if bad:
+            raise ValueError(self.name + ": " + "; ".join(bad))
 
     def _tag(self, faces, part, stage, plaster, loose, anim, pivot, tint=0.5):
         u = (PALETTE_INDEX[part] + 0.5) / PALETTE_SIZE
@@ -113,7 +146,7 @@ class Builder:
         self._tag(faces, part, stage, plaster, loose, STILL, (0, 0), tint)
         return faces
 
-    def half_tube(self, start, end, radius, up, part, sides=4, stage=ROOF, tint=0.5):
+    def half_tube(self, start, end, radius, up, part, sides=4, stage=ROOF, tint=0.5, two_sided=False):
         """A half cylinder from `start` to `end` (tiles), its round side towards `up` (a cover tile)."""
         import mathutils
         a = mathutils.Vector(start)
@@ -131,8 +164,132 @@ class Builder:
                 ring.append(self.bm.verts.new((q.x, -q.y, q.z)))
             rings.append(ring)
         faces = [self.bm.faces.new((rings[0][i], rings[0][i + 1], rings[1][i + 1], rings[1][i])) for i in range(sides)]
+        if two_sided:  # a trough seen from inside (a pan tile): both windings, normals kept as built
+            back = [self.bm.faces.new([self.bm.verts.new(v.co) for v in reversed(f.verts)]) for f in faces]
+            faces += back
+            self.two_sided.update(faces)
         self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
         return faces
+
+    def lathe(self, cx, cy, z, profile, part, sides=28, stage=WALLS, tint=0.5, top=None, shape=None):
+        """A closed body of revolution about the vertical through (cx, cy): `profile` (radius, height) from the
+        bottom up, in tiles; the bottom is capped, the top capped with `top` (a part) or left to the profile."""
+        rings = []
+        for r, h in profile:
+            ring = []
+            for i in range(sides):
+                a = 2 * math.pi * i / sides
+                rr = r * (shape(a) if shape else 1.0)  # e.g. a column's flutes
+                ring.append(self.bm.verts.new((cx + rr * math.cos(a), -(cy + rr * math.sin(a)), z + h)))
+            rings.append(ring)
+        faces = []
+        for a, b in zip(rings, rings[1:]):
+            for i in range(sides):
+                faces.append(self.bm.faces.new((a[i], a[(i + 1) % sides], b[(i + 1) % sides], b[i])))
+        faces.append(self.bm.faces.new(list(reversed(rings[0]))))
+        self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
+        cap = self.bm.faces.new(rings[-1])
+        self._tag([cap], top or part, stage, False, False, STILL, (0, 0), tint)
+        return faces
+
+    def tube_path(self, points, radius, part, sides=8, stage=WALLS, tint=0.5, caps=True):
+        """A closed tube along `points` (x, y, z in tiles, y grows south): handles, ropes, branches."""
+        import mathutils
+        pts = [mathutils.Vector(p) for p in points]
+        rings = []
+        for k, p in enumerate(pts):
+            d = (pts[min(k + 1, len(pts) - 1)] - pts[max(k - 1, 0)]).normalized()
+            ref = mathutils.Vector((0, 0, 1)) if abs(d.z) < 0.9 else mathutils.Vector((1, 0, 0))
+            u = d.cross(ref).normalized()
+            v = d.cross(u).normalized()
+            r = radius(k / max(len(pts) - 1, 1)) if callable(radius) else radius
+            ring = []
+            for i in range(sides):
+                a = 2 * math.pi * i / sides
+                q = p + u * (r * math.cos(a)) + v * (r * math.sin(a))
+                ring.append(self.bm.verts.new((q.x, -q.y, q.z)))
+            rings.append(ring)
+        faces = []
+        for a, b in zip(rings, rings[1:]):
+            for i in range(sides):
+                faces.append(self.bm.faces.new((a[i], a[(i + 1) % sides], b[(i + 1) % sides], b[i])))
+        if caps:
+            faces.append(self.bm.faces.new(list(reversed(rings[0]))))
+            faces.append(self.bm.faces.new(rings[-1]))
+        self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
+        return faces
+
+    def log(self, start, end, radius, sides=10, stage=WALLS, tint=0.5, split=None, grain_tint=0.5):
+        """A log from `start` to `end` (tiles): bark round it, the cut faces in end grain; `split` "half" or
+        "quarter" cuts it along its length, the split face in end grain too."""
+        import mathutils
+        a = mathutils.Vector(start)
+        e = mathutils.Vector(end)
+        d = (e - a).normalized()
+        ref = mathutils.Vector((0, 0, 1)) if abs(d.z) < 0.9 else mathutils.Vector((1, 0, 0))
+        u = d.cross(ref).normalized()
+        v = d.cross(u).normalized()
+        span = {None: 2 * math.pi, "half": math.pi, "quarter": math.pi / 2}[split]
+        steps = sides if split is None else max(3, int(sides * span / (2 * math.pi)) + 1)
+        def ring(p):
+            pts = []
+            for i in range(steps if split is None else steps + 1):
+                ang = span * i / steps
+                q = p + u * (radius * math.cos(ang)) + v * (radius * math.sin(ang))
+                pts.append(self.bm.verts.new((q.x, -q.y, q.z)))
+            if split is not None:
+                pts.append(self.bm.verts.new((p.x, -p.y, p.z)))  # the axis: the split faces meet here
+            return pts
+        r0, r1 = ring(a), ring(e)
+        n = len(r0)
+        bark, grain = [], []
+        for i in range(n):
+            j = (i + 1) % n
+            f = self.bm.faces.new((r0[i], r0[j], r1[j], r1[i]))
+            (bark if split is None or i < n - 2 else grain).append(f)
+        grain.append(self.bm.faces.new(list(reversed(r0))))
+        grain.append(self.bm.faces.new(r1))
+        self._tag(bark, "bark", stage, False, False, STILL, (0, 0), tint)
+        self._tag(grain, "end_grain", stage, False, False, STILL, (0, 0), grain_tint)
+        return bark + grain
+
+    def surface(self, fn, nu, nv, part, stage=WALLS, tint=0.5, both=True):
+        """A grid surface: fn(u, v) in 0..1 gives (x, y, z) in tiles; cloth, hides, mats. Both sides drawn."""
+        grid = [[self.bm.verts.new(self._b(fn(i / nu, j / nv))) for i in range(nu + 1)] for j in range(nv + 1)]
+        faces = []
+        for j in range(nv):
+            for i in range(nu):
+                q = (grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i])
+                faces.append(self.bm.faces.new(q))
+        if both:
+            back = [[self.bm.verts.new(v.co) for v in row] for row in grid]
+            for j in range(nv):
+                for i in range(nu):
+                    faces.append(self.bm.faces.new((back[j][i], back[j + 1][i], back[j + 1][i + 1], back[j][i + 1])))
+        self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
+        self.two_sided.update(faces)
+        return faces
+
+    def strand(self, root, tip, width, part, stage=WALLS, tint=0.5):
+        """A blade of straw or grass: a thin quad from `root` to `tip` (tiles), seen from both sides."""
+        import mathutils
+        r = mathutils.Vector(root)
+        t_ = mathutils.Vector(tip)
+        d = (t_ - r)
+        side = d.cross(mathutils.Vector((0, 0, 1)))
+        if side.length < 1e-6:
+            side = mathutils.Vector((1, 0, 0))
+        side = side.normalized() * (width / 2)
+        pts = [r - side, r + side, t_ + side * 0.4, t_ - side * 0.4]
+        vs = [self.bm.verts.new(self._b(p)) for p in pts]
+        faces = [self.bm.faces.new(vs), self.bm.faces.new([self.bm.verts.new(v.co) for v in reversed(vs)])]
+        self._tag(faces, part, stage, False, False, STILL, (0, 0), tint)
+        self.two_sided.update(faces)
+        return faces
+
+    @staticmethod
+    def _b(p):
+        return (p[0], -p[1], p[2])
 
     def poly(self, points, part, stage=WALLS, plaster=False, tint=0.5):
         """One flat face through `points` (tiles, y grows south), e.g. a gable's triangle."""
@@ -184,7 +341,8 @@ class Builder:
                 self.column(cx, cy, 0, 0.03, top, part="wood", sides=4, stage=SCAFFOLD)
 
     def finish(self):
-        bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+        self.check_props()
+        bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if f not in self.two_sided])
         mesh = bpy.data.meshes.new(self.name)
         self.bm.to_mesh(mesh)
         self.bm.free()

@@ -14,8 +14,8 @@ instance uniform float damage = 0.0;   // 0-3: cracks, plaster gone, loose parts
 instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
 
-const int PALETTE_SIZE = 16;
-const vec3 PALETTE[16] = vec3[16](
+const int PALETTE_SIZE = 32;
+const vec3 PALETTE[23] = vec3[23](
 	vec3(0.93, 0.89, 0.80),  // plaster
 	vec3(0.78, 0.74, 0.66),  // stone
 	vec3(0.72, 0.36, 0.24),  // roof_tile
@@ -31,7 +31,14 @@ const vec3 PALETTE[16] = vec3[16](
 	vec3(0.66, 0.60, 0.50),  // mortar
 	vec3(0.78, 0.48, 0.24),  // ochre
 	vec3(0.30, 0.42, 0.56),  // blue_paint
-	vec3(0.40, 0.48, 0.26)  // leaves
+	vec3(0.40, 0.48, 0.26),  // leaves
+	vec3(0.80, 0.66, 0.46),  // end_grain
+	vec3(0.36, 0.28, 0.20),  // bark
+	vec3(0.86, 0.80, 0.66),  // linen
+	vec3(0.58, 0.44, 0.30),  // hide
+	vec3(0.66, 0.56, 0.38),  // rope
+	vec3(0.28, 0.24, 0.08),  // oil
+	vec3(0.30, 0.30, 0.32)  // iron
 );
 const int STONE = 1;
 const int WATER = 6;
@@ -78,7 +85,7 @@ void fragment() {
 	if (v_hidden > 0.5) {
 		discard;
 	}
-	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 15);
+	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 22);
 	vec3 base = pow(PALETTE[part], vec3(2.2));  // the palette is in sRGB, ALBEDO linear
 	base *= 0.84 + 0.32 * UV.y;  // no two bricks or tiles alike
 	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground

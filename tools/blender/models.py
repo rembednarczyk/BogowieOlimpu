@@ -10,6 +10,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import math  # noqa: E402
 import random  # noqa: E402
 
 import bo_asset as A  # noqa: E402
@@ -44,29 +45,85 @@ def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, d
         D.brick_wall(b, wall, rng, part=part, stage=stage, plaster=plaster, block=block)
 
 
-@model("common_housing_1", "common_housing", "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach")
+@model("common_housing_1", "common_housing", "chata: cegła suszona na kamiennym cokole, strzecha czterospadowa w warstwach ze źdźbłami na okapie")
 def hut(b, rng):
     D.footing(b, 0.5, 0.7, 3.0, 2.6, h=0.25, rng=rng)
-    _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25 * 0 + 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
+    _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
           windows=[("e", 0.55, 0.40, 0.95, 0.35)])
     D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35, rng, hip=0.3, overhang=0.35)
-    D.woodpile(b, 3.56, 1.3, rng=rng, along_x=False)
-    D.pithos(b, 0.3, 3.55, rng=rng)
+    D.woodpile(b, 3.55, 1.2, rng, along_x=False)
+    D.pithos(b, 0.3, 3.62, scale=0.9, rng=rng)
+    D.amphora(b, 3.7, 3.6, scale=0.9, rng=rng)
     b.scaffold(height=2.4 * M)
 
 
-@model("common_housing_2", "common_housing", "szałas: tynkowany dom z przybudówką z nieotynkowanej cegły, trzcina dwuspadowa")
-def cottage(b, rng):
-    D.footing(b, 0.3, 0.4, 2.6, 3.1, h=0.3, rng=rng)
-    _room(b, rng, 0.4, 0.5, 2.4, 2.9, 0.3, 2.1, plaster="plaster", doors=[("s", 0.75, 0.85, 1.7)],
-          windows=[("w", 0.9), ("n", 1.0)])
-    D.footing(b, 2.8, 1.35, 0.95, 1.9, h=0.2, rng=rng)
-    _room(b, rng, 2.8, 1.45, 0.9, 1.75, 0.2, 1.45, thick=0.3, doors=[("s", 0.2, 0.5, 1.2)], stage=(0.2, 0.55))
-    D.thatch_roof(b, 0.4, 0.5, 2.4, 2.9, 2.4, 1.25, rng, hip=0.0, along_x=False, overhang=0.3)
-    D.thatch_roof(b, 2.8, 1.45, 0.9, 1.75, 1.65, 0.45, rng, hip=0.0, along_x=False, overhang=0.15, layers=3)
-    D.woodpile(b, 0.25, 3.65, rng=rng)
-    D.pithos(b, 3.6, 0.5, scale=0.9, rng=rng)
-    b.scaffold(height=2.6 * M)
+@model("common_housing_2", "common_housing", "szałas: drewniany szkielet z kalenicą na widlastych słupach, płótno i skóry z fałdami, linki do kołków")
+def shelter(b, rng):
+    x0, x1, y0, y1, eave, ridge = 0.5, 3.5, 0.7, 3.3, 1.55, 2.55
+    b.solid("tent", t(x0 - 0.17), t(y0 - 0.14), 0, t(x1 + 0.17), t(y1 + 0.14), t(ridge + 0.2))
+    posts = 4 if b.detail else 2
+    for i in range(posts + 1):  # the side posts along both eaves
+        px = x0 + (x1 - x0) * i / posts
+        for py in (y0, y1):
+            b.log((t(px), t(py), 0), (t(px), t(py), t(eave + 0.05)), t(0.05), sides=10 if b.detail else 5, stage=0.15,
+                  tint=rng.uniform(0.3, 0.7))
+    for px in (x0 - 0.02, x1 + 0.02):  # the forked posts and the ridge pole
+        b.log((t(px), t((y0 + y1) / 2), 0), (t(px), t((y0 + y1) / 2), t(ridge + 0.1)), t(0.07),
+              sides=12 if b.detail else 6, stage=0.2)
+    b.log((t(x0 - 0.15), t((y0 + y1) / 2), t(ridge)), (t(x1 + 0.15), t((y0 + y1) / 2), t(ridge)), t(0.06),
+          sides=12 if b.detail else 6, stage=0.3)
+    for py in (y0, y1):  # the eave poles
+        b.log((t(x0 - 0.1), t(py), t(eave)), (t(x1 + 0.1), t(py), t(eave)), t(0.04), sides=10 if b.detail else 5,
+              stage=0.35)
+    nu, nv = (36, 10) if b.detail else (6, 2)
+
+    def roof(side):
+        def fn(u, v):  # from the ridge (v 0) to the eave (v 1); sags between the posts, folds along the slope
+            ey = y0 if side < 0 else y1
+            mid = (y0 + y1) / 2
+            x = x0 - 0.12 + (x1 - x0 + 0.24) * u
+            y = mid + (ey + side * 0.12 - mid) * v
+            sag = 0.10 * math.sin(math.pi * v) * (0.6 + 0.4 * abs(math.sin(u * math.pi * 4)))
+            fold = 0.015 * math.sin(u * 40.0 + rng_wave[side]) * v
+            z = ridge + 0.05 + (eave - 0.04 - ridge - 0.05) * v - sag + fold
+            return (t(x), t(y), t(z))
+        return fn
+    rng_wave = {-1: rng.uniform(0, 6), 1: rng.uniform(0, 6)}
+    for side in (-1, 1):
+        b.surface(roof(side), nu, nv, "linen", stage=0.7, tint=rng.uniform(0.35, 0.65))
+
+    def wall(xa, ya, xb, yb, top0, top1, part, door=False):
+        def fn(u, v):  # from the ground (v 0) up; folds hang down, the hem lies a little out on the ground
+            x = xa + (xb - xa) * u
+            y = ya + (yb - ya) * u
+            top = top0 + (top1 - top0) * (1 - abs(2 * u - 1)) if top1 != top0 else top0
+            fold = 0.03 * math.sin(u * 46.0 + xa * 3.0) * (1.0 - v * 0.7)
+            nx, ny = (yb - ya), -(xb - xa)
+            ln = max(math.hypot(nx, ny), 1e-6)
+            out = fold + 0.05 * (1.0 - v) ** 3
+            return (t(x + nx / ln * out), t(y + ny / ln * out), t(top * v + 0.01))
+        return fn
+    b.surface(wall(x0, y0, x1, y0, eave, eave, "hide"), nu, nv // 2 + 1, "hide", stage=0.5, tint=rng.uniform(0.3, 0.7))
+    b.surface(wall(x0, y0, x0, y1, eave, ridge, "linen"), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.4)
+    b.surface(wall(x1, y1, x1, y0, eave, ridge, "linen"), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.6)
+    for xa, xb in ((x0, 1.55), (2.35, x1)):  # the south side, the door between
+        b.surface(wall(xb, y1, xa, y1, eave, eave, "hide"), max(2, nu // 3), nv // 2 + 1, "hide", stage=0.5,
+                  tint=rng.uniform(0.3, 0.7))
+    if b.detail:  # the door flap rolled up under the eave, tied with rope
+        b.tube_path([(t(1.5), t(y1 + 0.06), t(eave - 0.12)), (t(2.4), t(y1 + 0.06), t(eave - 0.12))], t(0.06), "hide",
+                    sides=12, stage=0.75)
+        for px in (1.65, 2.25):
+            b.tube_path([(t(px), t(y1 + 0.02), t(eave)), (t(px), t(y1 + 0.13), t(eave - 0.1)),
+                         (t(px), t(y1 + 0.02), t(eave - 0.2))], t(0.008), "rope", sides=5, stage=0.75)
+        for cx, cy, gx, gy in ((x0, y0, x0 - 0.3, y0 - 0.45), (x1, y0, x1 + 0.3, y0 - 0.45), (x0, y1, x0 - 0.3, y1 + 0.45),
+                               (x1, y1, x1 + 0.3, y1 + 0.45)):  # guy ropes to pegs
+            gx, gy = min(max(gx, 0.08), 3.92), min(max(gy, 0.08), 3.92)
+            b.tube_path([(t(cx), t(cy), t(eave)), (t(gx), t(gy), t(0.06))], t(0.008), "rope", sides=5, stage=0.8)
+            b.log((t(gx), t(gy), 0), (t(gx), t(gy), t(0.12)), t(0.02), sides=6, stage=0.8)
+        b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=16, stage=0.2)
+    D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5)
+    D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng)
+    b.scaffold(height=2.7 * M)
 
 
 @model("common_housing_3", "common_housing", "lepianka: bielony dom pod dachówką, murek z bramką przed wejściem")
@@ -78,7 +135,8 @@ def cabin(b, rng):
     for x, length in ((0.25, 1.1), (2.35, 1.4)):  # the yard's low wall, a gate between
         D.brick_wall(b, D.Wall(x, 3.55, length, "x", 0.0, 0.8, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
     D.pithos(b, 0.55, 3.25, scale=0.8, rng=rng)
-    D.pithos(b, 3.4, 3.25, scale=0.7, rng=rng)
+    D.pithos(b, 3.4, 3.25, scale=0.7, rng=rng, name="pithos 2")
+    D.amphora(b, 1.75, 3.75, scale=0.6, rng=rng)
     b.scaffold(height=2.9 * M)
 
 
@@ -94,9 +152,9 @@ def homestead(b, rng):
     D.tiled_roof(b, 2.3, 2.2, 1.4, 1.5, 2.4, 0.55, rng, along_x=False, overhang=0.22)
     D.brick_wall(b, D.Wall(0.2, 3.65, 2.0, "x", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
     D.brick_wall(b, D.Wall(0.2, 2.35, 1.3, "y", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4))
-    for x, y, sc in ((0.75, 2.6, 0.9), (1.25, 2.6, 0.8), (0.75, 3.1, 0.75)):
-        D.pithos(b, x, y, scale=sc, rng=rng)
-    D.woodpile(b, 1.4, 3.2, rng=rng)
+    for k, (x, y, sc) in enumerate(((0.76, 2.6, 0.9), (1.35, 2.6, 0.8), (0.76, 3.16, 0.75))):
+        D.pithos(b, x, y, scale=sc, rng=rng, name="pithos %d" % k)
+    D.woodpile(b, 1.38, 3.2, rng, length=0.8)
     b.scaffold(height=3.2 * M)
 
 
@@ -115,6 +173,7 @@ def row_house(b, rng):
             b.box(t(0.5 + i * 0.27), t(3.82), t(2.66), t(0.04), t(0.04), t(0.85), "wood", stage=0.6)
         b.box(t(0.45), t(3.8), t(3.5), t(3.1), t(0.08), t(0.06), "dark_wood", stage=0.6)
     D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
+    D.amphora(b, 3.76, 3.74, scale=0.8, rng=rng)
     b.scaffold(height=5.2 * M)
 
 
@@ -134,7 +193,8 @@ def flat(b, rng):
     b.box(t(1.7), t(2.6), 0, t(0.6), t(0.6), t(0.15), "stone", stage=0.05)  # the yard's paving and its well
     b.column(t(2.0), t(2.9), 0, t(0.28), t(0.55), "stone", sides=14 if b.detail else 6, stage=0.3)
     b.column(t(2.0), t(2.9), t(0.55), t(0.2), t(0.02), "water", sides=12 if b.detail else 6, stage=0.35)
-    D.pithos(b, 1.6, 3.55, scale=0.75, rng=rng)
+    D.pithos(b, 1.75, 3.55, scale=0.75, rng=rng)
+    D.amphora(b, 2.3, 3.6, scale=0.8, rng=rng)
     b.scaffold(height=5.0 * M)
 
 
@@ -154,7 +214,8 @@ def city_house(b, rng):
     D.tiled_roof(b, 0.3, 2.7, 3.4, 0.95, 3.05, 0.35, rng, along_x=True, overhang=0.15, gable="stone",
                  stage=(0.62, 0.7))
     D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
-    D.pithos(b, 0.45, 3.7, scale=0.6, rng=rng)
+    D.pithos(b, 1.32, 3.12, scale=0.5, rng=rng, z=0.55)
+    D.amphora(b, 2.47, 3.12, scale=0.6, rng=rng, z=0.55)
     b.scaffold(height=5.6 * M)
 
 
