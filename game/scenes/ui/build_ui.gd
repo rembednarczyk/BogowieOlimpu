@@ -484,11 +484,15 @@ func _set_mode(m: String) -> void:
 			hint.text = tr("building." + selected) + ": " + tr("ui.drag_area" if drag_kind() != "" else "ui.tap_to_place")
 		"demolish":
 			hint.text = tr("ui.tap_to_demolish")
+		"select", "deselect":
+			hint.text = tr("ui.drag_" + m)
 		_:
 			hint.text = ""
 
 # "rect", "line" or "" for the current choice.
 func drag_kind() -> String:
+	if mode == "select" or mode == "deselect":  # companies by a rectangle (Z:137)
+		return "rect"
 	if mode == "demolish" or (mode == "build" and selected in RECT_TYPES):
 		return "rect"
 	if mode == "build" and selected in LINE_TYPES:
@@ -543,6 +547,10 @@ func drag_to(tile: Vector2i) -> void:
 		_refresh_preview()
 
 func end_drag() -> void:
+	if (mode == "select" or mode == "deselect") and target.x >= 0:
+		army_world.select_area(drag_from, target, mode == "deselect")
+		_set_mode("")
+		return
 	if instant:
 		_confirm()
 
@@ -586,6 +594,11 @@ func _refresh_preview() -> void:
 	var good := PackedVector2Array()
 	var bad := PackedVector2Array()
 	var cost := 0
+	if mode == "select" or mode == "deselect":
+		for t in _rect_tiles(1):
+			good.append(Vector2(t.x, t.y))
+		game.show_ghost(good, bad)
+		return
 	if mode == "demolish" or selected == "clear_land" or selected == "road" or selected == "roadblock":
 		var tiles := _rect_tiles(1) if drag_kind() == "rect" else (_line_tiles() if drag_kind() == "line" else [target])
 		for t in tiles:

@@ -313,3 +313,9 @@ legend.low_risk,bezpiecznie,safe
 legend.high_risk,zaraz wybuchnie,about to break out
 legend.low_appeal,odpycha,repels
 legend.high_appeal,przyciąga,attracts
+ui.select_area,Zaznacz na mapie,Select on map
+ui.drag_select,Przeciągnij prostokąt wokół sztandarów,Drag a rectangle around the standards
+ui.drag_deselect,Przeciągnij prostokąt: te kompanie wypadną z zaznaczenia,Drag a rectangle: these companies leave the selection
+ui.chosen_line,"Zaznaczone, kompanie: %d","Selected, companies: %d"
+ui.deselect_area,Odznacz obszar,Drop an area
+ui.deselect_all,Odznacz wszystko,Drop all

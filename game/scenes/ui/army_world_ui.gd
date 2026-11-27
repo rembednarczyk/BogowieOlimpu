@@ -17,6 +17,7 @@ var posting := -1  # the trireme whose station the next map tap sets (Z:142)
 # phone a pick in the company's row. Presentation state, not in the save [ZAŁOŻENIE].
 const GROUPS := 5
 var group_of := {}
+var chosen: Array = []  # companies picked by a rectangle on the map (Z:137); their row leads the panel
 const WorldMap := preload("res://scenes/ui/world_map.gd")
 var world_map: Control
 var city := 0  # the city picked on the world map; its orders under the map
@@ -105,7 +106,7 @@ func refresh_army() -> void:
 	man.toggle_mode = true
 	man.set_pressed_no_signal(sc.get("towers_manned", false))
 	var all: Button = ui._button("ui.call_all", func(): call_all(), Vector2(240, ui.CELL.y))
-	var top := HBoxContainer.new()
+	var top := HFlowContainer.new()  # wraps on a narrow screen
 	top.add_child(all)
 	top.add_child(man)
 	var generals: Button = ui._button("ui.auto_defend",
@@ -113,10 +114,12 @@ func refresh_army() -> void:
 	generals.toggle_mode = true  # Auto-Defend (Z:145): the generals command; on only before the fighting
 	generals.set_pressed_no_signal(sc.get("auto_defend", false))
 	top.add_child(generals)
+	top.add_child(ui._button("ui.select_area", func(): start_select(false), Vector2(200, ui.CELL.y)))
 	army_box.add_child(top)
 	var companies: Array = game.sim.get_companies()
 	if companies.is_empty():
 		army_box.add_child(ui._label("  " + tr("ui.no_companies")))
+	_chosen(companies)
 	_groups(companies)
 	# Alike companies (unit, god, status, group) in one row: twenty rows of rabble would not fit a phone screen.
 	var groups := {}
@@ -164,6 +167,49 @@ func refresh_army() -> void:
 			_small("ui.move", func(): start_move(ids), not home and not abroad),
 			_small("ui.go_home", func(): _each(ids, func(i): game.sim.send_company_home(i)), not home and not abroad)])
 	_ships()
+
+# The companies picked on the map: one row with their orders, a group to put them in, and the area to drop.
+func _chosen(companies: Array) -> void:
+	chosen = chosen.filter(func(i): return i < companies.size())
+	if chosen.is_empty():
+		return
+	var out := chosen.filter(func(i): return companies[i]["status"] != 0 and companies[i]["status"] != 6)
+	var group := OptionButton.new()
+	group.custom_minimum_size = Vector2(110, ui.CELL.y)
+	group.add_theme_font_size_override("font_size", 18)
+	group.add_item(tr("ui.group_none"))
+	for g in GROUPS:
+		group.add_item(tr("ui.group") % (g + 1))
+	group.item_selected.connect(func(g): assign_group(chosen.duplicate(), g))
+	_row(army_box, tr("ui.chosen_line") % chosen.size(), [
+		group,
+		_small("ui.move", func(): start_move(out), not out.is_empty()),
+		_small("ui.go_home", func(): _each(out, func(i): game.sim.send_company_home(i)), not out.is_empty()),
+		ui._button("ui.deselect_area", func(): start_select(true), Vector2(170, ui.CELL.y)),
+		ui._button("ui.deselect_all", func(): chosen = []; refresh_army(), Vector2(170, ui.CELL.y))])
+
+# The next drag on the map picks (or drops) the companies whose standards stand in it.
+func start_select(drop: bool) -> void:
+	army.visible = false
+	ui._set_mode("deselect" if drop else "select")
+
+func select_area(a: Vector2i, b: Vector2i, drop: bool) -> void:
+	var lo := Vector2i(mini(a.x, b.x), mini(a.y, b.y))
+	var hi := Vector2i(maxi(a.x, b.x), maxi(a.y, b.y))
+	var companies: Array = game.sim.get_companies()
+	for i in companies.size():
+		var c: Dictionary = companies[i]
+		var on_map: bool = c["status"] != 0 and c["status"] != 6  # at home or abroad: no standard on the map
+		var inside: bool = c["x"] >= lo.x and c["x"] <= hi.x and c["y"] >= lo.y and c["y"] <= hi.y
+		if not (on_map and inside):
+			continue
+		if drop:
+			chosen.erase(i)
+		elif not chosen.has(i):
+			chosen.append(i)
+	chosen.sort()
+	army.visible = true
+	refresh_army()
 
 # One row a group in use: its orders for all its companies at once.
 func _groups(companies: Array) -> void:
