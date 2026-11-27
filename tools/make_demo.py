@@ -50,7 +50,7 @@ grid[8][72] = "h"                  # boars (Z:46), by the north-east granary: po
 grid[8][20] = "d"                  # deer
 grid[47][3] = "w"                  # wolves by the south-west shore (Z:45)
 grid[30][W - 2] = "i"              # invasion point east of the wall (Z:136)
-grid[9][66] = "M"                  # monster point (doc 23)
+grid[10][66] = "M"                 # monster point (doc 23), by the main road: Medusa meets its walkers (Z:128)
 
 # --- Roads ----------------------------------------------------------------------------------------------
 grid[11][1] = "E"
@@ -103,7 +103,7 @@ scenario = {
          "deadline_months": 3},
         {"type": "invasion", "city": "sparta", "nation": "greek", "amount": 16, "year": 5, "month": 9,
          "by_sea": True},  # transports with a warship from the sea entry (Z:144); the triremes meet them
-        {"type": "monster", "monster": "medusa", "strength": 1, "target": "resources", "year": 6, "month": 0},
+        {"type": "monster", "monster": "medusa", "strength": 1, "target": "citizens", "year": 6, "month": 0},  # among the houses: their walkers turn to stone (Z:128)
         {"type": "monster", "monster": "kraken", "strength": 1, "year": 6, "month": 8},  # from the sea entry (L-116)
     ],
     "goals": [
