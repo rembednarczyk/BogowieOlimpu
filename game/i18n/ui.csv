@@ -319,3 +319,4 @@ ui.drag_deselect,Przeciągnij prostokąt: te kompanie wypadną z zaznaczenia,Dra
 ui.chosen_line,"Zaznaczone, kompanie: %d","Selected, companies: %d"
 ui.deselect_area,Odznacz obszar,Drop an area
 ui.deselect_all,Odznacz wszystko,Drop all
+ui.scale,Skala interfejsu: %d %%,Interface scale: %d %%

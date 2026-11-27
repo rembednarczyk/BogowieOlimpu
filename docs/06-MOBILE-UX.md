@@ -10,7 +10,7 @@ Zasada nadrzędna: projektujemy dla telefonu 6" trzymanego poziomo. Tablet i PC 
 
 ## Budowa
 
-- Wybór budynku z menu kategorii (pasek u dołu ekranu, maks. 2 dotknięcia do budynku).
+- Wybór budynku z panelu kategorii przy prawej krawędzi, jak panel sterowania oryginału (decyzja 2026-11-26, potwierdzona 2026-11-27), maks. 2 dotknięcia do budynku; kolumna budynków obok panelu.
 - Podgląd ducha budynku z zasięgami i wpływem na atrakcyjność przed postawieniem.
 - Drogi i strefy: tryb przeciągania z widocznym kosztem; zatwierdzenie osobnym przyciskiem, żeby uniknąć przypadkowych budów.
 - Wyburzanie: tryb z potwierdzeniem i cofaniem.
@@ -28,9 +28,18 @@ Zasada nadrzędna: projektujemy dla telefonu 6" trzymanego poziomo. Tablet i PC 
 - Tryb "szybkie spojrzenie": po powrocie do gry podsumowanie, co się wydarzyło.
 - Prędkości gry 0.5x do 4x, pauza z możliwością budowania.
 
+## Skala i układ (decyzja 2026-11-27)
+
+- Interfejs liczony w dp (1/160 cala): współczynnik dpi/160 na telefonie i tablecie, skala systemowa na PC (większy monitor pokazuje więcej miasta, panel ma stały rozmiar jak w oryginale); suwak "Skala interfejsu" 75-150 % w ustawieniach raportu. Kod: `game/scenes/ui/ui_scale.gd`.
+- Tylko orientacja pozioma, obie strony (wycięcie aparatu z lewej albo z prawej); marginesy z bezpiecznego obszaru ekranu.
+- Najmniejszy ekran: 640 x 360 dp. Co się nie mieści, przewija się (kategorie, kolumna budynków, karta, raport, wojsko, świat); wiersze z przyciskami zawijają się.
+- Układ: prawy panel (kategorie, prędkości, Cofnij, Raport, Wojsko, Świat, Widok); nad mapą z lewej kolumna: stan miasta, legenda widoku, karta budynku; u dołu podpowiedź i pasek Zatwierdź, Obróć, Anuluj tylko w trybie budowy. Panel raportu, wojska albo świata zamyka kartę i tryb budowy.
+- Czcionki: 16 dp tekst i przyciski, 14 dp kategorie i nazwy budynków (zawijane w dwie linie), 18 i 20 dp tytuły.
+- Bramka: `game/tests/test_layout.gd` w sześciu rozmiarach sprawdza 48 dp, położenie na ekranie, brak nakładania i brak uciętych napisów.
+
 ## Dostępność
 
-- Minimalny rozmiar celu dotyku: 44 x 44 pt.
+- Minimalny rozmiar celu dotyku: 48 x 48 dp (7,6 mm; decyzja właściciela 2026-11-27).
 - Skalowanie tekstu, tryby kolorów, ikony z kształtem oprócz koloru.
 - Kontroler i mysz jako opcja na tabletach i PC.
 

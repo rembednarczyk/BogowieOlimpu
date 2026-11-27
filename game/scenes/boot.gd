@@ -122,12 +122,16 @@ func _ready() -> void:
 		sim.apply_build_order()  # day 0 of the build order
 	_build_environment()
 	add_child(tiles)
-	label.position = Vector2(16, 44)
-	label.add_theme_font_size_override("font_size", 14)
-	add_child(label)
+	label.add_theme_font_size_override("font_size", 13)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui = preload("res://scenes/ui/build_ui.gd").new()
 	add_child(ui)
 	ui.setup(self)
+	ui.dev_slot.add_child(label)  # the developer line in the left column, under the status
+	apply_ui_scale()
+	if not get_window().size_changed.is_connected(apply_ui_scale):
+		get_window().size_changed.connect(apply_ui_scale)
 	ghost.name = "Ghost"
 	add_child(ghost)
 	if restored:
@@ -136,6 +140,16 @@ func _ready() -> void:
 	_handle_events(sim.drain_events())
 	_rebuild_tiles()
 	_update_label()
+
+# The interface in dp (ui_scale.gd): from the screen's density or the system scale and the player's slider.
+# A headless run (tests) keeps the canvas the test sets.
+func apply_ui_scale() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var f := UiScale.device_factor(UiScale.saved_percent())
+	UiScale.apply(get_window(), f)
+	if ui != null:
+		ui.set_safe_insets(UiScale.safe_insets(get_window(), f))
 
 func _adventure() -> bool:
 	return DEMOS[demo].size() > 3

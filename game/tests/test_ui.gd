@@ -24,7 +24,7 @@ func _process(_d: float) -> bool:
 	check(ui.buildings_by_tab["hygiene_safety"].has("fountain"), "fountain in its tab")
 	check(not ui.buildings_by_tab["mythology"].has("sanctuary"), "no generic sanctuary")
 	for tab in ui.TABS:
-		check(ui.buildings_by_tab[tab].size() <= 2 * ui.ITEMS_PER_COLUMN, "tab %s fits two columns" % tab)
+		check(not ui.buildings_by_tab[tab].is_empty(), "tab %s has buildings (the column scrolls when long: test_layout.gd)" % tab)
 
 	# One building: tab, building, tap, ghost, confirm.
 	ui._show_tab("hygiene_safety")
@@ -133,7 +133,7 @@ func _process(_d: float) -> bool:
 	game.sim.step(1)
 	check(game.sim.get_companies()[0]["tactic"] == 1, "the tactic of a company changed (Z:138)")
 	aw.refresh_army()
-	var trow: HBoxContainer = aw.army_box.get_child(2)
+	var trow: Container = aw.army_box.get_child(2)
 	check(trow.get_child(1) is OptionButton, "a tactic picker in each company row")
 	aw.start_move(0)
 	check(not aw.army.visible, "the panel steps aside for the tap on the map")
@@ -145,7 +145,7 @@ func _process(_d: float) -> bool:
 	aw.toggle_army()
 	aw.assign_group([0], 2)
 	check(aw.group_members(2) == [0], "the company is in group 2")
-	var grow: HBoxContainer = aw.army_box.get_child(2)
+	var grow: Container = aw.army_box.get_child(2)
 	check((grow.get_child(0) as Label).text.contains("2"), "a row for group 2 above the companies")
 	(grow.get_child(2) as Button).pressed.emit()
 	check(aw.moving == [0] and not aw.army.visible, "the group's Move takes its companies")
@@ -162,7 +162,7 @@ func _process(_d: float) -> bool:
 	ui.drag_to(Vector2i(44, 24))
 	ui.end_drag()
 	check(aw.chosen.has(0) and aw.army.visible and ui.mode == "", "the company at (42, 22) is selected: %s" % [aw.chosen])
-	var crow: HBoxContainer = aw.army_box.get_child(2)
+	var crow: Container = aw.army_box.get_child(2)
 	check((crow.get_child(0) as Label).text == tr("ui.chosen_line") % aw.chosen.size(), "a row for the selection leads the list")
 	aw.start_select(true)
 	ui.begin_drag(Vector2i(41, 21))

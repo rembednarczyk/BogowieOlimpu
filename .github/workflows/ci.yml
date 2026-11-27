@@ -44,3 +44,5 @@ jobs:
           python3 tools/sync_game_data.py .
           godot --headless --path game --import || true
           godot --headless --path game --script res://tests/test_simulation.gd
+          godot --headless --path game --script res://tests/test_ui.gd
+          godot --headless --path game --script res://tests/test_layout.gd

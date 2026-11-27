@@ -33,13 +33,13 @@ func setup(owner_ui, root: Control) -> void:
 func _panel(root: Control) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.set_anchors_preset(Control.PRESET_FULL_RECT)
-	p.offset_left = 40
-	p.offset_top = 40
-	p.offset_right = -ui.PANEL_W - 40
-	p.offset_bottom = -40
+	p.offset_left = UiScale.MARGIN
+	p.offset_top = UiScale.MARGIN
+	p.offset_right = -ui.PANEL_W - UiScale.MARGIN
+	p.offset_bottom = -UiScale.MARGIN
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color(0.13, 0.14, 0.17, 0.96)
-	bg.set_content_margin_all(16)
+	bg.set_content_margin_all(UiScale.MARGIN)
 	p.add_theme_stylebox_override("panel", bg)
 	var scroll := ScrollContainer.new()  # a long list or a city's history scrolls on a phone
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -74,9 +74,13 @@ func _clear(box: VBoxContainer) -> void:
 		box.remove_child(c)  # at once: the new rows take the indices now, not after the frame
 		c.queue_free()
 
+# A line and its buttons; the buttons wrap under the line when the screen is narrow.
 func _row(box: VBoxContainer, text: String, buttons: Array) -> void:
-	var row := HBoxContainer.new()
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", int(UiScale.GAP))
+	row.add_theme_constant_override("v_separation", int(UiScale.GAP))
 	var l: Label = ui._label(text)
+	l.custom_minimum_size = Vector2(220, 0)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(l)
 	for b in buttons:
@@ -147,14 +151,14 @@ func refresh_army() -> void:
 			tr("company.status.%d" % c["status"])]
 		var tactic := OptionButton.new()  # defensive, offensive, special (Z:138-139), for the whole group
 		tactic.custom_minimum_size = Vector2(170, ui.CELL.y)
-		tactic.add_theme_font_size_override("font_size", 18)
+		tactic.add_theme_font_size_override("font_size", UiScale.FONT)
 		for t in 3:
 			tactic.add_item(tr("tactic.%d" % t))
 		tactic.select(int(c.get("tactic", 0)))
 		tactic.item_selected.connect(func(t): _each(ids, func(i): game.sim.set_company_tactic(i, t)))
 		var group := OptionButton.new()  # none, 1-5
 		group.custom_minimum_size = Vector2(110, ui.CELL.y)
-		group.add_theme_font_size_override("font_size", 18)
+		group.add_theme_font_size_override("font_size", UiScale.FONT)
 		group.add_item(tr("ui.group_none"))
 		for g in GROUPS:
 			group.add_item(tr("ui.group") % (g + 1))
@@ -176,7 +180,7 @@ func _chosen(companies: Array) -> void:
 	var out := chosen.filter(func(i): return companies[i]["status"] != 0 and companies[i]["status"] != 6)
 	var group := OptionButton.new()
 	group.custom_minimum_size = Vector2(110, ui.CELL.y)
-	group.add_theme_font_size_override("font_size", 18)
+	group.add_theme_font_size_override("font_size", UiScale.FONT)
 	group.add_item(tr("ui.group_none"))
 	for g in GROUPS:
 		group.add_item(tr("ui.group") % (g + 1))
@@ -256,7 +260,7 @@ func _ships() -> void:
 		var manned: bool = sh["crew"] == 1
 		var order := OptionButton.new()
 		order.custom_minimum_size = Vector2(200, ui.CELL.y)
-		order.add_theme_font_size_override("font_size", 18)
+		order.add_theme_font_size_override("font_size", UiScale.FONT)
 		for o in 4:
 			order.add_item(tr("ship.order.%d" % o))
 		order.select(int(sh["order"]))
@@ -308,7 +312,7 @@ func refresh_world() -> void:
 	var ready := _companies_for_abroad()
 	city = clampi(city, 0, maxi(cities.size() - 1, 0))
 	world_map = WorldMap.new()
-	world_map.custom_minimum_size = Vector2(0, 340)
+	world_map.custom_minimum_size = Vector2(0, clampf(world.size.y * 0.5, 160.0, 340.0))  # half a short screen
 	world_map.picked = func(i): city = i; refresh_world()
 	var names := []
 	for i in cities.size():
@@ -327,7 +331,7 @@ func refresh_world() -> void:
 		var sells: PackedStringArray = c["sells"]
 		var pick := OptionButton.new()  # the good to ask for or to raid (Z:174-175, Z:178)
 		pick.custom_minimum_size = Vector2(150, ui.CELL.y)
-		pick.add_theme_font_size_override("font_size", 18)
+		pick.add_theme_font_size_override("font_size", UiScale.FONT)
 		for g in sells:
 			pick.add_item(tr("good." + g))
 		pick.disabled = sells.is_empty()
@@ -335,7 +339,7 @@ func refresh_world() -> void:
 		var friendly: bool = c["relation"] in ["ally", "vassal", "colony", "parent"]
 		var target := OptionButton.new()  # the city to strike (Z:174)
 		target.custom_minimum_size = Vector2(150, ui.CELL.y)
-		target.add_theme_font_size_override("font_size", 18)
+		target.add_theme_font_size_override("font_size", UiScale.FONT)
 		var targets := []
 		for j in cities.size():
 			if j != i and cities[j]["relation"] != "distant":

@@ -12,6 +12,7 @@ Stan: **silnik wybrany: Godot 4** (decyzja właściciela 2026-11-26). Plan rozbu
 | Assety 3D | Blender 4.5 LTS w kontenerze, skrypty, eksport glTF | decyzja |
 | Testy rdzenia | ctest + doctest (natywnie, bez Godota) | rekomendacja |
 | Testy Godota | skrypt na `SceneTree` bez okna (`--headless`), wspólne `check()` i `finish()` w `game/tests/check.gd` | decyzja 2026-11-27 (zamiast gdUnit4) |
+| Skala interfejsu | `canvas_items`, obszar interfejsu = piksele okna / (dpi/160 albo skala systemowa) × suwak; `game/scenes/ui/ui_scale.gd` | decyzja 2026-11-27 |
 | Testy rdzenia w ctest | `doctest_discover_tests` (`third_party/doctest/cmake/`): jeden wpis ctest na przypadek, `ctest -j 4` | decyzja 2026-11-27 |
 | Renderer | Mobile (Vulkan); Forward+ opcjonalnie na PC | decyzja (R-015) |
 | Zrzuty | Xvfb + Mesa lavapipe (Vulkan 1.4), renderer Mobile | sprawdzone |

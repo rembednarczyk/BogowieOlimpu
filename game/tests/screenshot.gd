@@ -25,6 +25,8 @@ func _init() -> void:
 			demo = arg.substr(5)
 		elif arg.begins_with("view="):
 			view = arg.substr(5)
+		elif arg.begins_with("dpi="):  # a phone's density: the interface in dp as there (ui_scale.gd)
+			UiScale.forced_dpi = int(arg.substr(4))
 	var scene: PackedScene = load("res://scenes/boot.tscn")
 	node = scene.instantiate()
 	node.set("use_save", false)  # never the player's save

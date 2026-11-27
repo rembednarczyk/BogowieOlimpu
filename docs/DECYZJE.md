@@ -4,6 +4,12 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 
 ## Produkt i zakres
 
+### 2026-11-27: Skala interfejsu w dp, 48 dp, panel po prawej, tylko poziomo
+- Decyzja: interfejs w dp (dpi/160 na telefonie i tablecie, skala systemowa na PC), cel dotyku 48 dp, suwak skali 75-150 %, tylko orientacja pozioma (obie strony), panel kategorii po prawej jak w oryginale; najmniejszy ekran 640 x 360 dp, nadmiar przewijany.
+- Powód: odpowiedzi właściciela na pytania 1-5 o skalowanie (podejście 2 z trzech). Dotychczasowe rozciąganie 1280 x 720 dawało 5,3-6,1 mm przycisku na telefonach i 25 mm na PC 24"; na Xiaomi lista Widok i kolumna budynków wychodziły poza ekran.
+- Wdrożone: `game/scenes/ui/ui_scale.gd`, `build_ui.gd`, `army_world_ui.gd`, `boot.gd` (`apply_ui_scale`), `project.godot` (orientacja sensor_landscape), `06-MOBILE-UX.md`. Bramka `game/tests/test_layout.gd` w CI.
+- Odrzucone: większa skala bazowa (podejście 1, przyciski na PC ok. 30 mm), dwa układy z progami (podejście 3, czeka na ikony kategorii).
+
 ### 2026-11-27: Położenie miast na mapie świata w scenariuszu
 - Decyzja: miasto scenariusza ma pole `"map": [x, y]` (0-100 od zachodu i od północy); miasto gracza w środku mapy. Razem z nim panel miasta z historią interakcji (Z:171): każda zmiana opinii z powodem, osiem najnowszych. Zapis v50.
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).

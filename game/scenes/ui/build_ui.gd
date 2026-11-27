@@ -7,16 +7,21 @@ extends CanvasLayer
 const TABS := ["general", "population", "husbandry", "industry", "distribution", "hygiene_safety", "administration",
 	"culture", "mythology", "military", "aesthetics"]
 var tabs: Array = TABS  # Atlantis: science in place of culture (P:10-13)
-const PANEL_W := 300.0
-const CELL := Vector2(144, 60)      # at least 44 pt on a 6" phone at the 720 px base height
+const CELL := Vector2(114, UiScale.TAP)  # dp (ui_scale.gd): 48 dp is 7.6 mm on any phone
+const SCROLLBAR := 8.0  # dp: the categories' scroll bar on a short screen
+const PANEL_W := CELL.x * 2 + UiScale.GAP + SCROLLBAR + 12  # two columns, the scroll bar, the panel's margins
 var view_pick: OptionButton  # the special view, on the panel
 var legend: PanelContainer
 var legend_text: Label
 var legend_scale: TextureRect
 var legend_low: Label
 var legend_high: Label
-const ITEM := Vector2(210, 60)
-const ITEMS_PER_COLUMN := 9
+const ITEM := Vector2(176, UiScale.TAP)
+var root: Control
+var hud_left: VBoxContainer
+var dev_slot: VBoxContainer
+var card_scroll: ScrollContainer
+var actions: HBoxContainer
 const TAP_SLOP := 14.0
 # How a building is laid by dragging (owner's choice 2026-11-26): houses and clearing as a rectangle, roads
 # and walls as a line; everything else one at a time.
@@ -87,7 +92,6 @@ func _button(key: String, cb: Callable, size: Vector2, toggle := false) -> Butto
 	var b := Button.new()
 	b.text = key  # a catalog key: the button translates itself and follows a change of language
 	b.custom_minimum_size = size
-	b.add_theme_font_size_override("font_size", 18)
 	b.clip_text = true
 	if toggle:
 		b.toggle_mode = true
@@ -96,84 +100,42 @@ func _button(key: String, cb: Callable, size: Vector2, toggle := false) -> Butto
 	return b
 
 func _build() -> void:
-	var root := Control.new()
+	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.theme = _theme()
 	add_child(root)
 
+	# Left of the panel, over the map: the status line, the developer line, the legend and a building's card,
+	# one under another in a column (they cannot overlap); the hint and the build actions at the bottom.
+	hud_left = VBoxContainer.new()
+	hud_left.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hud_left.offset_left = UiScale.MARGIN
+	hud_left.offset_top = 6
+	hud_left.offset_right = -PANEL_W - UiScale.MARGIN
+	hud_left.offset_bottom = -(UiScale.MARGIN + CELL.y + 36)
+	hud_left.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud_left.add_theme_constant_override("separation", 6)
+	root.add_child(hud_left)
 	status = Label.new()
-	status.position = Vector2(16, 10)
-	status.add_theme_font_size_override("font_size", 18)
-	root.add_child(status)
-	hint = Label.new()
-	hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	hint.position = Vector2(16, -44)
-	hint.add_theme_font_size_override("font_size", 20)
-	root.add_child(hint)
-
-	# The panel pinned to the right edge: categories, then the fixed action buttons.
-	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
-	panel.offset_left = -PANEL_W
-	root.add_child(panel)
-	var col := VBoxContainer.new()
-	panel.add_child(col)
-	var cats := GridContainer.new()
-	cats.columns = 2
-	for tab in tabs:
-		cats.add_child(_button("tab." + tab, func(): _show_tab(tab), CELL, true))
-	demolish_btn = _button("ui.demolish", func(): _set_mode("demolish"), CELL, true)
-	cats.add_child(demolish_btn)
-	col.add_child(cats)
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	col.add_child(spacer)
-	var acts := HBoxContainer.new()
-	confirm_btn = _button("ui.confirm", _confirm, Vector2(96, CELL.y))
-	rotate_btn = _button("ui.rotate", func(): turn = (turn + 1) % 4; _refresh_preview(), Vector2(96, CELL.y))
-	cancel_btn = _button("ui.cancel", cancel, Vector2(96, CELL.y))
-	for b in [confirm_btn, rotate_btn, cancel_btn]:
-		acts.add_child(b)
-	col.add_child(acts)
-	var speeds := HBoxContainer.new()
-	speeds.add_child(_button("ui.pause", func(): _speed(0.0), Vector2(96, CELL.y)))
-	for s in [1.0, 2.0, 4.0]:
-		speeds.add_child(_button("%dx" % int(s), func(): _speed(s), Vector2(64, CELL.y)))
-	col.add_child(speeds)
-	var last := HBoxContainer.new()
-	last.add_child(_button("ui.undo", func(): game.sim.undo(), Vector2(144, CELL.y)))
-	last.add_child(_button("ui.report", toggle_report, Vector2(144, CELL.y)))
-	col.add_child(last)
-	var more := HBoxContainer.new()
-	more.add_child(_button("ui.army", func(): report.visible = false; army_world.toggle_army(), Vector2(144, CELL.y)))
-	more.add_child(_button("ui.world", func(): report.visible = false; army_world.toggle_world(), Vector2(144, CELL.y)))
-	col.add_child(more)
-	view_pick = OptionButton.new()  # the special views (See ..., docs/gameplay/16): one tap from the map
-	view_pick.add_theme_font_size_override("font_size", 18)
-	view_pick.custom_minimum_size = Vector2(292, CELL.y)
-	view_pick.add_item("ui.view_none")  # keys: translated on screen in the current language
-	for v in game.OVERLAY_VIEWS:
-		view_pick.add_item("ui.view_" + v)
-	view_pick.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
-	col.add_child(view_pick)
-	_build_legend(root)
-	_build_report(root)
-	army_world.setup(self, root)
-
-	# The column of buildings that slides out next to the panel.
-	flyout = PanelContainer.new()
-	flyout.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	root.add_child(flyout)
-	flyout_grid = GridContainer.new()
-	flyout.add_child(flyout_grid)
-	flyout.visible = false
-
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hud_left.add_child(status)
+	dev_slot = VBoxContainer.new()  # boot.gd puts its developer line here
+	dev_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud_left.add_child(dev_slot)
+	_build_legend(hud_left)
 	card = PanelContainer.new()
-	card.position = Vector2(16, 60)
-	card.custom_minimum_size = Vector2(420, 0)
+	card.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	card.custom_minimum_size = Vector2(320, 0)
+	card.add_theme_stylebox_override("panel", _panel_style(0.94))
+	card_scroll = ScrollContainer.new()
+	card_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	card.add_child(card_scroll)
 	var card_box := VBoxContainer.new()
+	card_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card_scroll.add_child(card_box)
 	card_text = Label.new()
-	card_text.add_theme_font_size_override("font_size", 18)
+	card_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card_box.add_child(card_text)
 	pray_btn = _button("ui.pray", func(): _pray(), Vector2(200, CELL.y))
 	card_box.add_child(pray_btn)
@@ -186,9 +148,122 @@ func _build() -> void:
 	hold_btn.toggle_mode = true
 	card_box.add_child(hold_btn)
 	card_box.add_child(_button("ui.close", func(): card.visible = false, Vector2(140, CELL.y)))
-	card.add_child(card_box)
 	card.visible = false
-	root.add_child(card)
+	hud_left.add_child(card)
+
+	var bottom := VBoxContainer.new()
+	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bottom.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	bottom.offset_left = UiScale.MARGIN
+	bottom.offset_right = -PANEL_W - UiScale.MARGIN
+	bottom.offset_bottom = -UiScale.MARGIN
+	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(bottom)
+	hint = Label.new()
+	hint.add_theme_font_size_override("font_size", UiScale.FONT_H2)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bottom.add_child(hint)
+	actions = HBoxContainer.new()  # Confirm, Rotate, Cancel: only while building (E7)
+	actions.alignment = BoxContainer.ALIGNMENT_END
+	actions.add_theme_constant_override("separation", int(UiScale.GAP))
+	confirm_btn = _button("ui.confirm", _confirm, Vector2(104, CELL.y))
+	rotate_btn = _button("ui.rotate", func(): turn = (turn + 1) % 4; _refresh_preview(), Vector2(104, CELL.y))
+	cancel_btn = _button("ui.cancel", cancel, Vector2(104, CELL.y))
+	for btn in [confirm_btn, rotate_btn, cancel_btn]:
+		actions.add_child(btn)
+	bottom.add_child(actions)
+
+	# The panel pinned to the right edge (as the reference's control panel): the categories scroll, the fixed
+	# buttons stay under them.
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	panel.offset_left = -PANEL_W
+	panel.add_theme_stylebox_override("panel", _panel_style(0.9))
+	root.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", int(UiScale.GAP))
+	panel.add_child(col)
+	var cat_scroll := ScrollContainer.new()
+	cat_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	cat_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(cat_scroll)
+	var cats := GridContainer.new()
+	cats.columns = 2
+	cats.add_theme_constant_override("h_separation", int(UiScale.GAP))
+	cats.add_theme_constant_override("v_separation", int(UiScale.GAP))
+	for tab in tabs:
+		cats.add_child(_button("tab." + tab, func(): _show_tab(tab), CELL, true))
+	demolish_btn = _button("ui.demolish", func(): _set_mode("demolish"), CELL, true)
+	cats.add_child(demolish_btn)
+	for btn in cats.get_children():
+		btn.add_theme_font_size_override("font_size", UiScale.FONT_SMALL)  # "Administracja" in 114 dp
+	cat_scroll.add_child(cats)
+	var speeds := HBoxContainer.new()
+	speeds.add_theme_constant_override("separation", int(UiScale.GAP))
+	speeds.add_child(_button("ui.pause", func(): _speed(0.0), Vector2(CELL.x * 2 - 3 * 52 - 3 * UiScale.GAP, CELL.y)))
+	for sp in [1.0, 2.0, 4.0]:
+		speeds.add_child(_button("%dx" % int(sp), func(): _speed(sp), Vector2(52, CELL.y)))
+	col.add_child(speeds)
+	for pair in [[["ui.undo", func(): game.sim.undo()], ["ui.report", toggle_report]],
+			[["ui.army", func(): _close_overlays(); army_world.toggle_army()],
+			["ui.world", func(): _close_overlays(); army_world.toggle_world()]]]:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", int(UiScale.GAP))
+		for k in pair:
+			row.add_child(_button(k[0], k[1], CELL))
+		col.add_child(row)
+	view_pick = OptionButton.new()  # the special views (See ..., docs/gameplay/16): one tap from the map
+	view_pick.custom_minimum_size = Vector2(CELL.x * 2 + UiScale.GAP, CELL.y)
+	view_pick.fit_to_longest_item = false  # the panel's width, not the longest view's name
+	view_pick.clip_text = true
+	view_pick.add_item("ui.view_none")  # keys: translated on screen in the current language
+	for v in game.OVERLAY_VIEWS:
+		view_pick.add_item("ui.view_" + v)
+	view_pick.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
+	col.add_child(view_pick)
+	_build_report(root)
+	army_world.setup(self, root)
+
+	# The column of buildings that slides out next to the panel; it scrolls when the screen is short.
+	flyout = PanelContainer.new()
+	flyout.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	flyout.offset_bottom = -(UiScale.MARGIN + CELL.y + UiScale.GAP)  # the build actions stay free under it
+	flyout.add_theme_stylebox_override("panel", _panel_style(0.94))
+	root.add_child(flyout)
+	var fly_scroll := ScrollContainer.new()
+	fly_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	flyout.add_child(fly_scroll)
+	flyout_grid = GridContainer.new()
+	flyout_grid.add_theme_constant_override("h_separation", int(UiScale.GAP))
+	flyout_grid.add_theme_constant_override("v_separation", int(UiScale.GAP))
+	fly_scroll.add_child(flyout_grid)
+	flyout.visible = false
+
+# One look for the whole interface: the font size in dp; the rest is Godot's default theme for now.
+func _theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = UiScale.FONT
+	return t
+
+func _panel_style(alpha: float) -> StyleBoxFlat:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.13, 0.14, 0.17, alpha)
+	bg.set_content_margin_all(6)
+	return bg
+
+# The edges a phone keeps for itself (camera cut-out, rounded corners), in dp, from boot.gd.
+func set_safe_insets(insets: Vector4) -> void:
+	root.offset_left = insets.x
+	root.offset_top = insets.y
+	root.offset_right = -insets.z
+	root.offset_bottom = -insets.w
+
+# A panel over the map (report, army, world) closes what would lie under it: the card, a building in hand.
+func _close_overlays() -> void:
+	card.visible = false
+	report.visible = false
+	if mode != "" or flyout.visible:
+		cancel()
 
 # Cancel: no mode, no category chosen, the column closed.
 func cancel() -> void:
@@ -199,6 +274,7 @@ func cancel() -> void:
 
 # The city report (06-MOBILE-UX "Informacja", doc 13): episode goals, requests from cities with one-tap
 # sending, quests, settings, save and new game.
+var scale_slider: HSlider
 var army_world = preload("res://scenes/ui/army_world_ui.gd").new()  # army and world panels (Z:135-178)
 var report: PanelContainer
 var report_box: VBoxContainer
@@ -208,23 +284,28 @@ var _report_day := -1
 func _build_report(root: Control) -> void:
 	report = PanelContainer.new()
 	report.set_anchors_preset(Control.PRESET_FULL_RECT)
-	report.offset_left = 40
-	report.offset_top = 40
-	report.offset_right = -PANEL_W - 40
-	report.offset_bottom = -40
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.13, 0.14, 0.17, 0.96)
-	bg.set_content_margin_all(16)
+	report.offset_left = UiScale.MARGIN
+	report.offset_top = UiScale.MARGIN
+	report.offset_right = -PANEL_W - UiScale.MARGIN
+	report.offset_bottom = -UiScale.MARGIN
+	var bg := _panel_style(0.96)
+	bg.set_content_margin_all(UiScale.MARGIN)
 	report.add_theme_stylebox_override("panel", bg)
+	var scroll := ScrollContainer.new()  # the report is longer than a phone's screen
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	report.add_child(scroll)
 	report_box = VBoxContainer.new()
-	report.add_child(report_box)
+	report_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(report_box)
 	report.visible = false
 	root.add_child(report)
 
 func toggle_report() -> void:
+	var show := not report.visible
+	_close_overlays()
 	army_world.army.visible = false
 	army_world.world.visible = false
-	report.visible = not report.visible
+	report.visible = show
 	report_note = ""
 	if report.visible:
 		refresh_report()
@@ -233,29 +314,26 @@ func toggle_report() -> void:
 # left over the map; hidden in the normal view.
 func _build_legend(root: Control) -> void:
 	legend = PanelContainer.new()
-	legend.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	legend.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	legend.offset_left = 16
-	legend.offset_bottom = -16
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.13, 0.14, 0.17, 0.9)
-	bg.set_content_margin_all(12)
+	legend.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg := _panel_style(0.9)
+	bg.set_content_margin_all(10)
 	legend.add_theme_stylebox_override("panel", bg)
 	var box := VBoxContainer.new()
 	legend.add_child(box)
 	legend_text = _label("")
-	legend_text.custom_minimum_size = Vector2(360, 0)
+	legend_text.custom_minimum_size = Vector2(280, 0)
 	box.add_child(legend_text)
 	legend_scale = TextureRect.new()
-	legend_scale.custom_minimum_size = Vector2(360, 18)
+	legend_scale.custom_minimum_size = Vector2(280, 14)
 	legend_scale.stretch_mode = TextureRect.STRETCH_SCALE
 	legend_scale.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	box.add_child(legend_scale)
 	var ends := HBoxContainer.new()
-	legend_low = _label("", 16)
+	legend_low = _label("", 14)
 	legend_low.autowrap_mode = TextServer.AUTOWRAP_OFF
 	legend_low.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	legend_high = _label("", 16)
+	legend_high = _label("", 14)
 	legend_high.autowrap_mode = TextServer.AUTOWRAP_OFF
 	legend_high.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	ends.add_child(legend_low)
@@ -287,10 +365,12 @@ func update_legend(view: String) -> void:
 	legend_low.text = tr("legend.low_" + kind)
 	legend_high.text = tr("legend.high_" + kind)
 
+# size: 18 body, 20 a section title, 24 a panel title (the old pixel sizes), mapped to dp (ui_scale.gd).
 func _label(text: String, size := 18) -> Label:
 	var l := Label.new()
 	l.text = text
-	l.add_theme_font_size_override("font_size", size)
+	var dp := UiScale.FONT_H1 if size >= 24 else (UiScale.FONT_H2 if size >= 20 else (UiScale.FONT if size >= 16 else 14))
+	l.add_theme_font_size_override("font_size", dp)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return l
 
@@ -377,7 +457,7 @@ func refresh_report() -> void:
 	if not stock.is_empty():
 		report_box.add_child(_label(tr("ui.stock_title"), 20))
 		for g in stock:
-			var row := HBoxContainer.new()
+			var row := HFlowContainer.new()  # wraps on a narrow screen
 			var l := _label("  %s: %d" % [tr("good." + g), stock[g]])
 			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			row.add_child(l)
@@ -392,7 +472,7 @@ func refresh_report() -> void:
 		report_box.add_child(_label("  " + tr("ui.no_requests")))
 	for i in requests.size():
 		var r: Dictionary = requests[i]
-		var row := HBoxContainer.new()
+		var row := HFlowContainer.new()
 		var line: String
 		if r["days_left"] >= 0:
 			line = tr("ui.request_line") % [_city_name(r["city"]), r["amount"], tr("good." + r["good"]), r["days_left"]]
@@ -415,12 +495,11 @@ func refresh_report() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	report_box.add_child(spacer)
-	var settings := HBoxContainer.new()
+	var settings := HFlowContainer.new()
 	var inst := CheckButton.new()
 	inst.text = "ui.instant_build"
 	inst.button_pressed = instant
-	inst.add_theme_font_size_override("font_size", 18)
-	inst.custom_minimum_size = Vector2(260, CELL.y)
+	inst.custom_minimum_size = Vector2(240, CELL.y)
 	inst.toggled.connect(_set_instant)
 	settings.add_child(inst)
 	settings.add_child(_button("ui.save", func(): game.save_game(); report_note = tr("ui.saved"); refresh_report(), Vector2(140, CELL.y)))
@@ -432,11 +511,35 @@ func refresh_report() -> void:
 		Vector2(200, CELL.y)))  # prototype E4: the crowd on this phone
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
 	report_box.add_child(settings)
+	report_box.add_child(_scale_row())
 	if report_note != "":
 		report_box.add_child(_label(report_note))
 
 # One tap sends what a city asked for (Z:162). The command runs at the next tick; the report refreshes on the
 # event (boot.gd: request_closed) or the next game day.
+# Interface scale (75-150 %, docs/06-MOBILE-UX.md "Dostępność"): applied when the finger lets go.
+func _scale_row() -> HFlowContainer:
+	var row := HFlowContainer.new()
+	var percent := UiScale.saved_percent()
+	var l := _label(tr("ui.scale") % percent)
+	l.custom_minimum_size = Vector2(200, CELL.y)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(l)
+	scale_slider = HSlider.new()
+	scale_slider.min_value = UiScale.MIN_PERCENT
+	scale_slider.max_value = UiScale.MAX_PERCENT
+	scale_slider.step = 5
+	scale_slider.value = percent
+	scale_slider.custom_minimum_size = Vector2(240, CELL.y)
+	scale_slider.value_changed.connect(func(v): l.text = tr("ui.scale") % int(v))
+	scale_slider.drag_ended.connect(func(_changed): set_scale_percent(int(scale_slider.value)))
+	row.add_child(scale_slider)
+	return row
+
+func set_scale_percent(percent: int) -> void:
+	UiScale.save_percent(percent)
+	game.apply_ui_scale()
+
 func send_request(i: int) -> void:
 	game.sim.fulfill_request(i)
 
@@ -449,16 +552,27 @@ func _set_instant(on: bool) -> void:
 
 func _show_tab(tab: String) -> void:
 	_set_mode("")
+	card.visible = false  # the column takes the map's side; the card would lie under it
 	for c in flyout_grid.get_children():
+		flyout_grid.remove_child(c)
 		c.queue_free()
 	var ids: Array = buildings_by_tab[tab]
-	flyout_grid.columns = maxi(1, ceili(float(ids.size()) / ITEMS_PER_COLUMN))
+	# As many rows as the screen holds, as many columns as half the map's width allows; the rest scrolls.
+	var h: float = root.size.y if root.size.y > 0 else 720.0
+	var w: float = (root.size.x if root.size.x > 0 else 1280.0) - PANEL_W
+	var rows := maxi(1, floori((h - 12 + flyout.offset_bottom) / (ITEM.y + UiScale.GAP)))
+	var most := maxi(1, floori(w * 0.6 / (ITEM.x + UiScale.GAP)))
+	flyout_grid.columns = clampi(ceili(float(ids.size()) / rows), 1, most)
 	for id in ids:
-		flyout_grid.add_child(_button("building." + id, func(): _select(id), ITEM))
+		var item := _button("building." + id, func(): _select(id), ITEM)
+		item.add_theme_font_size_override("font_size", UiScale.FONT_SMALL)
+		item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # two lines for the long names
+		item.clip_text = false
+		flyout_grid.add_child(item)
 	flyout.offset_right = -PANEL_W
-	flyout.offset_left = -PANEL_W - flyout_grid.columns * (ITEM.x + 4) - 8
-	flyout.offset_top = 0
+	flyout.offset_left = -PANEL_W - flyout_grid.columns * (ITEM.x + UiScale.GAP) - 12 - (12 if ids.size() > rows * flyout_grid.columns else 0)
 	flyout.visible = true
+	actions.visible = true
 	cancel_btn.disabled = false
 
 func _select(id: String) -> void:
@@ -479,6 +593,7 @@ func _set_mode(m: String) -> void:
 	confirm_btn.disabled = true
 	rotate_btn.disabled = m != "build" or drag_kind() != ""
 	cancel_btn.disabled = m == "" and not flyout.visible
+	actions.visible = m != "" or flyout.visible
 	match m:
 		"build":
 			hint.text = tr("building." + selected) + ": " + tr("ui.drag_area" if drag_kind() != "" else "ui.tap_to_place")
@@ -674,7 +789,16 @@ func show_prophecy(e: Dictionary) -> void:
 		prophecy = tr("oracle.foretells") % [tr("oracle.kind." + e["kind"]), e["subject"], e["months"]]
 	card_text.text += "\n" + prophecy
 
+# The card as tall as its content, at most the room left in the column; then it scrolls.
+func _fit_card() -> void:
+	var content: Control = card_scroll.get_child(0)
+	var room := hud_left.size.y - (card.position.y if card.position.y > 0 else 0.0) - 12
+	card_scroll.custom_minimum_size.y = minf(content.get_combined_minimum_size().y, maxf(room, CELL.y))
+
 func _open_card(tile: Vector2i) -> void:
+	if flyout.visible:
+		cancel()  # a tap beside the open column closes it
+		return
 	if tile.x < 0:
 		return
 	var id: int = game.sim.get_tile(tile.x, tile.y)["building"]
@@ -714,4 +838,5 @@ func _open_card(tile: Vector2i) -> void:
 			oracle_btn.disabled = b["oracle_silent"] > 0
 		card_text.text = "\n".join(lines)
 		card.visible = true
+		_fit_card.call_deferred()
 		return
