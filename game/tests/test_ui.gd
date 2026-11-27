@@ -182,6 +182,16 @@ func _process(_d: float) -> bool:
 	copy.load(FileAccess.get_file_as_bytes("user://test_autosave.bo"))
 	check(copy.get_state_hash() == saved_hash, "the file holds the state exactly")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_autosave.bo"))
+
+	# The Atlantis demo (docs/DECYZJE.md 2026-11-27): its own map, an Atlantean city, Atlantean buildings only.
+	var atl = (load("res://scenes/boot.tscn") as PackedScene).instantiate()
+	atl.use_save = false
+	atl.demo = "atlantis"
+	root.add_child(atl)
+	check(atl.sim.get_map_width() == 48 and atl.sim.get_scenario()["atlantean"], "the Atlantis demo starts")
+	check(atl.ui.buildings_by_tab["science"].has("bibliotheke"), "the science tab in place of culture (P:10-13)")
+	check(not atl.ui.buildings_by_tab.values().any(func(ids): return ids.has("theater")), "no Greek-only theater there")
+	check(not game.ui.buildings_by_tab.values().any(func(ids): return ids.has("bibliotheke")), "no Atlantean ones in Greece")
 	if failures == 0:
 		print("UI TESTS PASSED")
 	quit(1 if failures > 0 else 0)

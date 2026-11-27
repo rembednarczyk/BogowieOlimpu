@@ -231,3 +231,7 @@ ui.hippodrome_racing,wyścigi trwają,racing
 ui.hippodrome_waiting,czeka na konie,waiting for horses
 ui.hippodrome_open,tor niezamknięty,the track is not closed
 goal.hippodrome,Działający hipodrom: %d stadiów,Working hippodrome: %d stades
+ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
+ui.demo_greek,Demo: Grecja,Demo: Greece
+scenario.demo_atlantis.name,Atlantyda,Atlantis
+tab.science,Nauka,Science

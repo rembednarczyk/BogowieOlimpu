@@ -69,15 +69,36 @@ var cam_target := Vector3(30, 0, 24)
 # rule: the demo can be won and shows every mechanic; the core gate test core/tests/test_demo.cpp wins it).
 var save_path := "user://autosave.bo"  # tests use their own file
 var use_save := true  # tests and the screenshot harness switch it off
+# Which demo (docs/DECYZJE.md 2026-11-27): "greek" (tools/make_demo.py) or "atlantis" (tools/make_demo_atlantis.py,
+# Atlantean buildings only there, P:16-17); kept in user://demo.cfg, each with its own autosave.
+const DEMO_CFG := "user://demo.cfg"
+const DEMOS := {"greek": ["res://scenarios/demo.json", "res://scenarios/demo_build.json", "user://autosave.bo"],
+	"atlantis": ["res://scenarios/demo_atlantis.json", "res://scenarios/demo_atlantis_build.json",
+		"user://autosave_atlantis.bo"]}
+var demo := "greek"
+
+static func chosen_demo() -> String:
+	var cfg := ConfigFile.new()
+	return cfg.get_value("demo", "id", "greek") if cfg.load(DEMO_CFG) == OK else "greek"
+
+# A new game in the other demo: the choice is kept, the scene starts again.
+func switch_demo(id: String) -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("demo", "id", id)
+	cfg.save(DEMO_CFG)
+	get_tree().reload_current_scene()
 var demo_status := ""
 var demo_note := ""
 
 func _ready() -> void:
-	var err: String = sim.start_scenario("res://data", "res://scenarios/demo.json")
+	demo = chosen_demo() if use_save else demo
+	if save_path == "user://autosave.bo":  # tests set their own
+		save_path = DEMOS[demo][2]
+	var err: String = sim.start_scenario("res://data", DEMOS[demo][0])
 	if err != "":
 		push_error(err)
 	var restored := use_save and _load_game()
-	var order_err: String = sim.load_build_order("res://scenarios/demo_build.json")  # after a load: days to come
+	var order_err: String = sim.load_build_order(DEMOS[demo][1])  # after a load: days to come
 	if order_err != "":
 		push_error(order_err)
 	if not restored:
@@ -116,7 +137,7 @@ func _load_game() -> bool:
 		err = "a save of an older demo map"  # the autopilot builds on the current map only
 	if err != "" and err != "save.data_version_mismatch":
 		push_warning("save not loaded: " + err)
-		sim.start_scenario("res://data", "res://scenarios/demo.json")
+		sim.start_scenario("res://data", DEMOS[demo][0])
 		return false
 	return true
 

@@ -6,6 +6,7 @@ extends CanvasLayer
 
 const TABS := ["general", "population", "husbandry", "industry", "distribution", "hygiene_safety", "administration",
 	"culture", "mythology", "military", "aesthetics"]
+var tabs: Array = TABS  # Atlantis: science in place of culture (P:10-13)
 const PANEL_W := 300.0
 const CELL := Vector2(144, 60)      # at least 44 pt on a 6" phone at the 720 px base height
 const ITEM := Vector2(210, 60)
@@ -61,8 +62,10 @@ func setup(g: Node3D) -> void:
 func _load_catalog() -> void:
 	var list = JSON.parse_string(FileAccess.get_file_as_string("res://data/buildings.json"))
 	# The city's culture (P:16-17): Atlantean buildings only in Atlantis, Greek-only ones never there.
-	var foreign := "greek" if game.sim.get_scenario().get("atlantean", false) else "atlantean"
-	for tab in TABS:
+	var atlantean: bool = game.sim.get_scenario().get("atlantean", false)
+	var foreign := "greek" if atlantean else "atlantean"
+	tabs = TABS.map(func(t): return "science" if atlantean and t == "culture" else t)
+	for tab in tabs:
 		buildings_by_tab[tab] = []
 	for b in list:
 		var tab: String = b.get("tab", "")
@@ -109,7 +112,7 @@ func _build() -> void:
 	panel.add_child(col)
 	var cats := GridContainer.new()
 	cats.columns = 2
-	for tab in TABS:
+	for tab in tabs:
 		cats.add_child(_button("tab." + tab, func(): _show_tab(tab), CELL, true))
 	demolish_btn = _button("ui.demolish", func(): _set_mode("demolish"), CELL, true)
 	cats.add_child(demolish_btn)
@@ -343,6 +346,8 @@ func refresh_report() -> void:
 	settings.add_child(inst)
 	settings.add_child(_button("ui.save", func(): game.save_game(); report_note = tr("ui.saved"); refresh_report(), Vector2(140, CELL.y)))
 	settings.add_child(_button("ui.new_game", func(): game.new_game(), Vector2(160, CELL.y)))
+	var other: String = "atlantis" if game.demo == "greek" else "greek"
+	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
 	report_box.add_child(settings)
 	if report_note != "":
