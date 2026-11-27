@@ -233,6 +233,8 @@ func _process(delta: float) -> void:
 			if sim.get_tick() % TICKS_PER_DAY == 0:
 				_demo_day()
 				_update_monuments()
+				if overlay != "":
+					set_overlay(overlay)  # the columns follow the day
 				if sim.get_day_in_month() == 0:
 					save_game()  # once a month of game time
 		_update_label()
@@ -375,6 +377,59 @@ func _tint(node: Node3D, color: Color) -> void:
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = color
 			child.material_override = mat
+
+# Special views (See ..., docs/gameplay/16-interfejs-referencyjny.md; docs/06-MOBILE-UX.md): the buildings
+# the view is not about lie flat, those it is about carry a column of their value; "appeal" tints the tiles.
+# Presentation only: the values come from the core (BoSimulation.get_overlay).
+const OVERLAY_VIEWS := ["water", "hygiene", "fire", "collapse", "unrest", "taxes", "culture", "supplies",
+	"employment", "security", "appeal"]
+const RISK_VIEWS := ["fire", "collapse", "unrest"]  # high is bad
+var overlay := ""
+var overlay_nodes: Array = []
+
+func set_overlay(view: String) -> void:
+	var was_appeal := overlay == "appeal"
+	overlay = view
+	for n in overlay_nodes:
+		n.queue_free()
+	overlay_nodes.clear()
+	for id in building_nodes:
+		building_nodes[id].scale = Vector3.ONE
+	if view == "appeal":
+		_tint_appeal(true)
+	elif was_appeal:
+		_rebuild_tiles()
+	if view == "" or view == "appeal":
+		return
+	var values := {}
+	for e in sim.get_overlay(view):
+		values[e["id"]] = e["value"]
+	for id in building_nodes:
+		if not values.has(id):
+			building_nodes[id].scale = Vector3(1, 0.12, 1)  # not this view's: flat
+	for b in sim.get_buildings():
+		if not values.has(b["id"]):
+			continue
+		var v: float = values[b["id"]] / 100.0
+		var good := 1.0 - v if view in RISK_VIEWS else v
+		var column := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		var h := 0.15 + 2.5 * v
+		box.size = Vector3(0.45, h, 0.45)
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.85, 0.2, 0.15).lerp(Color(0.2, 0.75, 0.3), good)
+		box.material = mat
+		column.mesh = box
+		column.position = Vector3(b["x"] + b["width"] / 2.0, 1.0 + h / 2.0, b["y"] + b["height"] / 2.0)
+		add_child(column)
+		overlay_nodes.append(column)
+
+# See Appeal (Z:47): the tiles from dark (repelling) to bright (attractive).
+func _tint_appeal(_on: bool) -> void:
+	var w: int = sim.get_map_width()
+	for i in tiles.multimesh.instance_count:
+		var a: float = clampf((sim.get_appeal(i % w, i / w) + 30) / 80.0, 0.0, 1.0)
+		tiles.multimesh.set_instance_color(i, Color(0.15, 0.12, 0.25).lerp(Color(1.0, 0.95, 0.6), a))
 
 func _rebuild_tiles() -> void:
 	var w: int = sim.get_map_width()

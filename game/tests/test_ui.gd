@@ -229,6 +229,16 @@ func _process(_d: float) -> bool:
 	agods.demo = "atlantis_gods"
 	root.add_child(agods)
 	check(agods.sim.get_map_width() == 64 and agods._build_order().ends_with("demo_atlantis_gods_build.json"), "the Atlantean gods demo's map and autopilot")
+	# Special views (See ..., docs/gameplay/16): a column over each house in the water view, the rest flat.
+	agods.set_overlay("water")
+	var houses := 0
+	for b in agods.sim.get_buildings():
+		houses += 1 if b.has("population") and b["population"] > 0 else 0
+	check(agods.overlay_nodes.size() == agods.sim.get_overlay("water").size(), "a column for every house in the water view")
+	agods.set_overlay("appeal")
+	check(agods.overlay_nodes.is_empty(), "the appeal view tints the tiles, no columns")
+	agods.set_overlay("")
+	check(agods.overlay == "" and agods.overlay_nodes.is_empty(), "back to the normal view")
 	# A monument (P:26-28): its card holds the building, its layers show as it goes up.
 	agods.sim.place_building("pyramid_modest", 30, 21, 0)
 	agods.sim.step(1)

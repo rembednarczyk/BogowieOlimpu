@@ -138,6 +138,10 @@ public:
     // Array of {"id", "type", "x", "y", "width", "height", "rotation", "parent", "has_road_access", "workers",
     // "staffing"} plus for houses {"house_level", "population", "elite"}
     godot::Array get_buildings() const;
+    // A special view (See Water, Hygiene, Taxes, Culture, Hazards, Unrest, Security, Employment, Supplies;
+    // docs/gameplay/16-interfejs-referencyjny.md): the buildings it is about, each with a value 0-100 (high is
+    // good for coverage, bad for a risk); presentation only (O-005).
+    godot::Array get_overlay(const godot::String& view) const;
     // Array of {"id", "type", "x", "y", "dir", "phase", "progress"}; progress 0..1 toward the next tile.
     godot::Array get_walkers() const;
 

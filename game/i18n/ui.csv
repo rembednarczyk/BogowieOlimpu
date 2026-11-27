@@ -241,6 +241,18 @@ ui.demo_gods,Demo: bogowie,Demo: the gods
 ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
 ui.hold_building,Wstrzymaj budowę,Hold the building
 ui.bench,Test wydajności,Performance test
+ui.view_none,Widok: zwykły,View: normal
+ui.view_water,Widok: woda,View: water
+ui.view_hygiene,Widok: zdrowie,View: health
+ui.view_fire,Widok: ryzyko pożaru,View: fire risk
+ui.view_collapse,Widok: ryzyko zawalenia,View: collapse risk
+ui.view_unrest,Widok: przestępczość,View: unrest
+ui.view_taxes,Widok: podatki,View: taxes
+ui.view_culture,Widok: kultura,View: culture
+ui.view_supplies,Widok: zaopatrzenie,View: supplies
+ui.view_employment,Widok: zatrudnienie,View: employment
+ui.view_security,Widok: bezpieczeństwo,View: security
+ui.view_appeal,Widok: atrakcyjność,View: appeal
 ui.bench_animation,Animacja,Animation
 ui.bench_zoom,Zbliżenie,Zoom
 ui.bench_fps,"FPS %d   klatka śr. %.1f ms, najgorsza %.1f ms","FPS %d   frame avg %.1f ms, worst %.1f ms"

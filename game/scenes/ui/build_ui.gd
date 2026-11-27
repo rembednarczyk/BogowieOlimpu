@@ -355,6 +355,15 @@ func refresh_report() -> void:
 	var order: Array = game.DEMO_ORDER
 	var other: String = order[(order.find(game.demo) + 1) % order.size()]
 	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
+	var views := OptionButton.new()  # the special views (See ...)
+	views.add_theme_font_size_override("font_size", 18)
+	views.custom_minimum_size = Vector2(220, CELL.y)
+	views.add_item(tr("ui.view_none"))
+	for v in game.OVERLAY_VIEWS:
+		views.add_item(tr("ui.view_" + v))
+	views.selected = 0 if game.overlay == "" else game.OVERLAY_VIEWS.find(game.overlay) + 1
+	views.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
+	settings.add_child(views)
 	settings.add_child(_button("ui.bench", func(): get_tree().change_scene_to_file("res://scenes/bench_crowd.tscn"),
 		Vector2(200, CELL.y)))  # prototype E4: the crowd on this phone
 	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))

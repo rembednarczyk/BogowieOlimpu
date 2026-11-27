@@ -8,6 +8,7 @@ var out_path := "user://shot.png"
 var speed := 0.0  # ticks per second of the demo; 0 keeps the scene default
 var build_view := 0  # 1: a category column open, 2: houses dragged as a rectangle (E7), 3: the city report, 4: the army, 5: the world, 6: monuments layer by layer (P:26-28)
 var demo := ""  # demo=atlantis_gods and the like
+var view := ""  # view=water and the like: a special view (docs/gameplay/16)
 var node: Node
 
 func _init() -> void:
@@ -22,6 +23,8 @@ func _init() -> void:
 			build_view = int(arg.substr(11))
 		elif arg.begins_with("demo="):
 			demo = arg.substr(5)
+		elif arg.begins_with("view="):
+			view = arg.substr(5)
 	var scene: PackedScene = load("res://scenes/boot.tscn")
 	node = scene.instantiate()
 	node.set("use_save", false)  # never the player's save
@@ -32,6 +35,8 @@ func _init() -> void:
 	root.add_child(node)
 
 func _process(_delta: float) -> bool:
+	if view != "" and frames_left == 5:
+		node.set_overlay(view)
 	if build_view > 0 and frames_left == 5:
 		TranslationServer.set_locale("pl")
 		if build_view == 3:

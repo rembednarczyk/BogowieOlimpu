@@ -11,6 +11,9 @@
 #include <godot_cpp/variant/dictionary.hpp>
 
 #include "bo/core/adventure.h"
+#include "bo/core/culture.h"
+#include "bo/core/housing.h"
+#include "bo/core/military.h"
 #include "bo/core/hippodrome.h"
 #include "bo/core/migration.h"
 #include "bo/core/scenario.h"
@@ -975,6 +978,68 @@ Dictionary BoSimulation::get_tile(int64_t x, int64_t y) const {
     return d;
 }
 
+Array BoSimulation::get_overlay(const String& view_name) const {
+    Array out;
+    if (!sim_) {
+        return out;
+    }
+    const std::string view = view_name.utf8().get_data();
+    const auto& st = sim_->state();
+    const auto& cat = *catalog_;
+    const auto coverage = [&cat](const bo::core::Building& b, const char* walker) {
+        const auto it = b.coverage.find(walker);
+        const auto w = cat.walkers.find(walker);
+        const int64_t full = w != cat.walkers.end() ? w->second.coverage_days : 96;
+        return it == b.coverage.end() ? int64_t{0} : std::min<int64_t>(100, it->second * 100 / std::max<int64_t>(full, 1));
+    };
+    const auto risk = [](int64_t counter, int64_t threshold) { return std::min<int64_t>(100, counter * 100 / std::max<int64_t>(threshold, 1)); };
+    const std::int32_t bonus = bo::core::city_culture_bonus(st.city, cat);
+    for (const auto& [id, b] : st.city.buildings.items) {
+        const bool house = b.house.has_value() && b.house->population > 0;
+        const auto& type = cat.buildings.at(b.type);
+        int64_t value = -1;  // -1: not about this view
+        if (view == "water" && house) {
+            value = coverage(b, "water_bearer");
+        } else if (view == "hygiene" && house) {
+            value = coverage(b, "healer");
+        } else if (view == "taxes" && house) {
+            value = coverage(b, "clerk");
+        } else if (view == "culture" && house) {
+            value = std::min<int64_t>(100, bo::core::house_culture(b, cat, bonus));
+        } else if (view == "fire" && !b.tiles.empty() && b.type != "road") {
+            value = risk(b.fire_counter, cat.risks.hazard_threshold);
+        } else if (view == "collapse" && !b.tiles.empty() && b.type != "road") {
+            value = risk(b.damage_counter, cat.risks.hazard_threshold);
+        } else if (view == "unrest" && house) {
+            value = risk(b.crime_counter, cat.risks.crime_threshold);
+        } else if (view == "employment" && b.workers + (100 - b.staffing_percent) > 0 && !b.house) {
+            value = b.staffing_percent;
+        } else if (view == "security" && (type.tab == "military" || b.type == "palace" || (house && b.house->elite))) {
+            value = house ? std::min<int64_t>(100, 20 * bo::core::house_soldiers(cat, *b.house, st.difficulty)) : 100;
+        } else if (view == "supplies" && house) {  // the goods its level and the next want, held
+            const auto& levels = bo::core::levels_of(cat, *b.house);
+            const auto& model = levels[b.house->level].model[static_cast<std::size_t>(st.difficulty)];
+            int64_t wanted = 0;
+            int64_t held = 0;
+            for (std::size_t g = 0; g < bo::core::kHouseGoods; ++g) {
+                if (model.needs[g]) {
+                    ++wanted;
+                    held += b.house->goods[g] > 0 ? 1 : 0;
+                }
+            }
+            value = wanted == 0 ? 100 : held * 100 / wanted;
+        }
+        if (value < 0) {
+            continue;
+        }
+        Dictionary d;
+        d["id"] = static_cast<int64_t>(id);
+        d["value"] = value;
+        out.append(d);
+    }
+    return out;
+}
+
 Array BoSimulation::get_buildings() const {
     Array out;
     if (!sim_) {
@@ -1261,6 +1326,7 @@ void BoSimulation::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_homeless"), &BoSimulation::get_homeless);
     ClassDB::bind_method(D_METHOD("get_employed"), &BoSimulation::get_employed);
     ClassDB::bind_method(D_METHOD("get_appeal", "x", "y"), &BoSimulation::get_appeal);
+    ClassDB::bind_method(D_METHOD("get_overlay", "view"), &BoSimulation::get_overlay);
     ClassDB::bind_method(D_METHOD("place_building", "type", "x", "y", "rotation"), &BoSimulation::place_building,
                          DEFVAL(0));
     ClassDB::bind_method(D_METHOD("undo"), &BoSimulation::undo);
