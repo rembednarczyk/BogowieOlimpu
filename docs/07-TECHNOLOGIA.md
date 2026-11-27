@@ -26,7 +26,7 @@ Renderer gry: **Mobile (Vulkan)** (R-015). Compatibility (OpenGL ES 3, poziom We
 
 ## Telefon odniesienia
 
-**Xiaomi 15T Pro** (decyzja właściciela). Parametry przyjęte z wiedzy ogólnej, do potwierdzenia na urządzeniu: MediaTek Dimensity 9400+, GPU Mali (Immortalis), ekran ok. 6,8" 2772×1280, 144 Hz, 12 GB RAM, Vulkan 1.3+. To telefon z wyższej półki: budżety ustalamy na nim, a dla słabszych urządzeń przewidujemy suwak rozdzielczości renderu i LOD.
+**Xiaomi 15T Pro** (decyzja właściciela). Parametry przyjęte z wiedzy ogólnej, do potwierdzenia na urządzeniu: MediaTek Dimensity 9400+, GPU Mali (Immortalis), ekran ok. 6,8" 2772×1280, 120 Hz (potwierdzone pomiarem właściciela 2026-11-27), 12 GB RAM, Vulkan 1.3+. To telefon z wyższej półki: budżety ustalamy na nim, a dla słabszych urządzeń przewidujemy suwak rozdzielczości renderu i LOD.
 
 ## Odrzucone warianty
 
