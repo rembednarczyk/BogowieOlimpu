@@ -342,13 +342,15 @@ put("commemorative_monument", 33, 42, day=600, retry=True)
 # and the new houses; a horse ranch with its wheat.
 EAST = 960
 steps.append({"day": EAST, "road": [92, 11, 92, 45]})
+steps.append({"day": EAST, "road": [76, 17, 91, 17]})  # along the stadium: its competitors reach the estate
 for y in (29, 37):
     steps.append({"day": EAST, "road": [76, y, WALL - 3, y]})
 steps.append({"day": EAST, "demolish": [2, 12]})
 put("stadium", 78, 12, day=EAST + 1, retry=True)
 put("maintenance_office", 88, 12, day=EAST); put("watchpost", 90, 12, day=EAST)  # or it burns (Z:89-90)
-put("sanctuary_apollo", 94, 12, day=EAST, retry=True, when={"marble": 20})
-put("theater", 94, 24, day=EAST); put("gymnasium", 100, 26, day=EAST); put("podium", 104, 27, day=EAST)
+put("sanctuary_apollo", 94, 12, day=EAST + 200, retry=True, when={"marble": 20})  # after Perseus has his sculptures
+put("theater", 94, 24, day=EAST)
+put("gymnasium", 84, 30, day=EAST); put("podium", 88, 30, day=EAST)  # by the estate: athletes, philosophers
 put("college", 106, 26, day=EAST); put("maintenance_office", 109, 27, day=EAST)
 for x in (76, 79, 82, 85, 88):  # hedge mazes around the estate plot (82, 25)
     put("hedge_maze", x, 18, day=EAST)
