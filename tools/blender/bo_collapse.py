@@ -23,6 +23,7 @@ import bmesh
 import mathutils
 import mathutils.kdtree
 import bo_asset as A
+import bo_materials as M
 import numpy
 from mathutils import Matrix, Quaternion, Vector
 
@@ -37,29 +38,10 @@ PACK = 0.4  # of a piece's height above its bed that the heap grows by (the rest
 SLOPE = 0.06  # tiles (12 cm): a drop under a piece that makes it slide off
 HOLD = 0.06  # tiles (12 cm): a coat this close to a piece goes with it
 
-# How each material of the model (its part, the palette in bo_asset.py) breaks and falls. Its pieces (a brick, a
-# tile, a beam) never break; bond: how far apart the points are that hold pieces together (tiles; 0: each piece
-# alone, a beam falls as a beam), a wall falls in sections of its bricks with their plaster; density (kg/m³) and
-# fill (of a chunk's box that is material) give its weight: the air holds back what is light for its size
-# (canvas, thatch) and hardly a stone; in a collision the heavier piece pushes the lighter one; bounce: the
-# share of the speed it keeps on a hit (little: rubble does not jump); keep: of the speed along the ground on a
-# hit; spin: how fast it tumbles; topple: a tall section tips over outward from its foot. [ZAŁOŻENIE] values.
-MATERIALS = {
-    "masonry": dict(bond=0.30, density=1800, fill=0.6, bounce=0.03, keep=0.40, spin=0.6, topple=1.0),
-    "tile": dict(bond=0.07, density=1900, fill=0.15, bounce=0.12, keep=0.55, spin=1.2, topple=0.0),
-    "wood": dict(bond=0.0, density=600, fill=0.5, bounce=0.10, keep=0.65, spin=0.7, topple=0.4),
-    "soft": dict(bond=0.22, density=300, fill=0.3, bounce=0.0, keep=0.20, spin=0.4, topple=0.0),
-    "metal": dict(bond=0.0, density=7800, fill=0.3, bounce=0.15, keep=0.55, spin=1.0, topple=0.0),
-}
+# How each material breaks, how heavy it is and how it moves: the game's material table (bo_materials.py, R-019).
 AIR = 22.0  # air resistance per (m² of face / kg of weight), 1/s; at most DRAG_MAX
 DRAG_MAX = 4.0  # 1/s: a canvas still comes down from a roof in the time of the fall
-PARTS = {
-    "tile": ("roof_tile", "roof_slate", "roof_gold", "roof_brown", "roof_patina"),
-    "wood": ("wood", "dark_wood", "bark", "end_grain"),
-    "soft": ("thatch", "cloth", "linen", "hide", "sky_cloth", "sage_cloth", "rope", "leaves", "grass", "flower_red",
-             "flower_yellow", "flower_white"),
-    "metal": ("bronze", "iron"),
-}  # the rest (plaster, stone, mudbrick, marble, mortar, paints) is masonry
+MATERIALS = M.CLASSES  # by class: bond, fill, bounce, keep, spin, topple
 
 
 def _islands(bm):
@@ -90,13 +72,17 @@ def ruin(b, out_dir, name):
     bm = b.bm
     # Nothing of the building site and nothing the family owned: the scaffold and the goods go.
     # Nor the hidden filling (the mortar beds under the tiles): it is there to close the view, not a material.
-    dead = [f for f in bm.faces if f.loops[0][b.col][0] > 0.995 or f.loops[0][b.pivot].uv[0] < -0.5
-            or abs(f.loops[0][b.uv].uv[1] - A.FILL_TINT) < 1e-4]
-    bmesh.ops.delete(bm, geom=dead, context="FACES")
-    kind_of = {i: k for k, names in PARTS.items() for i, (n, _) in enumerate(A.PALETTE) if n in names}
+    name_of = {i: n for i, (n, _) in enumerate(A.PALETTE)}
+
+    def part(f):
+        return name_of.get(int(f.loops[0][b.uv].uv[0] * A.PALETTE_SIZE), "plaster")
 
     def kind(f):
-        return kind_of.get(int(f.loops[0][b.uv].uv[0] * A.PALETTE_SIZE), "masonry")
+        return M.MATERIALS[part(f)]["cls"]
+    # A liquid (water in a basin, oil) drains away: nothing of it falls.
+    dead = [f for f in bm.faces if f.loops[0][b.col][0] > 0.995 or f.loops[0][b.pivot].uv[0] < -0.5
+            or abs(f.loops[0][b.uv].uv[1] - A.FILL_TINT) < 1e-4 or kind(f) == "liquid"]
+    bmesh.ops.delete(bm, geom=dead, context="FACES")
     # A sheet of thatch or canvas tears along its own weave: its big faces are cut fine first, so that a torn
     # shard has a ragged edge and is not a cut-out triangle.
     for _ in range(4):
@@ -199,7 +185,6 @@ def ruin(b, out_dir, name):
             _, i, d = near.find(c) if torn else (None, None, 1e9)
             key = torn[i][1] if d is not None and d < 0.12 else ("soft", seed_of("soft", c))
             chunks.setdefault(key, []).extend(faces)
-    name_of = {i: n for i, (n, _) in enumerate(A.PALETTE)}
     bodies = []
     for key in sorted(chunks, key=str):
         faces = chunks[key]
@@ -209,9 +194,11 @@ def ruin(b, out_dir, name):
         # material's thickness (bo_asset.THICKNESS), backwards, into the house, where nothing sees it yet.
         parts = {}
         for f in faces:
-            n = name_of.get(int(f.loops[0][b.uv].uv[0] * A.PALETTE_SIZE), "plaster")
-            parts[n] = parts.get(n, 0.0) + f.calc_area()
-        want = A.THICKNESS.get(max(parts, key=parts.get), 0.0) * A.M  # metres to tiles
+            parts[part(f)] = parts.get(part(f), 0.0) + f.calc_area()
+        main = max(parts, key=parts.get)  # the material most of it is of: its thickness and its weight
+        solid = [n for n in parts if not M.MATERIALS[n]["coat"]]  # a plastered wall weighs as its bricks
+        heavy = max(solid, key=parts.get) if solid else main
+        want = M.THICKNESS[main if not M.MATERIALS[main]["coat"] or not solid else heavy] * A.M  # metres to tiles
         if 2 * min(he) < 0.9 * want:  # up to the material's thickness, what it has counted in
             # Extruded along its thinnest axis, towards the middle of the house, kept on the plot.
             k = min(range(3), key=lambda a: he[a])
@@ -231,6 +218,7 @@ def ruin(b, out_dir, name):
             vs = list({v for f in faces for v in f.verts})
             c0, he, axes = _obb(vs)
         bodies.append({"faces": faces, "c0": c0, "he": he, "axes": axes, "mat": MATERIALS[key[0]], "kind": key[0],
+                       "density": M.MATERIALS[heavy]["density"],
                        "pts": numpy.array([tuple(v.co - c0) for v in vs])})
     # Chunk ids into UV1.x (0 = still), the animated mask cleared.
     for f in bm.faces:
@@ -287,7 +275,7 @@ def _fall(bodies, statics, W, H, rng):
         he_m = [x / A.M for x in bd["he"]]  # metres
         big = sorted(he_m)
         # Its weight, and how much the air holds it back: face (its two larger sizes) over weight.
-        bd["mass"] = max(8 * he_m[0] * he_m[1] * he_m[2] * mat["fill"] * mat["density"], 0.05)
+        bd["mass"] = max(8 * he_m[0] * he_m[1] * he_m[2] * mat["fill"] * bd["density"], 0.05)
         bd["drag"] = min(AIR * 4 * big[1] * big[2] / bd["mass"], DRAG_MAX)
         bd["r"] = sum(bd["he"]) / 3 * 1.1  # its size for colliding with others in the air (tiles)
         out = Vector((bd["c0"].x - centre.x, bd["c0"].y - centre.y, 0.0))

@@ -64,7 +64,7 @@ Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właści
 9. Widok z daleka (`b.detail` False) z tym samym podparciem i tymi samymi rekwizytami w prostszej formie.
 10. Eksport: `blender -b --factory-startup --python tools/blender/models.py -- game/models <model>`; przerywa się przy każdym naruszeniu z nazwą elementu.
 11. Kontrola: `python3 tools/checks/check_models.py .` i `blender -b --factory-startup --python tools/blender/test_checks.py`.
-12. Grubość: materiał ma grubość z `THICKNESS` w `bo_asset.py` (dachówka 1,2 cm, deska co najmniej 7 cm, cegła 10 cm, kamień 14 cm); deski pogrubia sam `Builder`, dachówki biorą ją z tabeli. Nowy materiał dostaje wpis w tabeli.
+12. Materiały (R-019, rozdział 12): każda część ma materiał z `tools/blender/bo_materials.py` z grubością, gęstością, klasą i kształtem; `Builder` sam buduje deski, cegły i płyty do grubości materiału, dachówki biorą ją z tabeli. Nowy kolor palety dostaje wpis w tabeli, inaczej `check_models.py` się zatrzymuje.
 13. Kolejność budowy: rekwizyty i wykończenie przez funkcje z dekoratorem `finishing` (pojawiają się w ostatnich 2,5 % budowy, pod gotowym dachem); nowa funkcja rekwizytu też go dostaje. Dom mieszkalny dostaje ruinę z `bo_collapse.py` sam przy eksporcie poziomu (`common_housing_N`).
 14. Przegląd oczami: zrzuty z czterech stron, z góry i od dołu (okap, szczyt), w przeglądarce domów i w grze po `godot --headless --path game --import` (bez importu gra pokazuje stare modele).
 
@@ -198,3 +198,65 @@ Decyzja właściciela 2026-11-28: wersja B; poziom 5 mieszkanie, poziom 6 kamien
 ## 11. Próba śmielszej bryły (2026-11-28: kierunek przyjęty na później, w grze zostają obecne bryły)
 
 Wzorzec: zrzuty S-011 (domy ludu wyższych poziomów jako schodkowe bryły z kilku części o różnej wysokości, drewniane balkony i daszki na różnych poziomach, grube dachy z głębokim okapem) i proporcje z eZeus (dom do poziomu 5 szerszy niż wyższy). Próba: mieszkanie (poziom 5) jako trzy przylegające bryły: zachodnia izba o jednej kondygnacji pod dachem jednospadowym, środkowy dom o trzech kondygnacjach ze stromym dachem dwuspadowym (okap 34 cm) i czerwonym pasem, wschodnie skrzydło o dwóch kondygnacjach pod dachem jednospadowym opartym o dom środkowy; drewniany balkon na ściągach przed piętrem domu środkowego. Wysokość 6,9 m (do komina), 89 640 trójkątów z bliska, 2 156 z daleka. Funkcja `flat_bold` w `models.py`, eksport tylko z `BO_BOLD=1`, poza grą.
+
+## 12. Materiały: wymiary, gęstość, ciężar, kształt i fizyka (R-019, przyjęte 2026-11-28)
+
+Jedna tabela dla wszystkich materiałów gry: `tools/blender/bo_materials.py`. Czyta ją budowa każdego modelu (grubość elementów) i zawalenie każdego budynku (`bo_collapse.py`: jak pęka, ile waży, jak spada). Kontrola: `tools/checks/check_models.py` (każdy kolor palety ma wpis, klasa istnieje, gęstość dodatnia). Liczby to rzędy wielkości z typowych tablic materiałowych; wartości fizyki upadku są `[ZAŁOŻENIE]` do oceny oczami.
+
+Zasady kształtu:
+1. Element nigdy nie pęka: cegła, kamień, dachówka, deska, belka, kolumna, okucie spadają w całości.
+2. Elementy jednej klasy związane ze sobą spadają razem (fragment muru około 60 cm, 1-3 dachówki); drewno i metal każdy element osobno.
+3. Powłoka (tynk, farba, zaprawa) jest cienka w modelu i idzie z tym, na czym leży; w upadku liczy się jako mur pod nią.
+4. Strzecha, płótno i duże płyty rwą się na płaty o postrzępionych brzegach; płótno rusza po swojej ramie i opada na nią.
+5. Element, który model pokazuje jako samą powierzchnię, dostaje w upadku grubość swojego materiału (w głąb budynku).
+6. Ciecz (woda, oliwa) w upadku znika; ziarno sypie się bez koziołkowania.
+7. Masa kawałka: pudełko × wypełnienie klasy × gęstość materiału. Opór powietrza zależy od powierzchni do masy; w zderzeniu cięższy pcha lżejszego; bez skaczących kawałków (największy ruch w górę 5-8 cm na klatkę, `BO_RUIN_DEBUG=1`).
+8. Budowa: deska z drewna cieńsza niż jej materiał i płyta z muru cieńsza niż 75 % swojego materiału (parapet, gzyms, płyta schodka) dostają grubość materiału wokół tego samego środka; cegła mniejsza o spoinę zostaje (spoiny muszą być widać); powłoki zostają cienkie; pręty (dwa cienkie wymiary) zostają.
+
+| Materiał (część palety) | Klasa | Grubość | Gęstość kg/m³ | Powłoka |
+|---|---|---|---|---|
+| `plaster` | mur | 10 cm | 1700 | tak |
+| `ochre` | mur | 10 cm | 1700 | tak |
+| `blue_paint` | mur | 10 cm | 1700 | tak |
+| `mortar` | mur | 8 cm | 1800 | tak |
+| `mudbrick` | mur | 10 cm | 1600 | nie |
+| `stone` | mur | 14 cm | 2600 | nie |
+| `stone_cool` | mur | 14 cm | 2650 | nie |
+| `marble` | mur | 12 cm | 2700 | nie |
+| `roof_tile` | dachówka | 1,2 cm | 1900 | nie |
+| `roof_brown` | dachówka | 1,2 cm | 1900 | nie |
+| `roof_slate` | dachówka | 1 cm | 2800 | nie |
+| `roof_gold` | dachówka | 1,2 cm | 2000 | nie |
+| `roof_patina` | dachówka | 1,2 cm | 2000 | nie |
+| `thatch` | miękki | 12 cm | 250 | nie |
+| `wood` | drewno | 7 cm | 650 | nie |
+| `dark_wood` | drewno | 7 cm | 750 | nie |
+| `bark` | drewno | 10 cm | 600 | nie |
+| `end_grain` | drewno | 10 cm | 650 | nie |
+| `cloth` | miękki | 0,4 cm | 500 | nie |
+| `linen` | miękki | 0,4 cm | 500 | nie |
+| `sky_cloth` | miękki | 0,4 cm | 500 | nie |
+| `sage_cloth` | miękki | 0,4 cm | 500 | nie |
+| `hide` | miękki | 0,8 cm | 900 | nie |
+| `rope` | miękki | 2 cm | 600 | nie |
+| `leaves` | miękki | 0,3 cm | 600 | nie |
+| `grass` | miękki | 0,3 cm | 500 | nie |
+| `flower_red` | miękki | 0,3 cm | 500 | nie |
+| `flower_yellow` | miękki | 0,3 cm | 500 | nie |
+| `flower_white` | miękki | 0,3 cm | 500 | nie |
+| `bronze` | metal | 0,8 cm | 8800 | nie |
+| `iron` | metal | 0,8 cm | 7870 | nie |
+| `grain` | sypki | brak | 750 | nie |
+| `water` | ciecz | brak | 1000 | nie |
+| `oil` | ciecz | brak | 920 | nie |
+
+| Klasa | Wiązanie | Wypełnienie | Odbicie | Toczenie | Obrót | Przewracanie | Budowany do grubości |
+|---|---|---|---|---|---|---|---|
+| mur | 60 cm | 60 % | 3 % | 40 % | ×0,6 | tak | tak |
+| dachówka | 14 cm | 15 % | 12 % | 55 % | ×1,2 | nie | nie |
+| drewno | każdy osobno | 50 % | 10 % | 65 % | ×0,7 | częściowo | tak |
+| miękki | 44 cm | 30 % | 0 % | 20 % | ×0,4 | nie | nie |
+| metal | każdy osobno | 30 % | 15 % | 55 % | ×1,0 | nie | nie |
+| sypki | 20 cm | 60 % | 0 % | 5 % | ×0,1 | nie | nie |
+| ciecz | każdy osobno | 100 % | 0 % | 0 % | ×0,0 | nie | nie |
+

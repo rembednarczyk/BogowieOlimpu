@@ -64,19 +64,8 @@ PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 20
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
 
-# How thick each material is (metres; owner, 2026-11-28: "tiles thinner, wood thicker, bricks thick"). The
-# models are built to it where they make a piece of the material (a tile's shell, a brick's course); a piece the
-# model shows as a mere surface (a plastered gable, a shutter's face, a sheet of thatch) gets this thickness when
-# it breaks loose (bo_collapse.py), so no wafer falls out of a house.
-THICKNESS = {
-    "plaster": 0.10, "ochre": 0.10, "blue_paint": 0.10,  # a coat on a wall: the wall's brick comes with it
-    "stone": 0.14, "stone_cool": 0.14, "marble": 0.12, "mudbrick": 0.10, "mortar": 0.08,
-    "roof_tile": 0.012, "roof_slate": 0.012, "roof_gold": 0.012, "roof_brown": 0.012, "roof_patina": 0.012,
-    "wood": 0.07, "dark_wood": 0.07, "bark": 0.10, "end_grain": 0.10,
-    "thatch": 0.12, "cloth": 0.004, "linen": 0.004, "sky_cloth": 0.004, "sage_cloth": 0.004, "hide": 0.008,
-    "rope": 0.02, "leaves": 0.003, "grass": 0.003, "flower_red": 0.003, "flower_yellow": 0.003,
-    "flower_white": 0.003, "bronze": 0.008, "iron": 0.008,
-}
+# How thick each material is, and which parts are built to it as boards: the game's material table (R-019).
+from bo_materials import BOARDS as _BOARDS, MATERIALS as _MATERIALS, THICKNESS  # noqa: E402
 FILL_TINT = 0.0123  # the tint of hidden filling (a mortar bed under tiles): no material, the ruin leaves it out
 PALETTE_SIZE = 64  # UV0.x = (index + 0.5) / PALETTE_SIZE; room for the Atlantean colours (2026-11-28)
 
@@ -200,15 +189,18 @@ class Builder:
                 loop[self.pivot].uv = pivot
                 loop[self.col] = (stage, 1.0 if plaster else 0.0, 1.0 if loose else 0.0, anim)
 
-    BOARDS = ("wood", "dark_wood")  # parts built to their THICKNESS as boards (owner, 2026-11-28)
+    BOARDS = _BOARDS  # parts built to their THICKNESS (bo_materials.py: wood, stone, brick; not the coats)
 
     def _board(self, part, sizes):
-        """A board of wood thinner than its material (THICKNESS) gets its thickness: the one thin size grows
-        to it, about the same middle. A rod (two thin sizes: a peg, a rung, a thread) stays as it is."""
+        """A board (of wood, of stone, a brick) thinner than its material (THICKNESS) gets its thickness: the one
+        thin size grows to it, about the same middle. A rod (two thin sizes: a peg, a rung, a thread) stays."""
         if part not in self.BOARDS:
             return sizes, [0.0, 0.0, 0.0]
         want = THICKNESS[part] * M
-        thin = [i for i in range(3) if abs(sizes[i]) < want]
+        # A brick or a stone a little under its size (the joint taken off) stays: only a slab clearly too thin
+        # for its material grows (below 75 %); a board of wood grows whenever it is thinner.
+        below = want * (0.75 if _MATERIALS[part]["cls"] == "masonry" else 1.0)
+        thin = [i for i in range(3) if abs(sizes[i]) < below]
         if len(thin) != 1 or min(abs(sizes[i]) for i in range(3) if i != thin[0]) < 2 * want:
             return sizes, [0.0, 0.0, 0.0]
         i = thin[0]

@@ -111,21 +111,9 @@ Kolejność budowy i zawalenie (uwaga właściciela 2026-11-28: „budowa w real
 - Mur ustępuje od dołu, wyższe części spadają później, na to, co już leży. Fragment przysypany, zanim ruszył (jego środek pod gruzem), zostaje pod gruzem. Stos rośnie prawdziwym kształtem leżących kawałków, luźny gruz wchodzi w szczeliny (`PACK` 0,4). Stos kamienicy ma w środku około 1,5 m. Nic nie wychodzi poza działkę. 2,5 s, 24 klatki/s, ostatnia klatka to ruina.
 - Szałasy (poziom 1) upadają każdy na swoim modelu: `common_housing_1_<historia>_ruin` dla pasterzy (kopuła z gałęzi), garncarzy (daszek) i ogrodników (namiot dwuspadowy). Kikuty zostają tylko z muru, więc żerdzie przewracają się całe. Płótno nie trzyma się żerdzi i rusza 0,35 s po nich, więc opada na nie. Gra wybiera ruinę domu po jego modelu, a gdy jej nie ma, ruinę poziomu.
 
-| Materiał | Gęstość | Wypełnienie pudełka |
-|---|---|---|
-| mur | 1800 kg/m³ | 60 % |
-| dachówka | 1900 kg/m³ | 15 % |
-| drewno | 600 kg/m³ | 50 % |
-| strzecha, płótno | 300 kg/m³ | 30 % |
-| metal | 7800 kg/m³ | 30 % |
+Grubość, gęstość, klasa i kształt każdego materiału: jedna tabela `tools/blender/bo_materials.py` (R-019), opisana z tabelami w `docs/STYL-BUDOWLI.md` rozdz. 12. Model domu bierze z niej grubość dachówek, desek, cegieł i płyt; element pokazany jako powierzchnia dostaje ją, gdy odpada. Ukryte wypełnienie (zaprawa pod dachówkami w kolorze dachówki, `FILL_TINT`) w ruinie znika, bo nie jest materiałem; ciecze też.
 
-| Materiał (części) | Wiązanie | Odbicie | Toczenie | Obrót | Opór powietrza | Przewracanie |
-|---|---|---|---|---|---|---|
-| mur: tynk, kamień, cegła, marmur, zaprawa, farby | fragmenty około 60 cm | 8 % | 45 % | ×0,6 | brak | tak |
-| dachówka (wszystkie kolory dachów) | 1-3 dachówki (14 cm) | 30 % | 60 % | ×1,6 | brak | nie |
-| drewno: belki, deski, kora | każdy element osobno | 22 % | 70 % | ×0,7 | brak | częściowo |
-| miękkie: strzecha, płótno, len, skóry, liny, liście | płaty około 44 cm | 0 | 25 % | ×0,5 | 2,5/s, kołysanie | nie |
-| metal: brąz, żelazo | każdy element osobno | 35 % | 60 % | ×1,2 | brak | nie |
+Wiązanie, odbicie i toczenie klas: `docs/STYL-BUDOWLI.md` rozdz. 12.
 
 Liczby to `[ZAŁOŻENIE]` do oceny oczami (bez źródła; referencja nie animuje upadku).
 - Pliki: `common_housing_N_ruin.glb` (kawałek w `UV2.x`, 0 to część stojąca) i `common_housing_N_ruin.bin` („BORU”, klatki, kawałki, fps, potem macierze 3×4 w osiach Godota). Shader czyta je przez teksturę (`ruin_frames`, `ruin_len`, parametr instancji `collapse` w sekundach, -1 to gruz w spoczynku).

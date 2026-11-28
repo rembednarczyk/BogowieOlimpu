@@ -182,3 +182,14 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Przewodnik: `docs/STYL-BUDOWLI.md` (liczby, kroki budowy, znane błędy, historie każdej kategorii budynków).
 - Wpływ na: `tools/blender/bo_asset.py`, `bo_detail.py`, `bo_story.py`, `models.py`, `game/shaders/building.gdshader`, `game/scenes/boot.gd`, `docs/ASSETY.md`, `docs/08-OPRAWA.md`.
 - Historia: 2026-11-28 utworzona; 2026-11-28 punkt 7 z kontrolą podparcia (`check_props`), przewodnik
+
+### R-019 [OPRAWA] Materiały: wymiary, gęstość, ciężar, kształt i fizyka
+- Status: obowiązuje
+- Źródło: decyzje właściciela 2026-11-28 („płytki cieńsze, drewno grubsze, cegły grube”; „dodaj do materiałów ciężar i kolizję podczas zawalania”; „te zasady fizyki, wymiarów, gęstości, wagi i kształty będą dotyczyć wszystkich materiałów z gry … niech będzie to globalną zasadą przy budowie wszystkich budynków”)
+- Treść: Każdy materiał gry (każdy kolor palety budynków) ma wpis w jednej tabeli `tools/blender/bo_materials.py`: klasę zachowania, grubość w metrach, gęstość w kg/m³, czy jest powłoką, kształt elementu. Każdy budynek jest budowany według tej tabeli (deski, cegły i płyty do grubości materiału, dachówki z tabeli) i zawala się według niej (elementy w całości, powłoki z podłożem, płaty tkanin i strzechy, masa, opór powietrza, zderzenia, bez skaczących kawałków). Nowy materiał bez wpisu zatrzymuje kontrolę.
+- Uzasadnienie: jeden klimat i jedna fizyka dla wszystkich budowli przy pracy wielu sesji; liczby sprawdzalne w kodzie.
+- Przewodnik: `docs/STYL-BUDOWLI.md` rozdz. 12 (tabele, zasady kształtu).
+- Kontrola: `tools/checks/check_models.py` (wpis dla każdego koloru palety), `BO_RUIN_DEBUG=1` przy eksporcie (wysokość stosu, największy skok, kawałki w ruchu).
+- Wpływ na: `tools/blender/bo_materials.py`, `bo_asset.py`, `bo_collapse.py`, `bo_detail.py`, `docs/STYL-BUDOWLI.md`, `docs/ASSETY.md`.
+- Historia: 2026-11-28 utworzona
+

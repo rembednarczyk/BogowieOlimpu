@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Jedna tabela materiałów dla wszystkich budynków (R-019)
+- Decyzja właściciela: zasady fizyki, wymiarów, gęstości, wagi i kształtu dotyczą wszystkich materiałów gry i są globalną zasadą budowy budynków.
+- Wykonanie: `tools/blender/bo_materials.py` (34 materiały palety, 7 klas), czytana przy budowie modeli i przy zawaleniu; kontrola w `check_models.py`. Deski, cegły i płyty kamienne budowane do grubości materiału.
+
 ### 2026-11-28: Budowa w realistycznej kolejności; zawalenie wypieczone z fizyki
 - Decyzja właściciela: dom rośnie w kolejności z placu budowy, a zawalony dom spada z fizyką; ruina to ostatnia klatka upadku, z animacją.
 - Wykonanie: wykończenie i dobytek po rusztowaniu; upadek symulowany raz w Blenderze (`tools/blender/bo_collapse.py`), w grze odtwarzany shaderem z tekstury klatek (opis w `docs/ASSETY.md`). Fizyka w czasie gry odrzucona: koszt na telefonie i brak powtarzalności.

@@ -10,6 +10,7 @@
     (hundreds of houses at once on the phone, docs/07-TECHNOLOGIA.md).
 Exit code 1 on any violation. Usage: python3 tools/checks/check_models.py [repo_root]
 """
+import importlib.util
 import json
 import pathlib
 import re
@@ -115,6 +116,19 @@ def main():
         for (n, cb), (cs, _) in zip(pb, ps):
             if [float(v) for v in cb.split(",")] != [float(v) for v in cs.split(",")]:
                 errors.append(f"palette {n}: blender ({cb}) shader ({cs})")
+    # Every material of the palette has its line in the game's material table (R-019): thickness, density, class.
+    spec = importlib.util.spec_from_file_location("bo_materials", root / "tools" / "blender" / "bo_materials.py")
+    mats = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mats)
+    for n, _ in pb:
+        m = mats.MATERIALS.get(n)
+        if m is None:
+            errors.append(f"material {n}: no line in tools/blender/bo_materials.py (R-019)")
+        elif m["cls"] not in mats.CLASSES or m["thickness"] < 0 or m["density"] <= 0:
+            errors.append(f"material {n}: class {m['cls']}, thickness {m['thickness']}, density {m['density']}")
+    for n in mats.MATERIALS:
+        if n not in [x for x, _ in pb]:
+            errors.append(f"material {n}: in bo_materials.py but not in the palette")
     if "-v" in sys.argv:
         print("\n".join(sizes))
     for e in errors:
