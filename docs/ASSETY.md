@@ -106,7 +106,17 @@ Stany domów dopracowane 2026-11-28 (uwaga właściciela: „dopracuj wszystkie 
 
 Kolejność budowy i zawalenie (uwaga właściciela 2026-11-28: „budowa w realistycznej kolejności”, „realistyczna fizyka zawalania się, tak wyglądają ruiny, z animacją”):
 - Budowa: cokół, mury warstwa po warstwie, belki i więźba, zaprawa pod dachówki rząd po rzędzie, dachówki od okapu do kalenicy; stolarka (drzwi, okiennice) od 96,5 % budowy, a wykończenie i dobytek (markizy, rośliny, pranie, dzbany, krosno, sągi, wieńce, kominy) dopiero w ostatnich 2,5 % budowy, gdy dom stoi już pod dachem (`finishing` w `bo_asset.py`, dekorator w `bo_detail.py` i `bo_story.py`).
-- Zawalenie: `tools/blender/bo_collapse.py` dzieli gotowy dom każdego poziomu na kawałki (cegła, dachówka, deska; komórki 44 cm, płaty tynku i strzechy pękają na granicach komórek, osie własne kawałka z PCA). Cokół i kikuty murów (30 cm do 1,2 m nad cokołem, nierówno) stoją. Reszta spada z grawitacją 9,81 m/s², górne części wcześniej i z pchnięciem na zewnątrz, obraca się, odbija (12 % prędkości), zsuwa z kikutów i z gruzu, kładzie na najszerszym boku i zostaje; gruz rośnie mapą wysokości (komórki 10 cm, 20 % pudełka kawałka to materiał). Nic nie wychodzi poza działkę. 2,5 s, 24 klatki/s; ostatnia klatka to ruina.
+- Zawalenie: `tools/blender/bo_collapse.py` dzieli gotowy dom każdego poziomu na kawałki według materiału, który model ma przypisany do każdej części (paleta w `bo_asset.py`, `MATERIALS` i `PARTS` w `bo_collapse.py`); kawałek ma jeden materiał, osie własne z PCA. Cokół i kikuty murów (30 cm do 1,2 m nad cokołem, nierówno) stoją. Reszta spada z grawitacją 9,81 m/s², górne części wcześniej i z pchnięciem na zewnątrz, zsuwa się z kikutów i z gruzu, kładzie na najszerszym boku i zostaje; gruz rośnie mapą wysokości (komórki 10 cm). Nic nie wychodzi poza działkę. 2,5 s, 24 klatki/s; ostatnia klatka to ruina.
+
+| Materiał (części) | Kawałek | W całości do | Odbicie | Toczenie po ziemi | Obrót | Opór powietrza | Wypełnienie |
+|---|---|---|---|---|---|---|---|
+| mur: tynk, kamień, cegła, marmur, zaprawa, farby | 44 cm | 88 cm | 8 % | 45 % | ×1,0 | brak | 35 % |
+| dachówka (wszystkie kolory dachów) | 28 cm | 60 cm | 30 % | 60 % | ×1,6 | brak | 15 % |
+| drewno: belki, deski, kora, czoła | 1,2 m | 2,8 m (belka cała) | 22 % | 70 % | ×0,7 | brak | 25 % |
+| miękkie: strzecha, płótno, len, skóry, liny, liście, trawa, kwiaty | 36 cm, płaty cięte przed rozbiciem | 40 cm | 0 | 25 % | ×0,5 | 2,5/s, kołysanie | 5 % |
+| metal: brąz, żelazo | 60 cm | 1,2 m | 35 % | 60 % | ×1,2 | brak | 30 % |
+
+Liczby to `[ZAŁOŻENIE]` do oceny oczami (bez źródła; referencja nie animuje upadku).
 - Pliki: `common_housing_N_ruin.glb` (kawałek w `UV2.x`, 0 to część stojąca) i `common_housing_N_ruin.bin` („BORU”, klatki, kawałki, fps, potem macierze 3×4 w osiach Godota). Shader czyta je przez teksturę (`ruin_frames`, `ruin_len`, parametr instancji `collapse` w sekundach, -1 to gruz w spoczynku).
 - Gra: gdy rdzeń zamienia dom w ruiny (`ruin_building`, to samo miejsce w tym samym ticku), `boot.gd` stawia ruinę poziomu tego domu w jego obrocie i skali i odtwarza upadek; po pożarze ruina jest zwęglona (`fire` 3). Ruiny z zapisu (bez domu przed nimi) leżą w spoczynku, poziom 2-4 z id. Ruiny innych budynków zostają na razie płaską bryłą.
 - Bez fizyki w czasie gry: upadek jest wypieczony w Blenderze, powtarzalny (ziarno z nazwy modelu), koszt w grze to jedna tekstura na poziom i odczyt w shaderze wierzchołków.

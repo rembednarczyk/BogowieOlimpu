@@ -1,6 +1,6 @@
 """A house falling down (owner, 2026-11-28: "realistic physics of collapse; the ruins look like that, with the
-animation"). The finished model is broken into chunks (its pieces, a brick, a tile, a board, grouped by where
-they are, 44 cm cells); the footing and what lies on the ground stay. Each chunk falls under gravity from the
+animation"). The finished model is broken into chunks of one material each (its pieces, a brick, a tile, a beam,
+grouped by where they are, in cells of that material's size, MATERIALS); the footing and what lies on the ground stay. Each chunk falls under gravity from the
 moment the walls give way, the upper ones pushed outward and the way the house leaned, tumbling; it hits the
 ground or the rubble already lying there (a height map of 10 cm cells that grows as chunks come to rest),
 bounces a little, loses its speed, rolls onto a face and stays. Nothing leaves the plot. The last frame is the
@@ -18,17 +18,35 @@ import random
 import struct
 
 import bmesh
+import bo_asset as A
 import numpy
 from mathutils import Matrix, Quaternion, Vector
 
 
-CELL = 0.22  # tiles (44 cm): the size of a chunk
 GROUND = 0.16  # tiles (32 cm): pieces lower than this stay (the footing, the paving, the grass)
 G = 9.81 / 2.0  # tiles/s² (1 tile = 2 m)
 FPS = 24
 SECONDS = 2.5
 HM = 0.05  # tiles (10 cm): the rubble's height map
-FILL = 0.2  # of a chunk's box that is stone, brick or tile (a roof cell: 2 cm of tiles in 44 cm)
+
+# How each material of the model (its part, the palette in bo_asset.py) breaks and falls. cell: the size of its
+# chunks (tiles); whole: a piece up to this long stays whole (a beam, a tile); bounce: the share of the speed it
+# keeps upward on a hit; keep: of the speed along the ground; spin: how fast it tumbles; drag: air resistance
+# (1/s: cloth and thatch drift down, stone does not); fill: of its box that is material (the rubble's growth).
+MATERIALS = {
+    "masonry": dict(cell=0.22, whole=0.44, bounce=0.08, keep=0.45, spin=1.0, drag=0.0, fill=0.35),
+    "tile": dict(cell=0.14, whole=0.30, bounce=0.30, keep=0.60, spin=1.6, drag=0.0, fill=0.15),
+    "wood": dict(cell=0.60, whole=1.40, bounce=0.22, keep=0.70, spin=0.7, drag=0.0, fill=0.25),
+    "soft": dict(cell=0.18, whole=0.20, bounce=0.00, keep=0.25, spin=0.5, drag=2.5, fill=0.05),
+    "metal": dict(cell=0.30, whole=0.60, bounce=0.35, keep=0.60, spin=1.2, drag=0.0, fill=0.30),
+}
+PARTS = {
+    "tile": ("roof_tile", "roof_slate", "roof_gold", "roof_brown", "roof_patina"),
+    "wood": ("wood", "dark_wood", "bark", "end_grain"),
+    "soft": ("thatch", "cloth", "linen", "hide", "sky_cloth", "sage_cloth", "rope", "leaves", "grass", "flower_red",
+             "flower_yellow", "flower_white"),
+    "metal": ("bronze", "iron"),
+}  # the rest (plaster, stone, mudbrick, marble, mortar, paints) is masonry
 
 
 def _islands(bm):
@@ -60,6 +78,18 @@ def ruin(b, out_dir, name):
     # Nothing of the building site and nothing the family owned: the scaffold and the goods go.
     dead = [f for f in bm.faces if f.loops[0][b.col][0] > 0.995 or f.loops[0][b.pivot].uv[0] < -0.5]
     bmesh.ops.delete(bm, geom=dead, context="FACES")
+    kind_of = {i: k for k, names in PARTS.items() for i, (n, _) in enumerate(A.PALETTE) if n in names}
+
+    def kind(f):
+        return kind_of.get(int(f.loops[0][b.uv].uv[0] * A.PALETTE_SIZE), "masonry")
+    # A sheet bigger than its material's chunk (a thatch's underlay, a canvas) is cut first, or it would fall
+    # as one stiff panel.
+    for _ in range(4):
+        long_edges = [e for e in bm.edges if e.calc_length() > MATERIALS["soft"]["cell"]
+                      and any(kind(f) == "soft" for f in e.link_faces)]
+        if not long_edges:
+            break
+        bmesh.ops.subdivide_edges(bm, edges=long_edges, cuts=1, use_grid_fill=True)
     bm.verts.ensure_lookup_table()
     bm.verts.index_update()
     W, H = b.width, b.height  # tiles; the mesh's y runs from 0 to -H
@@ -73,7 +103,11 @@ def ruin(b, out_dir, name):
         a = grid[i][j] * (1 - fx) + grid[i + 1][j] * fx
         c = grid[i][j + 1] * (1 - fx) + grid[i + 1][j + 1] * fx
         return GROUND + a * (1 - fy) + c * fy
-    chunks = {}  # cell -> faces
+
+    def key(c, k):
+        cell = MATERIALS[k]["cell"]
+        return (k, math.floor(c.x / cell), math.floor(c.y / cell), math.floor(c.z / cell))
+    chunks = {}  # (material, cell) -> faces: a chunk is of one material
     statics = []
     for faces in _islands(bm):
         vs = {v for f in faces for v in f.verts}
@@ -86,17 +120,16 @@ def ruin(b, out_dir, name):
         if top < stump(c.x, c.y):
             statics.append(faces)
             continue
-        if span <= 2 * CELL:  # a brick, a tile, a board: whole, in the cell of its centre
-            key = (math.floor(c.x / CELL), math.floor(c.y / CELL), math.floor(c.z / CELL))
-            chunks.setdefault(key, []).extend(faces)
+        k = kind(faces[0])
+        if span <= MATERIALS[k]["whole"]:  # a brick, a tile, a beam: whole, in the cell of its centre
+            chunks.setdefault(key(c, k), []).extend(faces)
             continue
-        for f in faces:  # a plaster coat, a slab, a long beam: it breaks where the cells meet
+        for f in faces:  # a plaster coat, a thatch, a slab: it breaks where its material's cells meet
             c = f.calc_center_median()
             if max(v.co.z for v in f.verts) < stump(c.x, c.y):
                 statics.append([f])
                 continue
-            key = (math.floor(c.x / CELL), math.floor(c.y / CELL), math.floor(c.z / CELL))
-            chunks.setdefault(key, []).append(f)
+            chunks.setdefault(key(c, kind(f)), []).append(f)
     keys = sorted(chunks)
     bodies = []
     for k in keys:
@@ -111,7 +144,8 @@ def ruin(b, out_dir, name):
             axes.col[2] *= -1
         local = pts @ numpy.array(axes)  # coordinates along the axes
         lo, hi = local.min(axis=0), local.max(axis=0)
-        bodies.append({"faces": faces, "c0": axes @ Vector((lo + hi) / 2), "he": Vector((hi - lo) / 2), "axes": axes})
+        bodies.append({"faces": faces, "c0": axes @ Vector((lo + hi) / 2), "he": Vector((hi - lo) / 2), "axes": axes,
+                       "mat": MATERIALS[k[0]], "kind": k[0]})
     # Chunk ids into UV1.x (0 = still), the animated mask cleared.
     for f in bm.faces:
         for loop in f.loops:
@@ -153,7 +187,8 @@ def _fall(bodies, statics, W, H, rng):
         bd["q"] = Quaternion()
         bd["v"] = (out * rng.uniform(0.05, 0.35) + lean * rng.uniform(0.1, 0.45)) * h * 1.6
         axis = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-0.3, 0.3)))
-        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.8, 4.5) * (0.3 + h)
+        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.8, 4.5) * (0.3 + h) \
+            * bd["mat"]["spin"]
         bd["delay"] = rng.uniform(0.0, 0.18) + (1.0 - h) * 0.12  # the top lets go first, the base as it buckles
         bd["done"] = False
         bd["hits"] = 0
@@ -173,6 +208,11 @@ def _fall(bodies, statics, W, H, rng):
                 if bd["done"] or t < bd["delay"]:
                     continue
                 bd["v"].z -= G * dt
+                drag = bd["mat"]["drag"]
+                if drag:  # cloth and thatch: the air holds them, they drift and sway as they come down
+                    bd["v"] -= bd["v"] * min(drag * dt, 1.0)
+                    bd["v"].x += math.sin(t * 7.0 + bd["c0"].x * 9.0) * 0.6 * dt
+                    bd["v"].y += math.cos(t * 6.0 + bd["c0"].y * 9.0) * 0.6 * dt
                 bd["pos"] += bd["v"] * dt
                 if bd["w"].length > 1e-6:
                     bd["q"] = Quaternion(bd["w"].normalized(), bd["w"].length * dt) @ bd["q"]
@@ -213,9 +253,9 @@ def _fall(bodies, statics, W, H, rng):
                     bd["slides"] += 1
                     continue
                 if bd["v"].z < 0:
-                    bd["v"].z = -bd["v"].z * 0.12
-                bd["v"].x *= 0.55
-                bd["v"].y *= 0.55
+                    bd["v"].z = -bd["v"].z * bd["mat"]["bounce"]
+                bd["v"].x *= bd["mat"]["keep"]
+                bd["v"].y *= bd["mat"]["keep"]
                 bd["w"] *= 0.45
                 bd["hits"] += 1
                 _towards_a_face(bd, 0.35)
@@ -227,8 +267,8 @@ def _fall(bodies, statics, W, H, rng):
                     support = sum(hm[i][j] for i, j in under) / len(under)
                     bd["pos"].z += support - min(p.z for p in world)
                     # The rubble grows by what the piece holds, spread under it: a cell of tiles or of a wall
-                    # is mostly air (FILL of its box).
-                    volume = 8.0 * bd["he"].x * bd["he"].y * bd["he"].z * FILL
+                    # is mostly air (its material's fill of its box).
+                    volume = 8.0 * bd["he"].x * bd["he"].y * bd["he"].z * bd["mat"]["fill"]
                     for i, j in under:
                         hm[i][j] += volume / (len(under) * HM * HM)
                     bd["done"] = True
