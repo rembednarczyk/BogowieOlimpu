@@ -481,8 +481,17 @@ class Builder:
             v.co.y = min(max(ny, -self.height), 0.0)
             v.co.z = z + wave * f * f * math.sin(x * 2.1 + ph) * math.cos(y * 1.7 - ph)
 
+    mirror = False  # the house built the other way round (a story's variant, bo_story.py)
+
+    def _mirror(self):
+        if not self.mirror:
+            return
+        for v in self.bm.verts:  # the windings flip with it: finish() recalculates the normals, and the faces
+            v.co.x = self.width - v.co.x  # seen from both sides have both windings anyway
+
     def finish(self):
         self.check_props()
+        self._mirror()
         self._wonk()
         bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if f not in self.two_sided])
         mesh = bpy.data.meshes.new(self.name)

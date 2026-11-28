@@ -854,6 +854,39 @@ def flower_box(b, x, y, z, length, rng, along_x=True, out=1, name="flower box"):
                      "leaves", stage=0.95, tint=rng.uniform(0.2, 0.6))
 
 
+def pergola(b, x0, y0, x1, y1, z, rng, name="pergola"):
+    """A vine on a frame before the door (metres): two posts at the front, a beam on them, rafters back to the
+    wall (y0 its face, just off the plaster), the vine's trunk twisting up a post, its leaves over the top and
+    bunches of grapes hanging through."""
+    for i, px in enumerate((x0 + 0.04, x1 - 0.04)):
+        b.prop("%s post %d" % (name, i + 1), t(px - 0.045), t(y1 - 0.085), 0, t(px + 0.045), t(y1 + 0.005), t(z))
+    b.prop(name, t(x0), t(y0), t(z), t(x1), t(y1), t(z + 0.2))  # on the posts
+    for px in (x0 + 0.04, x1 - 0.04):
+        b.log((t(px), t(y1 - 0.04), 0), (t(px), t(y1 - 0.04), t(z)), t(0.04), sides=10 if b.detail else 4, stage=0.85)
+    b.log((t(x0), t(y1 - 0.04), t(z + 0.03)), (t(x1), t(y1 - 0.04), t(z + 0.03)), t(0.035), sides=8, stage=0.86)
+    n = 4
+    for i in range(n):
+        px = x0 + 0.08 + (x1 - x0 - 0.16) * i / (n - 1)
+        b.log((t(px), t(y0 + 0.01), t(z + 0.09)), (t(px), t(y1), t(z + 0.09)), t(0.022), sides=6, stage=0.87)
+    if not b.detail:
+        b.box(t(x0), t(y0), t(z + 0.1), t(x1 - x0), t(y1 - y0), t(0.06), "leaves", stage=0.9)
+        return
+    px = x1 - 0.04
+    trunk = [(px + 0.05 * math.cos(k * 1.3), y1 - 0.04 + 0.05 * math.sin(k * 1.3), 0.02 + (z - 0.02) * k / 8) for k in range(9)]
+    b.tube_path([tuple(t(v) for v in q) for q in trunk], t(0.018), "bark", sides=6, stage=0.88)
+    for _ in range(90):  # the leaves over the frame
+        lx, ly = rng.uniform(x0 + 0.02, x1 - 0.02), rng.uniform(y0 + 0.02, y1 - 0.01)
+        lz = z + rng.uniform(0.1, 0.17)
+        tip = (lx + rng.uniform(-0.07, 0.07), ly + rng.uniform(-0.07, 0.07), lz + rng.uniform(-0.02, 0.03))
+        b.strand((t(lx), t(ly), t(lz)), tuple(t(v) for v in tip), t(rng.uniform(0.07, 0.1)), "leaves", stage=0.92,
+                 tint=rng.uniform(0.2, 0.9))
+    for _ in range(5):  # bunches of grapes
+        gx, gy = rng.uniform(x0 + 0.15, x1 - 0.15), rng.uniform(y0 + 0.12, y1 - 0.12)
+        b.lathe(t(gx), t(gy), t(z - 0.0), [(t(0.005), 0), (t(0.035), t(0.03)), (t(0.045), t(0.08)), (t(0.01), t(0.1))],
+                "blue_paint", sides=8, stage=0.92, tint=0.1, smooth=2,
+                shape=lambda a: 1.0 + 0.15 * abs(math.sin(3 * a)))
+
+
 def ivy(b, x, y, length, z0, z1, rng, along_x=True, out=1, name="ivy"):
     """Ivy climbing a wall (metres): stems wandering up from the ground, leaves standing off the face. x, y the
     wall's outer face at the patch's start, out the side the wall faces."""

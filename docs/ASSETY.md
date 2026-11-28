@@ -47,6 +47,12 @@ Uwagi właściciela 2026-11-28 (trzecia runda), wdrożone:
 
 ## Warianty i historie domów (plan 2026-11-28, przyjęty)
 
+Stan 2026-11-28: kroki (a), (b) i (d) zrobione.
+- Generator: `tools/blender/bo_story.py`. Funkcja poziomu deklaruje wolny grunt (`slot`: podwórze, pas przy ścianie, róg), `dress` stawia zestaw historii w kolejności, każdy element w pierwszym wolnym miejscu (bryły, rekwizyty i promienie z ziemi jak przy trawie), na końcu `check_props`. Element, który się nie zmieści, eksport wypisuje jako `NO ROOM`.
+- Historie poziomów 1-3 (`common_housing_<poziom>_<historia>.glb` z LOD1): pasterze (żerdź z runem, kij pasterski z dzwonkiem i bukłakiem, płot z wikliny, ława do strzyżenia z runem), garncarze (koło garncarskie, piramidy garnków, piec z gliny, półka z naczyniami; dom lustrzany, ściany chaty bielone, namiot ochrowy), ogrodnicy i pszczelarze (grządka, tyczki z fasolą, donice z ziołami, gliniane ule na kamieniu; w lepiance pergola z winoroślą nad drzwiami; namiot w kolorze nieba).
+- Gra (`boot.gd`): historia z id budynku (`house_story`), trwała przy awansie i po wczytaniu; dom obrócony o 0, 90, 180 albo 270 stopni (`house_turn`) i w skali 0,92-1,00 (`house_scale`), zawsze w obrysie działki. Test w `test_ui.gd`: trzy historie, cztery obroty, domy na działkach, historia ta sama na każdym poziomie.
+- Do zrobienia: poziomy 4-7, pozostałe budowle, drzwi zwrócone do drogi przy obrocie (teraz obrót jest losowy).
+
 Cel właściciela: każdy dom opowiada swoją historię, miasto jest bardziej zróżnicowane; każdy budynek ma 2-3 warianty.
 
 1. **Historia trwa przez poziomy.** Historia to rodzina, która rośnie razem z domem: namiot pasterzy staje się chatą z zagrodą dla owiec, potem kamienicą z krosnem, w końcu domem miejskim z warsztatem tkackim. Dom dostaje historię przy postawieniu i zachowuje ją przy awansie.

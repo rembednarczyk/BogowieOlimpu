@@ -517,14 +517,14 @@ func _add_building(e: Dictionary) -> void:
 	elif e.has("levels"):  # a monument going up layer by layer (P:26-28, L-128)
 		mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.86, 0.82, 0.70))  # stone
 		_add_layers(node, e, mat)
-	elif e["parent"] == 0 and _model(_model_name(e["building_type"], e.get("house_level", 0))) != null:
+	elif e["parent"] == 0 and _model(_model_name(e["building_type"], e.get("house_level", 0), e["id"])) != null:
 		var mi := MeshInstance3D.new()  # the building's model, its state set by _update_looks
 		mi.name = "Model"
-		mi.mesh = _view_mesh(_model_name(e["building_type"], e.get("house_level", 0)))
+		mi.mesh = _view_mesh(_model_name(e["building_type"], e.get("house_level", 0), e["id"]))
 		mi.material_override = _building_material()
-		mi.position = Vector3(e["x"], 0, e["y"])
+		_place_model(mi, e)
 		node.add_child(mi)
-		node.set_meta("model", _model_name(e["building_type"], e.get("house_level", 0)))
+		node.set_meta("model", _model_name(e["building_type"], e.get("house_level", 0), e["id"]))
 		var placed: float = e.get("placed_day", sim.get_tick() / float(TICKS_PER_DAY))
 		_set_look(mi, {"age_days": e.get("age_days", 0)})
 		if e.get("age_days", 0) < BUILD_VISUAL_DAYS:
@@ -554,12 +554,42 @@ func _add_building(e: Dictionary) -> void:
 	add_child(node)
 	building_nodes[e["id"]] = node
 
-# A house takes the model of its level, or of the highest level below it that has one (until every level has its
-# own); other buildings the model of their type.
-func _model_name(type: String, house_level: int) -> String:
+# A house tells the story of its family (docs/ASSETY.md "Warianty i historie domów", R-018): picked from the
+# building's id, so it stays through every level and every save; the core knows nothing of it.
+const HOUSE_STORIES := ["shepherds", "potters", "gardeners"]
+
+static func _house_bits(id: int) -> int:
+	return (id * 2654435761 + 40503) & 0xffffffff  # Knuth's multiplicative hash: neighbours differ
+
+static func house_story(id: int) -> String:
+	return HOUSE_STORIES[(_house_bits(id) >> 5) % HOUSE_STORIES.size()]
+
+# Turned a quarter at a time and a little smaller or not, house after house: the street gets its rhythm
+# (R-018, point 8). Inside the footprint always: the turn is about its centre, the scale at most 1.
+static func house_turn(id: int) -> int:
+	return (_house_bits(id) >> 11) % 4
+
+static func house_scale(id: int) -> float:
+	return 0.92 + 0.01 * float((_house_bits(id) >> 17) % 9)
+
+func _place_model(mi: MeshInstance3D, e: Dictionary) -> void:
+	var w: float = e.get("width", 1)
+	var h: float = e.get("height", 1)
+	var centre := Vector3(e["x"] + w / 2.0, 0, e["y"] + h / 2.0)
+	var basis := Basis()
+	if e["building_type"] == "common_housing":
+		basis = Basis(Vector3.UP, house_turn(e["id"]) * PI / 2.0).scaled(Vector3.ONE * house_scale(e["id"]))
+	mi.transform = Transform3D(basis, centre - basis * Vector3(w / 2.0, 0, h / 2.0))
+
+# A house takes the model of its level and story, else of its level, else of the highest level below it that has
+# one; other buildings the model of their type.
+func _model_name(type: String, house_level: int, id: int = 0) -> String:
 	if type != "common_housing":
 		return type
+	var story := house_story(id)
 	for level in range(house_level + 1, 0, -1):
+		if _model("common_housing_%d_%s" % [level, story]) != null:
+			return "common_housing_%d_%s" % [level, story]
 		if _model("common_housing_%d" % level) != null:
 			return "common_housing_%d" % level
 	return "common_housing_1"
@@ -639,7 +669,7 @@ func _update_looks() -> void:
 		if node == null or not node.has_meta("model"):
 			continue
 		var mi: MeshInstance3D = node.get_node("Model")
-		var name := _model_name(b["type"], b.get("house_level", 0))
+		var name := _model_name(b["type"], b.get("house_level", 0), b["id"])
 		if name != node.get_meta("model") and _model(name) != null:
 			mi.mesh = _view_mesh(name)
 			node.set_meta("model", name)

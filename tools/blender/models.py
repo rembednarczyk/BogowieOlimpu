@@ -15,6 +15,7 @@ import random  # noqa: E402
 
 import bo_asset as A  # noqa: E402
 import bo_detail as D  # noqa: E402
+import bo_story as S  # noqa: E402
 from bo_detail import t  # noqa: E402
 from bo_asset import FOUNDATION, WALLS, ROOF, M  # noqa: E402
 
@@ -47,6 +48,13 @@ def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, d
         D.brick_wall(b, wall, rng, part=part, stage=stage, plaster=plaster, block=block, group=group)
 
 
+def _dress(b, story, level, rng):
+    b.mirror = S.STORIES[story]["mirror"]
+    left = S.dress(b, story, level, rng)
+    if left:
+        print("NO ROOM in %s for %s" % (b.name, ", ".join(left)))
+
+
 def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.34):
     """Palmettes on the gable's apex and its corners (a roof along x)."""
     for gx in (x - overhang, x + w + overhang):
@@ -60,9 +68,10 @@ def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.34):
 # olive oil from 6) stand by the house from that level on; those it keeps show only while it holds them.
 
 @model("common_housing_2", "common_housing", "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność")
-def hut(b, rng):
+def hut(b, rng, story=None):
+    acc = S.STORIES[story]["accent"] if story else {}
     D.footing(b, 0.5, 0.7, 3.0, 2.6, h=0.25, rng=rng)
-    _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
+    _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)], plaster=acc.get("walls"),
           windows=[("e", 0.55, 0.40, 0.95, 0.35)])
     D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35 * D.ROOF_STEEP, rng, hip=0.3, overhang=0.35)
     D.woodpile(b, 3.55, 0.85, rng, along_x=False, length=1.0)
@@ -71,12 +80,18 @@ def hut(b, rng):
         D.sack(b, 0.95, 3.72, scale=0.8, rng=rng)
         D.sack(b, 1.36, 3.74, scale=0.72, rng=rng, name="sack 2")
         D.basket(b, 2.85, 3.72, "onions", rng=rng)
+    if story:
+        S.slot(b, "north", 0.5, 0.02, 3.5, 0.66)
+        S.slot(b, "west", 0.02, 0.75, 0.47, 3.25, "strip")
+        S.slot(b, "east", 3.53, 1.95, 3.98, 3.3, "strip")
+        _dress(b, story, 2, rng)
     D.grass(b, rng, 38)
     b.scaffold(height=2.4 * M)
 
 
 @model("common_housing_1", "common_housing", "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos")
-def shelter(b, rng):
+def shelter(b, rng, story=None):
+    roof_part, wall_part = S.STORIES[story]["accent"]["tent"] if story else ("linen", "hide")
     x0, x1, y0, y1, eave, ridge = 0.5, 3.5, 0.7, 3.3, 1.55, 2.55
     b.solid("tent", t(x0 - 0.17), t(y0 - 0.14), 0, t(x1 + 0.17), t(y1 + 0.14), t(ridge + 0.2))
     posts = 4 if b.detail else 2
@@ -112,7 +127,7 @@ def shelter(b, rng):
             return (t(x), t(y), t(z))
         return fn
     for side in (-1, 1):
-        b.surface(roof(side), nu, nv, "linen", stage=0.7, tint=rng.uniform(0.35, 0.65))
+        b.surface(roof(side), nu, nv, roof_part, stage=0.7, tint=rng.uniform(0.35, 0.65))
 
     def wall(xa, ya, xb, yb, top0, top1):
         def fn(u, v):  # from the ground (v 0) up; folds hang down, the hem lies a little out on the ground
@@ -125,11 +140,11 @@ def shelter(b, rng):
             out = fold + 0.05 * (1.0 - v) ** 3
             return (t(x + nx / ln * out), t(y + ny / ln * out), t(top * v + 0.01))
         return fn
-    b.surface(wall(x0, y0, x1, y0, eave, eave), nu, nv // 2 + 1, "hide", stage=0.5, tint=rng.uniform(0.3, 0.7))
+    b.surface(wall(x0, y0, x1, y0, eave, eave), nu, nv // 2 + 1, wall_part, stage=0.5, tint=rng.uniform(0.3, 0.7))
     b.surface(wall(x0, y0, x0, y1, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.4)
     b.surface(wall(x1, y1, x1, y0, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.6)
     for xa, xb in ((x0, 1.55), (2.35, x1)):  # the south side, the door between
-        b.surface(wall(xb, y1, xa, y1, eave, eave), max(2, nu // 3), nv // 2 + 1, "hide", stage=0.5,
+        b.surface(wall(xb, y1, xa, y1, eave, eave), max(2, nu // 3), nv // 2 + 1, wall_part, stage=0.5,
                   tint=rng.uniform(0.3, 0.7))
     if b.detail:  # the door flap rolled up under the eave, tied with rope
         b.tube_path([(t(1.5), t(y1 + 0.06), t(eave - 0.12)), (t(2.4), t(y1 + 0.06), t(eave - 0.12))], t(0.06), "hide",
@@ -145,12 +160,19 @@ def shelter(b, rng):
         b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=20, stage=0.2)
     D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5, block=False)
     D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng, lid=True)
+    if story:  # the door (x 1.5-2.4) keeps its way clear
+        S.slot(b, "south west", 0.6, 3.47, 1.45, 3.98)
+        S.slot(b, "south east", 2.45, 3.47, 3.5, 3.98)
+        S.slot(b, "north", 0.7, 0.02, 3.3, 0.52)
+        S.slot(b, "east", 3.71, 0.8, 3.98, 3.2, "strip")
+        _dress(b, story, 1, rng)
     D.grass(b, rng, 34)
     b.scaffold(height=2.7 * M)
 
 
 @model("common_housing_3", "common_housing", "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy")
-def cabin(b, rng):
+def cabin(b, rng, story=None):
+    acc = S.STORIES[story]["accent"] if story else {}
     D.footing(b, 0.35, 0.35, 3.3, 2.6, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 2.5, 0.3, 2.2, plaster="plaster", doors=[("s", 1.2, 0.85, 1.75)],
           windows=[("s", 2.3), ("e", 0.9), ("w", 0.9)])
@@ -161,9 +183,18 @@ def cabin(b, rng):
     with D.goods(b, "food"):
         D.sack(b, 0.6, 3.25, scale=0.7, rng=rng)
         D.basket(b, 1.0, 3.25, "figs", scale=0.8, rng=rng)
-    D.hydria(b, 2.6, 3.25, scale=0.9, rng=rng)
-    D.potted_plant(b, 3.3, 3.25, scale=0.8, rng=rng)
+    if acc.get("pergola"):  # the gardeners' vine over the door: the jar steps aside, the herbs go to the beds
+        D.hydria(b, 3.0, 3.25, scale=0.9, rng=rng)
+        D.pergola(b, 1.45, 2.94, 2.62, 3.5, 2.05, rng)
+    else:
+        D.hydria(b, 2.6, 3.25, scale=0.9, rng=rng)
+        D.potted_plant(b, 3.3, 3.25, scale=0.8, rng=rng)
     D.ivy(b, 3.6, 0.75, 0.8, 0.3, 1.9, rng, along_x=False, out=1)  # on the east wall, short of its window
+    if story:
+        S.slot(b, "north", 0.4, 0.02, 3.6, 0.33, "strip")
+        S.slot(b, "west", 0.02, 0.4, 0.33, 2.9, "strip")
+        S.slot(b, "east", 3.71, 1.6, 3.98, 2.95, "strip")
+        _dress(b, story, 3, rng)
     D.grass(b, rng, 34)
     b.scaffold(height=2.9 * M)
 
@@ -407,6 +438,19 @@ def observatory(b, rng):
     for i in range(6):  # stairs to the door
         b.box(c - 0.4, b.height - 0.7 - i * 0.1, 0, 0.8, 0.1, (0.5 - i * 0.08) * M, "stone", stage=FOUNDATION)
     b.scaffold(height=5.0 * M)
+
+
+def _stories():
+    """Levels 1-3 in each family's version: common_housing_<level>_<story> (boot.gd picks it by the id)."""
+    for level, fn in ((1, shelter), (2, hut), (3, cabin)):
+        base = MODELS["common_housing_%d" % level]
+        for story, spec in S.STORIES.items():
+            MODELS["common_housing_%d_%s" % (level, story)] = (
+                (lambda b, rng, fn=fn, story=story: fn(b, rng, story)), "common_housing",
+                base[2] + "; historia: " + spec["name"])
+
+
+_stories()
 
 
 def main():

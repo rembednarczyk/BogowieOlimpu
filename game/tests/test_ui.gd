@@ -138,8 +138,31 @@ func _process(_d: float) -> bool:
 		var phase: float = mi.get_instance_shader_parameter("build")  # going up: the exact share; else done
 		var phase_ok: bool = phase >= 0.999 if b["age_days"] >= game.BUILD_VISUAL_DAYS else (phase > 0.0 and phase <= 1.0)
 		looks_ok = looks_ok and phase_ok \
-			and node.get_meta("model") == game._model_name(b["type"], b.get("house_level", 0))
+			and node.get_meta("model") == game._model_name(b["type"], b.get("house_level", 0), b["id"])
 	check(modelled > 20 and looks_ok, "modelled buildings follow their age and level: %d" % modelled)
+	# Houses tell their family's story (R-018): the id picks it, the same at every level; the three stories,
+	# the four turns and several sizes all occur; a turned and scaled house stays on its plot.
+	var stories := {}
+	var turns := {}
+	var on_plot := true
+	for b in game.sim.get_buildings():
+		if b["type"] != "common_housing":
+			continue
+		stories[game.house_story(b["id"])] = true
+		turns[game.house_turn(b["id"])] = true
+		var node: Node3D = game.building_nodes.get(b["id"])
+		if node != null and node.has_node("Model"):
+			var mi: MeshInstance3D = node.get_node("Model")
+			var box: AABB = mi.transform * mi.mesh.get_aabb()
+			on_plot = on_plot and box.position.x >= b["x"] - 0.01 and box.position.z >= b["y"] - 0.01 \
+				and box.end.x <= b["x"] + 2.01 and box.end.z <= b["y"] + 2.01
+	var keeps := true
+	for level in range(1, 8):
+		var name: String = game._model_name("common_housing", level, 7)
+		keeps = keeps and (not name.ends_with("_shepherds") and not name.ends_with("_gardeners") and not name.ends_with("_potters") \
+			or name.ends_with("_" + game.house_story(7)))
+	check(stories.size() == 3 and turns.size() == 4 and on_plot and keeps,
+		"houses: %d stories, %d turns, on their plots %s, a story kept through the levels %s" % [stories.size(), turns.size(), on_plot, keeps])
 	var goods_ok := true  # the props of a house's goods follow its stock (docs/ASSETY.md)
 	for b in game.sim.get_buildings():
 		var node: Node3D = game.building_nodes.get(b["id"])
