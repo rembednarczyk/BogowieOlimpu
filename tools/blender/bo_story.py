@@ -333,7 +333,7 @@ STORIES = {
     },
     "gardeners": {
         "name": "ogrodnicy i pszczelarze",
-        "accent": {"tent": ("sky_cloth", "linen"), "walls": None, "pergola": True},
+        "accent": {"tent": ("sage_cloth", "linen"), "walls": None, "pergola": True},  # blue is for public roofs
         "mirror": False,
         "kit": {1: ["vegetable bed", "bean poles", "herb pots"],
                 2: ["vegetable bed", "beehives", "bean poles"],

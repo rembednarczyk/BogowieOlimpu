@@ -16,7 +16,7 @@ instance uniform float working = 0.0;  // 0/1: the animated parts move
 instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
 
 const int PALETTE_SIZE = 32;
-const vec3 PALETTE[31] = vec3[31](
+const vec3 PALETTE[32] = vec3[32](
 	vec3(0.96, 0.91, 0.80),  // plaster
 	vec3(0.82, 0.77, 0.66),  // stone
 	vec3(0.82, 0.40, 0.26),  // roof_tile
@@ -47,7 +47,8 @@ const vec3 PALETTE[31] = vec3[31](
 	vec3(0.56, 0.72, 0.88),  // sky_cloth
 	vec3(0.40, 0.52, 0.68),  // roof_slate
 	vec3(0.90, 0.70, 0.30),  // roof_gold
-	vec3(0.58, 0.36, 0.22)  // roof_brown
+	vec3(0.58, 0.36, 0.22),  // roof_brown
+	vec3(0.64, 0.70, 0.52)  // sage_cloth
 );
 const int STONE = 1;
 const int WATER = 6;
@@ -98,7 +99,7 @@ void fragment() {
 	if (v_hidden > 0.5) {
 		discard;
 	}
-	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 30);
+	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 31);
 	vec3 base = pow(PALETTE[part], vec3(2.2));  // the palette is in sRGB, ALBEDO linear
 	base *= 0.84 + 0.32 * UV.y;  // no two bricks or tiles alike
 	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground

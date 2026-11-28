@@ -9,7 +9,7 @@ Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciel
 | Cecha | Wartość | Gdzie w kodzie |
 |---|---|---|
 | Skala | 1 kafelek = 2 m (`M = 0.5`); dom 2 x 2 kafelki = działka 4 x 4 m | `bo_asset.py` |
-| Paleta | 31 kolorów (miejsca do 32; Atlantyda wymaga powiększenia `PALETTE_SIZE` do 64), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
+| Paleta | 32 kolory (wszystkie miejsca zajęte; Atlantyda wymaga powiększenia `PALETTE_SIZE` do 64), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
 | Światło | miękkie przejście w cień (smoothstep od -0,05 do 0,35), cień chłodny niebieskawy, strona słoneczna ciepła, cienka ciepła poświata krawędzi, plamy koloru jak od pędzla | `light()` w `building.gdshader` |
 | Dachy dwuspadowe | 1,4 raza wyższe od rzutu, połać ugięta o 7,5% swojej długości, kalenica ugięta o 8 cm w środku | `ROOF_STEEP`, `tiled_roof(curve, sag)` |
 | Przybudówki | dach jednospadowy od wyższej ściany, bez wchodzenia w ściany innych części | `shed_roof` |
@@ -113,6 +113,14 @@ eZeus (S-008) nie zawiera obrazów: wczytuje grafikę z zainstalowanej gry. Zawi
 | Średnie | agora 41 (1,2), tartak 42 (1,3), posterunek 48 (1,4), obserwatorium 49 (1,5), college 54 (1,6), teatr 55 (1,6), spichlerz 60 (1,8), zbrojownia 64 (1,9) |
 | Domy | dom ludu najwyższy poziom 68 (2,0), dom elity 89 (2,7) |
 | Znaki orientacyjne | szkoła dramatyczna 90 (2,7), biblioteka 92 (2,8), uniwersytet 107 (3,2), pałac 110 (3,3), warsztat wynalazców 117 (3,5), muzeum 171 (5,2) |
+
+**Dom ludu poziom po poziomie** (wysokość ponad rzutem 2 x 2, px; dwa warianty na poziom): poziom 1: 0 i 0, poziom 2: 0 i 0, poziom 3: 2 i 3, poziom 4: 8 i 5, poziom 5: 16 i 12, poziom 6: 31 i 36, poziom 7: 68 i 65. Uwaga: niski budynek mieści się w wysokości rombu rzutu (60 px), więc dla poziomów 1-4 liczba zaniża jego wysokość; pewne jest, że do poziomu 5 dom jest niski i przysadzisty, a w górę rośnie dopiero na poziomach 6-7. Domy atlantydzkie mają te same wysokości (`poseidonCommonHouse`). Dom elity: 60-91 px na każdym etapie.
+
+**Drzewa, ozdoby, posągi** (wysokość całej klatki, px): drzewo oliwne 36-62 i drzewa dodatku 30-66 na jednym kafelku (1-2 postaci, czyli mniej więcej dom poziomu 5-6), winorośl 47-48, kolumny ozdobne 19-62, park 30-90, altana 84, ogród kwiatowy 60 (płaski), proporce 21-52, pomnik pamiątkowy 148-155 na 3 x 3, **posąg boga 219-257 na 2 x 2 (7-8 postaci: najwyższy obiekt w mieście poza muzeum)**.
+
+**Kolory według funkcji na minimapie eZeus** (`widgets/eminimap.cpp`, kolory mapy, nie farby budynków; pokazują, jak oryginał grupuje funkcje): domy ludu ceglasta czerwień (164, 65, 49); domy elity i świątynie pomarańczowa czerwień (238, 65, 16); magazyny, spichlerze, punkt handlowy i przystań jasny błękit (115, 186, 247); kultura i sport (podium, college, stadion, gimnazjon) morska zieleń (33, 129, 115); rolnictwo i hodowla oliwkowy brąz (123, 113, 49); pałac złoto (230, 162, 0); drogi jasna szarość (225, 225, 225); pozostałe czarne. Teren: sucha ziemia od piaskowej (214, 170, 99) do zielonkawej z zaroślami (95, 170, 99), plaża (238, 202, 164), żyzna (155, 110, 110), las (90, 129, 41), woda (25, 105, 115), miedź (206, 105, 8), marmur i srebro (125, 235, 255), czarny marmur (45, 45, 60), skały (123, 146, 164).
+
+eZeus nie zawiera kolorów samych budynków ani tekstur: farby znamy tylko ze zrzutów (wyżej i niżej).
 
 Wnioski:
 1. **Sylwetka miasta ma dwa piętra:** niskie, szerokie tło (domy, warsztaty, gospodarstwa, większość usług do ok. 2 postaci) i kilka wysokich znaków orientacyjnych (pałac, nauka, muzeum: 3-5 postaci). Wysokość jest nagrodą dla ważnych budowli.
