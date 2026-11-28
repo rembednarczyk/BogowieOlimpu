@@ -311,7 +311,15 @@ def row_house(b, rng, story=None):
         S.skeins(b, (0.65, 3.95, top + 0.03), (3.35, 3.95, top + 0.03), rng, pole=False, drop=0.5, pad=0.03)
     elif story == "gardeners":  # a vine from the ground over a frame above the balcony
         S.vine_canopy(b, 0.5, 3.5, 3.4, zu + hu - 0.2, 0.52, rng, root=(3.7, 3.56))
-    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, zu + hu, 0.95, rng, along_x=True, overhang=0.3)
+    # Level 6 (2026-11-28): a step above the flat in detail too: a painted frieze under a cornice, a meander
+    # on the front, antefixes along the eaves and acroteria on the gables.
+    b.box(t(0.37), t(0.37), t(zu + hu - 0.3), t(3.26), t(3.06), t(0.16), "cloth", stage=0.66, plaster=True)
+    if b.detail:
+        D.meander(b, 0.45, 3.425, 3.15, zu + hu - 0.295, along_x=True, outward=1, unit=0.055, part="ochre", stage=0.67)
+        D.cornice(b, 0.4, 0.4, 3.2, 3.0, zu + hu - 0.14, stage=0.68)
+    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, zu + hu, 0.95, rng, along_x=True, overhang=0.3, antefix=True)
+    if b.detail:
+        _acroteria(b, 0.4, 0.4, 3.2, 3.0, zu + hu, 0.95 * D.ROOF_STEEP, 0.3, size=0.38)
     D.chimney_pot(b, 0.95, 1.9, ridge(0.95), rng, scale=1.1)
     with D.goods(b, "food"):
         D.sack(b, 2.3, 3.72, scale=0.65, rng=rng)
