@@ -473,15 +473,46 @@ class Builder:
         return faces
 
     def scaffold(self, margin=0.06, height=None):
-        """Poles at the corners and the middle of each side, shown only while the building goes up."""
+        """The scaffold while the building goes up (owner, 2026-11-28: a real one): standards at the corners and
+        the middle of each side, ledgers round it every metre, a diagonal brace on each side, boards to stand on
+        at each lift and a ladder at the front. Shown only until the building is done (the scaffold mask)."""
         top = height if height is not None else 2.4 * M
-        for px in (-margin, self.width / 2, self.width + margin):
-            for py in (-margin, self.height / 2, self.height + margin):
-                if px == self.width / 2 and py == self.height / 2:
+        lo_x, hi_x, lo_y, hi_y = 0.03, self.width - 0.03, 0.03, self.height - 0.03
+        mx, my = self.width / 2, self.height / 2
+        for px in (lo_x, mx, hi_x):
+            for py in (lo_y, my, hi_y):
+                if px == mx and py == my:
                     continue
-                cx = min(max(px, 0.03), self.width - 0.03)
-                cy = min(max(py, 0.03), self.height - 0.03)
-                self.column(cx, cy, 0, 0.03, top, part="wood", sides=4, stage=SCAFFOLD)
+                self.column(px, py, 0, 0.022, top, part="wood", sides=6 if self.detail else 4, stage=SCAFFOLD)
+        if not self.detail:
+            return
+        lift = 1.0 * M  # one metre
+        k = 1
+        while k * lift < top - 0.05:
+            z = k * lift
+            for py in (lo_y, hi_y):
+                self.log((lo_x, py, z), (hi_x, py, z), 0.012, sides=5, stage=SCAFFOLD, tint=0.6)
+            for px in (lo_x, hi_x):
+                self.log((px, lo_y, z), (px, hi_y, z), 0.012, sides=5, stage=SCAFFOLD, tint=0.6)
+            for py in (lo_y + 0.005, hi_y - 0.13):  # the boards along the front and the back
+                for b in range(3):
+                    self.box(lo_x + 0.02, py + b * 0.042, z + 0.012, hi_x - lo_x - 0.04, 0.038, 0.012, "wood",
+                             stage=SCAFFOLD, tint=0.4 + 0.15 * b)
+            k += 1
+        brace_top = min(top, 2 * lift)
+        for py in (lo_y, hi_y):  # a diagonal brace on each side
+            self.log((lo_x, py, 0.02), (mx, py, brace_top), 0.01, sides=5, stage=SCAFFOLD, tint=0.4)
+        for px in (lo_x, hi_x):
+            self.log((px, lo_y, 0.02), (px, my, brace_top), 0.01, sides=5, stage=SCAFFOLD, tint=0.4)
+        lx = self.width * 0.72  # the ladder up the front
+        for side in (-0.06, 0.06):
+            self.log((lx + side, hi_y + 0.0, 0.0), (lx + side, hi_y - 0.04, min(top, 2 * lift) + 0.2), 0.008, sides=5,
+                     stage=SCAFFOLD, tint=0.7)
+        r = 1
+        while r * 0.15 < min(top, 2 * lift):
+            self.log((lx - 0.06, hi_y - 0.02 * r * 0.15 / lift, r * 0.15), (lx + 0.06, hi_y - 0.02 * r * 0.15 / lift, r * 0.15),
+                     0.006, sides=4, stage=SCAFFOLD, tint=0.7)
+            r += 1
 
     # Hand-made irregularity (owner, 2026-11-28, "Ghibli"): one smooth field bends the whole model, props and all,
     # so nothing that was clear of a wall goes into it: the building leans a little, its walls swell out at mid

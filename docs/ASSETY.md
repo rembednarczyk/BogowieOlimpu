@@ -98,6 +98,12 @@ Maski części w kolorach wierzchołków modelu (eksport glTF `COLOR_0`), ustawi
 
 Kolor bazowy (stylizowany realizm, etap 1a) idzie w drugim zestawie kolorów materiału według części (tynk, kamień, dachówka, drewno); tekstury CC0 (etap 1b) dojdą w tym samym shaderze jako mapy kafelkowane po świecie, bez zmiany modeli.
 
+Stany domów dopracowane 2026-11-28 (uwaga właściciela: „dopracuj wszystkie stany domów”):
+- Budowa: prawdziwe rusztowanie (stojaki, poziome rygle co metr, deski na każdym poziomie, zastrzały, drabina od frontu); szałas z płótna bez rusztowania.
+- Wiek: dodatkowo smugi deszczu na murach i więcej mchu na dachówkach.
+- Uszkodzenie: 1 pęknięcia przez wszystkie mury (dwie skale, wyraźne); 2 odpada tynk, zsuwają się dachówki (10 %), rwą się płótno i strzecha; 3 więcej tego wszystkiego (25 % dachówek) i cały dom osiada krzywo (pochylenie 3,5 %, luźne części 25 %).
+- Pożar: 1 tli się (osmolenie, migoczący żar nisko); 2 płomienie wspinają się po ścianach i dachu (ruchome języki, mocniej na strzesze, płótnie i dachówkach); 3 zgliszcza (czerń, strzecha i płótno spalone do szkieletu, połowa dachówek spadła, żar w ruinie).
+
 ## Animacje postaci (etap 2, Mixamo od właściciela)
 
 Spis czynności wyprowadzamy z kodu eZeus i instrukcji (nazwy animacji i liczby klatek, S-008, rozdz. "2. Postacie" niżej) (R-017: grafikę oryginału wolno analizować, nie kopiować). Właściciel dostarcza klipy z Mixamo, my je wypiekamy do tekstur (VAT, jak w prototypie E4) na wspólnym szkielecie. Wstępny podział: chód i śmierć dla każdego spacerującego; praca w miejscu (budowa, kopanie, zbiór, noszenie wody, gaszenie); występy (aktor w teatrze, filozof na podium, zawodnik na stadionie i gimnazjonie, muzyk); wojsko (marsz, atak wręcz, rzut, strzał, śmierć); bogowie, herosi i potwory po kilka klipów walki i pojawienia. Lista nazw z odpowiednikami Mixamo powstanie na początku etapu 2.

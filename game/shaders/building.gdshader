@@ -85,8 +85,8 @@ void vertex() {
 	if (!shown) {
 		VERTEX = vec3(0.0);  // a part not built yet (or the scaffold once done): no area
 	}
-	if (COLOR.b > 0.5 && damage > 2.5) {
-		VERTEX.x += VERTEX.y * 0.25;  // a loose part leans
+	if (damage > 2.5 && !scaffold) {  // near collapse: the whole house settles askew, its loose parts lean far
+		VERTEX.x += VERTEX.y * (COLOR.b > 0.5 ? 0.25 : 0.035);
 	}
 	if (COLOR.a > 0.75 && working > 0.5) {  // an animated part turns about its pivot (UV2, x and z in tiles)
 		vec2 pivot = vec2(UV2.x, 1.0 - UV2.y);  // glTF stores V flipped
@@ -107,27 +107,58 @@ void fragment() {
 	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground
 	float n = noise(v_local * 9.0);
 	float plaster = v_mask.g;
-	// Age: the colours dull, grime rises from the ground, moss on what faces the sky.
+	// What the part is (the palette's order, tools/blender/bo_asset.py).
+	bool tile = part == 2 || part == 28 || part == 29 || part == 30 || part == 32;  // roof tiles of any colour
+	bool soft = part == 5 || part == 9 || part == 18 || part == 19 || part == 27 || part == 31;  // thatch, cloth, hides
+	bool masonry = plaster > 0.5 || part == 1 || part == 4 || part == 7 || part == 12 || part == 33;
+	float piece = fract(UV.y * 97.13);  // each brick, tile or board its own number (its tint)
+	// Age: the colours dull, grime rises from the ground, rain streaks down the walls, moss on what faces the sky.
 	base = mix(base, base * vec3(0.84, 0.81, 0.76), age * 0.7);
 	base *= 1.0 - age * 0.3 * clamp(1.0 - v_local.y / 0.35, 0.0, 1.0);
-	float up = clamp(dot(NORMAL, (VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz), 0.0, 1.0);
-	base = mix(base, pow(vec3(0.42, 0.50, 0.28), vec3(2.2)), age * 0.35 * up * step(0.55, n));
-	// Damage: cracks in the plaster, then the plaster falls off and shows the stone.
-	if (plaster > 0.5 && damage >= 1.0) {
-		float crack = 1.0 - smoothstep(0.0, 0.025 * damage, abs(noise(v_local * 4.0) - 0.5));
-		base *= 1.0 - 0.55 * crack;
+	if (masonry) {
+		base *= 1.0 - age * 0.22 * smoothstep(0.62, 0.9, noise(vec3(v_local.x * 11.0, v_local.y * 0.7, v_local.z * 11.0)));
 	}
-	if (plaster > 0.5 && damage >= 2.0 && noise(v_local * 5.0) > 0.58) {
+	float up = clamp(dot(NORMAL, (VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz), 0.0, 1.0);
+	base = mix(base, pow(vec3(0.42, 0.50, 0.28), vec3(2.2)), age * (tile ? 0.5 : 0.35) * up * step(0.5, n));
+	// Damage (from the collapse counter): 1 cracks through the walls; 2 plaster falls off and shows the bricks,
+	// roof tiles slip off, cloth tears; 3 more of it all, and the house settles askew (vertex()).
+	if (damage >= 1.0 && masonry) {
+		float c1 = abs(noise(v_local * vec3(3.0, 1.6, 3.0)) - 0.5);
+		float c2 = abs(noise(v_local * vec3(7.0, 3.5, 7.0) + 3.1) - 0.5) * 1.4;
+		float crack = 1.0 - smoothstep(0.0, 0.01 + 0.012 * damage, min(c1, c2));
+		base *= 1.0 - 0.75 * crack;
+	}
+	if (plaster > 0.5 && damage >= 2.0 && noise(v_local * 5.0) > 0.64 - 0.08 * (damage - 2.0)) {
 		discard;  // the plaster has fallen: the bricks under it show
 	}
-	// Fire: soot and embers, then charred.
+	if (tile && damage >= 2.0 && UV.y > 0.15 && piece < 0.1 + 0.15 * (damage - 2.0)) {
+		discard;  // a tile slipped off: the bed shows
+	}
+	if (soft && damage >= 2.0 && noise(v_local * 6.0) > 0.72 - 0.06 * (damage - 2.0)) {
+		discard;  // a tear in the cloth or the thatch
+	}
+	// Fire (32 days): 1 it smoulders: smoke stains, embers flickering low; 2 flames climb the walls and the roof;
+	// 3 charred: black, the thatch and the cloth burned away, half the tiles fallen, embers in the ruin.
 	vec3 glow = vec3(0.0);
 	if (fire > 0.5) {
-		base *= mix(1.0, 0.45, clamp(fire / 3.0 + 0.2, 0.0, 1.0));
-		if (fire < 2.5) {
-			glow = vec3(1.0, 0.35, 0.05) * smoothstep(0.7, 0.9, n) * 1.5;
+		float hgt = clamp(v_local.y / 1.6, 0.0, 1.0);
+		base *= mix(1.0, 0.28, clamp(fire / 3.0 + 0.15, 0.0, 1.0) * (0.5 + 0.5 * n) * (0.6 + 0.4 * hgt));
+		if (fire < 1.5) {
+			float e = smoothstep(0.78, 0.92, noise(v_local * 8.0 + vec3(0.0, TIME * 0.4, 0.0)));
+			glow = vec3(1.0, 0.32, 0.05) * e * 1.8 * (1.0 - hgt * 0.7);
+		} else if (fire < 2.5) {
+			float f = noise(vec3(v_local.x * 5.0, v_local.y * 3.0 - TIME * 2.2, v_local.z * 5.0));
+			float tongue = smoothstep(0.42, 0.8, f) * (0.65 + 0.35 * sin(TIME * 9.0 + v_local.x * 13.0 + v_local.z * 7.0));
+			glow = mix(vec3(0.9, 0.18, 0.02), vec3(1.0, 0.5, 0.1), f) * tongue * ((soft || tile) ? 1.7 : 1.1);
 		} else {
-			base *= 0.4;
+			base *= 0.35;
+			if (soft && noise(v_local * 4.0) > 0.22) {
+				discard;
+			}
+			if (tile && UV.y > 0.15 && piece < 0.45) {
+				discard;
+			}
+			glow = vec3(0.9, 0.2, 0.03) * smoothstep(0.86, 0.95, n) * 0.6 * (0.6 + 0.4 * sin(TIME * 2.0 + n * 20.0));
 		}
 	}
 	// Water flows while the fountain works.

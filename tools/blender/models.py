@@ -128,7 +128,6 @@ def shelter(b, rng, story=None):
             S.slot(b, "west", 0.35, by0, bx0 - 0.08, by1, "strip")
         _dress(b, story, 1, rng)
     D.grass(b, rng, 40)
-    b.scaffold(height=2.7 * M)
 
 
 def _fire(b, x, y):
