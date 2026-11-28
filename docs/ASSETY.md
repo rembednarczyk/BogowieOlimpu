@@ -106,15 +106,16 @@ Stany domów dopracowane 2026-11-28 (uwaga właściciela: „dopracuj wszystkie 
 
 Kolejność budowy i zawalenie (uwaga właściciela 2026-11-28: „budowa w realistycznej kolejności”, „realistyczna fizyka zawalania się, tak wyglądają ruiny, z animacją”):
 - Budowa: cokół, mury warstwa po warstwie, belki i więźba, zaprawa pod dachówki rząd po rzędzie, dachówki od okapu do kalenicy; stolarka (drzwi, okiennice) od 96,5 % budowy, a wykończenie i dobytek (markizy, rośliny, pranie, dzbany, krosno, sągi, wieńce, kominy) dopiero w ostatnich 2,5 % budowy, gdy dom stoi już pod dachem (`finishing` w `bo_asset.py`, dekorator w `bo_detail.py` i `bo_story.py`).
-- Zawalenie: `tools/blender/bo_collapse.py` dzieli gotowy dom każdego poziomu na kawałki według materiału, który model ma przypisany do każdej części (paleta w `bo_asset.py`, `MATERIALS` i `PARTS` w `bo_collapse.py`); kawałek ma jeden materiał, osie własne z PCA. Cokół i kikuty murów (30 cm do 1,2 m nad cokołem, nierówno) stoją. Reszta spada z grawitacją 9,81 m/s², górne części wcześniej i z pchnięciem na zewnątrz, zsuwa się z kikutów i z gruzu, kładzie na najszerszym boku i zostaje; gruz rośnie mapą wysokości (komórki 10 cm). Nic nie wychodzi poza działkę. 2,5 s, 24 klatki/s; ostatnia klatka to ruina.
+- Zawalenie (poprawka właściciela 2026-11-28: „kształt materiałów zachowany, budynek nie rozpada się w wafelki, tylko autentycznie jak każdy materiał”): `tools/blender/bo_collapse.py`. Każdy element modelu zachowuje kształt: cegła, kamień, dachówka, deska, belka, kolumna nigdy nie pękają. Elementy jednego materiału związane ze sobą spadają razem: fragment muru z cegieł w zaprawie razem z tynkiem na nich, kilka dachówek w zaprawie. Cienka powłoka (tynk, zaprawa, podkład strzechy, poniżej 4 cm) idzie z tym, na czym leży (do 12 cm). Strzecha, płótno i duże płyty rwą się na płaty o postrzępionych brzegach. Cokół i kikuty murów (30 cm do 1,2 m nad cokołem, nierówno) stoją.
+- Fizyka: mur ustępuje od dołu, wyższe części spadają później, na to, co już leży. Fragmenty muru przewracają się od podstawy na zewnątrz, dachówki odbijają się i koziołkują, belki spadają w całości i toczą się, strzecha i płótno opadają wolno z oporem powietrza. Kawałek ląduje na tym, co pod nim, zsuwa się ze zbocza stosu stromszego niż 12 cm na swojej szerokości i kładzie na najszerszym boku. Stos rośnie prawdziwym kształtem leżących kawałków (wierzchołki w komórkach 10 cm), luźny gruz wchodzi w swoje szczeliny w połowie (`PACK`). Stos kamienicy ma w środku około 1,6 m przy 6,8 m wysokości domu. Nic nie wychodzi poza działkę. 2,5 s, 24 klatki/s, ostatnia klatka to ruina.
 
-| Materiał (części) | Kawałek | W całości do | Odbicie | Toczenie po ziemi | Obrót | Opór powietrza | Wypełnienie |
-|---|---|---|---|---|---|---|---|
-| mur: tynk, kamień, cegła, marmur, zaprawa, farby | 44 cm | 88 cm | 8 % | 45 % | ×1,0 | brak | 35 % |
-| dachówka (wszystkie kolory dachów) | 28 cm | 60 cm | 30 % | 60 % | ×1,6 | brak | 15 % |
-| drewno: belki, deski, kora, czoła | 1,2 m | 2,8 m (belka cała) | 22 % | 70 % | ×0,7 | brak | 25 % |
-| miękkie: strzecha, płótno, len, skóry, liny, liście, trawa, kwiaty | 36 cm, płaty cięte przed rozbiciem | 40 cm | 0 | 25 % | ×0,5 | 2,5/s, kołysanie | 5 % |
-| metal: brąz, żelazo | 60 cm | 1,2 m | 35 % | 60 % | ×1,2 | brak | 30 % |
+| Materiał (części) | Wiązanie | Odbicie | Toczenie | Obrót | Opór powietrza | Przewracanie |
+|---|---|---|---|---|---|---|
+| mur: tynk, kamień, cegła, marmur, zaprawa, farby | fragmenty około 60 cm | 8 % | 45 % | ×0,6 | brak | tak |
+| dachówka (wszystkie kolory dachów) | 1-3 dachówki (14 cm) | 30 % | 60 % | ×1,6 | brak | nie |
+| drewno: belki, deski, kora | każdy element osobno | 22 % | 70 % | ×0,7 | brak | częściowo |
+| miękkie: strzecha, płótno, len, skóry, liny, liście | płaty około 44 cm | 0 | 25 % | ×0,5 | 2,5/s, kołysanie | nie |
+| metal: brąz, żelazo | każdy element osobno | 35 % | 60 % | ×1,2 | brak | nie |
 
 Liczby to `[ZAŁOŻENIE]` do oceny oczami (bez źródła; referencja nie animuje upadku).
 - Pliki: `common_housing_N_ruin.glb` (kawałek w `UV2.x`, 0 to część stojąca) i `common_housing_N_ruin.bin` („BORU”, klatki, kawałki, fps, potem macierze 3×4 w osiach Godota). Shader czyta je przez teksturę (`ruin_frames`, `ruin_len`, parametr instancji `collapse` w sekundach, -1 to gruz w spoczynku).
