@@ -211,6 +211,7 @@ Zasady kształtu:
 5. Element, który model pokazuje jako samą powierzchnię, dostaje w upadku grubość swojego materiału (w głąb budynku).
 6. Ciecz (woda, oliwa) w upadku znika; ziarno sypie się bez koziołkowania.
 7. Masa kawałka: pudełko × wypełnienie klasy × gęstość materiału. Opór powietrza zależy od powierzchni do masy; w zderzeniu cięższy pcha lżejszego; bez skaczących kawałków (największy ruch w górę 5-8 cm na klatkę, `BO_RUIN_DEBUG=1`).
+7a. Materiał nie rozpryskuje się, tylko opada luźno (uwaga właściciela 2026-11-28): bez pchnięcia na zewnątrz przy starcie (do 12 cm/s), powolny obrót, fragment muru tylko lekko przechyla się od podstawy, po uderzeniu prawie bez odbicia i toczenia (mur 2 % i 15 %, dachówka 4 % i 20 %), gruz pełznie po zboczu stosu (0,08 g), w tłoku kawałki rozsuwają się głównie w pionie (w poziomie 25 %). Rozrzut mierzy `BO_RUIN_DEBUG=1` (`SPREAD`): mediana przesunięcia w bok 2-14 cm, 90 % kawałków do 34 cm.
 8. Budowa: deska z drewna cieńsza niż jej materiał i płyta z muru cieńsza niż 75 % swojego materiału (parapet, gzyms, płyta schodka) dostają grubość materiału wokół tego samego środka; cegła mniejsza o spoinę zostaje (spoiny muszą być widać); powłoki zostają cienkie; pręty (dwa cienkie wymiary) zostają.
 
 | Materiał (część palety) | Klasa | Grubość | Gęstość kg/m³ | Powłoka |
@@ -252,11 +253,10 @@ Zasady kształtu:
 
 | Klasa | Wiązanie | Wypełnienie | Odbicie | Toczenie | Obrót | Przewracanie | Budowany do grubości |
 |---|---|---|---|---|---|---|---|
-| mur | 60 cm | 60 % | 3 % | 40 % | ×0,6 | tak | tak |
-| dachówka | 14 cm | 15 % | 12 % | 55 % | ×1,2 | nie | nie |
-| drewno | każdy osobno | 50 % | 10 % | 65 % | ×0,7 | częściowo | tak |
-| miękki | 44 cm | 30 % | 0 % | 20 % | ×0,4 | nie | nie |
-| metal | każdy osobno | 30 % | 15 % | 55 % | ×1,0 | nie | nie |
+| mur | 60 cm | 60 % | 2 % | 15 % | ×0,6 | tak | tak |
+| dachówka | 14 cm | 15 % | 4 % | 20 % | ×1,2 | nie | nie |
+| drewno | każdy osobno | 50 % | 4 % | 25 % | ×0,7 | częściowo | tak |
+| miękki | 44 cm | 30 % | 0 % | 10 % | ×0,4 | nie | nie |
+| metal | każdy osobno | 30 % | 5 % | 20 % | ×1,0 | nie | nie |
 | sypki | 20 cm | 60 % | 0 % | 5 % | ×0,1 | nie | nie |
 | ciecz | każdy osobno | 100 % | 0 % | 0 % | ×0,0 | nie | nie |
-

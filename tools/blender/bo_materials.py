@@ -20,11 +20,11 @@ Values for real materials (orders of magnitude from common engineering tables); 
 # speed it keeps on a hit; keep: of its speed along the ground on a hit; spin: how fast it tumbles; topple: a tall
 # section tips over outward from its foot; board: pieces thinner than the material are built to its thickness.
 CLASSES = {
-    "masonry": dict(bond=0.30, fill=0.6, bounce=0.03, keep=0.40, spin=0.6, topple=1.0, board=True),
-    "tile": dict(bond=0.07, fill=0.15, bounce=0.12, keep=0.55, spin=1.2, topple=0.0, board=False),
-    "wood": dict(bond=0.0, fill=0.5, bounce=0.10, keep=0.65, spin=0.7, topple=0.4, board=True),
-    "soft": dict(bond=0.22, fill=0.3, bounce=0.0, keep=0.20, spin=0.4, topple=0.0, board=False),
-    "metal": dict(bond=0.0, fill=0.3, bounce=0.15, keep=0.55, spin=1.0, topple=0.0, board=False),
+    "masonry": dict(bond=0.30, fill=0.6, bounce=0.02, keep=0.15, spin=0.6, topple=1.0, board=True),
+    "tile": dict(bond=0.07, fill=0.15, bounce=0.04, keep=0.2, spin=1.2, topple=0.0, board=False),
+    "wood": dict(bond=0.0, fill=0.5, bounce=0.04, keep=0.25, spin=0.7, topple=0.4, board=True),
+    "soft": dict(bond=0.22, fill=0.3, bounce=0.0, keep=0.1, spin=0.4, topple=0.0, board=False),
+    "metal": dict(bond=0.0, fill=0.3, bounce=0.05, keep=0.2, spin=1.0, topple=0.0, board=False),
     "loose": dict(bond=0.10, fill=0.6, bounce=0.0, keep=0.05, spin=0.1, topple=0.0, board=False),
     "liquid": dict(bond=0.0, fill=1.0, bounce=0.0, keep=0.0, spin=0.0, topple=0.0, board=False),
 }

@@ -282,15 +282,14 @@ def _fall(bodies, statics, W, H, rng):
         out = out.normalized() if out.length > 1e-6 else Vector((1.0, 0.0, 0.0))
         bd["pos"] = bd["c0"].copy()
         bd["q"] = Quaternion()
-        bd["v"] = (out * rng.uniform(0.05, 0.3) + lean * rng.uniform(0.1, 0.35)) * h * 1.2
+        # The house gives way and comes down where it stood (owner, 2026-11-28: "it does not splash, it drops
+        # loosely"): hardly a push outward, a slow turn; a wall section leans out from its foot as it goes.
+        bd["v"] = (out * rng.uniform(0.0, 0.06) + lean * rng.uniform(0.0, 0.05)) * h
         axis = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-0.3, 0.3)))
-        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.6, 3.0) \
+        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.2, 0.9) \
             * (0.3 + h) * mat["spin"]
-        # A wall section tips over outward from its foot (and the higher, the further): it turns about the
-        # horizontal line along the wall, its top moving out first.
-        tip = Vector((0.0, 0.0, 1.0)).cross(out) * rng.uniform(1.0, 2.2) * (0.4 + h) * mat["topple"]
+        tip = Vector((0.0, 0.0, 1.0)).cross(out) * rng.uniform(0.4, 0.9) * (0.4 + h) * mat["topple"]
         bd["w"] = bd["w"] * (1.0 - 0.7 * mat["topple"]) + tip
-        bd["v"] += out * mat["topple"] * 0.2 * h
         # The walls give way at their foot and what stands on them comes down after.
         bd["delay"] = rng.uniform(0.0, 0.08) + h * 0.35
         if bd["kind"] == "soft":  # a canvas or a thatch sags once its frame has gone, and comes down onto it
@@ -408,7 +407,7 @@ def _fall(bodies, statics, W, H, rng):
                     hy = -(sum(j for _, j in hi) / len(hi) + 0.5) * HM
                     away = Vector((bd["pos"].x - hx, bd["pos"].y - hy, 0.0))
                     if away.length > 1e-6:
-                        bd["v"] += away.normalized() * G * 0.25 * dt
+                        bd["v"] += away.normalized() * G * 0.08 * dt  # loose rubble creeps, it does not run
                 # Touching at one end, it tips over onto its broadest side (gravity about where it touches),
                 # smoothly, faster the more it leans: a pole falls, a stone settles.
                 k = min(range(3), key=lambda a: bd["he"][a])
@@ -436,6 +435,9 @@ def _fall(bodies, statics, W, H, rng):
         print("JUMP", round(max(jumps)[0] / A.M * 100, 1), "cm in a frame", max(jumps)[1:], ";",
               sum(1 for bd in bodies if not bd["done"]), "still moving",
               sorted({(bd["kind"], round(bd["drag"])) for bd in bodies if not bd["done"]})[:12])
+        spread = sorted(Vector((bd["pos"].x - bd["c0"].x, bd["pos"].y - bd["c0"].y)).length / A.M * 100 for bd in bodies)
+        print("SPREAD median", round(spread[len(spread) // 2]), "cm, 90 %", round(spread[int(len(spread) * 0.9)]),
+              "cm, max", round(spread[-1]), "cm")
         left = [bd for bd in bodies if not bd["done"]]
         print("LEFT started", sum(bd["started"] for bd in left), "rest>0", sum(bd["rest"] > 0 for bd in left),
               "z", sorted(round(bd["pos"].z, 2) for bd in left)[::max(1, len(left) // 10)],
@@ -481,8 +483,11 @@ def _collide(bodies):
                     p["v"] += n * impulse / p["mass"]
                     q["v"] -= n * impulse / q["mass"]
     for bd, d in zip(bodies, shove):  # a little at a time, however many it touches: no piece is thrown
-        if d.length > 0.003:
-            d = d.normalized() * 0.003
+        # In a crowd of falling rubble pieces part mostly up and down (they come to lie on each other), hardly
+        # sideways: the heap does not spread out of the house's walls.
+        d = Vector((d.x * 0.25, d.y * 0.25, d.z))
+        if d.length > 0.002:
+            d = d.normalized() * 0.002
         bd["pos"] += d
 
 
