@@ -200,9 +200,10 @@ def cabin(b, rng, story=None):
 
 
 @model("common_housing_4", "common_housing", "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria")
-def homestead(b, rng):
+def homestead(b, rng, story=None):
     D.footing(b, 0.25, 0.25, 3.5, 2.0, h=0.45, rng=rng)
-    _room(b, rng, 0.3, 0.3, 3.4, 1.9, 0.45, 2.3, plaster="plaster", doors=[("s", 0.6, 0.85, 1.8)], wreath=True,
+    _room(b, rng, 0.3, 0.3, 3.4, 1.9, 0.45, 2.3, plaster="plaster", doors=[("s", 0.6, 0.85, 1.8)],
+          wreath=story in (None, "shepherds"),  # the awning and the vine take the wreath's place
           windows=[("s", 1.8), ("w", 0.6), ("n", 1.6)])
     D.footing(b, 2.25, 2.15, 1.5, 1.6, h=0.4, rng=rng, group="wing")
     _room(b, rng, 2.3, 2.2, 1.4, 1.5, 0.4, 2.0, plaster="plaster", doors=[("w", 0.3, 0.8, 1.7)],
@@ -220,13 +221,25 @@ def homestead(b, rng):
         D.wool_bale(b, 1.6, 2.55, scale=0.9, rng=rng)
         D.wool_bale(b, 1.55, 3.1, scale=0.8, rng=rng, name="wool 2")
     D.hydria(b, 2.0, 3.35, scale=0.8, rng=rng)
-    D.laundry_line(b, (0.58, 2.32), (0.58, 3.56), 1.85, rng)
+    if story == "shepherds":  # the line carries the family's dyed wool, not the washing
+        for i, (px, py) in enumerate(((0.58, 2.32), (0.58, 3.56))):
+            b.prop("skein post %d" % (i + 1), t(px - 0.04), t(py - 0.04), 0, t(px + 0.04), t(py + 0.04), t(1.9))
+            b.log((t(px), t(py), 0), (t(px), t(py), t(1.9)), t(0.03), sides=8, stage=0.9, tint=0.4)
+        S.skeins(b, (0.58, 2.42, 1.82), (0.58, 3.46, 1.82), rng)
+    else:
+        D.laundry_line(b, (0.58, 2.32), (0.58, 3.56), 1.85, rng)
+    if story == "potters":
+        S.awning(b, 0.78, 1.9, 2.2, 2.62, 0.55, 0.3, rng, pots=4)
+    elif story == "gardeners":
+        S.vine_canopy(b, 0.76, 1.95, 2.2, 2.45, 0.5, rng, root=(0.72, 2.31))
+    if story:
+        b.mirror = S.STORIES[story]["mirror"]
     D.grass(b, rng, 30)
     b.scaffold(height=3.2 * M)
 
 
 @model("common_housing_5", "common_housing", "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria")
-def row_house(b, rng):
+def row_house(b, rng, story=None):
     D.footing(b, 0.35, 0.35, 3.3, 3.1, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 3.0, 0.3, 2.3, thick=0.45, part="stone", block=(0.62, 0.32),
           doors=[("s", 0.6, 0.9, 1.9)], windows=[("s", 2.2, 0.4, 1.2, 0.45), ("e", 1.2, 0.4, 1.2, 0.45)])
@@ -272,9 +285,17 @@ def row_house(b, rng):
             D.baluster(b, bx_, by_, fz + 0.05, top - fz - 0.07, stage=0.6)
         else:
             b.box(t(bx_ - 0.02), t(by_ - 0.02), t(fz + 0.05), t(0.04), t(0.04), t(top - fz - 0.07), "wood", stage=0.6)
-    if b.detail:
+    if story == "potters":  # painted amphorae for sale on the balcony, an awning over it
+        for x in (0.75, 3.2):
+            D.amphora(b, x, 3.62, scale=0.55, rng=rng, z=fz, name="balcony amphora %d" % int(x * 10))
+        S.awning(b, 0.5, 3.5, 3.4, 4.6, 0.52, 0.3, rng, pots=5)
+    elif b.detail:
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
+    if story == "shepherds":  # dyed wool thrown over the balcony's rail to dry
+        S.skeins(b, (0.65, 3.88, top + 0.05), (3.35, 3.88, top + 0.05), rng, pole=False, out=(0.0, 0.07), drop=0.5)
+    elif story == "gardeners":  # a vine from the ground over a frame above the balcony
+        S.vine_canopy(b, 0.5, 3.5, 3.4, 4.5, 0.52, rng, root=(3.7, 3.56))
     ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
     D.chimney_pot(b, 0.95, 1.9, ridge(0.95), rng, scale=1.1)
     with D.goods(b, "food"):
@@ -285,12 +306,14 @@ def row_house(b, rng):
         D.loom(b, 0.0, 1.0, along_x=False, rng=rng)
     D.hydria(b, 3.32, 3.72, scale=0.8, rng=rng)
     D.flower_box(b, 3.6, 2.02, 3.41, 0.51, rng, along_x=False, out=1)  # under the upper east window
+    if story:
+        b.mirror = S.STORIES[story]["mirror"]
     D.grass(b, rng, 28)
     b.scaffold(height=5.2 * M)
 
 
 @model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa")
-def flat(b, rng):
+def flat(b, rng, story=None):
     D.footing(b, 0.3, 0.3, 3.4, 1.6, h=0.35, rng=rng)
     _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, 2.2, plaster="plaster", doors=[("s", 1.3, 0.9, 1.85)], wreath=True,
           windows=[("s", 0.45), ("s", 2.5), ("n", 0.9), ("n", 2.3)])
@@ -331,12 +354,20 @@ def flat(b, rng):
         D.flower_box(b, 0.35 + at - 0.03, 1.85, 3.36, 0.51, rng, name="flower box %d" % (i + 1))
     D.ivy(b, 3.65, 0.7, 1.05, 0.35, 2.5, rng, along_x=False, out=1)
     D.hydria(b, 1.99, 2.25, scale=0.55, rng=rng)
+    if story == "shepherds":  # dyed wool on a pole across the courtyard, wing to wing
+        S.skeins(b, (1.445, 2.45, 1.95), (2.555, 2.45, 1.95), rng)  # the pole set into the two wing walls
+    elif story == "potters":  # a striped awning over the courtyard on two poles, pots hung from it
+        S.awning(b, 1.5, 2.5, 1.85, 2.95, 1.0, 0.35, rng, poles=True, pots=3)
+    elif story == "gardeners":  # the courtyard under a vine
+        D.pergola(b, 1.47, 1.88, 2.53, 3.05, 2.75, rng)
+    if story:
+        b.mirror = S.STORIES[story]["mirror"]
     D.grass(b, rng, 30)
     b.scaffold(height=5.0 * M)
 
 
 @model("common_housing_7", "common_housing", "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku")
-def city_house(b, rng):
+def city_house(b, rng, story=None):
     D.footing(b, 0.25, 0.25, 3.5, 2.5, h=0.55, rng=rng)
     _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, 2.4, thick=0.42, part="stone", block=(0.58, 0.3), wreath=True,
           doors=[("s", 1.25, 0.95, 2.0)], windows=[("e", 0.9, 0.4, 1.3, 0.5), ("w", 0.9, 0.4, 1.3, 0.5)])
@@ -378,6 +409,20 @@ def city_house(b, rng):
         D.wool_bale(b, 3.25, 2.98, scale=0.55, rng=rng, z=0.55)
     D.potted_plant(b, 0.35, 3.8, scale=0.6, rng=rng)
     D.potted_plant(b, 3.65, 3.8, scale=0.6, rng=rng, name="plant 2")
+    if story == "shepherds":  # dyed cloths hung between the columns under the architrave
+        for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
+            S.swag(b, (a + 0.2, 3.73, 2.78), (c - 0.2, 3.73, 2.78), 0.4, S.DYES[i * 2], rng, name="swag %d" % (i + 1))
+    elif story == "potters":  # pots and plates hung between the columns, two kraters at the porch's ends
+        for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
+            S.hanging_pots(b, a + 0.24, c - 0.24, 3.45, 2.8, rng, name="hung pots %d" % (i + 1))
+        for i, x in enumerate((0.40, 3.60)):  # in the gap between the end columns and the porch's edges
+            S.krater(b, x, 3.45, 0.55, rng, scale=0.55, name="krater %d" % (i + 1))
+    elif story == "gardeners":  # the vine up the outer columns and along the architrave
+        for x in (0.75, 3.05):
+            S.column_vine(b, x, 3.45, 0.6, 2.75, 0.15, rng)
+        S.garland(b, 0.4, 3.6, 3.72, 2.92, rng)
+    if story:
+        b.mirror = S.STORIES[story]["mirror"]
     for i, at in enumerate((0.6, 1.5, 2.4)):
         D.flower_box(b, 0.3 + at - 0.03, 2.7, 3.78, 0.51, rng, name="flower box %d" % (i + 1))
     D.grass(b, rng, 26)
@@ -441,8 +486,8 @@ def observatory(b, rng):
 
 
 def _stories():
-    """Levels 1-3 in each family's version: common_housing_<level>_<story> (boot.gd picks it by the id)."""
-    for level, fn in ((1, shelter), (2, hut), (3, cabin)):
+    """Every level in each family's version: common_housing_<level>_<story> (boot.gd picks it by the id)."""
+    for level, fn in ((1, shelter), (2, hut), (3, cabin), (4, homestead), (5, row_house), (6, flat), (7, city_house)):
         base = MODELS["common_housing_%d" % level]
         for story, spec in S.STORIES.items():
             MODELS["common_housing_%d_%s" % (level, story)] = (

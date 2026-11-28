@@ -340,3 +340,193 @@ STORIES = {
                 3: ["beehives", "herb pots"]},
     },
 }
+
+
+# ---------------------------------------------------------------- the big pieces at the front (levels 4-7)
+# One per story and level, big enough to read from the game's camera: what the family does, shown on the
+# house's face (owner, 2026-11-28). Points in plot metres.
+
+DYES = ["cloth", "ochre", "blue_paint", "flower_yellow", "sky_cloth", "flower_red"]
+
+
+def _pt(p):
+    return tuple(t(v) for v in p)
+
+
+def skeins(b, p0, p1, rng, name="skeins", pole=True, drop=0.42, out=(0.0, 0.0)):
+    """Skeins of dyed wool hung over a pole (or over a rail when `pole` is False) from p0 to p1: each a long
+    loop of a few strands, red, ochre, blue, yellow, sky; `out` shifts the loops off the line (over a rail)."""
+    (x0, y0, z), (x1, y1, _) = p0, p1
+    ox, oy = out
+    px_, py_ = (0.05 if abs(x1 - x0) < 1e-6 else 0.0), (0.05 if abs(y1 - y0) < 1e-6 else 0.0)  # across the line only:
+    b.prop(name, t(min(x0, x1) - px_ + min(ox, 0)), t(min(y0, y1) - py_ + min(oy, 0)), t(z - drop - 0.06),  # its ends
+           t(max(x0, x1) + px_ + max(ox, 0)), t(max(y0, y1) + py_ + max(oy, 0)), t(z + 0.04))  # may meet a wall
+    if pole:
+        b.log(_pt(p0), _pt(p1), t(0.022), sides=8, stage=0.9)
+    if not b.detail:
+        return
+    length = math.hypot(x1 - x0, y1 - y0)
+    n = max(3, int(length / 0.13))
+    for i in range(n):
+        f = (i + 0.5) / n
+        cx, cy = x0 + (x1 - x0) * f + ox, y0 + (y1 - y0) * f + oy
+        colour = DYES[(i + int(rng.random() * 2)) % len(DYES)]
+        d = drop * rng.uniform(0.8, 1.05)
+        for k in range(3):  # three strands of the loop, a little apart
+            s_ = (k - 1) * 0.014
+            ux, uy = (x1 - x0) / length, (y1 - y0) / length
+            top = (cx + ux * s_, cy + uy * s_, z + 0.02)
+            pts = [top, (top[0], top[1], z - d * 0.5), (top[0] + ux * 0.02, top[1] + uy * 0.02, z - d),
+                   (top[0] + ux * 0.04, top[1] + uy * 0.04, z - d * 0.5), (top[0] + ux * 0.04, top[1] + uy * 0.04, z + 0.02)]
+            b.tube_path([_pt(q) for q in pts], t(0.012), colour, sides=5, stage=0.9, tint=rng.uniform(0.4, 0.8))
+
+
+def awning(b, x0, x1, y, z, depth, drop, rng, name="awning", poles=False, pots=4, stripes=("cloth", "linen")):
+    """A striped awning out from the wall (its face at y, facing +y) at height z, `depth` out and `drop` lower
+    at the front, on iron arms (or two poles at the front when `poles`); its hem cut in scallops; pots on ropes
+    hung from the front bar: the potters' sign."""
+    yf, zf = y + depth, z - drop
+    b.prop(name, t(x0), t(y + 0.035), t(zf - 0.12 - (0.45 if pots else 0)), t(x1), t(yf + 0.03), t(z + 0.03))
+    if poles:
+        for i, px in enumerate((x0 + 0.04, x1 - 0.04)):
+            b.prop("%s pole %d" % (name, i + 1), t(px - 0.03), t(yf - 0.03), 0, t(px + 0.03), t(yf + 0.03),
+                   t(zf - 0.12 - (0.45 if pots else 0)))
+            b.log((t(px), t(yf), 0), (t(px), t(yf), t(zf + 0.02)), t(0.025), sides=8, stage=0.9)
+    for px in (x0 + 0.03, x1 - 0.03):  # the arms
+        b.log((t(px), t(y + 0.04), t(z)), (t(px), t(yf), t(zf)), t(0.012), sides=5, stage=0.9)
+    b.log((t(x0), t(yf), t(zf)), (t(x1), t(yf), t(zf)), t(0.014), sides=6, stage=0.9)
+    n = max(4, int((x1 - x0) / 0.16)) if b.detail else 1
+    for i in range(n):
+        a0, a1 = x0 + (x1 - x0) * i / n, x0 + (x1 - x0) * (i + 1) / n
+        part = stripes[i % 2]
+        def fn(u, v, a0=a0, a1=a1):
+            px = a0 + (a1 - a0) * u
+            sag = 0.03 * math.sin(math.pi * v)
+            return (t(px), t(y + 0.04 + (depth - 0.04) * v), t(z + 0.02 - (drop) * v - sag))
+        b.surface(fn, 3 if b.detail else 1, 4 if b.detail else 1, part, stage=0.92, tint=0.6)
+        if b.detail:  # the scalloped hem
+            def hem(u, v, a0=a0, a1=a1):
+                px = a0 + (a1 - a0) * u
+                return (t(px), t(yf + 0.005), t(zf + 0.02 - 0.12 * v * (0.55 + 0.45 * math.sin(math.pi * u))))
+            b.surface(hem, 4, 2, part, stage=0.92, tint=0.55)
+    if not b.detail:
+        return
+    for i in range(pots):
+        px = x0 + (x1 - x0) * (i + 0.5) / pots
+        hang = rng.uniform(0.15, 0.3)
+        b.tube_path([(t(px), t(yf), t(zf)), (t(px), t(yf), t(zf - hang))], t(0.004), "rope", sides=4, stage=0.92)
+        r = rng.uniform(0.06, 0.08)
+        b.lathe(t(px), t(yf), t(zf - hang - r * 1.8), [(t(r * 0.4), 0), (t(r), t(r * 0.8)), (t(r * 0.8), t(r * 1.5)),
+                                                         (t(r * 0.45), t(r * 1.8))], "roof_tile", sides=14, stage=0.92,
+                tint=rng.uniform(0.3, 0.8), smooth=2)
+
+
+def vine_canopy(b, x0, x1, y, z, depth, rng, root, name="vine"):
+    """A vine trained over a light frame out from the wall (face at y, facing +y) at height z: two brackets, a
+    front rail, a roof of leaves with bunches of grapes; its trunk rising from `root` (x, y) on the ground."""
+    rx, ry = root
+    b.prop(name, t(x0), t(y + 0.035), t(z - 0.16), t(x1), t(y + depth), t(z + 0.18))
+    b.prop(name + " trunk", t(rx - 0.04), t(ry - 0.04), 0, t(rx + 0.04), t(ry + 0.04), t(z - 0.16))
+    for px in (x0 + 0.04, x1 - 0.04):
+        b.log((t(px), t(y + 0.04), t(z)), (t(px), t(y + depth - 0.02), t(z)), t(0.02), sides=6, stage=0.9)
+        b.log((t(px), t(y + 0.04), t(z - 0.15)), (t(px), t(y + depth * 0.6), t(z - 0.01)), t(0.014), sides=5, stage=0.9)
+    b.log((t(x0), t(y + depth - 0.02), t(z)), (t(x1), t(y + depth - 0.02), t(z)), t(0.02), sides=6, stage=0.9)
+    trunk = [(rx + 0.025 * math.cos(k * 1.4), ry + 0.025 * math.sin(k * 1.4), 0.02 + (z - 0.18) * k / 10) for k in range(11)]
+    b.tube_path([_pt(q) for q in trunk], t(0.02), "bark", sides=6, stage=0.88)
+    if not b.detail:
+        b.box(t(x0), t(y + 0.04), t(z + 0.02), t(x1 - x0), t(depth - 0.06), t(0.08), "leaves", stage=0.9)
+        return
+    for _ in range(int(70 * (x1 - x0) * depth / 0.5) + 30):
+        lx, ly = rng.uniform(x0 + 0.02, x1 - 0.02), rng.uniform(y + 0.06, y + depth - 0.02)
+        lz = z + rng.uniform(0.03, 0.12)
+        tip = (lx + rng.uniform(-0.07, 0.07), ly + rng.uniform(-0.07, 0.07), lz + rng.uniform(-0.02, 0.04))
+        b.strand(_pt((lx, ly, lz)), _pt(tip), t(rng.uniform(0.07, 0.1)), "leaves", stage=0.92, tint=rng.uniform(0.2, 0.9))
+    for k in range(3, 10):  # leaves up the trunk
+        q = trunk[k]
+        b.strand(_pt(q), _pt((q[0] + rng.uniform(-0.08, 0.08), q[1] + rng.uniform(0.0, 0.06), q[2] + 0.06)), t(0.07),
+                 "leaves", stage=0.92, tint=rng.uniform(0.3, 0.8))
+    for _ in range(max(3, int((x1 - x0) * 3))):
+        gx, gy = rng.uniform(x0 + 0.1, x1 - 0.1), rng.uniform(y + 0.12, y + depth - 0.08)
+        b.lathe(t(gx), t(gy), t(z - 0.13), [(t(0.005), 0), (t(0.035), t(0.03)), (t(0.045), t(0.08)), (t(0.01), t(0.12))],
+                "blue_paint", sides=8, stage=0.92, tint=0.1, smooth=2, shape=lambda a: 1.0 + 0.15 * abs(math.sin(3 * a)))
+
+
+def swag(b, p0, p1, drop, part, rng, name="swag"):
+    """A dyed cloth hung between two points, falling in a curve, its folds down the middle."""
+    (x0, y0, z0), (x1, y1, z1) = p0, p1
+    b.prop(name, t(min(x0, x1)), t(min(y0, y1) - 0.03), t(min(z0, z1) - drop - 0.02), t(max(x0, x1)), t(max(y0, y1) + 0.03),
+           t(max(z0, z1)))
+    def fn(u, v):
+        x = x0 + (x1 - x0) * u
+        sag = drop * math.sin(math.pi * u)
+        return (t(x), t(y0 + 0.02 * math.sin(14 * u) * v), t(z0 + (z1 - z0) * u - (sag + 0.06) * v))
+    b.surface(fn, 12 if b.detail else 3, 3 if b.detail else 1, part, stage=0.92, tint=rng.uniform(0.45, 0.75))
+
+
+def column_vine(b, x, y, z0, z1, radius, rng):
+    """A vine wound up a column: a thin stem spiralling round it, leaves standing off the shaft."""
+    if not b.detail:
+        return
+    r = radius + 0.03
+    pts = [(x + r * math.cos(k * 0.9), y + r * math.sin(k * 0.9), z0 + (z1 - z0) * k / 18) for k in range(19)]
+    b.tube_path([_pt(q) for q in pts], t(0.012), "bark", sides=5, stage=0.92)
+    for q in pts[1:]:
+        for _ in range(3):
+            a = math.atan2(q[1] - y, q[0] - x) + rng.uniform(-0.5, 0.5)
+            tip = (x + (r + rng.uniform(0.05, 0.09)) * math.cos(a), y + (r + rng.uniform(0.05, 0.09)) * math.sin(a),
+                   q[2] + rng.uniform(0.0, 0.07))
+            b.strand(_pt(q), _pt(tip), t(0.07), "leaves", stage=0.92, tint=rng.uniform(0.2, 0.9))
+
+
+def garland(b, x0, x1, y, z, rng, grapes=True):
+    """Vine leaves along a beam's face, sagging a little between, bunches of grapes under them."""
+    if not b.detail:
+        return
+    n = int((x1 - x0) / 0.04)
+    for i in range(n):
+        f = i / max(n - 1, 1)
+        px = x0 + (x1 - x0) * f
+        pz = z - 0.08 * math.sin(math.pi * ((f * 3) % 1.0))
+        tip = (px + rng.uniform(-0.05, 0.05), y + rng.uniform(0.03, 0.07), pz + rng.uniform(-0.06, 0.04))
+        b.strand(_pt((px, y, pz)), _pt(tip), t(0.07), "leaves", stage=0.92, tint=rng.uniform(0.2, 0.9))
+    if grapes:
+        for k in range(4):
+            gx = x0 + (x1 - x0) * (k + 0.5) / 4
+            b.lathe(t(gx), t(y + 0.04), t(z - 0.2), [(t(0.005), 0), (t(0.035), t(0.03)), (t(0.045), t(0.08)), (t(0.01), t(0.12))],
+                    "blue_paint", sides=8, stage=0.92, tint=0.1, smooth=2)
+
+
+def hanging_pots(b, x0, x1, y, z, rng, n=3, name="hung pots"):
+    """Pots and painted plates on ropes from a beam's underside: a potter's shop front."""
+    b.prop(name, t(x0), t(y - 0.09), t(z - 0.55), t(x1), t(y + 0.09), t(z))
+    if not b.detail:
+        return
+    for i in range(n):
+        px = x0 + (x1 - x0) * (i + 0.5) / n
+        hang = rng.uniform(0.12, 0.25)
+        b.tube_path([(t(px), t(y), t(z)), (t(px), t(y), t(z - hang))], t(0.004), "rope", sides=4, stage=0.92)
+        r = rng.uniform(0.06, 0.08)
+        b.lathe(t(px), t(y), t(z - hang - r * 2.2), [(t(r * 0.4), 0), (t(r), t(r * 0.9)), (t(r * 0.75), t(r * 1.7)),
+                                                      (t(r * 0.5), t(r * 2.0)), (t(r * 0.6), t(r * 2.2))],
+                "roof_tile", sides=16, stage=0.92, tint=rng.uniform(0.3, 0.8), smooth=2)
+        D._painted_band(b, px, y, z - hang - r * 2.2, r * 2.2, r, [(0.4, 0), (1, 0.4), (0.75, 0.77), (0.5, 0.9), (0.6, 1)],
+                        0.35, 0.6, "dark_wood", 0.92, steps=2)
+
+
+def krater(b, x, y, z, rng, scale=1.0, name="krater"):
+    """A big painted mixing bowl on a foot, two handles: black glaze, a red band, a stone plinth under it."""
+    h, r = 0.42 * scale, 0.16 * scale
+    b.prop(name, t(x - r * 1.35), t(y - r * 1.35), t(z), t(x + r * 1.35), t(y + r * 1.35), t(z + h + 0.12))
+    b.box(t(x - r * 1.1), t(y - r * 1.1), t(z), t(r * 2.2), t(r * 2.2), t(0.12), "stone", stage=0.9)
+    if not b.detail:
+        b.column(t(x), t(y), t(z + 0.12), t(r * 0.9), t(h), "roof_tile", sides=8, stage=0.9)
+        return
+    ctrl = [(0.35, 0.0), (0.4, 0.06), (0.22, 0.12), (0.25, 0.2), (0.6, 0.35), (0.85, 0.6), (1.0, 0.9), (1.05, 1.0)]
+    b.lathe(t(x), t(y), t(z + 0.12), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=32, stage=0.9,
+            top="oil", smooth=3)
+    D._painted_band(b, x, y, z + 0.12, h, r, ctrl, 0.5, 0.88, "dark_wood", 0.9)
+    D._painted_band(b, x, y, z + 0.12, h, r, ctrl, 0.42, 0.46, "cloth", 0.9, steps=1)
+    for side in (-1, 1):
+        pts = [(x + side * r * 0.8, y, z + 0.12 + h * 0.55), (x + side * r * 1.25, y, z + 0.12 + h * 0.6),
+               (x + side * r * 1.25, y, z + 0.12 + h * 0.8), (x + side * r * 0.95, y, z + 0.12 + h * 0.85)]
+        b.tube_path([_pt(q) for q in pts], t(0.016), "roof_tile", sides=8, stage=0.9)
