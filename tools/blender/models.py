@@ -533,6 +533,75 @@ def observatory(b, rng):
     b.scaffold(height=5.0 * M)
 
 
+def flat_bold(b, rng, story=None):
+    """A trial (owner, 2026-11-28: bolder massing, as the reference's stepped houses): the flat as three volumes
+    side by side, each its own height and roof: a one-storey west room under a lean-to, a three-storey middle
+    house with a steep gable and deep eaves, a two-storey east wing under a lean-to against it; a wooden
+    balcony on the middle house hung from its wall. Exported only with BO_BOLD=1, not in the game."""
+    # West room: one storey.
+    D.footing(b, 0.25, 0.55, 1.2, 2.8, h=0.3, rng=rng, group="west")
+    _room(b, rng, 0.3, 0.6, 1.1, 2.7, 0.3, 2.0, plaster="plaster", doors=[("s", 0.15, 0.75, 1.65)],
+          windows=[("w", 0.8)], stage=(0.1, 0.5), group="west")
+    D.shed_roof(b, 0.3, 0.6, 1.1, 2.7, 2.3, 2.85, rng, falls="w", overhang=0.3, group="west")
+    # Middle house: three storeys, the tallest part.
+    D.footing(b, 1.35, 0.35, 1.5, 3.0, h=0.3, rng=rng)
+    _room(b, rng, 1.4, 0.4, 1.4, 2.9, 0.3, 2.0, thick=0.42, part="stone", block=(0.55, 0.3),
+          doors=[("s", 0.27, 0.85, 1.75)], wreath=True)
+    _room(b, rng, 1.4, 0.4, 1.4, 2.9, 2.3, 1.8, plaster="plaster", doors=[("s", 0.32, 0.75, 1.65)],
+          windows=[("n", 0.5)], stage=(0.45, 0.6))
+    _room(b, rng, 1.4, 0.4, 1.4, 2.9, 4.1, 1.3, plaster="plaster", windows=[("s", 0.48, 0.42, 0.5, 0.45)],
+          stage=(0.6, 0.66), ornate=True)
+    b.box(t(1.37), t(0.37), t(4.05), t(1.46), t(2.96), t(0.12), "cloth", stage=0.6, plaster=True)  # a red band
+    ridge = D.tiled_roof(b, 1.4, 0.4, 1.4, 2.9, 5.4, 0.8, rng, along_x=False, overhang=0.34, antefix=True)
+    D.chimney_pot(b, 2.1, 1.2, ridge(1.2), rng, scale=1.1)
+    # East wing: two storeys.
+    D.footing(b, 2.85, 0.85, 0.9, 2.2, h=0.3, rng=rng, group="east")
+    _room(b, rng, 2.85, 0.9, 0.85, 2.1, 0.3, 1.9, plaster="plaster", doors=[("s", 0.05, 0.7, 1.6)],
+          windows=[("e", 0.7)], stage=(0.15, 0.5), group="east")
+    _room(b, rng, 2.85, 0.9, 0.85, 2.1, 2.2, 1.6, plaster="plaster", windows=[("s", 0.2, 0.4), ("e", 0.6)],
+          stage=(0.45, 0.6), group="east")
+    D.shed_roof(b, 2.85, 0.9, 0.85, 2.1, 3.8, 4.25, rng, falls="e", overhang=0.22, group="east")
+    # The balcony before the middle house's upper door, hung from its wall by iron ties.
+    fx0, fx1, fy0, fy1, fz = 1.45, 2.75, 3.3, 3.75, 2.35
+    b.box(t(fx0), t(fy0), t(fz - 0.05), t(fx1 - fx0), t(fy1 - fy0), t(0.05), "wood", stage=0.62)
+    b.solid("balcony", t(fx0), t(fy0 + 0.0), t(fz - 0.05), t(fx1), t(fy1), t(fz), block="balcony")
+    top = fz + 0.8
+    for px in (fx0 + 0.04, fx1 - 0.04):
+        for py in (fy0 + 0.04, fy1 - 0.04):
+            b.cbox(t(px - 0.035), t(py - 0.035), t(fz), t(0.07), t(0.07), t(top - fz + 0.04), t(0.01), "dark_wood", stage=0.63)
+            b.solid("balcony post", t(px - 0.035), t(py - 0.035), t(fz), t(px + 0.035), t(py + 0.035), t(top + 0.04), block="balcony")
+    for rx, ry, rw, rd in ((fx0, fy1 - 0.07, fx1 - fx0, 0.07), (fx0, fy0, 0.07, fy1 - fy0), (fx1 - 0.07, fy0, 0.07, fy1 - fy0)):
+        b.cbox(t(rx), t(ry), t(top - 0.02), t(rw), t(rd), t(0.06), t(0.01), "dark_wood", stage=0.64)
+        b.box(t(rx + 0.01), t(ry + 0.01), t(fz), t(rw - 0.02), t(rd - 0.02), t(0.04), "dark_wood", stage=0.63)
+    b.solid("balcony rail", t(fx0), t(fy1 - 0.07), t(top - 0.02), t(fx1), t(fy1), t(top + 0.04), block="balcony")
+    if b.detail:
+        for i in range(9):
+            D.baluster(b, fx0 + 0.15 + i * (fx1 - fx0 - 0.3) / 8, fy1 - 0.035, fz + 0.04, top - fz - 0.06, stage=0.63)
+        for py in (fy0 + 0.16, fy0 + 0.3):
+            for px in (fx0 + 0.035, fx1 - 0.035):
+                D.baluster(b, px, py, fz + 0.04, top - fz - 0.06, stage=0.63)
+    for tx in (fx0 + 0.04, fx1 - 0.04):
+        b.tube_path([(t(tx), t(3.33), t(3.95)), (t(tx), t(fy1 - 0.04), t(top + 0.02))], t(0.012), "iron", sides=6, stage=0.64)
+        b.box(t(tx - 0.04), t(3.3), t(3.9), t(0.08), t(0.04), t(0.1), "iron", stage=0.64)
+    if b.detail:
+        D.potted_plant(b, fx0 + 0.25, fy0 + 0.22, scale=0.45, rng=rng, z=fz, name="balcony plant")
+    # Life by the house: the level's goods, water, greenery.
+    with D.goods(b, "food"):
+        D.sack(b, 0.55, 3.72, scale=0.6, rng=rng)
+        D.basket(b, 1.0, 3.72, "olives", scale=0.6, rng=rng)
+    with D.goods(b, "fleece"):
+        D.wool_bale(b, 3.2, 3.6, scale=0.6, rng=rng)
+    D.hydria(b, 3.6, 3.62, scale=0.55, rng=rng)
+    D.flower_box(b, 2.85 + 0.2 - 0.03, 3.0, 3.13, 0.46, rng, name="flower box")
+    D.ivy(b, 3.7, 1.0, 0.6, 0.3, 2.0, rng, along_x=False, out=1)
+    D.grass(b, rng, 26)
+    b.scaffold(height=6.2 * M)
+
+
+if os.environ.get("BO_BOLD"):
+    MODELS["common_housing_5_bold"] = (flat_bold, "common_housing", "mieszkanie, próba śmielszej bryły (poza grą)")
+
+
 def _stories():
     """Every level in each family's version: common_housing_<level>_<story> (boot.gd picks it by the id)."""
     for level, fn in ((1, shelter), (2, hut), (3, cabin), (4, homestead), (5, flat), (6, row_house), (7, city_house)):
