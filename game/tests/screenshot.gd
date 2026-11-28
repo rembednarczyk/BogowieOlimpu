@@ -154,6 +154,10 @@ func _process(_delta: float) -> bool:
 				mi.position = Vector3(r[2].x, 0.2, r[2].y)
 				node.add_child(mi)
 				mi.set_instance_shader_parameter("collapse", r[1])
+				if r[1] > 0.0 and not OS.get_cmdline_user_args().has("dust=0"):  # the fall's dust as it is that long after the start
+					var dust: CPUParticles3D = node.make_dust(Vector3(r[2].x + 1.0, 0.2, r[2].y + 1.0), Vector2(2, 2), false)
+					dust.preprocess = r[1]
+					node.add_child(dust)
 				mi.set_instance_shader_parameter("damage", 2.0)
 				mi.set_instance_shader_parameter("age", 0.5)
 			if zoom == 0.0:

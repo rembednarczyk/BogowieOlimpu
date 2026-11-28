@@ -212,6 +212,7 @@ Zasady kształtu:
 6. Ciecz (woda, oliwa) w upadku znika; ziarno sypie się bez koziołkowania.
 7. Masa kawałka: pudełko × wypełnienie klasy × gęstość materiału. Opór powietrza zależy od powierzchni do masy; w zderzeniu cięższy pcha lżejszego; bez skaczących kawałków (największy ruch w górę 5-8 cm na klatkę, `BO_RUIN_DEBUG=1`).
 7a. Materiał nie rozpryskuje się, tylko opada luźno (uwaga właściciela 2026-11-28): bez pchnięcia na zewnątrz przy starcie (do 12 cm/s), powolny obrót, fragment muru tylko lekko przechyla się od podstawy, po uderzeniu prawie bez odbicia i toczenia (mur 2 % i 15 %, dachówka 4 % i 20 %), gruz pełznie po zboczu stosu (0,08 g), w tłoku kawałki rozsuwają się głównie w pionie (w poziomie 25 %). Rozrzut mierzy `BO_RUIN_DEBUG=1` (`SPREAD`): mediana przesunięcia w bok 2-14 cm, 90 % kawałków do 34 cm.
+7b. Zawaleniu towarzyszy pył w kolorze materiału (mur piaskowy, po pożarze popiół), unoszący się z podstawy i rzednący (`boot.gd` `make_dust`).
 8. Budowa: deska z drewna cieńsza niż jej materiał i płyta z muru cieńsza niż 75 % swojego materiału (parapet, gzyms, płyta schodka) dostają grubość materiału wokół tego samego środka; cegła mniejsza o spoinę zostaje (spoiny muszą być widać); powłoki zostają cienkie; pręty (dwa cienkie wymiary) zostają.
 
 | Materiał (część palety) | Klasa | Grubość | Gęstość kg/m³ | Powłoka |

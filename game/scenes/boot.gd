@@ -605,6 +605,8 @@ func _add_ruin(node: Node3D, e: Dictionary) -> bool:
 		mi.set_instance_shader_parameter("age", age if age != null else 0.0)
 		mi.set_instance_shader_parameter("collapse", 0.0)
 		falling[e["id"]] = 0.0
+		node.add_child(make_dust(Vector3(e["x"] + e["width"] / 2.0, 0, e["y"] + e["height"] / 2.0),
+			Vector2(e["width"], e["height"]), fire != null and fire > 0.0))
 	else:
 		var basis := Basis(Vector3.UP, house_turn(e["id"]) * PI / 2.0).scaled(Vector3.ONE * house_scale(e["id"]))
 		mi.transform = Transform3D(basis, Vector3(e["x"] + 1.0, 0, e["y"] + 1.0) - basis * Vector3(1.0, 0, 1.0))
@@ -613,6 +615,54 @@ func _add_ruin(node: Node3D, e: Dictionary) -> bool:
 	node.add_child(mi)
 	node.set_meta("ruin", name)
 	return true
+
+# The dust of a fall (owner, 2026-11-28: "add the dust of the collapse"): a cloud that billows up from the foot
+# of the house while the rubble comes down, rises, spreads a little past the plot and thins out. Sandy from
+# brick, stone and plaster; grey ash after a fire. Presentation only; CPU particles (every renderer, a phone).
+static func make_dust(centre: Vector3, size: Vector2, burned: bool) -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.name = "Dust"
+	p.position = centre
+	p.one_shot = true
+	p.amount = 200
+	p.lifetime = 3.6
+	p.explosiveness = 0.35  # most of it as the walls hit the ground, the rest as the roof comes down
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	p.emission_box_extents = Vector3(size.x * 0.5, 0.35, size.y * 0.5)
+	p.position.y = 0.35
+	p.direction = Vector3(0, 1, 0)
+	p.spread = 80.0
+	p.initial_velocity_min = 0.3
+	p.initial_velocity_max = 0.9
+	p.gravity = Vector3(0, 0.08, 0)  # warm dust drifts up a little
+	p.damping_min = 0.25
+	p.damping_max = 0.5
+	p.angle_min = 0.0
+	p.angle_max = 360.0
+	p.scale_amount_min = 0.5
+	p.scale_amount_max = 1.0
+	var grow := Curve.new()  # a puff swells as it thins
+	grow.max_value = 3.0
+	grow.add_point(Vector2(0.0, 0.35))
+	grow.add_point(Vector2(0.4, 0.9))
+	grow.add_point(Vector2(1.0, 2.4))
+	p.scale_amount_curve = grow
+	var tint := Color(0.36, 0.34, 0.33) if burned else Color(0.74, 0.64, 0.50)
+	var ramp := Gradient.new()  # it comes up, holds, fades
+	ramp.set_color(0, Color(tint, 0.0))
+	ramp.set_color(1, Color(tint, 0.0))
+	ramp.add_point(0.1, Color(tint, 0.75))
+	ramp.add_point(0.55, Color(tint, 0.5))
+	p.color_ramp = ramp
+	var quad := QuadMesh.new()
+	quad.size = Vector2(1.6, 1.6)
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/dust.gdshader")
+	quad.material = mat
+	p.mesh = quad
+	p.emitting = true
+	p.finished.connect(p.queue_free)
+	return p
 
 # A ruin's fall from its .bin (tools/blender/bo_collapse.py: "BORU", frames, chunks, fps, then each frame's
 # chunk transforms as 3 rows of 4 floats): a float texture, a chunk's row per texel, a frame per line.

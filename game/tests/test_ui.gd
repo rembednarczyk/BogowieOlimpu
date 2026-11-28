@@ -195,6 +195,9 @@ func _process(_d: float) -> bool:
 			and rmi.transform.is_equal_approx(house.transform) and game.falling.has(990001) \
 			and (rmi.material_override as ShaderMaterial).get_shader_parameter("ruin_len") > 1 \
 			and rmi.get_instance_shader_parameter("collapse") == 0.0
+		var dust: CPUParticles3D = ruin.get_node_or_null("Dust") if ruin != null else null
+		var dust_ok: bool = dust != null and dust.emitting and dust.one_shot \
+			and absf(dust.position.x - (b["x"] + 1.0)) < 0.01 and absf(dust.position.z - (b["y"] + 1.0)) < 0.01
 		game._run_falls(game.RUIN_FALL + 0.1)
 		var rests: bool = rmi != null and at_rest(rmi) and not game.falling.has(990001)
 		game.building_nodes.erase(990001)
@@ -202,12 +205,13 @@ func _process(_d: float) -> bool:
 		game._handle_events([{"type": "building_placed", "id": 990002, "building_type": "ruins", "x": 1, "y": 1,
 			"width": 2, "height": 2, "parent": 0}])
 		var old: Node3D = game.building_nodes.get(990002)
-		var still: bool = old != null and old.has_node("Ruin") and not game.falling.has(990002) \
+		var still: bool = old != null and old.has_node("Ruin") and not game.falling.has(990002) and not old.has_node("Dust") \
 			and at_rest(old.get_node("Ruin"))
 		game.building_nodes.erase(990002)
 		old.free()
-		check(falling_ok and rests and still, "a fallen house: its level's ruin in its place %s, at rest after the fall %s, an old ruin at rest %s" \
-			% [falling_ok, rests, still])
+		check(falling_ok and rests and still and dust_ok,
+			"a fallen house: its ruin in its place %s, at rest after the fall %s, an old ruin at rest, no dust %s, the fall's dust %s" \
+			% [falling_ok, rests, still, dust_ok])
 		fell = true
 		break
 	check(fell, "a modelled house to fall")
