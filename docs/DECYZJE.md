@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Cienki kontur
+- Decyzja: cienki kontur (1 px, ciepły ciemny brąz, ze skoków głębi powyżej 36 cm) domyślnie w grze; bez konturu w widokach specjalnych.
+- Powód: odpowiedź właściciela z 2026-11-28 („Cienki kontur, z rekomendacją”).
+
 ### 2026-11-28: Wnioski z zrzutów Zeus Heaven
 - Decyzja: dachy magazynów, spichlerzy i handlu w zielonej patynie miedzi (`roof_patina` (0,26; 0,50; 0,46), spichlerz i magazyn przemalowane); ściany domów elity i budynków publicznych z niebiesko-szarego kamienia (`stone_cool`); barwne posadzki placów, alei i sanktuariów z wzorami naszego projektu; gęstość ozdób według zamożności jako punkt R-018.
 - Powód: odpowiedź właściciela z 2026-11-28 („Zgadzam się z rekomendacjami”) na pytania po analizie S-011 (`STYL-BUDOWLI.md` rozdział 8).

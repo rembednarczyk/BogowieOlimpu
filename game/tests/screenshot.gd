@@ -11,7 +11,7 @@ var demo := ""  # demo=atlantis_gods and the like
 var zoom := 0.0
 var at := Vector2(-1, -1)
 var view := ""  # view=water and the like: a special view (docs/gameplay/16)
-var outline := 0  # outline=1 thin, 2 strong: the ink outline trial (game/shaders/outline.gdshader)
+var outline := -1  # outline=0 off, 1 thin (the default), 2 strong (game/shaders/outline.gdshader)
 var node: Node
 
 func _init() -> void:
@@ -47,7 +47,7 @@ func _init() -> void:
 	root.add_child(node)
 
 func _process(_delta: float) -> bool:
-	if frames_left == 4 and outline > 0:
+	if frames_left == 4 and outline >= 0:
 		node.set_outline(outline)
 	if frames_left == 4 and (zoom > 0.0 or at.x >= 0):
 		if zoom > 0.0:

@@ -64,7 +64,7 @@ var tiles := MultiMeshInstance3D.new()
 var building_nodes := {}  # id -> Node3D
 # Building models (docs/ASSETY.md, tools/blender/models.py): one mesh per model, one shared material; a building
 # without a model keeps its box. Houses have a model per level: common_housing_<level>.
-const MODELS_DIR := "res://models/"
+var models_dir := "res://models/"  # a comparison (screenshot.gd models=) may point elsewhere
 const BUILD_VISUAL_DAYS := 4.0  # the visual building phase (O-005); the building works from the first tick
 const AGE_FULL_DAYS := 1920.0   # ten years of weathering [ZAŁOŻENIE]
 var model_meshes := {}  # model name -> Mesh, or null when there is none
@@ -425,6 +425,8 @@ func set_overlay(view: String) -> void:
 	if ui != null and view != overlay:
 		ui.update_legend(view)
 	overlay = view
+	if outline != null:  # the special views draw flat columns and tiles: no ink on them
+		outline.visible = outline_level > 0 and view == ""
 	for n in overlay_nodes:
 		n.queue_free()
 	overlay_nodes.clear()
@@ -625,7 +627,7 @@ func _model_name(type: String, house_level: int, id: int = 0) -> String:
 
 func _model(name: String) -> Mesh:
 	if not model_meshes.has(name):
-		var path := MODELS_DIR + name + ".glb"
+		var path := models_dir + name + ".glb"
 		var mesh: Mesh = null
 		if ResourceLoader.exists(path):
 			var scene: Node = (load(path) as PackedScene).instantiate()
@@ -851,8 +853,10 @@ func _build_environment() -> void:
 	_add_outline()
 	_place_camera()
 
-# The ink outline (game/shaders/outline.gdshader): a trial, off until the owner decides (2026-11-28).
+# The ink outline (game/shaders/outline.gdshader): thin by default (owner, 2026-11-28), hidden in special views.
+const OUTLINE_DEFAULT := 1
 var outline: MeshInstance3D
+var outline_level := OUTLINE_DEFAULT
 
 func _add_outline() -> void:
 	outline = MeshInstance3D.new()
@@ -865,14 +869,15 @@ func _add_outline() -> void:
 	outline.material_override = mat
 	outline.extra_cull_margin = 16384.0  # the quad is moved onto the screen in the shader: never cull it
 	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	outline.visible = false
 	cam.add_child(outline)
 	outline.position = Vector3(0, 0, -2)
+	set_outline(OUTLINE_DEFAULT)
 
 # 0 off, 1 thin, 2 strong.
 func set_outline(level: int) -> void:
+	outline_level = level
 	(outline.material_override as ShaderMaterial).set_shader_parameter("width", float(level))
-	outline.visible = level > 0
+	outline.visible = level > 0 and overlay == ""
 
 # The camera's depth range follows what it sees: an orthographic camera at the default far plane (4 000 m)
 # spreads the sun's shadow map so thin that the shadows blur away (checked 2026-11-27: crisp at 120 m).
