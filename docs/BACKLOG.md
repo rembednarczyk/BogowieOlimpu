@@ -15,6 +15,7 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 
 ## Później
 
+- Ruiny innych budynków niż domy (R-018 punkt 10, `docs/STYL-BUDOWLI.md` rozdz. 13): eksport ruiny w `tools/blender/models.py` i ruina w `boot.gd` `_add_ruin` dla każdego budynku z pełnym modelem; dziś tylko domy i szałasy, reszta ruin to płaska bryła.
 - Minimapa miasta: budynki w kolorach grup funkcji z `docs/STYL-BUDOWLI.md` (te same co dachy; decyzja 2026-11-28).
 
 - **Plan odporności** (`docs/PLAN-ODPORNOSCI.md`, wersja 2): etapy E1-E6 odłożone decyzją właściciela 2026-11-27 („na razie lecimy po staremu”). Do tego czasu R-016 działa doraźnie: problem znaleziony sondą dostaje kontrolę w tym samym zadaniu.

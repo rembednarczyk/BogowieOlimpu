@@ -65,7 +65,7 @@ Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właści
 10. Eksport: `blender -b --factory-startup --python tools/blender/models.py -- game/models <model>`; przerywa się przy każdym naruszeniu z nazwą elementu.
 11. Kontrola: `python3 tools/checks/check_models.py .` i `blender -b --factory-startup --python tools/blender/test_checks.py`.
 12. Materiały (R-019, rozdział 12): każda część ma materiał z `tools/blender/bo_materials.py` z grubością, gęstością, klasą i kształtem; `Builder` sam buduje deski, cegły i płyty do grubości materiału, dachówki biorą ją z tabeli. Nowy kolor palety dostaje wpis w tabeli, inaczej `check_models.py` się zatrzymuje.
-13. Kolejność budowy: rekwizyty i wykończenie przez funkcje z dekoratorem `finishing` (pojawiają się w ostatnich 2,5 % budowy, pod gotowym dachem); nowa funkcja rekwizytu też go dostaje. Dom mieszkalny dostaje ruinę z `bo_collapse.py` sam przy eksporcie poziomu (`common_housing_N`).
+13. Stany i kolejność budowy (rozdział 13): element dostaje fazę budowy według kolejności z placu budowy; rekwizyty i wykończenie przez funkcje z dekoratorem `finishing` (nowa funkcja rekwizytu też go dostaje). Budynek dostaje ruinę z `bo_collapse.py` przy eksporcie (dziś automatycznie domy: `common_housing_N` i szałasy według historii; inne budynki dopisujemy w `models.py` przy ich pierwszym pełnym modelu).
 14. Przegląd oczami: zrzuty z czterech stron, z góry i od dołu (okap, szczyt), w przeglądarce domów i w grze po `godot --headless --path game --import` (bez importu gra pokazuje stare modele).
 
 ## 4. Błędy, które już się zdarzyły (i ich kontrola)
@@ -84,6 +84,15 @@ Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właści
 | Białe plamy na dachach z daleka | białe podstawy kominów i obróbki | kolor zaprawy |
 | Element w powietrzu pod balkonem | haki zamiast zastrzałów | zastrzał z kamiennego wspornika w ścianie |
 | Gra pokazuje stare modele | brak importu | `godot --headless --path game --import` po eksporcie |
+| Ruina z cienkich "wafelków" | dom cięty siatką kostek przez warstwy tynku | podział według elementów i wiązań materiału (rozdz. 12, 13) |
+| Gruz piętrzy się na kilka metrów | do mapy wysokości trafiało pudełko kawałka, a nie jego kształt | wierzchołki leżącego kawałka i zagęszczenie `PACK`; `BO_RUIN_DEBUG=1` (`HM1`) |
+| Kawałki skaczą w górę | podnoszenie na wierzch stosu, skokowe kładzenie na płask, rozsuwanie przez wielu sąsiadów naraz | zatrzymanie z boku stosu, unoszenie najwyżej 8 mm na krok, płynne przewracanie, odpychanie ograniczone; `JUMP` w `BO_RUIN_DEBUG=1` |
+| Gruz rozpryskuje się poza dom | rozsuwanie w tłoku na boki, toczenie po uderzeniu | rozsuwanie głównie w pionie, małe odbicia i toczenie; `SPREAD` w `BO_RUIN_DEBUG=1` |
+| Kolce gruzu daleko poza działkę | `bmesh.ops.solidify` na zdegenerowanych ścianach | własne wytłoczenie wzdłuż najcieńszej osi, w obrębie działki; `check_models.py` (obrys ruiny) |
+| Żerdzie szałasu stoją po upadku | żerdź wbita w ziemię uznana za przysypaną | „przysypany” tylko, gdy środek kawałka jest pod gruzem |
+| Płótno przelatuje pod żerdziami | płótno ruszało razem z żerdziami | płótno rusza 0,35 s po swojej ramie |
+| Cegły tracą spoiny po pogrubieniu | cegła mniejsza o spoinę uznana za za cienką | płyty muru pogrubiane dopiero poniżej 75 % grubości materiału |
+| Czarne plamy w pyle | materiał cząstek z teksturą gradientu w rendererze Mobile | własny shader `dust.gdshader` bez tekstury |
 
 ## 5. Historie budynków (przyjęte 2026-11-28 jako punkt wyjścia)
 
@@ -105,6 +114,8 @@ Zasada: wariant opowiada, kto w budynku mieszka albo pracuje. Zmienia akcenty ko
 | Ozdoby | według pory roku | kwiaty, liście, owoce |
 
 Kategorie i zasada wariantów obowiązują też kulturę atlantydzką (rozdział 6).
+
+Schronienia najniższego poziomu (szałasy, namioty, także przyszłe obozowiska; decyzja właściciela 2026-11-28): mniejsze niż działka (obrys z okapem 26-37 %, najwyżej 50-60 % działki), różnej wielkości i kształtu (kopuła z tyczek, wiata, namiot z kalenicą), przesunięte na działce, bez równych rzędów i wojskowego wrażenia; reszta działki na rekwizyty historii i zieleń; bez rusztowania przy budowie.
 
 ## 6. Wygląd Atlantydy (przyjęty 2026-11-28)
 
@@ -261,3 +272,27 @@ Zasady kształtu:
 | metal | każdy osobno | 30 % | 5 % | 20 % | ×1,0 | nie | nie |
 | sypki | 20 cm | 60 % | 0 % | 5 % | ×0,1 | nie | nie |
 | ciecz | każdy osobno | 100 % | 0 % | 0 % | ×0,0 | nie | nie |
+
+## 13. Stany budynku: budowa, wiek, uszkodzenie, pożar, zawalenie (dla każdego budynku, 2026-11-28)
+
+Zasady wypracowane na domach; obowiązują każdy budynek. Stan liczy rdzeń, oprawa go pokazuje (`building.gdshader`, `boot.gd`).
+
+**Budowa w kolejności z placu budowy** (uwaga właściciela: „budowa w realistycznej kolejności”): cokół, mury warstwa po warstwie, belki i więźba, zaprawa pod dachówki rząd po rzędzie, dachówki od okapu do kalenicy; stolarka (drzwi, okiennice) od 96,5 % budowy; wykończenie i dobytek (markizy, rośliny, pranie, naczynia, krosno, sągi, wieńce, kominy) w ostatnich 2,5 %, pod gotowym dachem (`finishing`). Rusztowanie: stojaki, rygle co metr, deski na każdym poziomie, zastrzały, drabina od frontu; znika po ukończeniu; schronienia z płótna bez rusztowania.
+
+**Wiek**: kolory matowieją, brud od ziemi, smugi deszczu na murach, mech na tym, co patrzy w niebo.
+
+**Uszkodzenie** (licznik ryzyka zawalenia: 40, 70, 90 % progu): 1 pęknięcia przez mury w dwóch skalach; 2 odpada tynk, zsuwa się 10 % dachówek, rwą się płótno i strzecha; 3 więcej tego (25 % dachówek) i budynek osiada krzywo (pochylenie 3,5 %, luźne części 25 %).
+
+**Pożar** (32 dni w trzech fazach): 1 osmolenie i żar nisko; 2 płomienie po ścianach i dachu, mocniej na strzesze, płótnie i dachówkach; 3 zgliszcza: czerń, strzecha i płótno do szkieletu, połowa dachówek spadła, żar.
+
+**Zawalenie i ruina** (uwagi właściciela: „realistyczna fizyka zawalania się, tak będą wyglądać ruiny, z animacją”; „kształt materiałów zachowany, nie wafelki”; „ciężar i kolizja, bez skaczących fragmentów”; „nie rozpryskuje się, tylko opada luźno”; „pył z zawalenia”):
+1. Upadek liczony raz w Blenderze (`tools/blender/bo_collapse.py`), w grze odtwarzany shaderem z tekstury klatek (`<model>_ruin.glb` i `.bin`); bez fizyki w czasie gry. Powtarzalny (ziarno z nazwy modelu). 2,5 s, 24 klatki/s; ostatnia klatka to ruina.
+2. Upadek według tabeli materiałów (rozdz. 12): elementy w całości, wiązania klasy, powłoki z podłożem, płaty tkanin i strzechy, masa z gęstości, opór powietrza, zderzenia w locie, ciecze znikają.
+3. Mur ustępuje od dołu, wyższe części spadają później, na to, co już leży; kikuty muru (30 cm do 1,2 m nad cokołem) stoją; drewniane konstrukcje (żerdzie, słupy) przewracają się całe; płótno rusza 0,35 s po swojej ramie i opada na nią.
+4. Opada luźno: bez pchnięcia na zewnątrz (do 12 cm/s), powolny obrót, lekkie przechylenie fragmentu muru od podstawy, prawie bez odbić i toczenia, gruz pełznie po zboczu stosu, w tłoku kawałki rozsuwają się głównie w pionie. Nic nie wychodzi poza działkę.
+5. Bez skoków: kawałek, który wpadł w bok stosu, zatrzymuje się z boku; pod którym urósł gruz, unosi się najwyżej 8 mm na krok; obraca się wokół punktu styku; kładzie się na najszerszy bok płynnie.
+6. Stos rośnie prawdziwym kształtem leżących kawałków, luźny gruz wchodzi w szczeliny (`PACK` 0,4).
+7. Ruina według wyglądu: gdy warianty budynku różnią się bryłą (szałasy), każdy ma własną ruinę (`<model>_ruin`); inaczej ruina poziomu lub typu. Gra stawia ruinę w obrocie i skali budynku; po pożarze zwęglona; ruiny z zapisu leżą bez animacji i bez pyłu.
+8. Pył: chmura kłębów rodzi się przy podstawie podczas upadku, unosi się, rośnie i rzednie (około 6 s), w kolorze materiału (mur piaskowy, po pożarze popiół); `boot.gd` `make_dust`, shader `dust.gdshader`.
+9. Kontrola przy eksporcie: `BO_RUIN_DEBUG=1` drukuje wysokość stosu (`HM1`), największy skok w klatce (`JUMP`, cel do 8 cm), rozrzut w bok (`SPREAD`, mediana do 15 cm) i kawałki w ruchu na końcu; `check_models.py` sprawdza obrys ruiny i plik klatek.
+
