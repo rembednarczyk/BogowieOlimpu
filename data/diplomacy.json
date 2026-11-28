@@ -1,0 +1,210 @@
+{
+ "states": [
+  {
+   "id": "ally",
+   "trade": true,
+   "group_reputation": "strong",
+   "can_attack": true,
+   "can_raid": true,
+   "src": "Z:168"
+  },
+  {
+   "id": "rival",
+   "trade": false,
+   "group_reputation": "weak",
+   "can_attack": true,
+   "can_raid": true,
+   "demands_tribute_after_conquest": true,
+   "src": "Z:168-169"
+  },
+  {
+   "id": "vassal",
+   "trade": true,
+   "group_reputation": "strong",
+   "can_attack": "only_when_rebelling",
+   "can_raid": "only_when_rebelling",
+   "pays_tribute": true,
+   "may_rebel": true,
+   "src": "Z:168"
+  },
+  {
+   "id": "colony",
+   "trade": true,
+   "group_reputation": "very_strong",
+   "permanent": true,
+   "can_attack": "only_when_rebelling",
+   "can_raid": "only_when_rebelling",
+   "pays_tribute": true,
+   "may_rebel": true,
+   "src": "Z:169"
+  },
+  {
+   "id": "parent_city",
+   "permanent": true,
+   "always_complies_out_of_respect": true,
+   "src": "Z:169"
+  },
+  {
+   "id": "distant_city",
+   "trade": true,
+   "diplomacy": false,
+   "src": "Z:170"
+  },
+  {
+   "id": "enchanted_place",
+   "trade": false,
+   "hero_quests": true,
+   "src": "Z:170"
+  }
+ ],
+ "request_thresholds": {
+  "food": {
+   "ally": "any_attitude",
+   "vassal_colony_parent": "even_very_bad",
+   "rival": "very_good_else_demand"
+  },
+  "goods_or_money": {
+   "ally": "fairly_happy",
+   "vassal_colony_parent": "fairly_happy",
+   "rival": "extremely_good_else_demand"
+  },
+  "defensive_aid": {
+   "ally": "very_high",
+   "vassal_colony_parent": "more_willing_than_ally",
+   "rival": "never"
+  },
+  "strike": {
+   "ally": "adores",
+   "vassal_colony_parent": "above_average",
+   "rival": "never"
+  },
+  "notes": "miasto musi produkować towar; żądanie od rywala skuteczne tylko przy przewadze militarnej; ponowna prośba może zostać odrzucona",
+  "src": "Z:174-175"
+ },
+ "player_actions": {
+  "gift": {
+   "needed_goods_valued_more": true,
+   "cash_always_ok": true,
+   "diminishing_returns": true,
+   "may_be_refused_if_too_many": true,
+   "spills_to_same_state_except_rival": true,
+   "src": "Z:176-177"
+  },
+  "attack": {
+   "exclude_units": [
+    "rabble"
+   ],
+   "success": "target_becomes_vassal_pays_tribute_conquest_monument",
+   "attack_ally": "all_allies_turn_away",
+   "attack_rival": "other_rivals_respect",
+   "suppress_rebellion": "normal_relations_resume",
+   "src": "Z:177-178"
+  },
+  "raid": {
+   "exclude_units": [
+    "rabble"
+   ],
+   "choose_good": "from_target_production",
+   "raid_ally": "all_allies_hate",
+   "raid_rival": "rivals_respect",
+   "raid_rebel": "other_colonies_vassals_resent",
+   "src": "Z:178"
+  },
+  "fulfill_request": {
+   "late_better_than_never": true,
+   "too_late_withdrawn_opinion_drops": true,
+   "military_requests_never_overdue": true,
+   "src": "Z:161-162, Z:176"
+  }
+ },
+ "long_term": {
+  "good": "goodwill_gift_from_ally_colony_vassal_parent",
+  "bad": {
+   "ally": "stops_trade",
+   "vassal_colony": "stops_tribute_then_rebels",
+   "rival": "may_attack"
+  },
+  "src": "Z:178"
+ },
+ "tribute": {
+  "lose_twice_to_same_rival": "lose_episode",
+  "break_free": [
+   "conquer_rival",
+   "defeat_rival_army_at_home"
+  ],
+  "src": "Z:172"
+ },
+ "world_numbers": {
+  "attitude": {
+   "any_attitude": 0,
+   "even_very_bad": 0,
+   "fairly_happy": 50,
+   "above_average": 50,
+   "very_good": 80,
+   "very_high": 80,
+   "extremely_good": 90,
+   "adores": 90,
+   "more_willing_than_ally": 60
+  },
+  "attitude_src": "[ZAŁOŻENIE L-113] słowne progi Z:174-175 na skali 0-100 (doc 24); more_willing_than_ally (pomoc obronna wasala, kolonii, metropolii) [ZAŁOŻENIE L-125]",
+  "gift_needed_x2": 6,
+  "gift_other_x2": 3,
+  "gift_units_per_year": 3,
+  "gift_src": "doc 24 [eZeus]: +3 / +1,5 za jednostkę, maks. 3 jednostki towaru rocznie",
+  "gift_money_unit": 500,
+  "gift_money_unit_src": "[ZAŁOŻENIE L-113] jednostka daru pieniężnego",
+  "request_opinion": -10,
+  "request_opinion_src": "doc 24 [eZeus]: prośba gracza -10 u wszystkich miast",
+  "request_loads": 8,
+  "request_money_per_coin": 250,
+  "request_cooldown_days": 96,
+  "request_delay_days": 90,
+  "request_delay_src": "eZeus egameboard (90 dni); decyzja właściciela 2026-11-26, L-113",
+  "request_src": "[ZAŁOŻENIE L-113] ilość i odstęp prośby",
+  "march_days": 200,
+  "march_src": "doc 24 [eZeus, ZAŁOŻENIE do strojenia]",
+  "city_strength_per_shield": 10,
+  "city_strength_src": "[ZAŁOŻENIE L-063] tarcza siły militarnej = 10 żołnierzy",
+  "tribute_per_coin": 200,
+  "tribute_src": "[ZAŁOŻENIE L-065] trybut rywala za monetę siły ekonomicznej, gdy scenariusz nie podaje",
+  "stops_tribute_below": 30,
+  "refused_tribute_opinion": -20,
+  "attacked_ally_opinion": -30,
+  "attacked_rival_respect": 10,
+  "opinion_effects_src": "[ZAŁOŻENIE L-113] Z:172, Z:177-178 bez liczb",
+  "raid_percent": {
+   "B": 200,
+   "M": 150,
+   "H": 100,
+   "T": 75,
+   "O": 50
+  },
+  "raid_src": "S-004 trivia: Beginner 2x rocznej ilości, Olympian 0,5x; środek [ZAŁOŻENIE L-113]",
+  "rebel_after_months": 12,
+  "hate_below": 10,
+  "rival_attack_after_months": 12,
+  "rival_attack_nation": "greek",
+  "goodwill_above": 80,
+  "goodwill_after_months": 24,
+  "goodwill_gift": 500,
+  "debt_aid_after_days": 96,
+  "debt_aid": 1000,
+  "debt_aid_every_months": 12,
+  "debt_aid_min_opinion": 50,
+  "relations_src": "[ZAŁOŻENIE L-121] Z:169, Z:172, Z:178 (długotrwała zła lub dobra relacja), Z:100 i Z:179 (dary sojuszników przy długu) bez liczb; eZeus wywołuje bunty i ataki zdarzeniami scenariusza"
+ },
+ "atlantean_pact": {
+  "attack_atlantean_ally": "all_atlantean_cities_become_rivals",
+  "src": "P:19"
+ },
+ "map_markers": {
+  "player_city": "big_square_red_banner",
+  "colony_or_vassal": "small_player_banner",
+  "ally": "small_red_flag",
+  "rival": "none",
+  "rebelling": "fiery_torch",
+  "economy": "coin_stack",
+  "military": "shields",
+  "src": "Z:170"
+ }
+}

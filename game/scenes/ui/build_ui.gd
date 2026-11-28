@@ -1,0 +1,842 @@
+# Player interface on the phone (E7 building by touch, E8 UI; docs/06-MOBILE-UX.md). A panel pinned to the
+# right edge with the categories and fixed action buttons; the buildings of a category slide out in a column
+# next to it. Placeholder look: plain Godot controls; player texts are catalog keys (game/i18n, rule 7).
+# The rules stay in the core: previews ask BoSimulation.check_placement, actions are commands.
+extends CanvasLayer
+
+const TABS := ["general", "population", "husbandry", "industry", "distribution", "hygiene_safety", "administration",
+	"culture", "mythology", "military", "aesthetics"]
+var tabs: Array = TABS  # Atlantis: science in place of culture (P:10-13)
+const CELL := Vector2(114, UiScale.TAP)  # dp (ui_scale.gd): 48 dp is 7.6 mm on any phone
+const SCROLLBAR := 8.0  # dp: the categories' scroll bar on a short screen
+const PANEL_W := CELL.x * 2 + UiScale.GAP + SCROLLBAR + 12  # two columns, the scroll bar, the panel's margins
+var view_pick: OptionButton  # the special view, on the panel
+var legend: PanelContainer
+var legend_text: Label
+var legend_scale: TextureRect
+var legend_low: Label
+var legend_high: Label
+const ITEM := Vector2(176, UiScale.TAP)
+var root: Control
+var hud_left: VBoxContainer
+var dev_slot: VBoxContainer
+var card_scroll: ScrollContainer
+var actions: HBoxContainer
+const TAP_SLOP := 14.0
+# How a building is laid by dragging (owner's choice 2026-11-26): houses and clearing as a rectangle, roads
+# and walls as a line; everything else one at a time.
+const RECT_TYPES := ["common_housing", "elite_housing", "clear_land"]
+const LINE_TYPES := ["road", "wall"]
+const SETTINGS := "user://settings.cfg"
+
+var game: Node3D  # boot.gd: sim, screen_to_tile(), show_ghost(), clear_ghost(), ticks_per_second
+var buildings_by_tab := {}
+var mode := ""        # "", "build", "demolish"
+var selected := ""
+var turn := 0
+var drag_from := Vector2i(-1, -1)
+var target := Vector2i(-1, -1)
+var press_pos := Vector2.ZERO
+var pressed := false
+var moved := false
+var instant := false  # build when the finger lifts, without Confirm (setting)
+var preview: Array = []  # [{"x", "y"}] origins the confirm will act on
+
+var mode_group := ButtonGroup.new()
+var flyout: PanelContainer
+var flyout_grid: GridContainer
+var confirm_btn: Button
+var rotate_btn: Button
+var cancel_btn: Button
+var demolish_btn: Button
+var hint: Label
+var status: Label
+var card: PanelContainer
+var card_text: Label
+var pray_btn: Button
+var oracle_btn: Button
+var prophecy := ""  # the oracle's last answer, shown on the card
+var buying_btn: Button  # Not Buying on an agora stall's card (Z:72)
+var hold_btn: Button  # hold a monument's building (P:26-28)
+var card_monument := 0
+var card_stall := 0
+var card_sanctuary := 0  # the sanctuary on the card, for the prayer
+
+func setup(g: Node3D) -> void:
+	game = g
+	TranslationServer.set_locale("en" if OS.get_locale_language() == "en" else "pl")  # Polish by default
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) == OK:
+		instant = cfg.get_value("build", "instant", false)
+	_load_catalog()
+	_build()
+	_set_mode("")
+
+func _load_catalog() -> void:
+	var list = JSON.parse_string(FileAccess.get_file_as_string("res://data/buildings.json"))
+	# The city's culture (P:16-17): Atlantean buildings only in Atlantis, Greek-only ones never there.
+	var atlantean: bool = game.sim.get_scenario().get("atlantean", false)
+	var foreign := "greek" if atlantean else "atlantean"
+	tabs = TABS.map(func(t): return "science" if atlantean and t == "culture" else t)
+	for tab in tabs:
+		buildings_by_tab[tab] = []
+	for b in list:
+		var tab: String = b.get("tab", "")
+		if not buildings_by_tab.has(tab) or not b.get("player_placeable", true) or b.get("culture", "any") == foreign:
+			continue
+		if b.has("per_god"):
+			continue  # the generic sanctuary is only the base of the per-god ones
+		buildings_by_tab[tab].append(b["id"])
+
+func _button(key: String, cb: Callable, size: Vector2, toggle := false) -> Button:
+	var b := Button.new()
+	b.text = key  # a catalog key: the button translates itself and follows a change of language
+	b.custom_minimum_size = size
+	b.clip_text = true
+	if toggle:
+		b.toggle_mode = true
+		b.button_group = mode_group
+	b.pressed.connect(cb)
+	return b
+
+func _build() -> void:
+	root = Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.theme = _theme()
+	add_child(root)
+
+	# Left of the panel, over the map: the status line, the developer line, the legend and a building's card,
+	# one under another in a column (they cannot overlap); the hint and the build actions at the bottom.
+	hud_left = VBoxContainer.new()
+	hud_left.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hud_left.offset_left = UiScale.MARGIN
+	hud_left.offset_top = 6
+	hud_left.offset_right = -PANEL_W - UiScale.MARGIN
+	hud_left.offset_bottom = -(UiScale.MARGIN + CELL.y + 36)
+	hud_left.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud_left.add_theme_constant_override("separation", 6)
+	root.add_child(hud_left)
+	status = Label.new()
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hud_left.add_child(status)
+	dev_slot = VBoxContainer.new()  # boot.gd puts its developer line here
+	dev_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud_left.add_child(dev_slot)
+	_build_legend(hud_left)
+	card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	card.custom_minimum_size = Vector2(320, 0)
+	card.add_theme_stylebox_override("panel", _panel_style(0.94))
+	card_scroll = ScrollContainer.new()
+	card_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	card.add_child(card_scroll)
+	var card_box := VBoxContainer.new()
+	card_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card_scroll.add_child(card_box)
+	card_text = Label.new()
+	card_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	card_box.add_child(card_text)
+	pray_btn = _button("ui.pray", func(): _pray(), Vector2(200, CELL.y))
+	card_box.add_child(pray_btn)
+	oracle_btn = _button("ui.oracle", func(): _consult(), Vector2(200, CELL.y))  # Z:124
+	card_box.add_child(oracle_btn)
+	buying_btn = _button("ui.not_buying", func(): _toggle_buying(), Vector2(200, CELL.y))
+	buying_btn.toggle_mode = true
+	card_box.add_child(buying_btn)
+	hold_btn = _button("ui.hold_building", func(): _toggle_hold(), Vector2(240, CELL.y))
+	hold_btn.toggle_mode = true
+	card_box.add_child(hold_btn)
+	card_box.add_child(_button("ui.close", func(): card.visible = false, Vector2(140, CELL.y)))
+	card.visible = false
+	hud_left.add_child(card)
+
+	var bottom := VBoxContainer.new()
+	bottom.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bottom.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	bottom.offset_left = UiScale.MARGIN
+	bottom.offset_right = -PANEL_W - UiScale.MARGIN
+	bottom.offset_bottom = -UiScale.MARGIN
+	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(bottom)
+	hint = Label.new()
+	hint.add_theme_font_size_override("font_size", UiScale.FONT_H2)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bottom.add_child(hint)
+	actions = HBoxContainer.new()  # Confirm, Rotate, Cancel: only while building (E7)
+	actions.alignment = BoxContainer.ALIGNMENT_END
+	actions.add_theme_constant_override("separation", int(UiScale.GAP))
+	confirm_btn = _button("ui.confirm", _confirm, Vector2(104, CELL.y))
+	rotate_btn = _button("ui.rotate", func(): turn = (turn + 1) % 4; _refresh_preview(), Vector2(104, CELL.y))
+	cancel_btn = _button("ui.cancel", cancel, Vector2(104, CELL.y))
+	for btn in [confirm_btn, rotate_btn, cancel_btn]:
+		actions.add_child(btn)
+	bottom.add_child(actions)
+
+	# The panel pinned to the right edge (as the reference's control panel): the categories scroll, the fixed
+	# buttons stay under them.
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	panel.offset_left = -PANEL_W
+	panel.add_theme_stylebox_override("panel", _panel_style(0.9))
+	root.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", int(UiScale.GAP))
+	panel.add_child(col)
+	var cat_scroll := ScrollContainer.new()
+	cat_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	cat_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	col.add_child(cat_scroll)
+	var cats := GridContainer.new()
+	cats.columns = 2
+	cats.add_theme_constant_override("h_separation", int(UiScale.GAP))
+	cats.add_theme_constant_override("v_separation", int(UiScale.GAP))
+	for tab in tabs:
+		cats.add_child(_button("tab." + tab, func(): _show_tab(tab), CELL, true))
+	demolish_btn = _button("ui.demolish", func(): _set_mode("demolish"), CELL, true)
+	cats.add_child(demolish_btn)
+	for btn in cats.get_children():
+		btn.add_theme_font_size_override("font_size", UiScale.FONT_SMALL)  # "Administracja" in 114 dp
+	cat_scroll.add_child(cats)
+	var speeds := HBoxContainer.new()
+	speeds.add_theme_constant_override("separation", int(UiScale.GAP))
+	speeds.add_child(_button("ui.pause", func(): _speed(0.0), Vector2(CELL.x * 2 - 3 * 52 - 3 * UiScale.GAP, CELL.y)))
+	for sp in [1.0, 2.0, 4.0]:
+		speeds.add_child(_button("%dx" % int(sp), func(): _speed(sp), Vector2(52, CELL.y)))
+	col.add_child(speeds)
+	for pair in [[["ui.undo", func(): game.sim.undo()], ["ui.report", toggle_report]],
+			[["ui.army", func(): _close_overlays(); army_world.toggle_army()],
+			["ui.world", func(): _close_overlays(); army_world.toggle_world()]]]:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", int(UiScale.GAP))
+		for k in pair:
+			row.add_child(_button(k[0], k[1], CELL))
+		col.add_child(row)
+	view_pick = OptionButton.new()  # the special views (See ..., docs/gameplay/16): one tap from the map
+	view_pick.custom_minimum_size = Vector2(CELL.x * 2 + UiScale.GAP, CELL.y)
+	view_pick.fit_to_longest_item = false  # the panel's width, not the longest view's name
+	view_pick.clip_text = true
+	view_pick.add_item("ui.view_none")  # keys: translated on screen in the current language
+	for v in game.OVERLAY_VIEWS:
+		view_pick.add_item("ui.view_" + v)
+	view_pick.item_selected.connect(func(i): game.set_overlay("" if i == 0 else game.OVERLAY_VIEWS[i - 1]))
+	col.add_child(view_pick)
+	_build_report(root)
+	army_world.setup(self, root)
+
+	# The column of buildings that slides out next to the panel; it scrolls when the screen is short.
+	flyout = PanelContainer.new()
+	flyout.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	flyout.offset_bottom = -(UiScale.MARGIN + CELL.y + UiScale.GAP)  # the build actions stay free under it
+	flyout.add_theme_stylebox_override("panel", _panel_style(0.94))
+	root.add_child(flyout)
+	var fly_scroll := ScrollContainer.new()
+	fly_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	flyout.add_child(fly_scroll)
+	flyout_grid = GridContainer.new()
+	flyout_grid.add_theme_constant_override("h_separation", int(UiScale.GAP))
+	flyout_grid.add_theme_constant_override("v_separation", int(UiScale.GAP))
+	fly_scroll.add_child(flyout_grid)
+	flyout.visible = false
+
+# One look for the whole interface: the font size in dp; the rest is Godot's default theme for now.
+func _theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = UiScale.FONT
+	return t
+
+func _panel_style(alpha: float) -> StyleBoxFlat:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.13, 0.14, 0.17, alpha)
+	bg.set_content_margin_all(6)
+	return bg
+
+# The edges a phone keeps for itself (camera cut-out, rounded corners), in dp, from boot.gd.
+func set_safe_insets(insets: Vector4) -> void:
+	root.offset_left = insets.x
+	root.offset_top = insets.y
+	root.offset_right = -insets.z
+	root.offset_bottom = -insets.w
+
+# A panel over the map (report, army, world) closes what would lie under it: the card, a building in hand.
+func _close_overlays() -> void:
+	card.visible = false
+	report.visible = false
+	if mode != "" or flyout.visible:
+		cancel()
+
+# Cancel: no mode, no category chosen, the column closed.
+func cancel() -> void:
+	for b in mode_group.get_buttons():
+		b.set_pressed_no_signal(false)
+	flyout.visible = false
+	_set_mode("")
+
+# The city report (06-MOBILE-UX "Informacja", doc 13): episode goals, requests from cities with one-tap
+# sending, quests, settings, save and new game.
+var scale_slider: HSlider
+var army_world = preload("res://scenes/ui/army_world_ui.gd").new()  # army and world panels (Z:135-178)
+var report: PanelContainer
+var report_box: VBoxContainer
+var report_note := ""
+var _report_day := -1
+
+func _build_report(root: Control) -> void:
+	report = PanelContainer.new()
+	report.set_anchors_preset(Control.PRESET_FULL_RECT)
+	report.offset_left = UiScale.MARGIN
+	report.offset_top = UiScale.MARGIN
+	report.offset_right = -PANEL_W - UiScale.MARGIN
+	report.offset_bottom = -UiScale.MARGIN
+	var bg := _panel_style(0.96)
+	bg.set_content_margin_all(UiScale.MARGIN)
+	report.add_theme_stylebox_override("panel", bg)
+	var scroll := ScrollContainer.new()  # the report is longer than a phone's screen
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	report.add_child(scroll)
+	report_box = VBoxContainer.new()
+	report_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(report_box)
+	report.visible = false
+	root.add_child(report)
+
+func toggle_report() -> void:
+	var show := not report.visible
+	_close_overlays()
+	army_world.army.visible = false
+	army_world.world.visible = false
+	report.visible = show
+	report_note = ""
+	if report.visible:
+		refresh_report()
+
+# The legend of a special view: what the columns (or the tiles) measure and the scale of their colour, bottom
+# left over the map; hidden in the normal view.
+func _build_legend(root: Control) -> void:
+	legend = PanelContainer.new()
+	legend.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg := _panel_style(0.9)
+	bg.set_content_margin_all(10)
+	legend.add_theme_stylebox_override("panel", bg)
+	var box := VBoxContainer.new()
+	legend.add_child(box)
+	legend_text = _label("")
+	legend_text.custom_minimum_size = Vector2(280, 0)
+	box.add_child(legend_text)
+	legend_scale = TextureRect.new()
+	legend_scale.custom_minimum_size = Vector2(280, 14)
+	legend_scale.stretch_mode = TextureRect.STRETCH_SCALE
+	legend_scale.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	box.add_child(legend_scale)
+	var ends := HBoxContainer.new()
+	legend_low = _label("", 14)
+	legend_low.autowrap_mode = TextServer.AUTOWRAP_OFF
+	legend_low.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	legend_high = _label("", 14)
+	legend_high.autowrap_mode = TextServer.AUTOWRAP_OFF
+	legend_high.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ends.add_child(legend_low)
+	ends.add_child(legend_high)
+	box.add_child(ends)
+	legend.visible = false
+	root.add_child(legend)
+
+# Called by boot.gd set_overlay: the legend and the picker follow the view, whoever changed it.
+func update_legend(view: String) -> void:
+	view_pick.select(0 if view == "" else game.OVERLAY_VIEWS.find(view) + 1)
+	legend.visible = view != ""
+	if view == "":
+		return
+	legend_text.text = tr("legend." + view)
+	var g := Gradient.new()
+	var bad := Color(0.85, 0.2, 0.15)
+	var good := Color(0.2, 0.75, 0.3)
+	if view == "appeal":
+		g.set_color(0, Color(0.15, 0.12, 0.25))
+		g.set_color(1, Color(1.0, 0.95, 0.6))
+	else:
+		g.set_color(0, good if view in game.RISK_VIEWS else bad)
+		g.set_color(1, bad if view in game.RISK_VIEWS else good)
+	var tex := GradientTexture1D.new()
+	tex.gradient = g
+	legend_scale.texture = tex
+	var kind := "appeal" if view == "appeal" else ("risk" if view in game.RISK_VIEWS else "level")
+	legend_low.text = tr("legend.low_" + kind)
+	legend_high.text = tr("legend.high_" + kind)
+
+# size: 18 body, 20 a section title, 24 a panel title (the old pixel sizes), mapped to dp (ui_scale.gd).
+func _label(text: String, size := 18) -> Label:
+	var l := Label.new()
+	l.text = text
+	var dp := UiScale.FONT_H1 if size >= 24 else (UiScale.FONT_H2 if size >= 20 else (UiScale.FONT if size >= 16 else 14))
+	l.add_theme_font_size_override("font_size", dp)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return l
+
+func _city_name(i: int) -> String:
+	var cities: Array = game.sim.get_cities()
+	return String(cities[i]["id"]).capitalize() if i < cities.size() else "?"
+
+func _goal_text(g: Dictionary) -> String:
+	match g["type"]:
+		"population":
+			return tr("goal.population") % [game.sim.get_population(), g["value"]]
+		"treasury":
+			return tr("goal.treasury") % [game.sim.get_treasury(), g["value"]]
+		"sanctuary", "quest":
+			return tr("goal." + g["type"]) % tr("god." + g["target"])
+		"houses":
+			return tr("goal.houses") % [tr("house." + g["target"]), g["value"]]
+		"vassal":
+			return tr("goal.vassal") % String(g["target"]).capitalize()
+		"support":
+			return tr("goal.support") % [g["value"], tr("unit." + g["target"]) if g["target"] != "trireme" else tr("ui.ships")]
+		"slay":
+			return tr("goal.slay") % (g["target"] if g["target"] != "" else str(g["value"]))
+		"yearly_production":
+			return tr("goal.yearly_production") % [g["value"], tr("good." + g["target"])]
+		"set_aside_goods":
+			return tr("goal.set_aside_goods") % [g["value"], tr("good." + g["target"])]
+		"survive_until", "complete_before":
+			return tr("goal." + g["type"]) % (int(g["value"]) + 1)
+		"hippodrome":
+			return tr("goal.hippodrome") % g["value"]
+		"trading_partners", "yearly_profit":
+			return tr("goal." + g["type"]) % g["value"]
+	return g["type"]
+
+# Loads of a good in the city's storehouses and granaries (trade buildings left out, as the core does).
+func city_stock(good: String) -> int:
+	var total := 0
+	for b in game.sim.get_buildings():
+		if b.has("stock_loads") and b["type"] in ["storehouse", "granary"]:
+			total += int(b["stock_loads"].get(good, 0))
+	return total
+
+func _toggle_stockpile(good: String) -> void:
+	game.sim.set_stockpile(good, not game.sim.get_stockpiled().has(good))
+
+func refresh_report() -> void:
+	for c in report_box.get_children():
+		c.queue_free()
+	var sc: Dictionary = game.sim.get_scenario()
+	report_box.add_child(_label(tr("ui.report_title"), 24))
+	if sc.get("won", false):
+		report_box.add_child(_label(tr("ui.episode_won"), 22))
+	if sc.get("lost", false):
+		report_box.add_child(_label(tr("ui.episode_lost"), 22))
+	if sc.get("debt_days", 0) > 0:  # L-034: no immigrants after a year, the episode lost after three
+		report_box.add_child(_label(tr("ui.debt_line") % sc["debt_days"], 20))
+	if sc.has("games"):  # this year's Panhellenic games (Z:110-112): invited or not, and the chance
+		var chance: int = sc["games_chance"]
+		report_box.add_child(_label(tr("ui.games_line") % [tr("games." + sc["games"]), chance] if chance > 0
+			else tr("ui.games_not_invited") % tr("games." + sc["games"]), 18))
+	if sc.get("games_host_year", -1) >= 0:  # the right to host the Olympian games (Z:111)
+		report_box.add_child(_label(tr("ui.games_host") % (int(sc["games_host_year"]) + 1), 18))
+	if sc.get("hippodrome_stades", 0) > 0:  # the track (P:13-15): its length, horses and whether it races
+		report_box.add_child(_label(tr("ui.hippodrome_line") % [sc["hippodrome_stades"], sc["hippodrome_horses"],
+			tr("ui.hippodrome_racing" if sc["hippodrome_working"] > 0 else ("ui.hippodrome_waiting" if sc["hippodrome_closed"]
+			else "ui.hippodrome_open"))], 18))
+		report_box.add_child(_label(tr("ui.hippodrome_takings") % [sc["hippodrome_this_year"], sc["hippodrome_last_year"]], 18))
+	report_box.add_child(_label(tr("ui.goals"), 20))
+	for g in sc.get("goals", []):
+		report_box.add_child(_label("  " + _goal_text(g) + ": " + tr("ui.goal_done" if g["met"] else "ui.goal_open")))
+	var monuments: Dictionary = sc.get("monuments", {})
+	if not monuments.is_empty():  # earned and not yet built (Z:155-156)
+		report_box.add_child(_label(tr("ui.monuments"), 20))
+		for m in monuments:
+			report_box.add_child(_label("  %s × %d" % [tr("monument." + m), monuments[m]]))
+	# Stock of the city with a stockpile switch per good (Z:80): kept goods are not used up.
+	var stock := {}
+	for b in game.sim.get_buildings():
+		if b.has("stock_loads") and b["type"] in ["storehouse", "granary"]:
+			for g in b["stock_loads"]:
+				stock[g] = int(stock.get(g, 0)) + int(b["stock_loads"][g])
+	var kept: PackedStringArray = game.sim.get_stockpiled()
+	if not stock.is_empty():
+		report_box.add_child(_label(tr("ui.stock_title"), 20))
+		for g in stock:
+			var row := HFlowContainer.new()  # wraps on a narrow screen
+			var l := _label("  %s: %d" % [tr("good." + g), stock[g]])
+			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(l)
+			var keep := _button("ui.stockpile", func(): _toggle_stockpile(g), Vector2(160, CELL.y))
+			keep.toggle_mode = true
+			keep.set_pressed_no_signal(kept.has(g))
+			row.add_child(keep)
+			report_box.add_child(row)
+	report_box.add_child(_label(tr("ui.requests"), 20))
+	var requests: Array = sc.get("requests", [])
+	if requests.is_empty():
+		report_box.add_child(_label("  " + tr("ui.no_requests")))
+	for i in requests.size():
+		var r: Dictionary = requests[i]
+		var row := HFlowContainer.new()
+		var line: String
+		if r["days_left"] >= 0:
+			line = tr("ui.request_line") % [_city_name(r["city"]), r["amount"], tr("good." + r["good"]), r["days_left"]]
+		else:
+			line = tr("ui.request_overdue") % [_city_name(r["city"]), r["amount"], tr("good." + r["good"])]
+		var l := _label("  " + line)
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		var send := _button("ui.send", func(): send_request(i), Vector2(140, CELL.y))
+		# Troops (Z:161): the core picks companies at home and says if there are too few.
+		send.disabled = r["good"] != "drachmas" and r["good"] != "army" and city_stock(r["good"]) < int(r["amount"])
+		row.add_child(send)
+		report_box.add_child(row)
+	var quests: Array = sc.get("quests", [])
+	if not quests.is_empty():
+		report_box.add_child(_label(tr("ui.quests"), 20))
+		for q in quests:
+			report_box.add_child(_label("  " + tr("ui.quest_line") % [tr("god." + q["god"]), tr("hero." + q["hero"]),
+				tr("ui.quest_%d" % q["status"])]))
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	report_box.add_child(spacer)
+	var settings := HFlowContainer.new()
+	var inst := CheckButton.new()
+	inst.text = "ui.instant_build"
+	inst.button_pressed = instant
+	inst.custom_minimum_size = Vector2(240, CELL.y)
+	inst.toggled.connect(_set_instant)
+	settings.add_child(inst)
+	settings.add_child(_button("ui.save", func(): game.save_game(); report_note = tr("ui.saved"); refresh_report(), Vector2(140, CELL.y)))
+	settings.add_child(_button("ui.new_game", func(): game.new_game(), Vector2(160, CELL.y)))
+	var order: Array = game.DEMO_ORDER
+	var other: String = order[(order.find(game.demo) + 1) % order.size()]
+	settings.add_child(_button("ui.demo_" + other, func(): game.switch_demo(other), Vector2(220, CELL.y)))
+	settings.add_child(_button("ui.bench", func(): get_tree().change_scene_to_file("res://scenes/bench_crowd.tscn"),
+		Vector2(200, CELL.y)))  # prototype E4: the crowd on this phone
+	settings.add_child(_button("ui.close", toggle_report, Vector2(140, CELL.y)))
+	report_box.add_child(settings)
+	report_box.add_child(_scale_row())
+	if report_note != "":
+		report_box.add_child(_label(report_note))
+
+# One tap sends what a city asked for (Z:162). The command runs at the next tick; the report refreshes on the
+# event (boot.gd: request_closed) or the next game day.
+# Interface scale (75-150 %, docs/06-MOBILE-UX.md "Dostępność"): applied when the finger lets go.
+func _scale_row() -> HFlowContainer:
+	var row := HFlowContainer.new()
+	var percent := UiScale.saved_percent()
+	var l := _label(tr("ui.scale") % percent)
+	l.custom_minimum_size = Vector2(200, CELL.y)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(l)
+	scale_slider = HSlider.new()
+	scale_slider.min_value = UiScale.MIN_PERCENT
+	scale_slider.max_value = UiScale.MAX_PERCENT
+	scale_slider.step = 5
+	scale_slider.value = percent
+	scale_slider.custom_minimum_size = Vector2(240, CELL.y)
+	scale_slider.value_changed.connect(func(v): l.text = tr("ui.scale") % int(v))
+	scale_slider.drag_ended.connect(func(_changed): set_scale_percent(int(scale_slider.value)))
+	row.add_child(scale_slider)
+	return row
+
+func set_scale_percent(percent: int) -> void:
+	UiScale.save_percent(percent)
+	game.apply_ui_scale()
+
+func send_request(i: int) -> void:
+	game.sim.fulfill_request(i)
+
+func _set_instant(on: bool) -> void:
+	instant = on
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("build", "instant", on)
+	cfg.save(SETTINGS)
+
+func _show_tab(tab: String) -> void:
+	_set_mode("")
+	card.visible = false  # the column takes the map's side; the card would lie under it
+	for c in flyout_grid.get_children():
+		flyout_grid.remove_child(c)
+		c.queue_free()
+	var ids: Array = buildings_by_tab[tab]
+	# As many rows as the screen holds, as many columns as half the map's width allows; the rest scrolls.
+	var h: float = root.size.y if root.size.y > 0 else 720.0
+	var w: float = (root.size.x if root.size.x > 0 else 1280.0) - PANEL_W
+	var rows := maxi(1, floori((h - 12 + flyout.offset_bottom) / (ITEM.y + UiScale.GAP)))
+	var most := maxi(1, floori(w * 0.6 / (ITEM.x + UiScale.GAP)))
+	flyout_grid.columns = clampi(ceili(float(ids.size()) / rows), 1, most)
+	for id in ids:
+		var item := _button("building." + id, func(): _select(id), ITEM)
+		item.add_theme_font_size_override("font_size", UiScale.FONT_SMALL)
+		item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # two lines for the long names
+		item.clip_text = false
+		flyout_grid.add_child(item)
+	flyout.offset_right = -PANEL_W
+	flyout.offset_left = -PANEL_W - flyout_grid.columns * (ITEM.x + UiScale.GAP) - 12 - (12 if ids.size() > rows * flyout_grid.columns else 0)
+	flyout.visible = true
+	actions.visible = true
+	cancel_btn.disabled = false
+
+func _select(id: String) -> void:
+	selected = id
+	turn = 0
+	flyout.visible = false
+	_set_mode("build")
+
+func _set_mode(m: String) -> void:
+	mode = m
+	drag_from = Vector2i(-1, -1)
+	target = Vector2i(-1, -1)
+	preview = []
+	game.clear_ghost()
+	if m == "demolish":
+		selected = ""
+		flyout.visible = false  # demolishing clears any other choice
+	confirm_btn.disabled = true
+	rotate_btn.disabled = m != "build" or drag_kind() != ""
+	cancel_btn.disabled = m == "" and not flyout.visible
+	actions.visible = m != "" or flyout.visible
+	match m:
+		"build":
+			hint.text = tr("building." + selected) + ": " + tr("ui.drag_area" if drag_kind() != "" else "ui.tap_to_place")
+		"demolish":
+			hint.text = tr("ui.tap_to_demolish")
+		"select", "deselect":
+			hint.text = tr("ui.drag_" + m)
+		_:
+			hint.text = ""
+
+# "rect", "line" or "" for the current choice.
+func drag_kind() -> String:
+	if mode == "select" or mode == "deselect":  # companies by a rectangle (Z:137)
+		return "rect"
+	if mode == "demolish" or (mode == "build" and selected in RECT_TYPES):
+		return "rect"
+	if mode == "build" and selected in LINE_TYPES:
+		return "line"
+	return ""
+
+func _speed(s: float) -> void:
+	game.ticks_per_second = 60.0 * s
+
+func update_status() -> void:
+	if report != null and report.visible and game.sim.get_day_in_month() != _report_day:
+		_report_day = game.sim.get_day_in_month()
+		refresh_report()  # once a game day while open
+	status.text = tr("ui.status") % [game.sim.get_year() + 1, game.sim.get_month() + 1, game.sim.get_treasury(),
+		game.sim.get_population(), game.sim.get_employed(), game.sim.get_workforce(), game.sim.get_popularity()]
+
+# Map input from boot.gd (one finger, or the mouse); true when the UI used it, otherwise the camera pans.
+func map_input(event: InputEvent) -> bool:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			pressed = true
+			moved = false
+			press_pos = event.position
+			if drag_kind() != "":
+				begin_drag(game.screen_to_tile(event.position))
+				return true
+			return false
+		pressed = false
+		if drag_kind() != "":
+			end_drag()
+			return true
+		if not moved:
+			tap(game.screen_to_tile(event.position))
+			return true
+		return false
+	if event is InputEventMouseMotion and pressed:
+		if event.position.distance_to(press_pos) > TAP_SLOP:
+			moved = true
+		if drag_kind() != "":
+			drag_to(game.screen_to_tile(event.position))
+			return true
+	return false
+
+func begin_drag(tile: Vector2i) -> void:
+	drag_from = tile
+	target = tile
+	_refresh_preview()
+
+func drag_to(tile: Vector2i) -> void:
+	if tile.x >= 0:
+		target = tile
+		_refresh_preview()
+
+func end_drag() -> void:
+	if (mode == "select" or mode == "deselect") and target.x >= 0:
+		army_world.select_area(drag_from, target, mode == "deselect")
+		_set_mode("")
+		return
+	if instant:
+		_confirm()
+
+# A tap: place the ghost of a single building, or open the card of a building with no mode.
+func tap(tile: Vector2i) -> void:
+	if army_world.map_tap(tile):
+		return  # the standard of a company moved (Z:137)
+	if mode == "":
+		_open_card(tile)
+		return
+	begin_drag(tile)
+	end_drag()
+
+func _line_tiles() -> Array:
+	var out := []
+	if drag_from.x < 0:
+		return out
+	var xs := 1 if target.x >= drag_from.x else -1
+	for x in range(drag_from.x, target.x + xs, xs):
+		out.append(Vector2i(x, drag_from.y))
+	var ys := 1 if target.y >= drag_from.y else -1
+	for y in range(drag_from.y + ys, target.y + ys, ys):
+		out.append(Vector2i(target.x, y))
+	return out
+
+func _rect_tiles(step: int) -> Array:
+	var out := []
+	if drag_from.x < 0:
+		return out
+	var x0 := mini(drag_from.x, target.x)
+	var y0 := mini(drag_from.y, target.y)
+	for y in range(y0, maxi(drag_from.y, target.y) + 1, step):
+		for x in range(x0, maxi(drag_from.x, target.x) + 1, step):
+			out.append(Vector2i(x, y))
+	return out
+
+func _refresh_preview() -> void:
+	preview = []
+	if target.x < 0:
+		return
+	var good := PackedVector2Array()
+	var bad := PackedVector2Array()
+	var cost := 0
+	if mode == "select" or mode == "deselect":
+		for t in _rect_tiles(1):
+			good.append(Vector2(t.x, t.y))
+		game.show_ghost(good, bad)
+		return
+	if mode == "demolish" or selected == "clear_land" or selected == "road" or selected == "roadblock":
+		var tiles := _rect_tiles(1) if drag_kind() == "rect" else (_line_tiles() if drag_kind() == "line" else [target])
+		for t in tiles:
+			preview.append(t)
+			(bad if mode == "demolish" else good).append(Vector2(t.x, t.y))
+	else:
+		var step := 2 if selected in ["common_housing", "elite_housing"] else 1  # 2x2 plots (S-004)
+		var origins := _rect_tiles(step) if drag_kind() == "rect" else (_line_tiles() if drag_kind() == "line" else [target])
+		for o in origins:
+			var r: Dictionary = game.sim.check_placement(selected, o.x, o.y, turn)
+			if r["ok"]:
+				preview.append(o)
+				cost += int(r["cost"])
+				good.append_array(r["tiles"])
+			else:
+				bad.append_array(r["tiles"])
+				if origins.size() == 1:
+					hint.text = tr("building." + selected) + ": " + tr(r["reason"])
+		if not preview.is_empty() or origins.size() > 1:
+			hint.text = tr("building." + selected) + ": %d   " % preview.size() + tr("ui.cost") % cost
+	game.show_ghost(good, bad)
+	confirm_btn.disabled = preview.is_empty()
+
+func _confirm() -> void:
+	if preview.is_empty():
+		return
+	var done := {}
+	for t in preview:
+		if mode == "demolish":
+			var id: int = game.sim.get_tile(t.x, t.y)["building"]
+			var road: bool = game.sim.get_tile(t.x, t.y)["road"]
+			if (id != 0 and done.has(id)) or (id == 0 and not road):
+				continue
+			done[id] = true
+			game.sim.demolish(t.x, t.y)
+		elif selected == "road":
+			game.sim.place_road(t.x, t.y)
+		elif selected == "roadblock":
+			game.sim.place_roadblock(t.x, t.y)
+		elif selected == "clear_land":
+			game.sim.clear_land(t.x, t.y)
+		else:
+			game.sim.place_building(selected, t.x, t.y, turn)
+	preview = []
+	drag_from = Vector2i(-1, -1)
+	target = Vector2i(-1, -1)
+	game.clear_ghost()
+	confirm_btn.disabled = true  # stay in the mode: the next drag or tap builds more
+
+func _toggle_hold() -> void:
+	if card_monument != 0:
+		game.sim.set_construction_paused(card_monument, hold_btn.button_pressed)
+
+func _toggle_buying() -> void:
+	if card_stall != 0:
+		game.sim.set_not_buying(card_stall, buying_btn.button_pressed)
+
+func _pray() -> void:
+	if card_sanctuary != 0:
+		game.sim.pray(card_sanctuary)
+		pray_btn.disabled = true
+
+func _consult() -> void:
+	if card_sanctuary != 0:
+		game.sim.consult_oracle(card_sanctuary)
+		oracle_btn.disabled = true
+
+# The answer of the oracle (Z:124): what is coming and when.
+func show_prophecy(e: Dictionary) -> void:
+	if e["kind"] == "":
+		prophecy = tr("oracle.nothing")
+	else:
+		prophecy = tr("oracle.foretells") % [tr("oracle.kind." + e["kind"]), e["subject"], e["months"]]
+	card_text.text += "\n" + prophecy
+
+# The card as tall as its content, at most the room left in the column; then it scrolls.
+func _fit_card() -> void:
+	var content: Control = card_scroll.get_child(0)
+	var room := hud_left.size.y - (card.position.y if card.position.y > 0 else 0.0) - 12
+	card_scroll.custom_minimum_size.y = minf(content.get_combined_minimum_size().y, maxf(room, CELL.y))
+
+func _open_card(tile: Vector2i) -> void:
+	if flyout.visible:
+		cancel()  # a tap beside the open column closes it
+		return
+	if tile.x < 0:
+		return
+	var id: int = game.sim.get_tile(tile.x, tile.y)["building"]
+	if id == 0:
+		card.visible = false
+		return
+	for b in game.sim.get_buildings():
+		if b["id"] != id:
+			continue
+		var lines := [tr("building." + b["type"])]
+		if b["workers"] > 0 or b["staffing"] < 100:
+			lines.append(tr("ui.workers") % [b["workers"], b["staffing"]])
+		if b.has("population"):
+			lines.append(tr("ui.residents") % b["population"])
+			lines.append(tr("ui.level") % (b["house_level"] + 1))
+		if b.has("stock_loads") and not b["stock_loads"].is_empty():
+			lines.append(tr("ui.stock") % str(b["stock_loads"]))
+		lines.append(tr("ui.fire_risk") % b.get("fire_risk", 0))
+		lines.append(tr("ui.collapse_risk") % b.get("damage_risk", 0))
+		# A finished sanctuary: how likely the god listens now (Z:132, L-053), and the prayer.
+		buying_btn.visible = b.has("not_buying")
+		card_stall = id if buying_btn.visible else 0
+		if buying_btn.visible:
+			buying_btn.set_pressed_no_signal(b["not_buying"])
+		hold_btn.visible = b.get("monument", false) and not b.get("sanctuary_complete", false)
+		card_monument = id if hold_btn.visible else 0
+		if hold_btn.visible:
+			hold_btn.set_pressed_no_signal(b["construction_paused"])
+			lines.append(tr("ui.monument_progress") % [b["sanctuary_loads_total"] - b["sanctuary_loads_needed"], b["sanctuary_loads_total"]])
+		pray_btn.visible = b.get("sanctuary_complete", false) and not b.get("monument", false)
+		card_sanctuary = id if pray_btn.visible else 0
+		if pray_btn.visible:
+			lines.append(tr("ui.prayer_chance") % b["prayer_chance"])
+			pray_btn.disabled = b["prayer_cooldown"] > 0 or b["prayer_chance"] == 0
+		oracle_btn.visible = pray_btn.visible and b.get("oracle", false)
+		if oracle_btn.visible:
+			oracle_btn.disabled = b["oracle_silent"] > 0
+		card_text.text = "\n".join(lines)
+		card.visible = true
+		_fit_card.call_deferred()
+		return

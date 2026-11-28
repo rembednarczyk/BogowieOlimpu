@@ -1,0 +1,392 @@
+// Whole-game gate (docs/PRAKTYKI.md ch. 4): the autopilot builds the demo city from scenarios/demo_build.json on
+// scenarios/demo.json and must win it. Every placement of the build order must be accepted, and the city must
+// reach common houses that need culture (B-008) and elite houses. BO_DEMO_LOG=1 prints a yearly report.
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <map>
+#include <sstream>
+
+#include "bo/core/appeal.h"
+#include "bo/core/build_order.h"
+#include "bo/core/culture.h"
+#include "bo/core/housing.h"
+#include "bo/core/city.h"
+#include "bo/core/migration.h"
+#include "bo/core/monsters.h"
+#include "bo/core/scenario.h"
+#include "bo/core/naval.h"
+#include "bo/core/simulation.h"
+#include "bo/core/storage.h"
+#include "doctest/doctest.h"
+#include "demo_probes.h"
+#include "helpers.h"
+
+using namespace bo::core;
+using namespace bo::test::demo;
+
+namespace {
+
+std::string read_file(const std::string& path) {
+    std::ifstream f(path);
+    std::stringstream s;
+    s << f.rdbuf();
+    return s.str();
+}
+
+struct DemoRun {
+    std::optional<Simulation> sim;
+    BuildOrder order;
+    std::vector<std::string> refused;  // placements the city refused, "day type x,y: reason"
+    std::uint64_t won_day = 0;
+    std::map<std::string, std::uint32_t> seen;  // mechanics that happened: event kind -> count
+};
+
+// The events that show a mechanic of the demo at work (the owner's rule: the demo shows every mechanic).
+void count_events(const std::vector<TimedEvent>& events, std::map<std::string, std::uint32_t>& seen) {
+    for (const auto& e : events) {
+        std::visit([&seen](const auto& ev) {
+            using T = std::decay_t<decltype(ev)>;
+            const char* name = std::is_same_v<T, InvasionStarted>      ? "invasion"
+                               : std::is_same_v<T, GodAttacked>        ? "god_attack"
+                               : std::is_same_v<T, Disaster>           ? "fire_or_collapse"
+                               : std::is_same_v<T, MonsterAppeared>    ? "monster"
+                               : std::is_same_v<T, MonsterSlain>       ? "monster_slain"
+                               : std::is_same_v<T, HeroArrived>        ? "hero"
+                               : std::is_same_v<T, QuestCompleted>     ? "quest_done"
+                               : std::is_same_v<T, SanctuaryCompleted> ? "sanctuary"
+                               : std::is_same_v<T, CityRequestReceived> ? "request"
+                               : std::is_same_v<T, TradeDone>          ? "trade"
+                               : std::is_same_v<T, EpisodeWon>         ? "won"
+                               : std::is_same_v<T, CityRebelled>       ? "rebellion"
+                               : std::is_same_v<T, CityGift>           ? "city_gift"
+                               : std::is_same_v<T, ExpeditionReturned> ? "aid_returned"
+                               : std::is_same_v<T, PrayerAnswered>     ? "prayer"
+                               : std::is_same_v<T, WalkerPetrified>    ? "petrified"  // Medusa (Z:128)
+                                                                       : nullptr;
+            if (name != nullptr) {
+                ++seen[name];
+            }
+        }, e.event);
+        if (const auto* m = std::get_if<MonsterSlain>(&e.event)) {
+            seen["kraken_slain"] += m->monster == "kraken" ? 1 : 0;  // the sea monster, from the shore (L-116)
+        }
+    }
+}
+
+// Every mechanic the demo must show (the owner's rule); the run goes on until all are seen.
+constexpr const char* kMechanics[] = {"invasion", "god_attack", "monster", "monster_slain", "hero", "quest_done",
+                                      "sanctuary", "request", "trade", "won", "rebellion", "city_gift", "prayer",
+                                      "aid_sent", "aid_returned", "raid_sent", "attack_sent", "games_invited", "games_hosted", "tactics_set", "hoplites", "hoplite_wedge", "trireme", "sea_invasion", "naval_hit", "lent_troops", "strike", "monument_built", "oracle", "horsemen", "crew_called", "ship_patrol", "ships_abroad", "stockpile", "not_buying", "towers_manned",
+                                      // From the audit of the base game (2026-11-27): what the demo showed unchecked.
+                                      "auto_defend", "import", "export", "request_fulfilled", "army_won_abroad",
+                                      "hero_slew", "petrified", "kraken_slain", "wolves", "taxes", "sanctified", "plague", "collapse", "games_won",
+                                      "culture_philosopher", "culture_athlete", "culture_actor", "culture_competitor",
+                                      "tribute", "gift_sent", "goods_asked", "wages_set", "industry_off",
+                                      "storage_empty", "ship_attack_all", "ship_repair", "bribed", "undo",
+                                      "built_grand_agora", "grand_agora_sells", "built_park", "built_bench",
+                                      "built_fish_pond", "built_boulevard", "built_avenue", "built_water_crossing",
+                                      "fire", "crime", "emigration", "surrendered", "tribute_paid", "god_helped", "sparti", "athena_grove", "ares_dragon"};
+
+bool all_seen(const std::map<std::string, std::uint32_t>& seen) {
+    const auto one = [&seen](const std::string& m) {
+        const auto it = seen.find(m);  // a tally can hold a zero: seen means at least once
+        return it != seen.end() && it->second > 0;
+    };
+    return std::all_of(std::begin(kMechanics), std::end(kMechanics), one) &&
+           std::all_of(std::begin(kChains), std::end(kChains), [&one](const char* g) { return one(std::string("made_") + g); });
+}
+
+DemoRun run_demo(std::uint64_t years) {
+    DemoRun run;
+    std::string error;
+    auto cfg = parse_scenario(read_file(std::string(BO_DATA_DIR) + "/../scenarios/demo.json"), error);
+    REQUIRE_MESSAGE(cfg, error);
+    auto order = parse_build_order(read_file(std::string(BO_DATA_DIR) + "/../scenarios/demo_build.json"), error);
+    REQUIRE_MESSAGE(order, error);
+    run.order = std::move(*order);
+    run.sim.emplace(bo::test::catalog(), *cfg);
+    REQUIRE(run.sim->setup_error().empty());
+    const bool log = std::getenv("BO_DEMO_LOG") != nullptr;
+    std::map<BuildingId, bool> watched;  // elite houses: their needs on the first days with a family
+    Simulation& sim = *run.sim;
+    for (std::uint64_t day = 0; day < years * kDaysPerMonth * kMonthsPerYear; ++day) {
+        const auto cmds = due_commands(run.order, sim, day);
+        note_refusals(sim, cmds, day, run.refused);
+        for (const auto& c : cmds) {
+            sim.issue(c);
+        }
+        sim.step(1);
+        for (const auto& c : due_commands(run.order, sim, day, true)) {  // a tick into the day (BuildStep::later)
+            sim.issue(c);
+        }
+        sim.step(kTicksPerDay - 1);
+        const auto events = sim.drain_events();
+        count_events(events, run.seen);
+        note_events(events, run.seen);
+        note_state(sim, run.seen);
+        trace_invasion(sim, day);
+        if (const char* at = std::getenv("BO_DEMO_SAVE_AT"); at != nullptr && std::strtoull(at, nullptr, 10) == day) {
+            const auto bytes = sim.save();  // BO_DEMO_SAVE_AT=day: the state after that day, for a probe
+            std::ofstream out(std::string(BO_DATA_DIR) + "/../build/demo_day.sav", std::ios::binary);
+            out.write(reinterpret_cast<const char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+        }
+        if (std::getenv("BO_DEMO_ARMY") != nullptr && sim.state().time.day_in_month() == 0) {  // a line a month
+            std::map<std::string, int> by;
+            for (const Company& c : sim.state().military.companies) {
+                ++by[c.unit + "/" + std::to_string(static_cast<int>(c.status))];
+            }
+            std::printf("d%llu army", static_cast<unsigned long long>(day));
+            for (const auto& [k, v] : by) {
+                std::printf(" %s:%d", k.c_str(), v);
+            }
+            std::printf(" expeditions %zu\n", sim.state().expeditions.size());
+        }
+        probe_tile(sim, day);  // BO_DEMO_HOUSE=x,y
+        if (std::getenv("BO_DEMO_REJECT") != nullptr) {  // every refused command with its day
+            for (const auto& e : events) {
+                if (const auto* gh = std::get_if<GodHelped>(&e.event)) {
+                    std::printf("day %llu god helped: %s\n", static_cast<unsigned long long>(day), gh->god.c_str());
+                }
+                if (const auto* r = std::get_if<CommandRejected>(&e.event)) {
+                    std::printf("day %llu rejected %u: %s\n", static_cast<unsigned long long>(day), r->command_index,
+                                r->reason_key.c_str());
+                }
+            }
+        }
+        for (const auto& e : events) {
+            if (const auto* g = std::get_if<GamesHeld>(&e.event)) {
+                run.seen[g->invited ? "games_invited" : "games_not_invited"] += 1;  // Z:110-112
+                run.seen["games_won"] += g->won ? 1 : 0;
+                run.seen["games_hosted"] += g->hosted ? 1 : 0;  // Z:111
+            }
+            run.seen["oracle"] += std::holds_alternative<OracleSpoke>(e.event) ? 1 : 0;  // Z:124
+            if (const auto* h = std::get_if<MilitaryHelpGiven>(&e.event)) {
+                run.seen[h->strike ? "strike" : "lent_troops"] += 1;  // Z:174
+            }
+        }
+        if (const char* m = std::getenv("BO_DEMO_MONTHLY")) {  // e.g. BO_DEMO_MONTHLY=7: a line a month from year 7
+            static std::map<std::string, std::uint32_t> tally;
+            for (const auto& e : events) {
+                if (const auto* d = std::get_if<Disaster>(&e.event)) {
+                    ++tally["disaster" + std::to_string(static_cast<int>(d->kind))];
+                }
+                if (const auto* h = std::get_if<HouseChanged>(&e.event)) {
+                    static std::map<BuildingId, std::uint8_t> last_level;
+                    const auto it = w_levels(sim, h->id);
+                    if (last_level.count(h->id) && h->level < last_level[h->id] && it) {
+                        // What the level above lacks now: water, food, fleece, oil, culture, appeal.
+                        const Building& b = *it;
+                        const auto& lv = levels_of(sim.catalog(), *b.house)[h->level + 1U];
+                        const HouseModel& mo = lv.model[static_cast<std::size_t>(sim.state().difficulty)];
+                        const auto wb = b.coverage.find("water_bearer");
+                        if (mo.water && (wb == b.coverage.end() || wb->second == 0)) ++tally["no_water"];
+                        for (std::size_t g = 0; g < 3; ++g) {
+                            if (mo.needs[g] && b.house->goods[g] == 0) ++tally[g == 0 ? "no_food" : g == 1 ? "no_fleece" : "no_oil"];
+                        }
+                        if (house_culture(b, sim.catalog(), city_culture_bonus(sim.state().city, sim.catalog())) < mo.culture) ++tally["no_culture"];
+                        if (building_appeal(sim.state().city, b) < levels_of(sim.catalog(), *b.house)[h->level + 1U].model[static_cast<std::size_t>(sim.state().difficulty)].appeal_devolve) ++tally["low_appeal"];
+                        ++tally["drops"];
+                    }
+                    last_level[h->id] = h->level;
+                }
+            }
+            const WorldState& w = sim.state();
+            if (w.time.day_in_month() == kDaysPerMonth - 1 && day / (kDaysPerMonth * kMonthsPerYear) >= std::strtoull(m, nullptr, 10)) {
+                std::size_t lv[8] = {};
+                for (const auto& [id, b] : w.city.buildings.items) {
+                    if (b.house && !b.house->elite && b.house->population > 0) {
+                        ++lv[std::min<std::size_t>(b.house->level, 7)];
+                    }
+                }
+                std::printf("y%llu m%u pop %u in %u out %u homeless %u pop%% %u food %u fleece %u | lv %zu %zu %zu %zu %zu %zu %zu |",
+                            static_cast<unsigned long long>(day / 192), w.time.month(), city_population(w.city),
+                            w.migration.arrived_this_month, w.migration.left_this_month, w.city.homeless,
+                            w.migration.popularity, city_stock(w.city, sim.catalog(), "food"),
+                            city_stock(w.city, sim.catalog(), "fleece"), lv[0], lv[1], lv[2], lv[3], lv[4], lv[5], lv[6]);
+                for (const auto& [k, v] : tally) {
+                    std::printf(" %s %u", k.c_str(), v);
+                }
+                std::printf("\n");
+                tally.clear();
+            }
+        }
+        if (std::getenv("BO_DEMO_VENUES") != nullptr && sim.state().time.day_in_month() == 0) {  // venues, schools
+            std::printf("d%llu", static_cast<unsigned long long>(day));
+            for (const auto& [id, b] : sim.state().city.buildings.items) {
+                if (b.type == "stadium" || b.type == "gymnasium") {
+                    std::printf(" | %s %d,%d perf %u road %d", b.type.c_str(), b.origin.x, b.origin.y,
+                                static_cast<unsigned>(b.performing_days), b.road_access ? 1 : 0);
+                    for (const auto& [w, st] : b.schools) {
+                        std::printf(" %s:%u>%u", w.c_str(), static_cast<unsigned>(st.first), static_cast<unsigned>(st.second));
+                    }
+                }
+            }
+            for (const auto& [id, w] : sim.state().walkers.items) {
+                if (w.type == "competitor") {
+                    std::printf(" | comp %d,%d ph %d job %d", w.tile.x, w.tile.y, static_cast<int>(w.phase), static_cast<int>(w.job));
+                }
+            }
+            std::printf("\n");
+        }
+        if (std::getenv("BO_DEMO_ELITE") != nullptr && sim.state().time.day_in_month() == 0) {  // a line a month
+            std::printf("d%llu", static_cast<unsigned long long>(day));
+            for (const auto& [id, b] : sim.state().city.buildings.items) {
+                if (b.house && b.house->elite) {
+                    std::printf(" | %d,%d p%u l%u a%d g", b.origin.x, b.origin.y, b.house->population, b.house->level,
+                                b.house->abandoned ? 1 : 0);
+                    for (const auto g : b.house->goods) {
+                        std::printf(" %u", static_cast<unsigned>(g));
+                    }
+                }
+            }
+            std::printf(" | oil %u fleece %u\n", city_stock(sim.state().city, sim.catalog(), "olive_oil"),
+                        city_stock(sim.state().city, sim.catalog(), "fleece"));
+        }
+        run.seen["stockpile"] += sim.state().stockpiled.empty() ? 0 : 1;  // Z:80
+        run.seen["towers_manned"] += sim.state().towers_manned ? 1 : 0;  // Z:146
+        run.seen["trireme"] += sim.state().military.ships.empty() ? 0 : 1;  // launched from a wharf (Z:141)
+        for (const Ship& sh : sim.state().military.ships) {
+            run.seen["crew_called"] += sh.crew == Crew::Aboard ? 1 : 0;  // Z:141
+            run.seen["crew_short"] +=
+                sh.crew == Crew::Aboard && sh.hands < sim.catalog().naval.crew_workers ? 1 : 0;  // Z:141
+            run.seen["ship_patrol"] += sh.order == ShipOrder::Patrol ? 1 : 0;  // Z:142
+        }
+        run.seen["monument_built"] += std::any_of(sim.state().city.buildings.items.begin(), sim.state().city.buildings.items.end(),
+                                                  [](const auto& kv) { return kv.second.type == "commemorative_monument"; })
+                                          ? 1 : 0;  // earned and built (Z:155)
+        run.seen["sea_invasion"] += sim.state().military.invasion.by_sea ? 1 : 0;  // Z:144
+        for (const WalkerId id : sim.state().military.invasion.invaders) {
+            const Walker& w = sim.state().walkers.items.at(id);
+            const auto& units = sim.catalog().combat.nations.at(w.variant).units;
+            run.seen["naval_hit"] += is_ship(w) && units.count(w.type) != 0 && w.hp < units.at(w.type).hp ? 1 : 0;
+        }
+        for (const Company& c : sim.state().military.companies) {
+            run.seen["tactics_set"] += c.tactic != Tactic::Defensive ? 1 : 0;  // Z:138-139
+            run.seen["hoplites"] += c.unit == "hoplite" && !c.members.empty() ? 1 : 0;  // from the mansions (Z:136)
+            run.seen["hoplite_wedge"] += c.unit == "hoplite" && c.tactic == Tactic::Special ? 1 : 0;  // Z:139
+            run.seen["horsemen"] += c.unit == "horseman" && !c.members.empty() ? 1 : 0;  // from the estates
+        }
+        for (const auto& [id, b] : sim.state().city.buildings.items) {
+            run.seen["not_buying"] += b.stall && b.stall->not_buying ? 1 : 0;  // Z:72
+        }
+        for (const Expedition& e : sim.state().expeditions) {
+            run.seen["aid_sent"] += e.aid ? 1 : 0;  // companies sent where a city asked for them (Z:161)
+            run.seen["raid_sent"] += e.raid ? 1 : 0;  // Z:178
+            run.seen["attack_sent"] += e.raid || e.aid ? 0 : 1;  // Z:177
+            run.seen["ships_abroad"] += e.ships.empty() ? 0 : 1;  // Z:177
+        }
+        for (const auto& [id, b] : sim.state().city.buildings.items) {
+            if (log && b.house && b.house->elite && b.house->population > 0 && !watched[id]) {
+                watched[id] = true;
+                std::printf("elite %d,%d moved in day %llu: appeal %d culture %d goods %u %u %u\n", b.origin.x, b.origin.y,
+                            static_cast<unsigned long long>(day), building_appeal(sim.state().city, b),
+                            house_culture(b, sim.catalog(), city_culture_bonus(sim.state().city, sim.catalog())),
+                            b.house->goods[0], b.house->goods[1], b.house->goods[2]);
+            }
+        }
+        if (sim.state().scenario.won && run.won_day == 0) {
+            run.won_day = day;
+            if (log) {
+                std::printf("won on day %llu\n", static_cast<unsigned long long>(day));
+            }
+        }
+        if (run.won_day != 0 && day > run.won_day + kDaysPerMonth * kMonthsPerYear && all_seen(run.seen) && !log) {
+            break;  // a year after the victory, every mechanic seen: enough for the gate
+        }
+        if (log && (day + 1) % (kDaysPerMonth * kMonthsPerYear) == 0) {
+            report(sim, (day + 1) / (kDaysPerMonth * kMonthsPerYear));
+            if (std::string(std::getenv("BO_DEMO_LOG")) == "2") {
+                dump(sim);
+            }
+        }
+    }
+    return run;
+}
+
+}  // namespace
+
+TEST_CASE("demo gate: the autopilot builds the demo city and wins it (B-002, B-003, B-019)") {
+    const char* years = std::getenv("BO_DEMO_YEARS");  // shorter runs while tuning the demo
+    const auto run = run_demo(years != nullptr ? std::strtoull(years, nullptr, 10) : 10);
+    if (std::getenv("BO_DEMO_LOG") != nullptr) {
+        for (const BuildStep& step : run.order.steps) {
+            const auto* p = std::get_if<PlaceBuilding>(&step.command);
+            const auto& map = run.sim->state().city.map;
+            if (p != nullptr && p->type != "wall" && p->type != "common_housing" &&
+                (map.at({p->x, p->y}).building == kNoBuilding ||
+                 run.sim->state().city.buildings.items.at(map.at({p->x, p->y}).building).type != p->type)) {
+                const BuildingId b = map.at({p->x, p->y}).building;
+                std::printf("missing %s %d,%d (now %s)\n", p->type.c_str(), p->x, p->y,
+                            b == kNoBuilding ? "empty" : run.sim->state().city.buildings.items.at(b).type.c_str());
+            }
+        }
+    }
+    if (std::getenv("BO_DEMO_MAP") != nullptr) {  // the city at the end: a letter per building, # road
+        const auto& city = run.sim->state().city;
+        for (std::int32_t y = 0; y < city.map.height(); ++y) {
+            std::printf("%2d ", y);
+            for (std::int32_t x = 0; x < city.map.width(); ++x) {
+                const Tile& t = city.map.at({x, y});
+                const char c = t.building != kNoBuilding ? city.buildings.items.at(t.building).type[0]
+                               : t.road                  ? '#'
+                               : t.terrain == Terrain::Grassland ? '.'
+                                                                 : '~';
+                std::printf("%c", c);
+            }
+            std::printf("\n");
+        }
+    }
+    if (const char* a = std::getenv("BO_DEMO_APPEAL")) {  // x0,y0,x1,y1: the appeal of the tiles at the end
+        int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+        if (std::sscanf(a, "%d,%d,%d,%d", &x0, &y0, &x1, &y1) == 4) {
+            const auto& city = run.sim->state().city;
+            for (int y = y0; y <= y1; ++y) {
+                std::printf("%2d ", y);
+                for (int x = x0; x <= x1; ++x) {
+                    std::printf("%4d", city.appeal.empty() ? 0 : city.appeal[city.map.index({x, y})]);
+                }
+                std::printf("\n");
+            }
+        }
+    }
+    if (std::getenv("BO_DEMO_LOG") != nullptr) {
+        for (const auto& [k, v] : run.seen) {
+            std::printf("seen %s %u\n", k.c_str(), v);
+        }
+    }
+    for (const auto& r : run.refused) {
+        MESSAGE("refused: " << r);
+    }
+    CHECK(run.refused.empty());
+    for (const auto& c : cut_off(*run.sim)) {
+        MESSAGE("cut off from the land entry: " << c);  // B-021
+    }
+    CHECK(cut_off(*run.sim).empty());
+    const WorldState& st = run.sim->state();
+    CHECK(houses_at(st, run.sim->catalog(), false, 4) >= 10);  // Tenement needs 35 culture points (B-008)
+    CHECK(houses_at(st, run.sim->catalog(), true, 0) >= 2);
+    CHECK(st.scenario.won);
+    CHECK(run.won_day < 7 * kDaysPerMonth * kMonthsPerYear);
+    CHECK(st.city.map.at({69, 48}).terrain == Terrain::Rock);
+    CHECK(st.city.map.at({23, 6}).terrain != Terrain::Forest);  // cleared on day 1 (Z:19)
+    CHECK(st.city.map.at({58, 7}).building == kNoBuilding);   // the fountain of day 2 undone (Z:20)  // the earthquake of year 3 (demo.json) cracked the land
+    // A healthy city at the end: work for nine in ten workers, people content (Z:159-160).
+    CHECK(st.labour.employed * 10 >= st.labour.workforce * 9);
+    CHECK(st.migration.popularity >= 70);
+    for (const char* m : kMechanics) {
+        CHECK_MESSAGE((run.seen.count(m) > 0 && run.seen.at(m) > 0), "the demo never showed: " << std::string(m));
+    }
+    for (const char* g : kChains) {  // every production chain brought its goods to storage (Z:39-58)
+        const std::string m = std::string("made_") + g;
+        CHECK_MESSAGE((run.seen.count(m) > 0 && run.seen.at(m) > 0), "no chain made: " << std::string(g));
+    }
+    // The top of both ladders was reached: the last common level and the last elite level (Z:30-34).
+    CHECK(run.seen.count("top_common_level") > 0);
+    CHECK(run.seen.count("top_elite_level") > 0);
+    if (run.seen.count("top_common_level") > 0 && run.seen.count("top_elite_level") > 0) {
+        CHECK(run.seen.at("top_common_level") + 1 >= run.sim->catalog().common_levels.size());
+        CHECK(run.seen.at("top_elite_level") + 1 >= run.sim->catalog().elite_levels.size());
+    }
+}

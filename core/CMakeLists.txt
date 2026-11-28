@@ -1,0 +1,139 @@
+# Core simulation library: pure C++17, no Godot headers (checked by tools/checks/check_core.py).
+add_library(bo_core STATIC
+    src/adventure.cpp
+    src/agora.cpp
+    src/appeal.cpp
+    src/auto_defend.cpp
+    src/blessings.cpp
+    src/city.cpp
+    src/data.cpp
+    src/data_economy.cpp
+    src/combat.cpp
+    src/crosswalk.cpp
+    src/serialize_commands.cpp
+    src/serialize_atlas.cpp
+    src/naval.cpp
+    src/oracle.cpp
+    src/extraction.cpp
+    src/finance.cpp
+    src/fortifications.cpp
+    src/gods.cpp
+    src/god_help.cpp
+    src/build_order.cpp
+    src/culture.cpp
+    src/tactics.cpp
+    src/games.cpp
+    src/goals.cpp
+    src/hippodrome.cpp
+    src/relations.cpp
+    src/prayers.cpp
+    src/housing.cpp
+    src/horses.cpp
+    src/husbandry.cpp
+    src/labour.cpp
+    src/logistics.cpp
+    src/map.cpp
+    src/migration.cpp
+    src/monsters.cpp
+    src/hero_requirements.cpp
+    src/military.cpp
+    src/path.cpp
+    src/placement.cpp
+    src/walker.cpp
+    src/wolves.cpp
+    src/world.cpp
+    src/wrath.cpp
+    src/wildlife.cpp
+    src/risks.cpp
+    src/sanctuary.cpp
+    src/serialize.cpp
+    src/serialize_city.cpp
+    src/serialize_economy.cpp
+    src/serialize_goods.cpp
+    src/serialize_scenario.cpp
+    src/scenario.cpp
+    src/simulation.cpp
+    src/simulation_world.cpp
+    src/storage.cpp
+    src/systems.cpp
+    src/trade.cpp
+    src/undo.cpp
+)
+target_include_directories(bo_core PUBLIC include)
+target_include_directories(bo_core PRIVATE ${PROJECT_SOURCE_DIR}/third_party)
+target_compile_features(bo_core PUBLIC cxx_std_17)
+set_target_properties(bo_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(bo_core PRIVATE -Wall -Wextra -Wpedantic -Werror -Wconversion -Wno-sign-conversion)
+endif()
+
+if(BO_BUILD_TESTS)
+    add_executable(bo_core_tests
+        tests/main.cpp
+        tests/test_time.cpp
+        tests/test_adventure.cpp
+        tests/test_rng.cpp
+        tests/test_fixed.cpp
+        tests/test_commands.cpp
+        tests/test_data.cpp
+        tests/test_save.cpp
+        tests/test_fortifications.cpp
+        tests/test_naval.cpp
+        tests/test_allies.cpp
+        tests/test_blessings.cpp
+        tests/test_prayers.cpp
+        tests/test_demo_gods.cpp
+        tests/test_atlantis.cpp
+        tests/test_golden.cpp
+        tests/test_map.cpp
+        tests/test_city.cpp
+        tests/test_path.cpp
+        tests/test_walker.cpp
+        tests/test_placement.cpp
+        tests/test_quests.cpp
+        tests/test_undo.cpp
+        tests/test_appeal.cpp
+        tests/test_culture.cpp
+        tests/test_debt.cpp
+        tests/test_relations.cpp
+        tests/test_demo.cpp
+        tests/test_demo_atlantis.cpp
+        tests/test_demo_atlantis_army.cpp
+        tests/test_demo_atlantis_gods.cpp
+        tests/test_demo_atlantis_elite.cpp
+        tests/test_demo_heroes.cpp
+        tests/test_housing.cpp
+        tests/test_labour.cpp
+        tests/test_migration.cpp
+        tests/test_military.cpp
+        tests/test_monsters.cpp
+        tests/test_heroes.cpp
+        tests/test_expansion_economy.cpp
+        tests/test_expansion_myth.cpp
+        tests/test_combat.cpp
+        tests/test_goods.cpp
+        tests/test_terrain.cpp
+        tests/test_elite.cpp
+        tests/test_horses.cpp
+        tests/test_husbandry.cpp
+        tests/test_wolves.cpp
+        tests/test_world.cpp
+        tests/test_wrath.cpp
+        tests/test_extraction.cpp
+        tests/test_wildlife.cpp
+        tests/test_risks.cpp
+        tests/test_sanctuary.cpp
+        tests/test_scenario.cpp
+        tests/test_games.cpp
+        tests/test_gods.cpp
+        tests/test_trade.cpp
+        tests/test_world_map.cpp
+    )
+    target_link_libraries(bo_core_tests PRIVATE bo_core)
+    target_include_directories(bo_core_tests PRIVATE ${PROJECT_SOURCE_DIR}/third_party)
+    target_compile_definitions(bo_core_tests PRIVATE BO_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+    # One ctest entry per doctest case, listed from the built binary after each build (doctest.cmake).
+    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/third_party/doctest/cmake)
+    include(doctest)
+    doctest_discover_tests(bo_core_tests)
+endif()

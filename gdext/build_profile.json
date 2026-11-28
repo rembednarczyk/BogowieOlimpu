@@ -1,0 +1,4 @@
+{
+    "_comment": "Only the Godot classes the extension uses (shorter godot-cpp build). Add classes here when needed.",
+    "enabled_classes": ["RefCounted", "FileAccess", "DirAccess", "OS", "Engine", "Object"]
+}

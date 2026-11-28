@@ -1,0 +1,877 @@
+{
+ "common_housing_1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos"
+ },
+ "common_housing_1_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_1_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_1_gardeners_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_1_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos"
+ },
+ "common_housing_1_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: garncarze"
+ },
+ "common_housing_1_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: garncarze"
+ },
+ "common_housing_1_potters_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: garncarze"
+ },
+ "common_housing_1_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos"
+ },
+ "common_housing_1_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: pasterze"
+ },
+ "common_housing_1_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: pasterze"
+ },
+ "common_housing_1_shepherds_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: pasterze"
+ },
+ "common_housing_2.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
+ },
+ "common_housing_2_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_2_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_2_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
+ },
+ "common_housing_2_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: garncarze"
+ },
+ "common_housing_2_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: garncarze"
+ },
+ "common_housing_2_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
+ },
+ "common_housing_2_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: pasterze"
+ },
+ "common_housing_2_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność; historia: pasterze"
+ },
+ "common_housing_3.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy"
+ },
+ "common_housing_3_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_3_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_3_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy"
+ },
+ "common_housing_3_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: garncarze"
+ },
+ "common_housing_3_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: garncarze"
+ },
+ "common_housing_3_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy"
+ },
+ "common_housing_3_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: pasterze"
+ },
+ "common_housing_3_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy; historia: pasterze"
+ },
+ "common_housing_4.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria"
+ },
+ "common_housing_4_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_4_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_4_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria"
+ },
+ "common_housing_4_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: garncarze"
+ },
+ "common_housing_4_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: garncarze"
+ },
+ "common_housing_4_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria"
+ },
+ "common_housing_4_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: pasterze"
+ },
+ "common_housing_4_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria; historia: pasterze"
+ },
+ "common_housing_5.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna"
+ },
+ "common_housing_5_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_5_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_5_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna"
+ },
+ "common_housing_5_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: garncarze"
+ },
+ "common_housing_5_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: garncarze"
+ },
+ "common_housing_5_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna"
+ },
+ "common_housing_5_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: pasterze"
+ },
+ "common_housing_5_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: pasterze"
+ },
+ "common_housing_6.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy"
+ },
+ "common_housing_6_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_6_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_6_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy"
+ },
+ "common_housing_6_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: garncarze"
+ },
+ "common_housing_6_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: garncarze"
+ },
+ "common_housing_6_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy"
+ },
+ "common_housing_6_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: pasterze"
+ },
+ "common_housing_6_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: pasterze"
+ },
+ "common_housing_7.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku"
+ },
+ "common_housing_7_gardeners.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_7_gardeners_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: ogrodnicy i pszczelarze"
+ },
+ "common_housing_7_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku"
+ },
+ "common_housing_7_potters.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: garncarze"
+ },
+ "common_housing_7_potters_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: garncarze"
+ },
+ "common_housing_7_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku"
+ },
+ "common_housing_7_shepherds.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: pasterze"
+ },
+ "common_housing_7_shepherds_lod1.glb": {
+  "building": "common_housing",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku; historia: pasterze"
+ },
+ "fountain.glb": {
+  "building": "fountain",
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "fontanna: kamienny basen, słup z wylewką z brązu, woda płynie, gdy pracuje"
+ },
+ "granary.glb": {
+  "building": "granary",
+  "footprint": [
+   4,
+   4
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
+ },
+ "granary_lod1.glb": {
+  "building": "granary",
+  "footprint": [
+   4,
+   4
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
+ },
+ "granary_ruin.glb": {
+  "building": "granary",
+  "ruin": true,
+  "footprint": [
+   4,
+   4
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
+ },
+ "observatory.glb": {
+  "building": "observatory",
+  "footprint": [
+   5,
+   5
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "obserwatorium atlantydzkie: kamienny bęben, kopuła i luneta obracają się, gdy pracuje"
+ },
+ "storehouse.glb": {
+  "building": "storehouse",
+  "footprint": [
+   3,
+   3
+  ],
+  "lod": 0,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "magazyn: dziedziniec w kamiennym murze, wiata kryta dachówką, skrzynie i amfory"
+ }
+}

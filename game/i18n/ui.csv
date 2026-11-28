@@ -1,0 +1,326 @@
+keys,pl,en
+tab.population,Ludność,Housing
+tab.husbandry,Rolnictwo,Farming
+tab.industry,Przemysł,Industry
+tab.distribution,Handel,Trade
+tab.hygiene_safety,Higiena,Health
+tab.administration,Administracja,Administration
+tab.culture,Kultura,Culture
+tab.mythology,Mitologia,Mythology
+tab.military,Wojsko,Military
+tab.aesthetics,Ozdoby,Beautification
+tab.general,Drogi i teren,Roads and land
+ui.road,Droga,Road
+ui.roadblock,Zapora,Roadblock
+ui.demolish,Burzenie,Demolish
+ui.confirm,Zatwierdź,Confirm
+ui.cancel,Anuluj,Cancel
+ui.rotate,Obróć,Rotate
+ui.undo,Cofnij,Undo
+ui.pause,Pauza,Pause
+ui.cost,Koszt: %d dr,Cost: %d dr
+ui.close,Zamknij,Close
+ui.workers,Pracownicy: %d (%d %%),Workers: %d (%d %%)
+ui.residents,Mieszkańcy: %d,Residents: %d
+ui.level,Poziom domu: %d,House level: %d
+ui.stock,Zapas: %s,Stock: %s
+ui.fire_risk,Ryzyko pożaru: %d,Fire risk: %d
+ui.collapse_risk,Ryzyko zawalenia: %d,Collapse risk: %d
+ui.status,rok %d  miesiąc %d   skarbiec %d dr   ludność %d   pracownicy %d/%d   popularność %d,year %d  month %d   treasury %d dr   population %d   workers %d/%d   popularity %d
+ui.tap_to_place,"dotknij mapy, aby wskazać miejsce",tap the map to choose a place
+ui.drag_road,Przeciągnij palcem drogę,Drag the road with your finger
+ui.tap_to_demolish,przeciągnij palcem obszar do zburzenia,drag over the area to demolish
+ui.place_ok,Można budować,You can build here
+build.occupied,Miejsce zajęte,The place is taken
+build.needs_road,Potrzebna droga obok,A road is needed next to it
+build.needs_road_under,Potrzebna droga pod spodem,A road is needed underneath
+build.needs_meadow,Potrzebna łąka,Needs meadow
+build.only_one,W mieście może stać tylko jeden taki budynek,Only one of these per city
+build.needs_straight_coast,Potrzebny prosty brzeg,Needs a straight shore
+build.out_of_bounds,Poza mapą,Outside the map
+build.not_buildable,Na tym terenie nie można budować,Cannot build on this ground
+build.unknown_type,Nieznany budynek,Unknown building
+build.not_rotatable,Tego budynku nie można obracać,This building cannot be rotated
+build.needs_building,Najpierw potrzebny inny budynek (np. pałac),Another building is needed first (e.g. the Palace)
+build.elite_needs_goods,"Elita wymaga żywności, wełny i oliwy w magazynach","The elite want food, fleece and oil in storage"
+build.sanctuary_needs_marble,Za mało marmuru w magazynach,Not enough marble in storage
+build.too_many_sanctuaries,Najwyżej 4 sanktuaria,At most 4 sanctuaries
+build.no_hero_needed,Herosa nie trzeba wzywać,No hero is needed now
+build.no_monument_earned,Nie zdobyto pomnika,No monument has been earned
+build.tower_needs_thick_wall,Wieża wymaga muru podwójnej grubości,A tower needs a wall two thick
+build.tower_needs_road_to_palace,Wieża wymaga drogi do pałacu,A tower needs a road to the Palace
+build.gate_needs_road,Brama musi stać na drodze,A gate must stand on a road
+build.gate_needs_walls,Brama wymaga murów po obu stronach,A gate needs walls on both sides
+build.uneven_ground,Nierówny teren,Uneven ground
+build.placement_not_implemented,Jeszcze niedostępne,Not available yet
+build.unsupported_footprint,Jeszcze niedostępne,Not available yet
+build.already_road,Tu już jest droga,There is a road here already
+build.bad_agora_data,Błąd danych agory,Agora data error
+build.bad_rotation,Zły obrót,Bad rotation
+build.bad_terrain,Nieodpowiedni teren,Unsuitable ground
+build.crossing_adjacent,Przeprawy nie mogą stykać się ze sobą,Crossings cannot touch each other
+build.crossing_too_long,Przeprawa za długa,The crossing is too long
+build.needs_agora_slot,Stoisko stawia się na wolnym miejscu agory,A stall goes on a free agora place
+build.needs_coast,Potrzebny brzeg,Needs a shore
+build.nothing_to_clear,Nie ma czego oczyścić,Nothing to clear
+build.nothing_to_demolish,Nie ma czego burzyć,Nothing to demolish
+build.too_many_piers,Za dużo przystani,Too many piers
+ui.drag_area,przeciągnij palcem obszar lub linię; mapę przesuwasz dwoma palcami,drag an area or a line; move the map with two fingers
+ui.instant_build,Buduj od razu,Build at once
+ui.report,Raport,Report
+ui.report_title,Raport miasta,City report
+ui.goals,Cele epizodu,Episode goals
+ui.requests,Prośby miast,Requests from cities
+ui.quests,Zadania bogów,Quests of the gods
+ui.send,Wyślij,Send
+ui.save,Zapisz,Save
+ui.saved,Zapisano,Saved
+ui.new_game,Nowa gra,New game
+ui.settings,Ustawienia,Settings
+ui.goal_done,spełniony,met
+ui.goal_open,do zrobienia,to do
+ui.no_requests,Brak próśb,No requests
+ui.request_line,"%s: %d x %s, zostało %d dni","%s: %d x %s, %d days left"
+ui.request_overdue,"%s: %d x %s, po terminie","%s: %d x %s, overdue"
+ui.quest_line,"%s: heros %s, %s","%s: hero %s, %s"
+ui.quest_0,czeka na herosa,waiting for the hero
+ui.quest_1,w drodze,under way
+ui.quest_2,wykonane,done
+ui.episode_won,Epizod wygrany!,Episode won!
+ui.episode_lost,Epizod przegrany,Episode lost
+goal.population,Ludność: %d z %d,Population: %d of %d
+goal.treasury,Skarbiec: %d z %d dr,Treasury: %d of %d dr
+goal.sanctuary,Sanktuarium boga: %s,Sanctuary of %s
+goal.houses,Domy co najmniej na poziomie %s: %d,Houses at least at level %s: %d
+goal.vassal,Wasal: %s,Vassal: %s
+goal.quest,Zadanie boga: %s,Quest of %s
+god.zeus,Zeus,Zeus
+god.poseidon,Posejdon,Poseidon
+god.hades,Hades,Hades
+god.hera,Hera,Hera
+god.demeter,Demeter,Demeter
+god.athena,Atena,Athena
+god.artemis,Artemida,Artemis
+god.apollo,Apollo,Apollo
+msg.god_helped,%s pomaga miastu bez modlitwy,%s helps the city unasked
+msg.walker_petrified,Potwór zamienił mieszkańca w kamień,A monster turned a citizen to stone
+god.atlas,Atlas,Atlas
+god.ares,Ares,Ares
+god.hephaestus,Hefajstos,Hephaestus
+god.aphrodite,Afrodyta,Aphrodite
+god.hermes,Hermes,Hermes
+god.dionysus,Dionizos,Dionysus
+hero.hercules,Herakles,Heracles
+hero.achilles,Achilles,Achilles
+hero.odysseus,Odyseusz,Odysseus
+hero.jason,Jazon,Jason
+hero.theseus,Tezeusz,Theseus
+hero.perseus,Perseusz,Perseus
+hero.atalanta,Atalanta,Atalanta
+hero.bellerophon,Bellerofont,Bellerophon
+ui.debt_line,"Miasto jest zadłużone od %d dni. Po roku długu nikt się nie wprowadza, po trzech latach rządy przepadają.",The city has been in debt for %d days. After a year nobody moves in; after three years you lose office.
+ui.pray,Módl się,Pray
+ui.prayer_chance,Szansa wysłuchania modlitwy: %d %%,Chance the god grants a prayer: %d %%
+ui.monuments,Pomniki do postawienia,Monuments to raise
+monument.population,Pomnik ludności,Population monument
+monument.happiness,Pomnik szczęścia,Happiness monument
+monument.victory,Pomnik zwycięstwa,Victory monument
+monument.conquest,Pomnik podboju,Conquest monument
+monument.colony,Pomnik kolonii,Colony monument
+monument.diplomacy,Pomnik przyjaźni,Friendship monument
+monument.god_statue,Posąg boga,Statue of a god
+monument.hero,Pomnik herosa,Hero monument
+monument.scholar,Pomnik mędrca,Sage monument
+monument.athlete,Pomnik zawodnika,Champion monument
+good.army,kompanii wojska,companies of soldiers
+scenario.not_enough_troops,Za mało kompanii w domu (motłochu nie wysyła się),Too few companies at home (rabble cannot go)
+ui.not_buying,Nie kupuj,Not buying
+ui.stock_title,Zapasy miasta,City stock
+ui.stockpile,Gromadź,Stockpile
+storage.unknown_good,Nieznany towar,Unknown good
+storage.not_a_stall,To nie jest stoisko,Not a stall
+ui.auto_defend,Samoczynna obrona,Auto-defend
+ui.man_all,Obsadź wszystkie wieże,Man all towers
+ui.army,Wojsko,Army
+ui.world,Świat,World
+ui.army_title,Wojsko miasta,The city's army
+ui.invasion_line,Najazd: %d najeźdźców w mieście. Przekupstwo kosztuje %d dr.,Invasion: %d invaders in the city. A bribe costs %d dr.
+ui.bribe,Przekup,Bribe
+ui.surrender,Poddaj się,Surrender
+ui.call_all,Wezwij wszystkie,Call all
+ui.no_companies,Brak kompanii: potrzebny pałac i domy z żołnierzami,No companies: a palace and houses with soldiers are needed
+unit.rabble,Motłoch,Rabble
+unit.hoplite,Hoplici,Hoplites
+unit.horseman,Jeźdźcy,Horsemen
+unit.ares_warriors,Sparci,Sparti
+unit.warrior,Amazonki,Amazons
+ui.morale,morale,morale
+company.status.0,w domach,at home
+company.status.1,w marszu,marching
+company.status.2,na pozycji,in position
+company.status.3,wraca do domów,going home
+company.status.4,walczy,fighting
+company.status.5,ucieka,fleeing
+company.status.6,za granicą,abroad
+ui.muster,Wezwij,Muster
+ui.move,Przesuń,Move
+ui.go_home,Do domu,Home
+ui.world_title,Miasta świata,Cities of the world
+relation.ally,sojusznik,ally
+relation.rival,rywal,rival
+relation.vassal,wasal,vassal
+relation.colony,kolonia,colony
+relation.parent,miasto macierzyste,mother city
+relation.distant,dalekie miasto,distant city
+ui.rebelling,bunt,rising
+ui.opinion,opinia,opinion
+ui.military,siła,strength
+ui.economy,bogactwo,wealth
+ui.tribute_demand,żąda trybutu %d dr/rok,demands %d dr a year
+ui.gift,Dar 500 dr,Gift 500 dr
+ui.ask,Poproś,Ask
+ui.attack,Atak,Attack
+ui.raid,Rajd,Raid
+ui.expeditions,Wyprawy,Expeditions
+ui.aid,Pomoc,Aid
+ui.expedition_line,"%s: %s, kompanie %d, %s, jeszcze %d dni","%s: %s, %d companies, %s, %d days to go"
+ui.returning,wraca,coming home
+ui.marching,w drodze,on the way
+ui.companies_soldiers,"kompanie %d, żołnierze %d","%d companies, %d soldiers"
+ui.games_line,W tym roku %s: szansa zwycięstwa %d %%,This year the %s: a %d %% chance to win
+ui.games_not_invited,W tym roku %s: miasto nie jest zaproszone (za mało wykonawców),This year the %s: the city is not invited (too few performers)
+games.olympian,Igrzyska Olimpijskie,Olympic Games
+games.isthmian,Igrzyska Istmijskie,Isthmian Games
+games.pythian,Igrzyska Pytyjskie,Pythian Games
+games.nemean,Igrzyska Nemejskie,Nemean Games
+ui.games_host,Miasto organizuje Igrzyska Olimpijskie w roku %d; potrzebny działający stadion,The city hosts the Olympic Games in year %d; a working stadium is needed
+tactic.0,Obrona,Defensive
+tactic.1,Natarcie,Offensive
+tactic.2,Specjalna,Special
+ui.ships,Triery,Triremes
+ui.ship_line,"Triera %d: kadłub %d/%d","Trireme %d: hull %d/%d"
+ui.ship_post,Posterunek,Station
+ship.order.0,Trzymaj pozycję,Hold station
+ship.order.1,Atakuj wszystkich,Engage all
+ship.order.2,Naprawa,Repair
+ui.invasion_by_sea,Najazd z morza: transporty i okręty wroga płyną do brzegu.,Invasion by sea: enemy transports and warships sail for the shore.
+ui.help,Pomoc,Help
+ui.strike,Uderz,Strike
+event.military_help,Miasto wysłało nam pomoc wojskową.,A city sent us military help.
+ui.oracle,Zapytaj wyrocznię,Ask the oracle
+oracle.nothing,Wyrocznia nie widzi zagrożenia.,The oracle sees no danger ahead.
+oracle.foretells,"Wyrocznia: %s (%s) za %d mies.","The oracle: %s (%s) in %d months"
+oracle.kind.invasion,najazd,invasion
+oracle.kind.god_attack,gniew boga,a god's anger
+oracle.kind.monster,potwór,monster
+oracle.kind.disaster,katastrofa,disaster
+goal.support,Wojsko: %d (%s),Army: %d (%s)
+goal.slay,Pokonaj potwora: %s,Slay the monster: %s
+goal.set_aside_goods,Odłóż w magazynach %d: %s,Set aside %d in storage: %s
+goal.survive_until,Przetrwaj do roku %d,Survive until year %d
+goal.complete_before,Ukończ przed rokiem %d,Complete before year %d
+goal.trading_partners,Partnerzy handlowi: %d,Trading partners: %d
+goal.yearly_profit,Zysk roczny: %d dr,Yearly profit: %d dr
+ship.order.3,Patrol,Patrol
+ship.crew.0,bez załogi,no crew
+ship.crew.1,załoga na pokładzie,crew aboard
+ship.crew.2,załoga wraca,crew going home
+ui.ship_hands,(%d z %d),(%d of %d)
+ui.crew_all,Wezwij wszystkie załogi,Call all crews
+ui.crew_call,Wezwij załogę,Call crew
+ui.crew_home,Odeślij załogę,Send crew home
+goal.yearly_production,Produkcja w roku: %d (%s),Yearly production: %d (%s)
+ui.hippodrome_line,"Hipodrom: %d stadiów, %d koni, %s","Hippodrome: %d stades, %d horses, %s"
+ui.hippodrome_racing,wyścigi trwają,racing
+ui.hippodrome_waiting,czeka na konie,waiting for horses
+ui.hippodrome_open,tor niezamknięty,the track is not closed
+goal.hippodrome,Działający hipodrom: %d stadiów,Working hippodrome: %d stades
+ui.demo_atlantis,Demo: Atlantyda,Demo: Atlantis
+ui.demo_greek,Demo: Grecja,Demo: Greece
+ui.demo_gods,Demo: bogowie,Demo: the gods
+ui.demo_atlantis_army,Demo: wojsko Atlantydy,Demo: the Atlantean army
+ui.hold_building,Wstrzymaj budowę,Hold the building
+ui.bench,Test wydajności,Performance test
+ui.view_none,Widok: zwykły,View: normal
+ui.view_water,Widok: woda,View: water
+ui.view_hygiene,Widok: zdrowie,View: health
+ui.view_fire,Widok: ryzyko pożaru,View: fire risk
+ui.view_collapse,Widok: ryzyko zawalenia,View: collapse risk
+ui.view_unrest,Widok: przestępczość,View: unrest
+ui.view_taxes,Widok: podatki,View: taxes
+ui.view_culture,Widok: kultura,View: culture
+ui.view_supplies,Widok: zaopatrzenie,View: supplies
+ui.view_employment,Widok: zatrudnienie,View: employment
+ui.view_security,Widok: bezpieczeństwo,View: security
+ui.view_appeal,Widok: atrakcyjność,View: appeal
+ui.bench_animation,Animacja,Animation
+ui.bench_zoom,Zbliżenie,Zoom
+ui.bench_fps,"FPS %d   klatka śr. %.1f ms, najgorsza %.1f ms","FPS %d   frame avg %.1f ms, worst %.1f ms"
+ui.bench_scene,postacie %d   budynki %d   wywołania rysowania %d,characters %d   buildings %d   draw calls %d
+ui.bench_device,pamięć %.0f MB   GPU %s,memory %.0f MB   GPU %s
+ui.monument_progress,Budowa: %d z %d ładunków,Building: %d of %d loads
+ui.demo_atlantis_gods,Demo: bogowie Atlantydy,Demo: the Atlantean gods
+ui.demo_atlantis_elite,Demo: elita Atlantydy,Demo: the Atlantean elite
+ui.demo_heroes,Demo: herosi,Demo: the heroes
+msg.adventure_won,Przygoda wygrana,Adventure won
+scenario.demo_atlantis.name,Atlantyda,Atlantis
+scenario.demo_gods.name,Bogowie,The gods
+scenario.demo_atlantis_army.name,Wojsko Atlantydy,The Atlantean army
+scenario.demo_atlantis_gods.name,Bogowie Atlantydy,The Atlantean gods
+scenario.demo_atlantis_elite.name,Elita Atlantydy,The Atlantean elite
+scenario.demo_heroes.name,Herosi,The heroes
+tab.science,Nauka,Science
+ui.hippodrome_takings,"  Zakłady i przekąski: %d dr w tym roku, %d dr w zeszłym","  Bets and snacks: %d dr this year, %d dr last year"
+ui.group_none,bez grupy,no group
+ui.group,grupa %d,group %d
+ui.group_line,"Grupa %d, kompanie: %d","Group %d, companies: %d"
+ui.offer,%s %d dr (%d z %d w tym roku),%s %d dr (%d of %d this year)
+ui.city_sells,Sprzedaje: %s,Sells: %s
+ui.city_buys,Kupuje: %s,Buys: %s
+ui.city_history,Historia,History
+ui.history_line,"rok %d, miesiąc %d: %s %s","year %d, month %d: %s %s"
+history.gift,dar,gift
+history.gift_heard,dar dla miasta tego samego stanu,gift to a city of the same standing
+history.asked,prośba,request
+history.asked_other,prośba do innego miasta,request to another city
+history.struck,uderzenie na prośbę gracza,strike at the player's request
+history.attacked,atak gracza,the player's attack
+history.ally_attacked,atak na sojusznika,attack on an ally
+history.rival_respect,atak na rywala,attack on a rival
+history.tribute_unpaid,niezapłacony trybut,tribute unpaid
+history.zeus,przychylność Zeusa,Zeus's favour
+history.games_host,gospodarz igrzysk,host of the games
+history.olympian_win,zwycięstwo w igrzyskach olimpijskich,win at the Olympian games
+history.hippodrome,goście hipodromu,visitors to the hippodrome
+history.request_lapsed,prośba miasta niespełniona,the city's request not met
+history.request_done,prośba miasta spełniona,the city's request met
+history.request_late,prośba miasta spełniona po terminie,the city's request met late
+history.wrath,gniew Hery,Hera's wrath
+legend.water,"Kolumny nad domami: zasięg nosiciela wody z fontanny.","Columns over the houses: the water carrier's reach from a fountain."
+legend.hygiene,"Kolumny nad domami: zasięg lekarza z przychodni.","Columns over the houses: the doctor's reach from the infirmary."
+legend.taxes,"Kolumny nad domami: zasięg poborcy podatków.","Columns over the houses: the tax collector's reach."
+legend.culture,"Kolumny nad domami: punkty kultury z teatrów, gimnazjów i podiów.","Columns over the houses: culture points from theatres, gymnasiums and podiums."
+legend.fire,"Kolumny nad budynkami: jak blisko pożaru; obniża je przegląd konserwatora.","Columns over the buildings: how near a fire; a maintenance visit lowers them."
+legend.collapse,"Kolumny nad budynkami: jak blisko zawalenia; obniża je przegląd konserwatora.","Columns over the buildings: how near a collapse; a maintenance visit lowers them."
+legend.unrest,"Kolumny nad domami: niepokoje, z których rodzą się przestępcy.","Columns over the houses: the unrest that breeds criminals."
+legend.employment,"Kolumny nad budynkami: obsada miejsc pracy.","Columns over the buildings: the jobs filled."
+legend.security,"Kolumny nad budynkami wojska (pełne) i domami elity: ilu żołnierzy daje dom.","Columns over the military buildings (full) and the elite houses: how many soldiers a house gives."
+legend.supplies,"Kolumny nad domami: ile z potrzebnych domowi towarów ma w zapasie.","Columns over the houses: how many of the goods the house needs it holds."
+legend.appeal,"Kolor kafli: atrakcyjność miejsca dla domów.","Tile colour: how attractive a place is to houses."
+legend.low_level,brak,none
+legend.high_level,pełny,full
+legend.low_risk,bezpiecznie,safe
+legend.high_risk,zaraz wybuchnie,about to break out
+legend.low_appeal,odpycha,repels
+legend.high_appeal,przyciąga,attracts
+ui.select_area,Zaznacz na mapie,Select on map
+ui.drag_select,Przeciągnij prostokąt wokół sztandarów,Drag a rectangle around the standards
+ui.drag_deselect,Przeciągnij prostokąt: te kompanie wypadną z zaznaczenia,Drag a rectangle: these companies leave the selection
+ui.chosen_line,"Zaznaczone, kompanie: %d","Selected, companies: %d"
+ui.deselect_area,Odznacz obszar,Drop an area
+ui.deselect_all,Odznacz wszystko,Drop all
+ui.scale,Skala interfejsu: %d %%,Interface scale: %d %%
+ui.bench_shadows,Cienie,Shadows
+ui.bench_split,"GPU śr. %.2f ms, najgorzej %.2f ms   CPU śr. %.2f ms, najgorzej %.2f ms   %s","GPU avg %.2f ms, worst %.2f ms   CPU avg %.2f ms, worst %.2f ms   %s"
+ui.bench_shadows_on,cienie włączone,shadows on
+ui.bench_shadows_off,cienie wyłączone,shadows off

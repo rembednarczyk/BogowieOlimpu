@@ -1,0 +1,9 @@
+[configuration]
+entry_symbol = "bo_gdext_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+linux.debug.x86_64 = "res://bin/libbo_gdext.so"
+linux.release.x86_64 = "res://bin/libbo_gdext.so"
+android.debug.arm64 = "res://bin/libbo_gdext.android.so"
+android.release.arm64 = "res://bin/libbo_gdext.android.so"

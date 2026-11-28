@@ -1,0 +1,41 @@
+{
+ "units_per_load": 100,
+ "load_note": "1 ładunek w magazynie = 100 jednostek w Agorze i domu (żywność, wełna, oliwa, wino); zbroja i konie liczone sztukami",
+ "storage_tiles": 8,
+ "loads_per_storage_tile": 4,
+ "sculptures_per_storage_tile": 1,
+ "storehouse_capacity_loads": 32,
+ "granary_capacity_loads": 32,
+ "deliveryman_capacity_loads": {
+  "production_building": 1,
+  "storehouse": 4,
+  "granary": 4,
+  "trade_building": 4,
+  "sculpture": 1
+ },
+ "production_delivery_range_by_rate": {
+  "6": 54,
+  "9": 36,
+  "12": 27,
+  "16": 20
+ },
+ "storehouse_default_orders": "przyjmuje wszystko poza pszenicą",
+ "get_transfer_capacity": "para magazynów accept/get przenosi do 48 ładunków/rok na 54 kafle",
+ "labor_access": "budynek dostaje pracowników, jeśli ma połączenie pieszo (nie musi być drogą) z punktem wejścia imigrantów",
+ "construction_batch": "materiały budowlane: wóz czeka na 4 ładunki w jednym magazynie; rzeźby po 1",
+ "max_trade_piers_per_city": 10,
+ "max_food_types_per_adventure": 4,
+ "consumption": {
+  "food_units_per_person_month": 0.25,
+  "fleece_units_per_house_month": 2,
+  "olive_oil_units_per_house_month": 2,
+  "wine_units_per_house_month": 2,
+  "horse_food_units_month": 0.25
+ },
+ "elite_build_prerequisite_stock": {
+  "food_loads": 2,
+  "fleece_loads": 1,
+  "olive_oil_loads": 1
+ },
+ "src": "S-004 housinglevels, industry-production; S-005 (JonN, Caesar Alan, Nero Would, Moquel)"
+}

@@ -1,0 +1,10 @@
+[
+{"id": "hercules", "slays": ["cerberus", "hydra"], "requirements": ["hall_culture_access:excellent (Atl: science)", "win_any_panhellenic_game (Atl: working_hippodrome)", "citywide_gymnasium_access:excellent (Atl: observatory)", "population>=1500", "wine:32"], "gaps": [], "src": "Z:130, P:25; S-004 heroes"},
+{"id": "achilles", "slays": ["hector", "maenads"], "requirements": ["armor:32", "hoplite_companies>=3 (Atl: spearmen)", "sanctuary:athena|hephaestus (preferuje athena)", "no_unrest", "wine:16"], "gaps": [], "src": "Z:130; S-004 heroes"},
+{"id": "odysseus", "slays": ["scylla", "cyclops"], "requirements": ["popularity:excellent", "city_health:excellent", "elite_houses>=8", "olive_oil:32", "wine:16"], "gaps": [], "src": "Z:130; S-004 heroes"},
+{"id": "jason", "slays": ["talos", "dragon"], "requirements": ["triremes>=3 (Atl: frigates)", "horsemen_companies>=2 (Atl: charioteers)", "horses:8", "food:64", "wine:16"], "gaps": [], "src": "Z:130, P:25; S-004 heroes"},
+{"id": "theseus", "slays": ["minotaur", "calydonian_boar"], "requirements": ["hall_near_palace", "hall_appeal:good", "hall_protected_by_walls", "marble:32", "wine:16"], "gaps": [], "src": "Z:130; S-004 heroes"},
+{"id": "perseus", "slays": ["medusa", "kraken"], "requirements": ["sanctuaries>=2 of athena|hermes|zeus|hades", "drachmas:3000 (pobierane przy przyzwaniu)", "fleece:16", "sculpture:6"], "gaps": [], "src": "Z:130; S-004 heroes"},
+{"id": "atalanta", "slays": ["sphinx", "harpies"], "requirements": ["sanctuary:artemis", "working_stadium (Atl: working_museum)", "meat:32", "wood:32", "military_companies>=8"], "expansion": true, "gaps": [], "src": "P:24; S-004 heroes"},
+{"id": "bellerophon", "slays": ["chimera", "echidna"], "requirements": ["horses_in_city>=15", "citywide_tax_coverage:excellent", "treasury>=10000 (nie pobierane)", "bronze:24 (Atl: orichalc)", "wine:24"], "expansion": true, "gaps": [], "src": "P:24; S-004 heroes"}
+]

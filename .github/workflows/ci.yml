@@ -1,0 +1,53 @@
+name: ci
+on:
+  push:
+    paths-ignore: ['docs/**', '**.md']
+  pull_request:
+    paths-ignore: ['docs/**', '**.md']
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true  # game/models/*.glb (check_models reads them)
+      - name: Tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang
+      - name: Guards
+        run: |
+          python3 tools/checks/check_core.py .
+          python3 tools/checks/check_models.py .
+      - name: Build and test (GCC, Release)
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ctest --test-dir build -j 4 --output-on-failure
+      - name: Build and test (Clang, Release) - golden hash must match GCC
+        run: |
+          CXX=clang++ cmake -S . -B build-clang -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-clang
+          ctest --test-dir build-clang -j 4 --output-on-failure
+  godot:
+    runs-on: ubuntu-24.04
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+      - name: Tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y ninja-build
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip && sudo mv Godot_v4.7.2-stable_linux.x86_64 /usr/local/bin/godot
+      - name: Build GDExtension
+        run: |
+          cmake -S . -B build-gd -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBO_BUILD_GDEXT=ON -DBO_BUILD_TESTS=OFF
+          cmake --build build-gd
+      - name: Headless Godot tests
+        run: |
+          python3 tools/sync_game_data.py .
+          godot --headless --path game --import || true
+          godot --headless --path game --script res://tests/test_simulation.gd
+          godot --headless --path game --script res://tests/test_ui.gd
+          godot --headless --path game --script res://tests/test_layout.gd

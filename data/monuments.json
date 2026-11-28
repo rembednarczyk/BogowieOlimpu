@@ -1,0 +1,438 @@
+[
+ {
+  "id": "population",
+  "kind": "commemorative",
+  "trigger": "population_milestone",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "gaps": [
+   "L-092"
+  ],
+  "src": "Z:155",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  },
+  "thresholds": [
+   1000,
+   2000,
+   5000,
+   10000,
+   15000,
+   20000,
+   25000
+  ],
+  "thresholds_src": "doc 24, eZeus eboardcity.cpp (S-008)"
+ },
+ {
+  "id": "happiness",
+  "kind": "commemorative",
+  "trigger": "immense_satisfaction",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "gaps": [
+   "L-092"
+  ],
+  "src": "Z:155",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  },
+  "popularity_at_least": 95,
+  "popularity_src": "[ZAŁOŻENIE L-092] \"ogromne zadowolenie\" (Z:155); eZeus nie przyznaje"
+ },
+ {
+  "id": "scholar",
+  "kind": "commemorative",
+  "trigger": "win_pythian_or_isthmian",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:155",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "athlete",
+  "kind": "commemorative",
+  "trigger": "win_nemean_or_olympian",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "victory",
+  "kind": "commemorative",
+  "trigger": "repel_formidable_invader",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  },
+  "chance_percent": 50,
+  "chance_src": "eZeus einvasionevent.cpp invadersDefeated: 50 % (S-008); Z:156 \"groźny najeźdźca\" bez liczby"
+ },
+ {
+  "id": "conquest",
+  "kind": "commemorative",
+  "trigger": "city_becomes_vassal",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "colony",
+  "kind": "commemorative",
+  "trigger": "found_colony",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "diplomacy",
+  "kind": "commemorative",
+  "trigger": "city_becomes_ally",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "god_statue",
+  "kind": "commemorative",
+  "trigger": "complete_god_quest",
+  "sizes": 2,
+  "size_chosen_by": "god",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  },
+  "size_ezeus": "2x2",
+  "appeal_ezeus": {
+   "initial": 35,
+   "range": 7
+  },
+  "notes": "S-008 [eZeus]: 2×2, atrakcyjność 35 z zasięgiem 7; S-004 nie podaje"
+ },
+ {
+  "id": "hero",
+  "kind": "commemorative",
+  "trigger": "hero_slays_monster_in_city",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:156",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "games_host",
+  "kind": "commemorative",
+  "trigger": "host_panhellenic_games",
+  "cost": 0,
+  "rebuild_after_demolish": false,
+  "src": "Z:111",
+  "size": "3x3",
+  "appeal": {
+   "initial": 30,
+   "step_tiles": 2,
+   "step_change": -5,
+   "range": 6
+  }
+ },
+ {
+  "id": "pyramid",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:27; S-004 pyramids",
+  "variants_data": {
+   "modest": {
+    "size": "3x3",
+    "marble_by_level": {
+     "l1": 20,
+     "l2": 4
+    },
+    "wood": 0,
+    "sculpture": 0,
+    "orichalc": 8
+   },
+   "pyramid": {
+    "size": "5x5",
+    "marble_by_level": {
+     "l1": 51,
+     "l2": 20,
+     "l3": 4
+    },
+    "wood": 8,
+    "sculpture": 0,
+    "orichalc": 18
+   },
+   "great": {
+    "size": "7x7",
+    "marble_by_level": {
+     "l1": 99,
+     "l2": 51,
+     "l3": 20,
+     "l4": 4
+    },
+    "wood": 16,
+    "sculpture": 0,
+    "orichalc": 31
+   },
+   "majestic": {
+    "size": "9x9",
+    "marble_by_level": {
+     "l1": 162,
+     "l2": 99,
+     "l3": 51,
+     "l4": 20,
+     "l5": 4
+    },
+    "wood": 32,
+    "sculpture": 0,
+    "orichalc": 39
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "monument_to_the_sky",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:27-28; S-004 pyramids",
+  "variants_data": {
+   "small": {
+    "size": "5x5",
+    "marble_by_level": {
+     "l1": 51,
+     "l2": 21
+    },
+    "wood": 8,
+    "sculpture": 0,
+    "orichalc": 4
+   },
+   "standard": {
+    "size": "6x6",
+    "marble_by_level": {
+     "l1": 71,
+     "l2": 34
+    },
+    "wood": 8,
+    "sculpture": 0,
+    "orichalc": 18
+   },
+   "grand": {
+    "size": "8x8",
+    "marble_by_level": {
+     "l1": 127,
+     "l2": 71,
+     "l3": 34
+    },
+    "wood": 16,
+    "sculpture": 0,
+    "orichalc": 33
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "shrine",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "per_god": true,
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "minor": {
+    "size": "3x3",
+    "marble_by_level": {
+     "l1": 16
+    },
+    "wood": 0,
+    "sculpture": 1,
+    "orichalc": 4
+   },
+   "shrine": {
+    "size": "6x6",
+    "marble_by_level": {
+     "l1": 67,
+     "l2": 27,
+     "statue": 16
+    },
+    "wood": 16,
+    "sculpture": 0,
+    "orichalc": 8
+   },
+   "major": {
+    "size": "8x8",
+    "marble_by_level": {
+     "l1": 121,
+     "l2": 28,
+     "statue": 16
+    },
+    "wood": 16,
+    "sculpture": 4,
+    "orichalc": 22
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "pyramid_of_the_pantheon",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "single": {
+    "size": "11x9",
+    "marble_by_level": {
+     "l1": 142,
+     "l2": 48
+    },
+    "wood": 16,
+    "sculpture": 14,
+    "orichalc": 25
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "altar_of_olympus",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "single": {
+    "size": "8x8",
+    "marble_by_level": {
+     "l1": 131,
+     "l2": 67,
+     "l3": 32,
+     "altar": 4
+    },
+    "wood": 16,
+    "sculpture": 0,
+    "orichalc": 33
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "temple_of_olympus",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "single": {
+    "size": "8x8",
+    "marble_by_level": {
+     "l1": 99,
+     "l2": 43,
+     "temple": 12
+    },
+    "wood": 22,
+    "sculpture": 0,
+    "orichalc": 27
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "observatory_kosmika",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "single": {
+    "size": "9x9",
+    "marble_by_level": {
+     "l1": 163,
+     "l2": 99,
+     "observatory": 12
+    },
+    "wood": 16,
+    "sculpture": 0,
+    "orichalc": 8
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ },
+ {
+  "id": "museum_atlantika",
+  "kind": "pyramid",
+  "culture": "atlantean",
+  "gaps": [],
+  "src": "P:28; S-004 pyramids",
+  "variants_data": {
+   "single": {
+    "size": "8x8",
+    "marble_by_level": {
+     "l1": 127,
+     "museum": 32
+    },
+    "wood": 24,
+    "sculpture": 0,
+    "orichalc": 40
+   }
+  },
+  "notes": "marmur biały lub czarny według ustawienia poziomu przez projektanta mapy; panel budowy nie zawsze podaje dokładne braki"
+ }
+]
