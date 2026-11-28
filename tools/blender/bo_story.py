@@ -530,3 +530,50 @@ def krater(b, x, y, z, rng, scale=1.0, name="krater"):
         pts = [(x + side * r * 0.8, y, z + 0.12 + h * 0.55), (x + side * r * 1.25, y, z + 0.12 + h * 0.6),
                (x + side * r * 1.25, y, z + 0.12 + h * 0.8), (x + side * r * 0.95, y, z + 0.12 + h * 0.85)]
         b.tube_path([_pt(q) for q in pts], t(0.016), "roof_tile", sides=8, stage=0.9)
+
+
+def vine_stem(b, pts, rng):
+    """A bare stem of the vine from one point to the next (from a column's top up to the roof)."""
+    if not b.detail:
+        return
+    b.tube_path([_pt(q) for q in pts], t(0.013), "bark", sides=5, stage=0.92)
+    for q in pts[1:]:
+        b.strand(_pt(q), _pt((q[0] + rng.uniform(-0.06, 0.06), q[1] + 0.05, q[2] + 0.05)), t(0.07), "leaves", stage=0.92,
+                 tint=rng.uniform(0.3, 0.8))
+
+
+def roof_vine(b, x0, x1, y0, y1, rng, density=560):
+    """A vine lying over a roof between x0-x1 and y0-y1 (y1 the eave): leaves on the tiles where rays from
+    above meet them, sprays hanging down over the eave, grapes under it. Drawn after the roof it lies on."""
+    import mathutils
+    from mathutils.bvhtree import BVHTree
+    if not b.detail:
+        return
+    tree = BVHTree.FromBMesh(b.bm)
+    def top(x, y):
+        hit = tree.ray_cast(mathutils.Vector((t(x), -t(y), 50.0)), mathutils.Vector((0, 0, -1)), 100.0)
+        return None if hit[0] is None else hit[0].z / t(1.0)
+    eave = []
+    for _ in range(density):
+        # thicker towards the eave and in two patches over the end columns, as a vine would grow
+        x = rng.choice([rng.uniform(x0, x0 + 1.2), rng.uniform(x1 - 1.2, x1), rng.uniform(x0, x1)])
+        y = y0 + (y1 - y0) * (1.0 - rng.random() ** 2)
+        z = top(x, y)
+        if z is None:
+            continue
+        tip = (x + rng.uniform(-0.07, 0.07), y + rng.uniform(-0.07, 0.07), z + rng.uniform(0.03, 0.07))
+        b.strand(_pt((x, y, z + 0.02)), _pt(tip), t(rng.uniform(0.07, 0.1)), "leaves", stage=0.93, tint=rng.uniform(0.2, 0.9))
+        if y > y1 - 0.12:
+            eave.append((x, y, z))
+    for x, y, z in eave[::2]:  # sprays over the eave
+        drop = rng.uniform(0.15, 0.4)
+        b.strand(_pt((x, y1 + 0.01, z)), _pt((x + rng.uniform(-0.04, 0.04), y1 + 0.04, z - drop)), t(0.06), "leaves",
+                 stage=0.93, tint=rng.uniform(0.2, 0.8))
+    for k in range(5):
+        gx = x0 + 0.3 + (x1 - x0 - 0.6) * k / 4
+        z = top(gx, y1 - 0.02)
+        if z is not None:  # on a stalk from the eave
+            b.tube_path([_pt((gx, y1 + 0.01, z - 0.02)), _pt((gx, y1 + 0.03, z - 0.1))], t(0.006), "bark", sides=4, stage=0.93)
+            b.lathe(t(gx), t(y1 + 0.03), t(z - 0.2), [(t(0.005), 0), (t(0.035), t(0.03)), (t(0.045), t(0.08)),
+                                                     (t(0.01), t(0.12))], "blue_paint", sides=8, stage=0.93, tint=0.1,
+                    smooth=2)

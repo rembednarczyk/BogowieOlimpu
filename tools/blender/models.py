@@ -323,8 +323,9 @@ def flat(b, rng, story=None):
     if b.detail:
         D.meander(b, 0.4, 1.875, 3.2, 2.505, along_x=True, outward=1, unit=0.055, part="stone", stage=0.52)
         D.cornice(b, 0.35, 0.35, 3.3, 1.5, 4.43, stage=0.62)
-    for x in (0.35, 2.6):  # the wings
+    for x in (0.35, 2.6):  # the wings, each on its own stone footing (2026-11-28: they hung 30 cm over the ground)
         wing = "west wing" if x < 1 else "east wing"
+        D.footing(b, x - 0.05, 1.85, 1.15, 1.9, h=0.3, rng=rng, group=wing)
         _room(b, rng, x, 1.85, 1.05, 1.85, 0.3, 1.75, plaster="plaster", doors=[("e" if x < 1 else "w", 0.6, 0.75, 1.6)],
               windows=[("s", 0.3)], stage=(0.15, 0.55), group=wing)
         D.shed_roof(b, x, 1.85, 1.05, 1.85, 2.05, 2.47, rng, falls="s", overhang=0.12, group=wing)
@@ -396,6 +397,8 @@ def city_house(b, rng, story=None):
         b.box(t(0.4), t(3.2), t(2.96), t(3.2), t(0.5), t(0.2), "stone", stage=0.52)
     D.shed_roof(b, 0.3, 2.7, 3.4, 1.0, 3.21, 3.62, rng, falls="s", overhang=0.12, gable="stone", stage=(0.62, 0.7),
                 antefix=True, group="porch")
+    if story == "gardeners":  # the vine thrown over the porch roof, hanging down its eave
+        S.roof_vine(b, 0.3, 3.7, 2.95, 3.8, rng)
     ridge = D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
     D.chimney_pot(b, 2.65, 1.5, ridge(2.65), rng, scale=1.15)
     if b.detail:
@@ -412,14 +415,16 @@ def city_house(b, rng, story=None):
     if story == "shepherds":  # dyed cloths hung between the columns under the architrave
         for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
             S.swag(b, (a + 0.2, 3.73, 2.78), (c - 0.2, 3.73, 2.78), 0.4, S.DYES[i * 2], rng, name="swag %d" % (i + 1))
-    elif story == "potters":  # pots and plates hung between the columns, two kraters at the porch's ends
-        for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
+    elif story == "potters":  # pots and plates hung between the columns, a striped awning out from the
+        for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):  # architrave over the steps, two kraters
             S.hanging_pots(b, a + 0.24, c - 0.24, 3.45, 2.8, rng, name="hung pots %d" % (i + 1))
+        S.awning(b, 0.45, 3.55, 3.7, 2.78, 0.27, 0.2, rng, pots=6, name="porch awning")
         for i, x in enumerate((0.40, 3.60)):  # in the gap between the end columns and the porch's edges
             S.krater(b, x, 3.45, 0.55, rng, scale=0.55, name="krater %d" % (i + 1))
-    elif story == "gardeners":  # the vine up the outer columns and along the architrave
+    elif story == "gardeners":  # the vine up the outer columns, along the architrave and over the porch roof
         for x in (0.75, 3.05):
             S.column_vine(b, x, 3.45, 0.6, 2.75, 0.15, rng)
+            S.vine_stem(b, [(x + 0.12, 3.6, 2.75), (x + 0.1, 3.76, 2.95), (x + 0.08, 3.8, 3.2)], rng)
         S.garland(b, 0.4, 3.6, 3.72, 2.92, rng)
     if story:
         b.mirror = S.STORIES[story]["mirror"]
