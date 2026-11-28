@@ -586,7 +586,7 @@ def city_house(b, rng, story=None):
     for i, at in enumerate((0.6, 1.5, 2.4)):
         D.flower_box(b, 0.3 + at - 0.03, 2.7, up(3.78), 0.51, rng, name="flower box %d" % (i + 1))
     D.grass(b, rng, 26)
-    b.scaffold(height=5.6 * M)
+    b.scaffold(height=5.8 * M)
 
 
 @model("fountain", "fountain", "fontanna: kamienny basen, słup z wylewką z brązu, woda płynie, gdy pracuje")
@@ -611,10 +611,19 @@ def granary(b, rng):
     bin's food lies in 4 strips, one per load (bo_food.py), shown by the instance's `store` (boot.gd)."""
     import bo_food as F
     D.footing(b, 0.35, 0.35, 7.3, 2.55, h=0.3, rng=rng, group="hall")
-    _room(b, rng, 0.4, 0.4, 7.2, 2.45, 0.3, 2.9, thick=0.4, plaster="plaster",
-          doors=[("s", 1.6, 1.1, 2.1), ("s", 4.9, 1.1, 2.1)], windows=[("n", 1.2), ("n", 3.6), ("n", 6.0)], group="hall")
-    D.tiled_roof(b, 0.4, 0.4, 7.2, 2.45, 3.2, 1.0 * D.ROOF_STEEP, rng, along_x=True, overhang=0.35, tiles="roof_patina",
-                 group="hall")
+    # The hall: as tall against the houses as the reference's granary (S-008: 60 px against the top house's 68,
+    # 0.88 of it; docs/STYL-BUDOWLI.md ch. 7): walls 3.6 m, its ridge about 6.4 m.
+    zh, hh, rise = 0.3, 3.6, 1.35  # tiled_roof makes it steep (ROOF_STEEP)
+    _room(b, rng, 0.4, 0.4, 7.2, 2.45, zh, hh, thick=0.4, plaster="plaster",
+          doors=[("s", 1.6, 1.1, 2.2), ("s", 4.9, 1.1, 2.2)], windows=[("n", 1.2), ("n", 3.6), ("n", 6.0)], group="hall")
+    # Its ornament, plain as a store's (R-018 point 5a): a painted key under the eaves, antefixes along them,
+    # palmettes on the gables.
+    if b.detail:
+        D.meander(b, 0.45, 2.875, 7.1, zh + hh - 0.3, along_x=True, outward=1, unit=0.07, part="ochre", stage=0.6)
+    D.tiled_roof(b, 0.4, 0.4, 7.2, 2.45, zh + hh, rise, rng, along_x=True, overhang=0.35, tiles="roof_patina",
+                 antefix=True, group="hall")
+    if b.detail:
+        _acroteria(b, 0.4, 0.4, 7.2, 2.45, zh + hh, rise * D.ROOF_STEEP, 0.35, size=0.4)
     # The yard: paving, a low stone wall, gates at the aisle's ends.
     b.solid("yard", t(0.4), t(2.85), 0, t(7.6), t(7.6), t(0.12), block="yard")
     b.box(t(0.4), t(2.85), 0, t(7.2), t(4.75), t(0.12), "stone", stage=0.05)
@@ -649,11 +658,15 @@ def granary(b, rng):
                     b.store = (slot, 9, load)
                     b.box(t(sx0 + 0.01), t(iy), t(z), t(iw / 4 - 0.02), t(idp), t(0.12), "grain", stage=0.99)
                     b.store = None
+    # Life by it (R-018 point 6): ivy up the hall's east end, a jar of water and a pot of herbs at the west gate.
+    D.ivy(b, 7.6, 0.7, 1.6, 0.3, 3.0, rng, along_x=False, out=1)
+    D.hydria(b, 0.95, 5.15, scale=0.85, rng=rng, z=0.12)
+    D.potted_plant(b, 1.4, 5.2, scale=0.75, rng=rng, z=0.12)
     # In the aisle: sacks waiting to be emptied into a bin.
     D.sack(b, 6.95, 5.15, scale=0.75, rng=rng, z=0.12)
     D.sack(b, 6.5, 5.2, scale=0.65, rng=rng, name="sack 2", z=0.12)
     D.grass(b, rng, 20)
-    b.scaffold(height=4.4 * M)
+    b.scaffold(height=5.8 * M)
 
 
 @model("storehouse", "storehouse", "magazyn: dziedziniec w kamiennym murze, wiata kryta dachówką, skrzynie i amfory")
