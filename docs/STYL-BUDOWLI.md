@@ -58,7 +58,9 @@ Materiały gry referencyjnej (zrzuty, instrukcja) służą tylko do analizy prop
 | Element w powietrzu pod balkonem | haki zamiast zastrzałów | zastrzał z kamiennego wspornika w ścianie |
 | Gra pokazuje stare modele | brak importu | `godot --headless --path game --import` po eksporcie |
 
-## 5. Historie budynków (propozycja do akceptacji poza domami zwykłymi)
+## 5. Historie budynków (przyjęte 2026-11-28 jako punkt wyjścia)
+
+Tabela jest punktem wyjścia: przy pierwszym pełnym modelu kategorii jej warianty doprecyzowujemy (rekwizyty, akcenty, element od frontu) i wpisujemy tutaj, jak przy domach zwykłych w `ASSETY.md`.
 
 Zasada: wariant opowiada, kto w budynku mieszka albo pracuje. Zmienia akcenty kolorów, rekwizyty, czasem układ (odbicie lustrzane) i ma jeden duży element od frontu. Mechanika bez zmian; wybór w oprawie z id budynku.
 
@@ -75,4 +77,14 @@ Zasada: wariant opowiada, kto w budynku mieszka albo pracuje. Zmienia akcenty ko
 | Mury i wieże | nowe, połatane, porośnięte | czyste blanki; łaty z innego kamienia; bluszcz |
 | Ozdoby | według pory roku | kwiaty, liście, owoce |
 
-Kultura atlantydzka dostaje własny język oprawy (do decyzji właściciela przed jej pierwszym modelem); powyższe kategorie obowiązują ją tak samo.
+Kategorie i zasada wariantów obowiązują też kulturę atlantydzką (rozdział 6).
+
+## 6. Wygląd Atlantydy (przyjęty 2026-11-28)
+
+Te same zasady R-018 (budowa element po elemencie, miękkie światło, łukowe dachy, ręczna nieregularność, życie przy budynku, bez dziur, historie), inny materiał i ornament:
+- **Orichalk:** czerwonawozłoty metal na okuciach, zwieńczeniach, krawędziach dachów, drzwiach i posągach; połyskuje (niska szorstkość w shaderze), na wyższych poziomach więcej.
+- **Błękit morza:** tynki i dachówki w odcieniach turkusu, błękitu i bieli; woda blisko budynków (kanały, baseny, fontanny).
+- **Muszle i koralowce:** zamiast palmet i meandrów ornament z muszli, koralowców, fal i spiral; antefiksy w kształcie muszli, ogrody z muszli.
+- **Kształty:** łagodniejsze, bardziej zaokrąglone niż greckie (kopuły, łuki, okrągłe okna), dachy łukowe tak samo strome.
+- **Paleta:** nowe kolory (orichalk, turkus, koral, perłowa biel) dopisujemy do `PALETTE` przy pierwszym modelu atlantydzkim, w obu miejscach naraz (pilnuje `check_models.py`).
+- Nazwy, kształty i detale nasze; z gry referencyjnej tylko kategorie i liczby (R-002, R-017).

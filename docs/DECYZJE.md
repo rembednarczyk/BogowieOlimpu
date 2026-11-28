@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Historie wszystkich kategorii budynków, wygląd Atlantydy
+- Decyzja: (1) tabela historii z `docs/STYL-BUDOWLI.md` (rozdział 5) obowiązuje jako punkt wyjścia; każdą kategorię doprecyzowujemy przy jej pierwszym pełnym modelu i wpisujemy tam. (2) Kultura atlantydzka ma własny wygląd: orichalk, błękit morza, muszle i koralowce, przy tych samych zasadach R-018 (rozdział 6 przewodnika).
+- Powód: polecenie właściciela z 2026-11-28 („Tak zrób tak”), pytania 25-26 w `11-OTWARTE-PYTANIA.md`.
+
 ### 2026-11-28: Nazwy poziomów 1-2, historie domów, modele w Git LFS
 - Decyzja: (1) poziom 1 domu zwykłego nazywa się "szałas" (EN "Shelter") i pokazuje namiot, poziom 2 "chata" (EN "Cottage") i pokazuje chatę z gliny; id `hut` i `shack` bez zmian, mechanika bez zmian. (2) Trzy historie domów zwykłych: pasterze, garncarze, ogrodnicy i pszczelarze, według planu w `docs/ASSETY.md` ("Warianty i historie domów"); historie elity osobno. (3) `game/models/*.glb` w Git LFS (`.gitattributes`), CI pobiera je przy checkout (`lfs: true`); historia sprzed zmiany zostaje bez przepisywania.
 - Powód: polecenie właściciela z 2026-11-28 („Robimy z rekomendacją: 1, 2 i 3”), pytania 22-24 w `11-OTWARTE-PYTANIA.md`.
