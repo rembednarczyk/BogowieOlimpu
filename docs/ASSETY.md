@@ -43,7 +43,7 @@ Uwagi właściciela 2026-11-28 (druga runda), wdrożone:
 Uwagi właściciela 2026-11-28 (trzecia runda), wdrożone:
 - Dachy łukowe: każda połać dachówkowa ugina się między okapem a kalenicą (`curve` 0,09 m: okap płaski, połać stromieje ku kalenicy), kalenica wygina się w środku (`sag` 0,08 m). Szczyty ścian idą pod spodem łuku, więc nie ma szpary ani tynku przebijającego dachówkę. Wzorzec: charakterystyczne wygięte dachy gry referencyjnej, oglądane tylko jako proporcja (zrzut właściciela, poza repo); kształt i detal nasze.
 - Dach przestał wyglądać jak drewniany: podkład pod dachówkami leży 14 cm pod połacią, w kolorze ciemnej terakoty, i nie wychodzi między gąsiorami; deska wiatrowa na szczycie zastąpiona murowaną obróbką w materiale szczytu, deska przy wyższej ścianie dachu jednospadowego zastąpiona zaprawionym rzędem dachówek.
-- Kamienica bez lewitujących części: belki balkonu podparte zastrzałami z kamiennych wsporników w ścianie (nad drzwiami i oknem wspornik stoi na nadprożu), zamiast wiszących haków.
+- Kamienica bez lewitujących części: belki balkonu podparte zastrzałami z kamiennych wsporników w ścianie, zamiast wiszących haków. Od 2026-11-28 (uwaga właściciela: zastrzały odchylały się na zewnątrz) balkon wisi na czterech żelaznych ściągach od płyt w ścianie pod fryzem do przedniej poręczy, bez zastrzałów pod spodem.
 
 ## Warianty i historie domów (plan 2026-11-28, przyjęty)
 

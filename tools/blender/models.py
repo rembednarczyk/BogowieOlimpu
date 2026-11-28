@@ -266,13 +266,7 @@ def row_house(b, rng, story=None):
         for i in range(5):  # beams out of the wall, each on a console
             bx = fx0 + 0.06 + i * (fx1 - fx0 - 0.2) / 4
             b.box(t(bx), t(3.3), t(fz - 0.15), t(0.08), t(fy1 - 3.32), t(0.1), "dark_wood", stage=0.55)
-            # The console: a stone corbel in the wall and a strut from it up to the beam's underside. Over the
-            # door and the window the corbel sits on their lintels.
-            over = any(a <= bx + 0.04 <= a + w_ for a, w_ in ((1.0, 0.9), (2.6, 0.4)))
-            base = fz - (0.3 if over else 0.6) if not low else (0.3 + hd + 0.18 if over else fz - 0.5)
-            b.cbox(t(bx - 0.01), t(3.4), t(base - 0.08), t(0.1), t(0.07), t(0.12), t(0.01), "stone", stage=0.55)
-            b.tube_path([(t(bx + 0.04), t(3.43), t(base)), (t(bx + 0.04), t(3.40 + (fz - 0.15 - base) * 0.9 + 0.05),
-                         t(fz - 0.15))], t(0.03), "dark_wood", sides=8, stage=0.55)
+        # (2026-11-28) No struts under it: the balcony hangs from the wall above, see the ties after the railing.
         for i in range(10):  # the planks
             b.box(t(fx0 + i * (fx1 - fx0) / 10 + 0.004), t(3.4), t(fz), t((fx1 - fx0) / 10 - 0.008), t(fy1 - 3.4),
                   t(0.012), "wood", stage=0.56, tint=rng.uniform(0.3, 0.7))
@@ -294,6 +288,13 @@ def row_house(b, rng, story=None):
     for i in range(n_side):  # the two ends
         py = fy0 + 0.17 + i * (fy1 - fy0 - 0.34) / max(n_side - 1, 1)
         balusters += [(fx0 + 0.04, py), (fx1 - 0.04, py)]
+    # The balcony hung from the building (owner, 2026-11-28: the struts below leaned out): iron ties from plates
+    # in the wall under the frieze down to the front rail, clear of the door and the windows of the upper floor.
+    for tx in (fx0 + 0.04, 1.4, 2.62, fx1 - 0.04):
+        anchor = (tx, 3.43, zu + hu - 0.42)
+        foot = (tx, fy1 - 0.04, top + 0.02)
+        b.tube_path([tuple(t(v) for v in anchor), tuple(t(v) for v in foot)], t(0.012), "iron", sides=6, stage=0.62)
+        b.box(t(tx - 0.04), t(3.4), t(zu + hu - 0.47), t(0.08), t(0.04), t(0.1), "iron", stage=0.62)  # the wall plate
     for bx_, by_ in balusters:
         assert fx0 + 0.035 <= bx_ <= fx1 - 0.035 and fy0 + 0.035 <= by_ <= fy1 - 0.035, "a baluster off the balcony"
         if b.detail:
