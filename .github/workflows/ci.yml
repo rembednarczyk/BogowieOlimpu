@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true  # game/models/*.glb (check_models reads them)
       - name: Tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang
       - name: Guards
@@ -32,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+          lfs: true
       - name: Tools
         run: |
           sudo apt-get update && sudo apt-get install -y ninja-build
