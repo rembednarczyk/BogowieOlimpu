@@ -717,7 +717,7 @@ def wool_bale(b, x, y, scale=1.0, stage=0.9, rng=None, name="wool", z=0.0):
                 sides=36, stage=stage)
 
 
-def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom"):
+def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom", toward=False):
     """A warp-weighted loom leaning on a wall: two uprights, the cloth beam, the warp threads, the clay weights
     hanging in a row, a part of the cloth woven."""
     w, d, h = (1.1, 0.35, 1.7)
@@ -725,7 +725,9 @@ def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom"):
     b.prop(name, t(x), t(y), 0, t(x + sx), t(y + sy), t(h))
     if not b.detail:
         return
-    def p(a, dd, zz):
+    def p(a, dd, zz):  # toward: the wall at the far side (+depth), the loom's top leaning on it
+        if toward:
+            dd = d + 0.045 - dd  # its top 5 mm off the plaster
         return (t(x + a), t(y + dd), t(zz)) if along_x else (t(x + dd), t(y + a), t(zz))
     for a in (0.04, w - 0.04):
         b.log(p(a, 0.28, 0.03), p(a, 0.06, h), t(0.03), sides=10, stage=stage)

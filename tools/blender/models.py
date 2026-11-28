@@ -327,7 +327,7 @@ def row_house(b, rng, story=None):
         D.basket(b, 2.75, 3.72, "carrots", scale=0.7, rng=rng)
     with D.goods(b, "fleece"):
         D.wool_bale(b, 0.5, 3.75, scale=0.7, rng=rng)
-        D.loom(b, 0.0, 1.0, along_x=False, rng=rng)
+        D.loom(b, 0.0, 1.0, along_x=False, rng=rng, toward=True)  # its top leaning on the west wall
     D.hydria(b, 3.32, 3.72, scale=0.8, rng=rng)
     with D.goods(b, "olive_oil"):  # level 6 needs olive oil: the jars along the east wall
         D.pithos(b, 3.82, 1.0, scale=0.42, rng=rng, lid=True)
