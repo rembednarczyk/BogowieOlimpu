@@ -209,8 +209,13 @@ def row_house(b, rng):
         for i in range(5):  # beams out of the wall, each on a console
             bx = fx0 + 0.06 + i * (fx1 - fx0 - 0.2) / 4
             b.box(t(bx), t(3.3), t(fz - 0.15), t(0.08), t(fy1 - 3.32), t(0.1), "dark_wood", stage=0.55)
-            b.tube_path([(t(bx + 0.04), t(3.42), t(fz - 0.15)), (t(bx + 0.04), t(3.44), t(fz - 0.35)),
-                         (t(bx + 0.04), t(3.5), t(fz - 0.47))], t(0.035), "dark_wood", sides=8, stage=0.55)
+            # The console: a stone corbel in the wall and a strut from it up to the beam's underside. Over the
+            # door and the window the corbel sits on their lintels.
+            over = any(a <= bx + 0.04 <= a + w_ for a, w_ in ((1.0, 0.9), (2.6, 0.4)))
+            base = fz - (0.3 if over else 0.6)
+            b.cbox(t(bx - 0.01), t(3.4), t(base - 0.08), t(0.1), t(0.07), t(0.12), t(0.01), "stone", stage=0.55)
+            b.tube_path([(t(bx + 0.04), t(3.43), t(base)), (t(bx + 0.04), t(3.40 + (fz - 0.15 - base) * 0.9 + 0.05),
+                         t(fz - 0.15))], t(0.03), "dark_wood", sides=8, stage=0.55)
         for i in range(10):  # the planks
             b.box(t(fx0 + i * (fx1 - fx0) / 10 + 0.004), t(3.4), t(fz), t((fx1 - fx0) / 10 - 0.008), t(fy1 - 3.4),
                   t(0.012), "wood", stage=0.56, tint=rng.uniform(0.3, 0.7))

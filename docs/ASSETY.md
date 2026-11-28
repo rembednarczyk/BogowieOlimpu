@@ -40,7 +40,12 @@ Uwagi właściciela 2026-11-28 (druga runda), wdrożone:
 - Nieregularność ręcznej roboty we wszystkich budowlach (`Builder._wonk` w `bo_asset.py`): jedno gładkie pole wygina cały model razem z rekwizytami, więc nic nie wchodzi w ścianę: budynek lekko się przechyla (do 1,2 cm na metr wysokości), ściany pęcznieją w dwóch trzecich wysokości (2-3,5%), linia dachu faluje (do 3,6 cm). Ziemia i działka zostają na miejscu, ziarno z nazwy modelu. Długie płaskie ściany dostają przed wygięciem więcej wierzchołków, żeby tynk wyginał się razem z cegłami. Widok z daleka (LOD1) ma tylko przechył, bez zagęszczania, i mieści się w budżecie 3000 trójkątów.
 - Przerysowana greckość: terakotowe kominy z pękatą donicą i daszkiem na trzech nóżkach na kalenicach poziomów 3-7, laurowe wieńce z czerwoną wstążką nad drzwiami zagrody, mieszkania i domu miejskiego, czarnofigurowe pasy z czerwonymi liniami na amforach i hydriach, akroteria o połowę większe.
 
-## Warianty i historie domów (plan 2026-11-28, do akceptacji)
+Uwagi właściciela 2026-11-28 (trzecia runda), wdrożone:
+- Dachy łukowe: każda połać dachówkowa ugina się między okapem a kalenicą (`curve` 0,09 m: okap płaski, połać stromieje ku kalenicy), kalenica wygina się w środku (`sag` 0,08 m). Szczyty ścian idą pod spodem łuku, więc nie ma szpary ani tynku przebijającego dachówkę. Wzorzec: charakterystyczne wygięte dachy gry referencyjnej, oglądane tylko jako proporcja (zrzut właściciela, poza repo); kształt i detal nasze.
+- Dach przestał wyglądać jak drewniany: podkład pod dachówkami leży 14 cm pod połacią, w kolorze ciemnej terakoty, i nie wychodzi między gąsiorami; deska wiatrowa na szczycie zastąpiona murowaną obróbką w materiale szczytu, deska przy wyższej ścianie dachu jednospadowego zastąpiona zaprawionym rzędem dachówek.
+- Kamienica bez lewitujących części: belki balkonu podparte zastrzałami z kamiennych wsporników w ścianie (nad drzwiami i oknem wspornik stoi na nadprożu), zamiast wiszących haków.
+
+## Warianty i historie domów (plan 2026-11-28, przyjęty)
 
 Cel właściciela: każdy dom opowiada swoją historię, miasto jest bardziej zróżnicowane; każdy budynek ma 2-3 warianty.
 

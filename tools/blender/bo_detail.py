@@ -253,11 +253,13 @@ def shed_roof(b, x, y, w, d, z_low, z_high, rng, falls="s", overhang=0.2, stage=
 
 
 def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(0.65, 0.95), gable="plaster",
-               antefix=False, sides=(-1, 1), group="main", sag=0.05):
+               antefix=False, sides=(-1, 1), group="main", sag=0.08, curve=0.09):
     """A gable roof of terracotta: pan tiles in rows from the eaves, cover tiles over their joints, a ridge;
     the gables walled in. `sides` (-1, 1) both slopes, one of them for a lean-to (then the high edge, where the
     ridge would be, gets a flashing board); `sag` lets the ridge dip a little in its middle (a roof of some age,
-    drawn by hand)."""
+    drawn by hand); `curve` bows each slope down between the eaves and the ridge (owner, 2026-11-28: arched
+    roofs): the eaves lie flatter, the slope steepens to the ridge, as a roof bent by its own weight over the
+    years."""
     s0, s1 = stage
     shed = len(sides) == 1
     x0, y0, x1, y1 = x - overhang, y - overhang, x + w + overhang, y + d + overhang
@@ -267,7 +269,8 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
 
     def rp(side, along, f):  # a point on a slope; the ridge dips by `sag` in the middle of its run
         p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f)
-        return (p[0], p[1], p[2] - sag * math.sin(math.pi * min(max(along / run_len, 0.0), 1.0)) * f)
+        bow = sag * math.sin(math.pi * min(max(along / run_len, 0.0), 1.0)) * f
+        return (p[0], p[1], p[2] - bow - curve * math.sin(math.pi * min(max(f, 0.0), 1.0)))
 
     # Points on the slopes for the check that no roof goes into the walls of another part (bo_asset.check_props).
     pts = []
@@ -297,8 +300,16 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
     rows = max(2, int(math.ceil(slope / exposed)))
     cols = max(2, int(round(run_len / pan_w)))
     pan_w = run_len / cols
-    for side in sides:  # the boards under the tiles show through the joints
-        slab(side, "dark_wood", -0.01, 0.025, s0)
+    for side in sides:  # the bed under the tiles, row by row along the bow, deep enough not to show
+        for r in range(rows):
+            f0, f1 = r * exposed / slope, min(1.0, (r + 1) * exposed / slope + 0.02)
+            n = _roof_normal(span, rise, along_x, side)
+            lo_a, hi_a = rp(side, run_len / 2, f0), rp(side, run_len / 2, f1)
+            centre = tuple(t((lo_a[k] + hi_a[k]) / 2 - n[k] * 0.14) for k in range(3))
+            half_run = (t(run_len / 2 - 0.02), 0, 0) if along_x else (0, t(run_len / 2 - 0.02), 0)
+            half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
+            b.obox(centre, half_run, half_up, tuple(t(n[k] * 0.0125) for k in range(3)), "roof_tile",
+                   stage=s0, tint=0.1)
     for side in sides:  # the slopes
         for r in range(rows):
             f0 = r * exposed / slope
@@ -349,7 +360,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 board_c = (board_c[0] + t(0.025 * out), board_c[1], board_c[2])
             else:
                 board_c = (board_c[0], board_c[1] + t(0.025 * out), board_c[2])
-            b.obox(board_c, half_t, half_up, half_n, "dark_wood", stage=s1, tint=0.45)
+            b.obox(board_c, half_t, half_up, half_n, gable, stage=s1, tint=0.45)
             edge = 0.05 if along == 0.0 else run_len - 0.05
             rows_v = max(2, rows)
             for r in range(rows_v):
@@ -370,7 +381,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             centre = tuple(t((p0[k] + p1[k]) / 2 + n[k] * 0.06) for k in range(3))
             half_run = tuple(t((p1[k] - p0[k]) / 2) for k in range(3))
             half_thick = (0, t(0.03), 0) if along_x else (t(0.03), 0, 0)
-            b.obox(centre, half_run, (0, 0, t(0.07)), half_thick, "dark_wood", stage=s1, tint=0.4)
+            b.obox(centre, half_run, (0, 0, t(0.07)), half_thick, "roof_tile", stage=s1, tint=0.15)
         ridge_n = 0
     for i in range(ridge_n):  # the ridge
         a0 = run_len * i / ridge_n
@@ -387,7 +398,35 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             n = _roof_normal(span, rise, along_x, side)
             b.obox((t(p[0] - n[0] * 0.06), t(p[1] - n[1] * 0.06), t(p[2] - 0.07)), half_w,
                    (0, t(0.08), 0) if along_x else (t(0.08), 0, 0), (0, 0, t(0.04)), "dark_wood", stage=s0)
-    _gables(b, x, y, w, d, z, rise, along_x, gable, s0, sides)
+    # The gables walled up to the underside of the bowed slopes, so no gap shows under the tiles and no wall
+    # pokes through them.
+    span_full = span
+    f_wall = overhang / span_full
+    for along in (overhang, run_len - overhang):
+        outline = []
+        for side in sorted(sides):
+            fs = [f_wall + (1.0 - f_wall) * k / 10 for k in range(11)]
+            pts = []
+            for f in fs:
+                p = rp(side, along, f)
+                pts.append((p[0], p[1], max(z, p[2] - 0.15)))
+            if side > 0:
+                pts.reverse()
+            outline.append(pts)
+        if shed:
+            pts = outline[0]
+            foot_hi = (pts[-1][0], pts[-1][1], z) if sides[0] < 0 else (pts[0][0], pts[0][1], z)
+            if sides[0] < 0:
+                poly = [(pts[0][0], pts[0][1], z)] + pts + [foot_hi]
+            else:
+                poly = [foot_hi] + pts + [(pts[-1][0], pts[-1][1], z)]
+        else:
+            a, c = outline
+            poly = [(a[0][0], a[0][1], z)] + a + c[1:] + [(c[-1][0], c[-1][1], z)]
+        poly = [q for i, q in enumerate(poly) if i == 0 or (abs(q[0] - poly[i - 1][0]) + abs(q[1] - poly[i - 1][1]) + abs(q[2] - poly[i - 1][2])) > 1e-6]
+        tp = [tuple(t(v) for v in q) for q in poly]
+        b.poly(tp, gable, stage=s0, plaster=True)
+        b.poly(list(reversed(tp)), gable, stage=s0, plaster=True)
 
 
 def _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f):
