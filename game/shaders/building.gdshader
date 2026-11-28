@@ -16,30 +16,35 @@ instance uniform float working = 0.0;  // 0/1: the animated parts move
 instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
 
 const int PALETTE_SIZE = 32;
-const vec3 PALETTE[23] = vec3[23](
-	vec3(0.93, 0.89, 0.80),  // plaster
-	vec3(0.78, 0.74, 0.66),  // stone
-	vec3(0.72, 0.36, 0.24),  // roof_tile
-	vec3(0.52, 0.36, 0.22),  // wood
-	vec3(0.74, 0.60, 0.44),  // mudbrick
-	vec3(0.70, 0.60, 0.36),  // thatch
-	vec3(0.30, 0.55, 0.72),  // water
-	vec3(0.94, 0.93, 0.90),  // marble
-	vec3(0.62, 0.45, 0.22),  // bronze
-	vec3(0.70, 0.22, 0.18),  // cloth
-	vec3(0.32, 0.22, 0.14),  // dark_wood
-	vec3(0.86, 0.72, 0.38),  // grain
-	vec3(0.66, 0.60, 0.50),  // mortar
-	vec3(0.78, 0.48, 0.24),  // ochre
-	vec3(0.30, 0.42, 0.56),  // blue_paint
-	vec3(0.40, 0.48, 0.26),  // leaves
-	vec3(0.80, 0.66, 0.46),  // end_grain
-	vec3(0.36, 0.28, 0.20),  // bark
-	vec3(0.86, 0.80, 0.66),  // linen
-	vec3(0.58, 0.44, 0.30),  // hide
-	vec3(0.66, 0.56, 0.38),  // rope
-	vec3(0.28, 0.24, 0.08),  // oil
-	vec3(0.30, 0.30, 0.32)  // iron
+const vec3 PALETTE[28] = vec3[28](
+	vec3(0.96, 0.91, 0.80),  // plaster,
+	vec3(0.82, 0.77, 0.66),  // stone,
+	vec3(0.82, 0.40, 0.26),  // roof_tile,
+	vec3(0.60, 0.42, 0.26),  // wood,
+	vec3(0.80, 0.64, 0.46),  // mudbrick,
+	vec3(0.80, 0.68, 0.40),  // thatch,
+	vec3(0.32, 0.62, 0.78),  // water,
+	vec3(0.95, 0.94, 0.90),  // marble,
+	vec3(0.66, 0.48, 0.24),  // bronze,
+	vec3(0.78, 0.26, 0.20),  // cloth,
+	vec3(0.36, 0.25, 0.16),  // dark_wood,
+	vec3(0.90, 0.76, 0.40),  // grain,
+	vec3(0.70, 0.63, 0.52),  // mortar,
+	vec3(0.88, 0.56, 0.26),  // ochre,
+	vec3(0.22, 0.52, 0.56),  // blue_paint,
+	vec3(0.38, 0.58, 0.26),  // leaves,
+	vec3(0.84, 0.70, 0.48),  // end_grain,
+	vec3(0.40, 0.31, 0.22),  // bark,
+	vec3(0.90, 0.85, 0.72),  // linen,
+	vec3(0.62, 0.47, 0.32),  // hide,
+	vec3(0.70, 0.60, 0.40),  // rope,
+	vec3(0.30, 0.26, 0.08),  // oil,
+	vec3(0.30, 0.30, 0.34),  // iron,
+	vec3(0.50, 0.70, 0.30),  // grass,
+	vec3(0.90, 0.30, 0.34),  // flower_red,
+	vec3(0.98, 0.82, 0.30),  // flower_yellow,
+	vec3(0.97, 0.95, 0.90),  // flower_white,
+	vec3(0.56, 0.72, 0.88)  // sky_cloth
 );
 const int STONE = 1;
 const int WATER = 6;
@@ -90,7 +95,7 @@ void fragment() {
 	if (v_hidden > 0.5) {
 		discard;
 	}
-	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 22);
+	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 27);
 	vec3 base = pow(PALETTE[part], vec3(2.2));  // the palette is in sRGB, ALBEDO linear
 	base *= 0.84 + 0.32 * UV.y;  // no two bricks or tiles alike
 	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground
@@ -123,7 +128,22 @@ void fragment() {
 	if (part == WATER && working > 0.5) {
 		base *= 0.9 + 0.2 * sin(TIME * 3.0 + v_local.x * 9.0 + v_local.z * 7.0);
 	}
+	// A painted look (owner, 2026-11-28, "a bit of Ghibli"): colour pools slightly in broad soft patches, as
+	// brushwork would; light() then lays the light in soft bands with cool, bluish shade.
+	base *= 0.94 + 0.12 * noise(v_local * 1.3);
 	ALBEDO = base;
 	ROUGHNESS = part == WATER ? 0.15 : 0.9;
 	EMISSION = glow;
+}
+
+// Soft two-tone light: a wide smooth step between lit and shaded, the shade tinted to the sky (cool) and the lit
+// side warmed, a thin warm rim where a face turns from the view. The shadows of the light still apply.
+void light() {
+	float ndl = dot(NORMAL, LIGHT);
+	float lit = smoothstep(-0.05, 0.35, ndl) * ATTENUATION;
+	vec3 shade = vec3(0.50, 0.56, 0.74);
+	vec3 sun = vec3(1.04, 0.98, 0.88);
+	DIFFUSE_LIGHT += LIGHT_COLOR / PI * mix(shade * 0.55, sun, lit);
+	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0) * lit;
+	DIFFUSE_LIGHT += LIGHT_COLOR / PI * rim * vec3(0.30, 0.22, 0.12);
 }

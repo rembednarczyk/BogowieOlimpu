@@ -106,14 +106,14 @@ class Wall:
         return b.obox((t(cx), t(cy), t(cz)), ax, ay, az, part, **kw)
 
 
-def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, block=None, both=False):
+def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, block=None, both=False, group="main"):
     """Lays the wall course by course; `plaster` (a palette part) coats the outer face; `block` (length, height)
     for stone blocks instead of mudbricks."""
     s0, s1 = stage
     bl, bh = block or (BRICK_L, BRICK_H)
     p0 = wall.frame(0, -0.03, 0)
     p1 = wall.frame(wall.length, wall.thick, wall.height + 0.05)
-    b.solid("wall", t(p0[0]), t(p0[1]), t(p0[2]), t(p1[0]), t(p1[1]), t(p1[2]))
+    b.solid("wall", t(p0[0]), t(p0[1]), t(p0[2]), t(p1[0]), t(p1[1]), t(p1[2]), block=group)
     if not b.detail:
         for a, c, z0, z1 in _rects(wall.length, wall.height, wall.openings):
             wall.put(b, a, 0, z0, c - a, wall.thick, z1 - z0, part, stage=s0)
@@ -190,11 +190,12 @@ def _openings(b, wall, rng, s0, s1):
                 tri = [tuple(t(v) for v in left), tuple(t(v) for v in right), tuple(t(v) for v in apex)]
                 b.poly(tri, "stone", stage=s1)
                 b.poly(list(reversed(tri)), "stone", stage=s1)
+            shutter = "blue_paint" if rng.random() < 0.55 else "ochre"  # teal or ochre, as painted by hand
             if b.detail:  # two shutters, open against the wall
                 for side, at in ((-1, o["at"] - o["w"] / 2), (1, o["at"] + o["w"])):
                     for i in range(3):
                         wall.put(b, at + i * o["w"] / 6, -0.05, o["z"] + 0.02, o["w"] / 6 - 0.01, 0.03, o["h"] - 0.04,
-                                 "ochre", stage=s1, tint=rng.uniform(0.35, 0.65))
+                                 shutter, stage=s1, tint=rng.uniform(0.35, 0.65))
             wall.put(b, o["at"], wall.thick * 0.5, o["z"], o["w"], 0.02, o["h"], "dark_wood", stage=s1)  # dark inside
             if b.detail:  # the frame and its cross bar
                 for a, w_ in ((o["at"], 0.05), (o["at"] + o["w"] - 0.05, 0.05)):
@@ -204,9 +205,9 @@ def _openings(b, wall, rng, s0, s1):
                 wall.put(b, o["at"] + o["w"] / 2 - 0.02, wall.thick * 0.3, o["z"], 0.04, 0.05, o["h"], "wood", stage=s1)
 
 
-def footing(b, x, y, w, d, h=0.35, stage=0.0, rng=None):
+def footing(b, x, y, w, d, h=0.35, stage=0.0, rng=None, group="main"):
     """A stone socle under the walls: rough blocks in the far view's place."""
-    b.solid("footing", t(x), t(y), 0, t(x + w), t(y + d), t(h))
+    b.solid("footing", t(x), t(y), 0, t(x + w), t(y + d), t(h), block=group)
     if not b.detail or rng is None:
         b.box(t(x), t(y), 0, t(w), t(d), t(h), "stone", stage=stage)
         return
@@ -229,30 +230,74 @@ def footing(b, x, y, w, d, h=0.35, stage=0.0, rng=None):
     b.box(t(x + 0.3), t(y + 0.3), 0, t(w - 0.6), t(d - 0.6), t(h * 0.6), "mortar", stage=stage)  # the floor's bed
 
 
+def shed_roof(b, x, y, w, d, z_low, z_high, rng, falls="s", overhang=0.2, stage=(0.65, 0.95), gable="plaster",
+              antefix=False, group="main", gap=0.045):
+    """A lean-to roof of one slope against a higher wall: its high edge stops at the wall's face (`gap` off it,
+    flashed with a board), it falls towards `falls` ("n", "s", "e", "w"). Over the rectangle x..x+w, y..y+d
+    (the high edge on the side opposite `falls`)."""
+    rise = z_high - z_low
+    if falls == "s":
+        tiled_roof(b, x, y + gap - d, w, 2 * d - gap, z_low, rise, rng, along_x=True, overhang=overhang, stage=stage,
+                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0)
+    elif falls == "n":
+        tiled_roof(b, x, y, w, 2 * d - gap, z_low, rise, rng, along_x=True, overhang=overhang, stage=stage, gable=gable,
+                   antefix=antefix, sides=(-1,), group=group, sag=0.0)
+    elif falls == "e":
+        tiled_roof(b, x + gap - w, y, 2 * w - gap, d, z_low, rise, rng, along_x=False, overhang=overhang, stage=stage,
+                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0)
+    else:
+        tiled_roof(b, x, y, 2 * w - gap, d, z_low, rise, rng, along_x=False, overhang=overhang, stage=stage, gable=gable,
+                   antefix=antefix, sides=(-1,), group=group, sag=0.0)
+
+
 def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(0.65, 0.95), gable="plaster",
-               antefix=False):
+               antefix=False, sides=(-1, 1), group="main", sag=0.05):
     """A gable roof of terracotta: pan tiles in rows from the eaves, cover tiles over their joints, a ridge;
-    the gables walled in."""
+    the gables walled in. `sides` (-1, 1) both slopes, one of them for a lean-to (then the high edge, where the
+    ridge would be, gets a flashing board); `sag` lets the ridge dip a little in its middle (a roof of some age,
+    drawn by hand)."""
     s0, s1 = stage
+    shed = len(sides) == 1
     x0, y0, x1, y1 = x - overhang, y - overhang, x + w + overhang, y + d + overhang
-    if not b.detail:
-        if along_x:
-            b.prism(t(x0), t(y0), t(z), t(x1 - x0), t(y1 - y0), t(rise), "roof_tile", along_x=True, stage=s0)
-        else:
-            b.prism(t(x0), t(y0), t(z), t(x1 - x0), t(y1 - y0), t(rise), "roof_tile", along_x=False, stage=s0)
-        _gables(b, x, y, w, d, z, rise, along_x, gable, s0)
-        return
     run_len = (x1 - x0) if along_x else (y1 - y0)
     span = (y1 - y0) / 2 if along_x else (x1 - x0) / 2
     slope = math.hypot(span, rise)
+
+    def rp(side, along, f):  # a point on a slope; the ridge dips by `sag` in the middle of its run
+        p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f)
+        return (p[0], p[1], p[2] - sag * math.sin(math.pi * min(max(along / run_len, 0.0), 1.0)) * f)
+
+    # Points on the slopes for the check that no roof goes into the walls of another part (bo_asset.check_props).
+    pts = []
+    for side in sides:
+        n = _roof_normal(span, rise, along_x, side)
+        for ia in range(11):
+            for jf in range(8):
+                p = rp(side, run_len * ia / 10, jf / 7)
+                pts.append(tuple(t(p[k] + n[k] * 0.03) for k in range(3)))
+    b.roof_points(group, pts)
+
+    def slab(side, part, lift, thickness, share):  # one slope as a board: the far view, or the boards under the tiles
+        lo_a = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, run_len / 2, 0.0)
+        hi_a = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, run_len / 2, 1.0)
+        n = _roof_normal(span, rise, along_x, side)
+        centre = tuple(t((lo_a[k] + hi_a[k]) / 2 + n[k] * lift) for k in range(3))
+        half_run = (t(run_len / 2), 0, 0) if along_x else (0, t(run_len / 2), 0)
+        half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
+        b.obox(centre, half_run, half_up, tuple(t(n[k] * thickness / 2) for k in range(3)), part, stage=share)
+
+    if not b.detail:
+        for side in sides:
+            slab(side, "roof_tile", 0.05, 0.1, s0)
+        _gables(b, x, y, w, d, z, rise, along_x, gable, s0, sides)
+        return
     pan_w, exposed, tile_len, thick = 0.46, 0.34, 0.44, 0.022
     rows = max(2, int(math.ceil(slope / exposed)))
     cols = max(2, int(round(run_len / pan_w)))
     pan_w = run_len / cols
-    # The boards under the tiles show through the joints.
-    b.prism(t(x0 + 0.02), t(y0 + 0.02), t(z - 0.03), t(x1 - x0 - 0.04), t(y1 - y0 - 0.04), t(rise - 0.02), "dark_wood",
-            along_x=along_x, stage=s0)
-    for side in (-1, 1):  # the two slopes
+    for side in sides:  # the boards under the tiles show through the joints
+        slab(side, "dark_wood", -0.01, 0.025, s0)
+    for side in sides:  # the slopes
         for r in range(rows):
             f0 = r * exposed / slope
             f1 = min(1.0, (r * exposed + tile_len) / slope)
@@ -261,8 +306,8 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 lift = thick * 1.2 if r else 0.0
                 a = c * pan_w + 0.012
                 bb = (c + 1) * pan_w - 0.012
-                p_low = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, (a + bb) / 2, f0)
-                p_high = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, (a + bb) / 2, f1)
+                p_low = rp(side, (a + bb) / 2, f0)
+                p_high = rp(side, (a + bb) / 2, f1)
                 normal = _roof_normal(span, rise, along_x, side)
                 # A Laconian pan tile: a shallow trough, its hollow up, each row lying on the one below.
                 rad = (bb - a) / 2
@@ -272,8 +317,8 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                         sides=10, stage=share, tint=rng.uniform(0.25, 0.75), hollow_up=True)
             for c in range(cols + 1):  # cover tiles over the joints
                 along = min(max(c * pan_w, 0.06), run_len - 0.06)
-                p_low = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f0)
-                p_high = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f1)
+                p_low = rp(side, along, f0)
+                p_high = rp(side, along, f1)
                 normal = _roof_normal(span, rise, along_x, side)
                 lift = thick * 1.2 + 0.075 * 0.55
                 start = tuple(t(p_low[i] + normal[i] * lift) for i in range(3))
@@ -283,16 +328,16 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             if antefix and r == 0:  # an antefix closes each cover tile at the eaves: a palmette of seven leaves
                 for c in range(cols + 1):
                     along = min(max(c * pan_w, 0.06), run_len - 0.06)
-                    p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, 0.0)
+                    p = rp(side, along, 0.0)
                     palmette(b, p, along_x, side, 0.13, stage=share)
     # The verges: the roof's ends closed by a barge board along each gable slope and a row of cover tiles on
     # its edge (no open edge of the tiles or the boards shows from the side).
-    normal_s = {side: _roof_normal(span, rise, along_x, side) for side in (-1, 1)}
+    normal_s = {side: _roof_normal(span, rise, along_x, side) for side in sides}
     for along in (0.0, run_len):
-        for side in (-1, 1):
+        for side in sides:
             n = normal_s[side]
-            lo = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, 0.0)
-            hi = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, 1.0)
+            lo = rp(side, along, 0.0)
+            hi = rp(side, along, 1.0)
             out = -1 if along == 0.0 else 1
             board_c = tuple(t((lo[i] + hi[i]) / 2 - n[i] * 0.04) for i in range(3))
             half_up = tuple(t((hi[i] - lo[i]) / 2) for i in range(3))
@@ -307,29 +352,40 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             rows_v = max(2, rows)
             for r in range(rows_v):
                 f0, f1 = r / rows_v, min(1.0, (r + 1.15) / rows_v)
-                pa = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, edge, f0)
-                pb = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, edge, f1)
+                pa = rp(side, edge, f0)
+                pb = rp(side, edge, f1)
                 lift = thick * 1.2 + 0.085 * 0.55
                 b.shell(tuple(t(pa[i] + n[i] * lift) for i in range(3)), tuple(t(pb[i] + n[i] * lift) for i in range(3)),
                         t(0.085), t(0.014), tuple(n), "roof_tile", sides=10, stage=s0 + (s1 - s0) * r / rows_v,
                         tint=rng.uniform(0.2, 0.5))
     ridge_n = max(1, int(run_len / 0.5))
+    if shed:  # the high edge against the wall: a flashing board over the top row
+        side = sides[0]
+        n = _roof_normal(span, rise, along_x, side)
+        for i in range(ridge_n):
+            a0, a1 = run_len * i / ridge_n, run_len * (i + 1) / ridge_n
+            p0, p1 = rp(side, a0, 1.0), rp(side, a1, 1.0)
+            centre = tuple(t((p0[k] + p1[k]) / 2 + n[k] * 0.06) for k in range(3))
+            half_run = tuple(t((p1[k] - p0[k]) / 2) for k in range(3))
+            half_thick = (0, t(0.03), 0) if along_x else (t(0.03), 0, 0)
+            b.obox(centre, half_run, (0, 0, t(0.07)), half_thick, "dark_wood", stage=s1, tint=0.4)
+        ridge_n = 0
     for i in range(ridge_n):  # the ridge
         a0 = run_len * i / ridge_n
         a1 = run_len * (i + 1) / ridge_n + 0.03
-        p0 = _roof_point(x0, y0, x1, y1, z, rise, along_x, 1, a0, 1.0)
-        p1 = _roof_point(x0, y0, x1, y1, z, rise, along_x, 1, min(a1, run_len), 1.0)
+        p0 = rp(1, a0, 1.0)
+        p1 = rp(1, min(a1, run_len), 1.0)
         b.shell(tuple(t(v) for v in (p0[0], p0[1], p0[2] - 0.02)), tuple(t(v) for v in (p1[0], p1[1], p1[2] - 0.02)),
                 t(0.12), t(0.016), (0, 0, 1), "roof_tile", sides=12, stage=s1, tint=rng.uniform(0.3, 0.5))
-    for side in (-1, 1):  # the rafters' ends under the eaves
+    for side in sides:  # the rafters' ends under the eaves
         for c in range(cols + 1):
             along = c * pan_w
-            p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, min(max(along, 0.05), run_len - 0.05), 0.04)
+            p = rp(side, min(max(along, 0.05), run_len - 0.05), 0.04)
             half_w = (t(0.04), 0, 0) if along_x else (0, t(0.04), 0)
             n = _roof_normal(span, rise, along_x, side)
             b.obox((t(p[0] - n[0] * 0.06), t(p[1] - n[1] * 0.06), t(p[2] - 0.07)), half_w,
                    (0, t(0.08), 0) if along_x else (t(0.08), 0, 0), (0, 0, t(0.04)), "dark_wood", stage=s0)
-    _gables(b, x, y, w, d, z, rise, along_x, gable, s0)
+    _gables(b, x, y, w, d, z, rise, along_x, gable, s0, sides)
 
 
 def _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f):
@@ -351,18 +407,28 @@ def _roof_normal(span, rise, along_x, side):
     return (0.0, out, up) if along_x else (out, 0.0, up)
 
 
-def _gables(b, x, y, w, d, z, rise, along_x, part, stage):
-    """The triangles under a gable roof's ends, faced both ways (the material culls back faces)."""
+def _gables(b, x, y, w, d, z, rise, along_x, part, stage, sides=(-1, 1)):
+    """The triangles under a gable roof's ends (a half of each for a lean-to), faced both ways (the material
+    culls back faces)."""
+    def tri(pts):
+        b.poly(pts, part, stage=stage, plaster=True)
+        b.poly(list(reversed(pts)), part, stage=stage, plaster=True)
     if along_x:
+        mid, top = y + d / 2, z + rise * d / (d + 0.7)
         for gx in (x, x + w):
-            pts = [(t(gx), t(y), t(z)), (t(gx), t(y + d), t(z)), (t(gx), t(y + d / 2), t(z + rise * d / (d + 0.7)))]
-            b.poly(pts, part, stage=stage, plaster=True)
-            b.poly(list(reversed(pts)), part, stage=stage, plaster=True)
+            if len(sides) == 2:
+                tri([(t(gx), t(y), t(z)), (t(gx), t(y + d), t(z)), (t(gx), t(mid), t(top))])
+            else:
+                eave = y if sides[0] < 0 else y + d
+                tri([(t(gx), t(eave), t(z)), (t(gx), t(mid), t(z)), (t(gx), t(mid), t(top))])
     else:
+        mid, top = x + w / 2, z + rise * w / (w + 0.7)
         for gy in (y, y + d):
-            pts = [(t(x), t(gy), t(z)), (t(x + w), t(gy), t(z)), (t(x + w / 2), t(gy), t(z + rise * w / (w + 0.7)))]
-            b.poly(pts, part, stage=stage, plaster=True)
-            b.poly(list(reversed(pts)), part, stage=stage, plaster=True)
+            if len(sides) == 2:
+                tri([(t(x), t(gy), t(z)), (t(x + w), t(gy), t(z)), (t(mid), t(gy), t(top))])
+            else:
+                eave = x if sides[0] < 0 else x + w
+                tri([(t(eave), t(gy), t(z)), (t(mid), t(gy), t(z)), (t(mid), t(gy), t(top))])
 
 
 def thatch_roof(b, x, y, w, d, z, rise, rng, hip=0.3, along_x=True, overhang=0.35, stage=(0.65, 0.95), layers=6):
@@ -575,22 +641,183 @@ def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom"):
     b.surface(cloth, 8, 3, "cloth", stage=stage, tint=0.5)
 
 
-def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0):
-    """A terracotta pot with a herb or a young laurel: leaves on short stems round a stalk."""
+def blossom(b, p, r, colour, stage=0.95, tint=0.5):
+    """A small open flower at p (metres): five round petals in a shallow cup, a yellow heart."""
+    x, y, z = p
+    b.lathe(t(x), t(y), t(z), [(t(r * 0.15), 0), (t(r), t(r * 0.35)), (t(r * 0.25), t(r * 0.4))], colour, sides=10,
+            stage=stage, tint=tint, top="flower_yellow" if colour != "flower_yellow" else "ochre",
+            shape=lambda a: 0.62 + 0.38 * abs(math.cos(2.5 * a)))
+
+
+def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0, bloom="random"):
+    """A terracotta pot with a herb or a geranium: leaves on short stems round a stalk, flowers among them."""
     hp, rp = 0.32 * scale, 0.16 * scale
     b.prop(name, t(x - rp * 1.8), t(y - rp * 1.8), t(z), t(x + rp * 1.8), t(y + rp * 1.8), t(z + hp + 0.55 * scale))
+    if bloom == "random":
+        bloom = rng.choice(["flower_red", "flower_red", "flower_white", "flower_yellow", None])
     if not b.detail:
         return
     b.lathe(t(x), t(y), t(z), [(t(rp * 0.6), 0), (t(rp * 0.8), t(hp * 0.4)), (t(rp), t(hp * 0.9)), (t(rp * 1.12), t(hp)),
                             (t(rp * 1.0), t(hp))], "roof_tile", sides=24, stage=stage, top="dark_wood", smooth=2)
+    tips = []
     for i in range(26):
         a = rng.uniform(0, 6.28)
         up = rng.uniform(0.05, 0.5) * scale
         reach = rng.uniform(0.05, 0.26) * scale * (1.0 - up)
         root = (x + 0.02 * math.cos(a), y + 0.02 * math.sin(a), z + hp + up * 0.6)
         tip = (x + reach * math.cos(a), y + reach * math.sin(a), z + hp + up + 0.08)
-        b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(rng.uniform(0.03, 0.05)), "leaves", stage=stage,
+        tips.append(tip)
+        b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(rng.uniform(0.045, 0.075) * max(scale, 0.7)), "leaves", stage=stage,
                  tint=rng.uniform(0.2, 0.8))
+    if bloom:
+        for tip in tips[:14]:
+            blossom(b, tip, 0.05 * max(scale, 0.7), bloom, stage=stage, tint=rng.uniform(0.35, 0.75))
+
+
+def flower_box(b, x, y, z, length, rng, along_x=True, out=1, name="flower box"):
+    """A wooden box of flowers under a window (metres): x, y the wall's outer face at the box's start, out the
+    side the wall faces (+1 or -1 along y for a box along x, along x otherwise). The box stands off the sill on
+    two iron brackets; geraniums and trailing leaves over its front."""
+    gap, d, h = 0.07, 0.16, 0.14
+    def at(a, o, zz):  # a along the wall, o out from its face
+        return (x + a, y + out * o, zz) if along_x else (x + out * o, y + a, zz)
+    lo, hi = at(0, gap, z), at(length, gap + d, z + 0.42)
+    b.prop(name, t(min(lo[0], hi[0])), t(min(lo[1], hi[1])), t(z - 0.08), t(max(lo[0], hi[0])), t(max(lo[1], hi[1])), t(z + 0.42))
+    c0, c1 = at(0, gap, z), at(length, gap + d, z)
+    b.box(t(min(c0[0], c1[0])), t(min(c0[1], c1[1])), t(z), t(abs(c1[0] - c0[0])), t(abs(c1[1] - c0[1])), t(h), "wood",
+          stage=0.9, tint=0.6)
+    if not b.detail:
+        return
+    for a in (0.08, length - 0.08):  # the brackets
+        p0, p1 = at(a - 0.015, 0.0, z - 0.07), at(a + 0.015, gap + d * 0.8, z)
+        b.box(t(min(p0[0], p1[0])), t(min(p0[1], p1[1])), t(z - 0.07), t(abs(p1[0] - p0[0])), t(abs(p1[1] - p0[1])), t(0.07),
+              "iron", stage=0.9)
+    s0, s1 = at(0.02, gap + 0.02, z + h - 0.03), at(length - 0.02, gap + d - 0.02, z + h)
+    b.box(t(min(s0[0], s1[0])), t(min(s0[1], s1[1])), t(z + h - 0.03), t(abs(s1[0] - s0[0])), t(abs(s1[1] - s0[1])),
+          t(0.035), "dark_wood", stage=0.9)  # the soil
+    colour = rng.choice(["flower_red", "flower_red", "flower_white", "flower_yellow"])
+    n = max(8, int(length / 0.03))
+    for i in range(n):
+        a = 0.05 + (length - 0.1) * (i + rng.uniform(-0.3, 0.3)) / max(n - 1, 1)
+        root = at(a, gap + d * rng.uniform(0.3, 0.7), z + h)
+        tip = at(a + rng.uniform(-0.05, 0.05), gap + d * rng.uniform(0.2, 0.9), z + h + rng.uniform(0.1, 0.24))
+        b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(rng.uniform(0.05, 0.075)), "leaves", stage=0.95,
+                 tint=rng.uniform(0.2, 0.8))
+        if i % 3 != 2:
+            blossom(b, tip, rng.uniform(0.04, 0.055), colour, stage=0.95, tint=rng.uniform(0.35, 0.75))
+        if i % 3 == 1:  # a leaf trailing over the front
+            r2 = at(a, gap + d, z + h - 0.01)
+            b.strand(tuple(t(v) for v in r2), tuple(t(v) for v in at(a + 0.02, gap + d + 0.02, z - 0.06)), t(0.035),
+                     "leaves", stage=0.95, tint=rng.uniform(0.2, 0.6))
+
+
+def ivy(b, x, y, length, z0, z1, rng, along_x=True, out=1, name="ivy"):
+    """Ivy climbing a wall (metres): stems wandering up from the ground, leaves standing off the face. x, y the
+    wall's outer face at the patch's start, out the side the wall faces."""
+    def at(a, o, zz):
+        return (x + a, y + out * o, zz) if along_x else (x + out * o, y + a, zz)
+    lo, hi = at(0, 0.036, z0), at(length, 0.1, z1)  # off the plaster (the wall solid reaches 0.03 out)
+    b.prop(name, t(min(lo[0], hi[0])), t(min(lo[1], hi[1])), t(z0), t(max(lo[0], hi[0])), t(max(lo[1], hi[1])), t(z1))
+    if not b.detail:
+        return
+    for s_ in range(max(2, int(length / 0.35))):
+        a = (s_ + 0.5) * length / max(2, int(length / 0.35))
+        pts, zz = [], z0
+        while zz < z1 - 0.05:
+            pts.append(at(min(max(a, 0.02), length - 0.02), 0.046, zz))
+            zz += rng.uniform(0.12, 0.2)
+            a += rng.uniform(-0.12, 0.12)
+        if len(pts) < 2:
+            continue
+        b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.008), "bark", sides=5, stage=0.95)
+        for p in pts:
+            top = 1.0 - (p[2] - z0) / max(z1 - z0, 0.01)  # thicker near the ground, sparse at the top
+            for _ in range(int(3 + 5 * top)):
+                da, dz = rng.uniform(-0.14, 0.14), rng.uniform(-0.08, 0.1)
+                aa = min(max((p[0] - x if along_x else p[1] - y) + da, 0.03), length - 0.03)
+                zl = min(max(p[2] + dz, z0 + 0.02), z1 - 0.04)
+                root = at(aa, 0.048, zl)
+                tip = at(aa + rng.uniform(-0.03, 0.03), rng.uniform(0.06, 0.09), zl + rng.uniform(0.04, 0.07))
+                b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(rng.uniform(0.05, 0.07)),
+                         "leaves" if rng.random() < 0.75 else "grass", stage=0.95, tint=rng.uniform(0.15, 0.7))
+
+
+def laundry_line(b, p0, p1, height, rng, name="laundry"):
+    """Washing on a line between two posts (metres): the rope sags, the cloths hang from it in a breeze."""
+    (x0, y0), (x1, y1) = p0, p1
+    for i, (px, py) in enumerate((p0, p1)):
+        b.prop("%s post %d" % (name, i + 1), t(px - 0.04), t(py - 0.04), 0, t(px + 0.04), t(py + 0.04), t(height + 0.05))
+    ux, uy = (x1 - x0) / math.hypot(x1 - x0, y1 - y0), (y1 - y0) / math.hypot(x1 - x0, y1 - y0)
+    a0, a1 = (x0 + ux * 0.09, y0 + uy * 0.09), (x1 - ux * 0.09, y1 - uy * 0.09)  # between the posts
+    b.prop(name, t(min(a0[0], a1[0]) - 0.04), t(min(a0[1], a1[1]) - 0.04), t(height - 0.8), t(max(a0[0], a1[0]) + 0.04),
+           t(max(a0[1], a1[1]) + 0.04), t(height))
+    for px, py in (p0, p1):
+        b.log((t(px), t(py), 0), (t(px), t(py), t(height + 0.05)), t(0.03), sides=8 if b.detail else 4, stage=0.9, tint=0.4)
+    if not b.detail:
+        return
+    sag = 0.1
+    line = lambda f: (x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, height - 0.04 - sag * 4 * f * (1 - f))
+    b.tube_path([tuple(t(v) for v in line(k / 12)) for k in range(13)], t(0.006), "rope", sides=5, stage=0.9)
+    f = 0.08
+    for colour, w in (("linen", 0.34), ("sky_cloth", 0.42), ("flower_white", 0.3), ("cloth", 0.26)):
+        span = w / math.hypot(x1 - x0, y1 - y0)
+        if f + span > 0.94:
+            break
+        drop = rng.uniform(0.4, 0.62)
+        fa = f
+        phase = rng.uniform(0, 6.28)
+        def cloth(u, v, fa=fa, span=span, drop=drop, phase=phase):
+            px, py, pz = line(fa + span * u)
+            nx, ny = -(y1 - y0), (x1 - x0)
+            n = math.hypot(nx, ny)
+            billow = 0.035 * math.sin(math.pi * u) * v + 0.012 * math.sin(6 * u + phase)
+            return (t(px + nx / n * billow), t(py + ny / n * billow), t(pz - 0.01 - drop * v))
+        b.surface(cloth, 6, 4, colour, stage=0.9, tint=rng.uniform(0.4, 0.7))
+        for u in (0.05, 0.95):  # the pegs
+            px, py, pz = line(fa + span * u)
+            b.box(t(px - 0.008), t(py - 0.008), t(pz - 0.05), t(0.016), t(0.016), t(0.06), "wood", stage=0.9, tint=0.7)
+        f += span + rng.uniform(0.04, 0.08)
+
+
+def grass(b, rng, n=40, name="grass"):
+    """Tufts of grass and wild flowers where the ground is free: round the footing, along the walls, at the
+    plot's edge. A tuft goes only where nothing stands within its reach (rays up from the ground hit nothing
+    below knee height), so it never grows through a wall or a prop. Call last."""
+    import mathutils
+    from mathutils.bvhtree import BVHTree
+    if not b.detail:
+        return
+    tree = BVHTree.FromBMesh(b.bm)
+    w, h = b.width / M, b.height / M  # metres
+    placed = 0
+    for _ in range(n * 6):
+        if placed >= n:
+            break
+        x, y = rng.uniform(0.08, w - 0.08), rng.uniform(0.08, h - 0.08)
+        r = rng.uniform(0.05, 0.09)
+        box = (t(x - r), t(y - r), 0, t(x + r), t(y + r), t(0.3))
+        near = lambda o: all(box[i] < o[i + 3] + 0.004 and o[i] < box[i + 3] + 0.004 for i in range(3))
+        free = not any(near(o) for _, o, _ in b.solids) and not any(near(o) for _, o in b.props)
+        for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r)) if free else ():
+            hit = tree.ray_cast(mathutils.Vector((t(x + dx), -t(y + dy), 0.002)), mathutils.Vector((0, 0, 1)), t(0.45))
+            if hit[0] is not None:
+                free = False
+                break
+        if not free:
+            continue
+        b.prop("%s %d" % (name, placed + 1), t(x - r), t(y - r), 0, t(x + r), t(y + r), t(0.3))
+        k = rng.randint(6, 10)
+        for i in range(k):
+            a = 2 * math.pi * i / k + rng.uniform(-0.3, 0.3)
+            rr = r * rng.uniform(0.2, 0.9)
+            tip = (x + rr * 1.2 * math.cos(a), y + rr * 1.2 * math.sin(a), rng.uniform(0.1, 0.24))
+            b.strand((t(x + rr * 0.3 * math.cos(a)), t(y + rr * 0.3 * math.sin(a)), 0), tuple(t(v) for v in tip),
+                     t(rng.uniform(0.02, 0.035)), "grass" if rng.random() < 0.7 else "leaves", stage=0.95,
+                     tint=rng.uniform(0.2, 0.9))
+        if rng.random() < 0.35:
+            blossom(b, (x, y, rng.uniform(0.16, 0.24)), 0.025, rng.choice(["flower_white", "flower_yellow", "flower_red"]),
+                    tint=rng.uniform(0.4, 0.8))
+        placed += 1
 
 
 def woodpile(b, x, y, rng, along_x=True, length=0.9, depth=0.42, height=0.55, stage=0.9, name="woodpile", block=True):
@@ -706,10 +933,11 @@ def baluster(b, x, y, z, height, stage=0.6):
                               (t(0.03), t(height))], "wood", sides=12, stage=stage, smooth=2, top="wood")
 
 
-def doric_column(b, x, y, z, height, radius=0.16, stage=0.5):
+def doric_column(b, x, y, z, height, radius=0.16, stage=0.5, group="porch"):
     """A Doric column: a fluted shaft narrowing upwards with a slight swelling (entasis), the echinus and the
     abacus."""
-    b.solid("column", t(x - radius * 1.4), t(y - radius * 1.4), t(z), t(x + radius * 1.4), t(y + radius * 1.4), t(z + height))
+    b.solid("column", t(x - radius * 1.4), t(y - radius * 1.4), t(z), t(x + radius * 1.4), t(y + radius * 1.4), t(z + height),
+            block=group)
     if not b.detail:
         b.column(t(x), t(y), t(z), t(radius), t(height * 0.93), "stone", sides=8, stage=stage)
         b.box(t(x - radius * 1.3), t(y - radius * 1.3), t(z + height * 0.93), t(radius * 2.6), t(radius * 2.6),

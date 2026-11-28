@@ -25,30 +25,35 @@ M = 0.5  # one real metre in tiles
 
 # The parts' colours: stylized realism, stage 1a (docs/08-OPRAWA.md). The same order as PALETTE in
 # game/shaders/building.gdshader (tools/checks/check_models.py compares them).
-PALETTE = [
-    ("plaster", (0.93, 0.89, 0.80)),     # lime plaster, whitewash
-    ("stone", (0.78, 0.74, 0.66)),       # limestone
-    ("roof_tile", (0.72, 0.36, 0.24)),   # terracotta tiles
-    ("wood", (0.52, 0.36, 0.22)),
-    ("mudbrick", (0.74, 0.60, 0.44)),
-    ("thatch", (0.70, 0.60, 0.36)),
-    ("water", (0.30, 0.55, 0.72)),
-    ("marble", (0.94, 0.93, 0.90)),
-    ("bronze", (0.62, 0.45, 0.22)),
-    ("cloth", (0.70, 0.22, 0.18)),       # red ochre awnings
-    ("dark_wood", (0.32, 0.22, 0.14)),
-    ("grain", (0.86, 0.72, 0.38)),
-    ("mortar", (0.66, 0.60, 0.50)),      # the lime and clay between the bricks
-    ("ochre", (0.78, 0.48, 0.24)),       # painted bands and shutters
-    ("blue_paint", (0.30, 0.42, 0.56)),  # painted doors and frames
-    ("leaves", (0.40, 0.48, 0.26)),
-    ("end_grain", (0.80, 0.66, 0.46)),   # a log's cut face
-    ("bark", (0.36, 0.28, 0.20)),
-    ("linen", (0.86, 0.80, 0.66)),       # undyed cloth
-    ("hide", (0.58, 0.44, 0.30)),        # tanned hides
-    ("rope", (0.66, 0.56, 0.38)),
-    ("oil", (0.28, 0.24, 0.08)),         # olive oil in a jar's mouth
-    ("iron", (0.30, 0.30, 0.32)),
+PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 2026-11-28)
+    ("plaster", (0.96, 0.91, 0.80)),  # lime plaster, whitewash
+    ("stone", (0.82, 0.77, 0.66)),  # limestone
+    ("roof_tile", (0.82, 0.40, 0.26)),  # terracotta tiles
+    ("wood", (0.60, 0.42, 0.26)),
+    ("mudbrick", (0.80, 0.64, 0.46)),
+    ("thatch", (0.80, 0.68, 0.40)),
+    ("water", (0.32, 0.62, 0.78)),
+    ("marble", (0.95, 0.94, 0.90)),
+    ("bronze", (0.66, 0.48, 0.24)),
+    ("cloth", (0.78, 0.26, 0.20)),  # red ochre awnings
+    ("dark_wood", (0.36, 0.25, 0.16)),
+    ("grain", (0.90, 0.76, 0.40)),
+    ("mortar", (0.70, 0.63, 0.52)),  # the lime and clay between the bricks
+    ("ochre", (0.88, 0.56, 0.26)),  # painted bands and shutters
+    ("blue_paint", (0.22, 0.52, 0.56)),  # teal paint on doors and shutters
+    ("leaves", (0.38, 0.58, 0.26)),
+    ("end_grain", (0.84, 0.70, 0.48)),  # a log's cut face
+    ("bark", (0.40, 0.31, 0.22)),
+    ("linen", (0.90, 0.85, 0.72)),  # undyed cloth
+    ("hide", (0.62, 0.47, 0.32)),  # tanned hides
+    ("rope", (0.70, 0.60, 0.40)),
+    ("oil", (0.30, 0.26, 0.08)),  # olive oil in a jar's mouth
+    ("iron", (0.30, 0.30, 0.34)),
+    ("grass", (0.50, 0.70, 0.30)),  # tufts round the walls
+    ("flower_red", (0.90, 0.30, 0.34)),
+    ("flower_yellow", (0.98, 0.82, 0.30)),
+    ("flower_white", (0.97, 0.95, 0.90)),
+    ("sky_cloth", (0.56, 0.72, 0.88)),  # washing on the line
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
 PALETTE_SIZE = 32  # UV0.x = (index + 0.5) / PALETTE_SIZE
@@ -83,13 +88,17 @@ class Builder:
         self.uv = self.bm.loops.layers.uv.new("UVMap")
         self.pivot = self.bm.loops.layers.uv.new("Pivot")
         self.col = self.bm.loops.layers.float_color.new("Mask")
-        self.solids = []  # (name, aabb) of the building's walls and footings, in tiles
+        self.solids = []  # (name, aabb, part of the house) of the building's walls and footings, in tiles
+        self.roofs = []   # (part of the house, points on its slopes): a roof must not go into another part's walls
         self.props = []   # (name, aabb) of the things around it: jars, wood, carts
         self.two_sided = set()  # faces drawn from both sides on purpose: their normals stay as built
 
     # Props must not go into the building or into each other (the owner's rule, 2026-11-27); finish() checks.
-    def solid(self, name, x0, y0, z0, x1, y1, z1):
-        self.solids.append((name, (min(x0, x1), min(y0, y1), min(z0, z1), max(x0, x1), max(y0, y1), max(z0, z1))))
+    def solid(self, name, x0, y0, z0, x1, y1, z1, block="main"):
+        self.solids.append((name, (min(x0, x1), min(y0, y1), min(z0, z1), max(x0, x1), max(y0, y1), max(z0, z1)), block))
+
+    def roof_points(self, block, points):
+        self.roofs.append((block, points))
 
     def prop(self, name, x0, y0, z0, x1, y1, z1):
         self.props.append((name, (min(x0, x1), min(y0, y1), min(z0, z1), max(x0, x1), max(y0, y1), max(z0, z1))))
@@ -101,12 +110,21 @@ class Builder:
         for i, (pn, pa) in enumerate(self.props):
             if pa[0] < -eps or pa[1] < -eps or pa[3] > self.width + eps or pa[4] > self.height + eps:
                 bad.append(f"{pn} leaves the plot")
-            for sn, sa in self.solids:
+            for sn, sa, _ in self.solids:
                 if hit(pa, sa):
                     bad.append(f"{pn} goes into {sn}")
             for qn, qa in self.props[i + 1:]:
                 if hit(pa, qa):
                     bad.append(f"{pn} goes into {qn}")
+        e = 0.006  # a roof of one part must not pass through the walls of another (the owner's rule, 2026-11-28)
+        for block, pts in self.roofs:
+            for sn, sa, sb in self.solids:
+                if sb == block:
+                    continue
+                for p in pts:
+                    if all(sa[i] + e < p[i] < sa[i + 3] - e for i in range(3)):
+                        bad.append(f"the roof of {block} goes into the {sn} of {sb} at {tuple(round(v, 3) for v in p)}")
+                        break
         if bad:
             raise ValueError(self.name + ": " + "; ".join(bad))
 
