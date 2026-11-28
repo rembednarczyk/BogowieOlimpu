@@ -59,6 +59,8 @@ PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 20
     ("roof_gold", (0.90, 0.70, 0.30)),  # golden glazed tiles: sanctuaries and temples
     ("roof_brown", (0.58, 0.36, 0.22)),  # brown tiles: workshops, stores, production
     ("sage_cloth", (0.64, 0.70, 0.52)),  # muted green canvas (the gardeners' tent: blue is kept for public roofs)
+    ("roof_patina", (0.26, 0.50, 0.46)),  # copper-patina green tiles: stores, granaries, trade (R-018)
+    ("stone_cool", (0.68, 0.71, 0.80)),  # blue-grey stone walls: elite houses and public buildings (R-018)
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
 PALETTE_SIZE = 64  # UV0.x = (index + 0.5) / PALETTE_SIZE; room for the Atlantean colours (2026-11-28)

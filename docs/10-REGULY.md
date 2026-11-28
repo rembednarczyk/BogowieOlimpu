@@ -169,11 +169,12 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Źródło: decyzje właściciela 2026-11-27 i 2026-11-28 (rundy uwag do domów: szczegół, styl Ghibli, łukowe dachy, historie domów; „Zapisujemy ten wypracowany styl jako regułę pod ogólny klimat budowli w mieście”)
 - Treść: Każda budowla miasta jest modelowana w jednym stylu, sprawdzalnym w kodzie i na zrzutach:
   1. Realizm stylizowany: elementy budowane jak w rzeczywistości (cegła po cegle, dachówka po dachówce, drewno ułożone fizycznie), materiały greckie (cegła suszona, kamień, tynk wapienny, terakota, drewno).
-  1a. Kolor dachu według funkcji budynku (`docs/STYL-BUDOWLI.md`): domy terakota, budynki publiczne łupkowy błękit, świątynie złoto, warsztaty i magazyny brąz.
-  2. Ciepłe światło i paleta: paleta `building.gdshader` (31 kolorów, nasycona, popołudniowa), miękkie przejście światła w cień, chłodny niebieskawy cień, plamy koloru jak od pędzla.
+  1a. Kolor dachu według funkcji budynku (`docs/STYL-BUDOWLI.md`): domy terakota, budynki publiczne łupkowy błękit, świątynie złoto, warsztaty brąz, magazyny i handel zielona patyna, gospodarstwa strzecha, wojsko szary kamień; ściany domów elity i budynków publicznych z niebiesko-szarego kamienia; place i sanktuaria z barwnymi posadzkami.
+  2. Ciepłe światło i paleta: paleta `building.gdshader` (34 kolory w 64 miejscach, nasycona, popołudniowa), miękkie przejście światła w cień, chłodny niebieskawy cień, plamy koloru jak od pędzla.
   3. Dachy łukowe i strome: dachy dwuspadowe o 1,4 raza wyższe od rzutu (`ROOF_STEEP`), połać ugięta o 7,5% swojej długości, kalenica ugięta w środku; przybudówki z dachem jednospadowym od wyższej ściany.
   4. Ręczna nieregularność: każdy model wygięty jednym gładkim polem (`Builder._wonk`: przechył, pęcznienie ścian, falujący dach), razem z rekwizytami.
   5. Przerysowana greckość: akroteria, antefiksy, meandry, kominy z terakoty, wieńce nad drzwiami, malowane naczynia, kolumny z entazą; o rozmiar większe niż w archeologii.
+  5a. Gęstość ozdób według zamożności: dzielnice ludu proste, centrum i dzielnice elity gęste (kolumnady, posągi, fontanny, sadzawki, ogrody).
   6. Życie przy domu: zieleń na wolnym gruncie, bluszcz, kwiaty w skrzynkach i donicach, pranie, dobra, których dom potrzebuje, widoczne według zapasu.
   7. Bez dziur i przenikania: rekwizyty nie wchodzą w bryły, dachy nie wchodzą w ściany innych części, szczyty domknięte pod łukiem, końce dachówek zamknięte zaprawą, nic nie wisi w powietrzu bez podparcia (bryła stoi na ziemi lub na innej bryle, rekwizyt dotyka czegoś, co stoi); eksport przerywa się przy kolizji i przy braku podparcia (`check_props`, dowód w `tools/blender/test_checks.py`).
   8. Różnorodność: dom ma historię rodziny (2-3 na typ, `docs/ASSETY.md`), trwałą przez awanse; w mieście obrót i lekka różnica skali kolejnych domów nadają dynamikę.

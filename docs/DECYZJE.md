@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Wnioski z zrzutów Zeus Heaven
+- Decyzja: dachy magazynów, spichlerzy i handlu w zielonej patynie miedzi (`roof_patina` (0,26; 0,50; 0,46), spichlerz i magazyn przemalowane); ściany domów elity i budynków publicznych z niebiesko-szarego kamienia (`stone_cool`); barwne posadzki placów, alei i sanktuariów z wzorami naszego projektu; gęstość ozdób według zamożności jako punkt R-018.
+- Powód: odpowiedź właściciela z 2026-11-28 („Zgadzam się z rekomendacjami”) na pytania po analizie S-011 (`STYL-BUDOWLI.md` rozdział 8).
+
 ### 2026-11-28: Dachy i minimapa według funkcji, paleta 64, proporcje do porównania
 - Decyzja: (2) magazyny, spichlerze i handel morski dostają kolor dachu osobny od warsztatów (kolor do wyboru); (3) gospodarstwa strzecha, handel terakota z markizą w kolorze towaru, wojsko szary kamień, ozdoby bez dachu; (4) minimapa miasta koloruje budynki tymi samymi grupami co dachy; (5) do porównania dwie wersje proporcji: obecna i niższa (dom przysadzisty do poziomu 5, w górę na 6-7), w niższej wyżej posągi bogów i budynki ważne. Paleta powiększona do 64 miejsc (`PALETTE_SIZE`), modele wyeksportowane ponownie.
 - Pliki oryginalnej gry: nie pobieramy ich z sieci (kopia bez licencji); do analizy kolorów tylko zrzuty albo pliki z legalnej kopii właściciela, poza repo.

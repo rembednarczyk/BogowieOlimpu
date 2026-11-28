@@ -9,7 +9,7 @@ Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciel
 | Cecha | Wartość | Gdzie w kodzie |
 |---|---|---|
 | Skala | 1 kafelek = 2 m (`M = 0.5`); dom 2 x 2 kafelki = działka 4 x 4 m | `bo_asset.py` |
-| Paleta | 32 kolory w 64 miejscach (`PALETTE_SIZE` 64 w `bo_asset.py` i shaderze, zgodność pilnuje `check_models.py`), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
+| Paleta | 34 kolory w 64 miejscach (`PALETTE_SIZE` 64 w `bo_asset.py` i shaderze, zgodność pilnuje `check_models.py`), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
 | Światło | miękkie przejście w cień (smoothstep od -0,05 do 0,35), cień chłodny niebieskawy, strona słoneczna ciepła, cienka ciepła poświata krawędzi, plamy koloru jak od pędzla | `light()` w `building.gdshader` |
 | Dachy dwuspadowe | 1,4 raza wyższe od rzutu, połać ugięta o 7,5% swojej długości, kalenica ugięta o 8 cm w środku | `ROOF_STEEP`, `tiled_roof(curve, sag)` |
 | Przybudówki | dach jednospadowy od wyższej ściany, bez wchodzenia w ściany innych części | `shed_roof` |
@@ -36,11 +36,17 @@ Z daleka budynek rozpoznaje się po kolorze dachu (wniosek z analizy referencji,
 | Budynki publiczne, administracja, kultura, nauka | łupkowy błękit | `roof_slate` (0,40; 0,52; 0,68) |
 | Sanktuaria i świątynie | złota dachówka | `roof_gold` (0,90; 0,70; 0,30) |
 | Warsztaty i produkcja | brąz | `roof_brown` (0,58; 0,36; 0,22) |
-| Magazyny, spichlerze, punkt handlowy, przystań | osobny kolor, do decyzji właściciela (pytanie z 2026-11-28) | do dopisania |
+| Magazyny, spichlerze, punkt handlowy, przystań | zielona patyna miedzi | `roof_patina` (0,26; 0,50; 0,46) |
 | Gospodarstwa (rolnictwo i hodowla) | strzecha | `thatch` |
 | Handel (stoiska, agora) | terakota i markiza w kolorze towaru | `roof_tile` + kolor towaru |
 | Wojsko (mury, wieże, bramy) | szary kamień | `stone` |
 | Ozdoby | bez dachu | |
+
+**Ściany:** domy elity i budynki publiczne z niebiesko-szarego kamienia (`stone_cool` (0,68; 0,71; 0,80)), domy ludu w ciepłym tynku i cegle; chłodne ściany przy ciepłej ziemi dają kontrast (rozdział 8, punkt 2).
+
+**Posadzki:** place, aleje i platformy sanktuariów z jasnego kamienia z barwnymi płytami w powtarzalnym wzorze naszego projektu (meander, rozety, romby) w kolorach palety (fiolet, róż, turkus, zieleń dopiszemy przy pierwszym placu).
+
+**Gęstość ozdób według zamożności:** dzielnice ludu i gospodarstwa proste (trawa, pranie, dobra), centrum i dzielnice elity gęste (kolumnady wzdłuż ulic, posągi, fontanny, sadzawki, ogrody ze strzyżonych żywopłotów, cyprysy). Model budynku niesie ozdoby swojej klasy; ozdoby miasta (budynki estetyczne) dokładają gęstości tam, gdzie gracz je stawia.
 
 Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właściciela 2026-11-28): gracz rozpoznaje budynek po kolorze na mapie i w mieście.
 
@@ -160,4 +166,4 @@ Obejrzane jednorazowo (osiedle domów, domy ludu, dzielnica usług, sanktuarium 
 **Światło**
 13. Światło z lewej u góry, cień w prawo w dół; cienie chłodne, niebieskawe, przejścia miękkie, faktura malarska (zgodne z naszym `light()`).
 
-Punkty do decyzji właściciela (pytania z 2026-11-28): niebiesko-szare ściany budynków elity i publicznych (2), barwne posadzki placów (4), gęstość ozdób według zamożności jako reguła (5), zieleń patyny jako kolor magazynów i handlu (1).
+Decyzje właściciela 2026-11-28 (wszystkie według rekomendacji): zieleń patyny dla magazynów i handlu (1), niebiesko-szare ściany domów elity i budynków publicznych (2), barwne posadzki placów, alei i sanktuariów (4), gęstość ozdób według zamożności jako reguła R-018 (5); wpisane w rozdziale 2.

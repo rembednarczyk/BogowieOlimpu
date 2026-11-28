@@ -459,7 +459,7 @@ def granary(b, rng):
     for i in range(4):  # the porch's columns along the south front
         b.column(0.55 + i * 0.97, 3.45, 0.5 * M, 0.09, 2.9 * M, "stone", sides=8)
     b.box(0.3, 3.3, 3.4 * M, 3.4, 0.3, 0.5 * M, "stone", stage=ROOF)  # the lintel
-    b.prism(0.2, 0.2, 3.9 * M, 3.6, 3.5, 1.6 * M, "roof_brown", along_x=True)  # stores: brown tiles (R-018)
+    b.prism(0.2, 0.2, 3.9 * M, 3.6, 3.5, 1.6 * M, "roof_patina", along_x=True)  # stores: copper-patina tiles (R-018)
     b.box(1.75, 3.0, 0.5 * M, 0.5, 0.02, 2.0 * M, "dark_wood")
     b.scaffold(height=4.2 * M)
 
@@ -474,7 +474,7 @@ def storehouse(b, rng):
     b.box(w - 1.15, w - 0.2, 0.15 * M, 1.0, 0.15, 1.6 * M, "stone", plaster=True)
     for x in (0.4, 1.5, 2.6):  # the shed's posts
         b.column(x, 1.25, 0.15 * M, 0.06, 2.6 * M, "wood", sides=6)
-    b.prism(0.1, 0.1, 2.75 * M, w - 0.2, 1.3, 0.9 * M, "roof_brown", along_x=True)  # stores: brown tiles (R-018)
+    b.prism(0.1, 0.1, 2.75 * M, w - 0.2, 1.3, 0.9 * M, "roof_patina", along_x=True)  # stores: copper-patina tiles (R-018)
     b.box(0.5, 1.7, 0.15 * M, 0.35, 0.3, 0.5 * M, "wood", loose=True)  # crates in the yard
     b.box(0.9, 1.75, 0.15 * M, 0.3, 0.3, 0.4 * M, "wood", loose=True)
     for i, x in enumerate((1.7, 1.9, 2.1)):  # amphorae
