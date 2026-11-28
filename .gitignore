@@ -12,3 +12,4 @@ game/i18n/buildings.csv.import
 .claude/worktrees/
 # proportion comparison (BO_PROPORTION=B), not part of the game
 game/models_b/
+game/models_c/

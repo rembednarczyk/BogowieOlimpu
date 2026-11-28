@@ -187,3 +187,5 @@ Wersja A: obecne domy. Wersja B (`BO_PROPORTION=B` w eksporcie, modele w `game/m
 | 7 dom miejski | 7,29 m (4,2) | 7,29 m (4,2) |
 
 Wysokość mierzona do najwyższego punktu (komin); dane z oryginału: dom ludu najwyższego poziomu ok. 2 postaci nad rzutem, niskie poziomy przysadziste.
+
+Wersja C (`BO_PROPORTION=C`, `game/models_c/` poza repo): B i dodatkowo niższe kondygnacje mieszkania (parter o 0,25 m, piętro o 0,2 m) i domu miejskiego (o 0,3 i 0,25 m), okna piętra mieszkania 15 cm niżej, portyk, architraw, fryz, gzyms i rekwizyty historii przesunięte razem z piętrami. Mieszkanie 5,79 m (3,3 postaci zamiast 3,6), dom miejski 6,74 m (3,9 zamiast 4,2). Porównanie: `build_view=9 compare=b,c`.

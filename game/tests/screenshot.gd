@@ -12,6 +12,7 @@ var zoom := 0.0
 var at := Vector2(-1, -1)
 var view := ""  # view=water and the like: a special view (docs/gameplay/16)
 var side := false  # side=1: build_view 9 from the side (heights)
+var compare := ["res://models/", "res://models_b/"]  # compare=b,c: the two sets of build_view 9 (a = game/models)
 var outline := -1  # outline=0 off, 1 thin (the default), 2 strong (game/shaders/outline.gdshader)
 var node: Node
 
@@ -34,6 +35,10 @@ func _init() -> void:
 		elif arg.begins_with("at="):  # the tile the camera looks at
 			var xy := arg.substr(3).split(",")
 			at = Vector2(float(xy[0]), float(xy[1]))
+		elif arg.begins_with("compare="):
+			compare = []
+			for k in arg.substr(8).split(","):
+				compare.append("res://models/" if k == "a" else "res://models_%s/" % k)
 		elif arg == "side=1":
 			side = true
 		elif arg.begins_with("outline="):
@@ -130,9 +135,9 @@ func _process(_delta: float) -> bool:
 			node.ui.visible = false
 			for n in node.building_nodes.values():  # an empty stage: the city's buildings hidden
 				n.visible = false
-			var h7 := 0.0
 			for row in 2:
-				var dir: String = ["res://models/", "res://models_b/"][row]
+				var h7 := 0.0
+				var dir: String = compare[row]
 				for level in 7:
 					var path := dir + "common_housing_%d.glb" % (level + 1)
 					if not ResourceLoader.exists(path):
@@ -153,11 +158,11 @@ func _process(_delta: float) -> bool:
 					node._set_look(mi, {"age_days": 40})
 					h7 = mesh.get_aabb().end.y
 					_person(at + Vector3(2.15, 0, 1.7))
-				if row == 1:  # the landmarks of the reference's sprites (eZeus): palace 1.6x, a god's statue 3.6x the top house
-					var lx := 41.0 if side else 2.0  # in the game's view behind the streets, not over them
-					var lz := 40.0 if side else 27.0
-					_landmark(Vector3(lx, 0.2, lz), Vector3(4, h7 * 1.62, 4), Color(0.86, 0.84, 0.80))
-					_landmark(Vector3(lx + 5, 0.2, lz + 1), Vector3(1.2, h7 * 3.57, 1.2), Color(0.72, 0.55, 0.30))
+				# Stand-ins for each set (owner, 2026-11-28): the palace 1.6x and a god's statue 2.5x its city house.
+				var lx := 40.5 + row * 2.3 if side else 2.0 + row * 9.0  # in the game's view behind the streets
+				var lz := 40.0 if side else 27.0
+				_landmark(Vector3(lx, 0.2, lz), Vector3(2.0 if side else 4.0, h7 * 1.62, 4), Color(0.86, 0.84, 0.80))
+				_landmark(Vector3(lx + (5.0 if side else 5.0), 0.2, lz + 1), Vector3(1.2, h7 * 2.5, 1.2), Color(0.72, 0.55, 0.30))
 			if zoom == 0.0:
 				if side:
 					node.cam.size = 25.0

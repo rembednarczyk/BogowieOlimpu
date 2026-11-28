@@ -26,7 +26,9 @@ MODELS = {}
 # nearer the reference's sprites (eZeus): low and squat up to level 5 (roofs at the plans' rise, the row house's
 # storeys lower), rising only at levels 6-7. BO_PROPORTION=B exports B; A stays the game's until the owner picks.
 PROFILE = os.environ.get("BO_PROPORTION", "A")
-LOW_STOREYS = {"A": (2.3, 2.1, 1.9), "B": (2.0, 1.85, 1.7)}  # the row house: ground floor, upper floor, its doors
+LOW_STOREYS = {"A": (2.3, 2.1, 1.9), "B": (2.0, 1.85, 1.7), "C": (2.0, 1.85, 1.7)}  # the row house: storeys, doors
+# "C": B and the flat and the city house with lower storeys too (ground floor, upper floor: how much lower).
+HIGH_DROP = {6: (-0.25, -0.2), 7: (-0.3, -0.25)}
 
 
 def model(name, building, note):
@@ -326,25 +328,34 @@ def row_house(b, rng, story=None):
 
 @model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa")
 def flat(b, rng, story=None):
+    d1, d2 = HIGH_DROP[6] if PROFILE == "C" else (0.0, 0.0)  # C: lower storeys
+
+    def up(z):  # a height on the upper floor
+        return z + d1
+
+    def top(z):  # a height at the roof
+        return z + d1 + d2
+    wz = 1.05 if PROFILE != "C" else 0.9  # the upper windows sit lower in a lower storey (their pediments below the eaves)
     D.footing(b, 0.3, 0.3, 3.4, 1.6, h=0.35, rng=rng)
-    _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, 2.2, plaster="plaster", doors=[("s", 1.3, 0.9, 1.85)], wreath=True,
+    _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, up(2.2), plaster="plaster", doors=[("s", 1.3, 0.9, 1.85 if d1 == 0 else 1.7)],
+          wreath=d1 == 0,
           windows=[("s", 0.45), ("s", 2.5), ("n", 0.9), ("n", 2.3)])
-    _room(b, rng, 0.35, 0.35, 3.3, 1.5, 2.55, 2.0, plaster="plaster", windows=[("s", 0.5), ("s", 1.5), ("s", 2.5),
+    _room(b, rng, 0.35, 0.35, 3.3, 1.5, up(2.55), 2.0 + d2, plaster="plaster", windows=[("s", 0.5, 0.45, wz), ("s", 1.5, 0.45, wz), ("s", 2.5, 0.45, wz),
           ("w", 0.5), ("e", 0.5)], stage=(0.5, 0.66), ornate=True)
-    b.box(t(0.32), t(0.32), t(2.5), t(3.36), t(1.56), t(0.12), "ochre", stage=0.5, plaster=True)  # the band
+    b.box(t(0.32), t(0.32), t(up(2.5)), t(3.36), t(1.56), t(0.12), "ochre", stage=0.5, plaster=True)  # the band
     if b.detail:
-        D.meander(b, 0.4, 1.875, 3.2, 2.505, along_x=True, outward=1, unit=0.055, part="stone", stage=0.52)
-        D.cornice(b, 0.35, 0.35, 3.3, 1.5, 4.43, stage=0.62)
+        D.meander(b, 0.4, 1.875, 3.2, up(2.505), along_x=True, outward=1, unit=0.055, part="stone", stage=0.52)
+        D.cornice(b, 0.35, 0.35, 3.3, 1.5, top(4.43), stage=0.62)
     for x in (0.35, 2.6):  # the wings, each on its own stone footing (2026-11-28: they hung 30 cm over the ground)
         wing = "west wing" if x < 1 else "east wing"
         D.footing(b, x - 0.05, 1.85, 1.15, 1.9, h=0.3, rng=rng, group=wing)
         _room(b, rng, x, 1.85, 1.05, 1.85, 0.3, 1.75, plaster="plaster", doors=[("e" if x < 1 else "w", 0.6, 0.75, 1.6)],
               windows=[("s", 0.3)], stage=(0.15, 0.55), group=wing)
         D.shed_roof(b, x, 1.85, 1.05, 1.85, 2.05, 2.47, rng, falls="s", overhang=0.12, group=wing)
-    ridge = D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
+    ridge = D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, top(4.57), 0.7, rng, along_x=True, overhang=0.16, antefix=True)
     D.chimney_pot(b, 2.55, 1.1, ridge(2.55), rng)
     if b.detail:
-        _acroteria(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7 * D.ROOF_STEEP, 0.16)
+        _acroteria(b, 0.35, 0.35, 3.3, 1.5, top(4.57), 0.7 * D.ROOF_STEEP, 0.16)
     b.box(t(1.7), t(2.6), 0, t(0.6), t(0.6), t(0.15), "stone", stage=0.05)  # the yard's paving and its well
     b.solid("well", t(1.7), t(2.6), 0, t(2.3), t(3.2), t(1.4))
     b.lathe(t(2.0), t(2.9), 0, [(t(0.28), 0), (t(0.29), t(0.5)), (t(0.31), t(0.55)), (t(0.2), t(0.55))], "stone",
@@ -364,15 +375,15 @@ def flat(b, rng, story=None):
         D.pithos(b, 2.35, 3.42, scale=0.55, rng=rng, lid=True)
         D.amphora(b, 2.0, 3.86, scale=0.55, rng=rng)
     for i, at in enumerate((0.5, 1.5, 2.5)):  # flowers under the upper windows
-        D.flower_box(b, 0.35 + at - 0.03, 1.85, 3.36, 0.51, rng, name="flower box %d" % (i + 1))
-    D.ivy(b, 3.65, 0.7, 1.05, 0.35, 2.5, rng, along_x=False, out=1)
+        D.flower_box(b, 0.35 + at - 0.03, 1.85, up(3.36) + wz - 1.05, 0.51, rng, name="flower box %d" % (i + 1))
+    D.ivy(b, 3.65, 0.7, 1.05, 0.35, up(2.5), rng, along_x=False, out=1)
     D.hydria(b, 1.99, 2.25, scale=0.55, rng=rng)
     if story == "shepherds":  # dyed wool on a pole across the courtyard, wing to wing
         S.skeins(b, (1.445, 2.45, 1.95), (2.555, 2.45, 1.95), rng)  # the pole set into the two wing walls
     elif story == "potters":  # a striped awning over the courtyard on two poles, pots hung from it
-        S.awning(b, 1.5, 2.5, 1.85, 2.95, 1.0, 0.35, rng, poles=True, pots=3)
+        S.awning(b, 1.5, 2.5, 1.85, up(2.95), 1.0, 0.35, rng, poles=True, pots=3)
     elif story == "gardeners":  # the courtyard under a vine
-        D.pergola(b, 1.47, 1.88, 2.53, 3.05, 2.75, rng)
+        D.pergola(b, 1.47, 1.88, 2.53, 3.05, 2.75 if d1 == 0 else 2.68, rng)  # C: under the lower flower boxes
     if story:
         b.mirror = S.STORIES[story]["mirror"]
     D.grass(b, rng, 30)
@@ -381,42 +392,49 @@ def flat(b, rng, story=None):
 
 @model("common_housing_7", "common_housing", "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku")
 def city_house(b, rng, story=None):
+    d1, d2 = HIGH_DROP[7] if PROFILE == "C" else (0.0, 0.0)  # C: lower storeys
+
+    def up(z):  # a height on the upper floor (and the porch's top, which meets it)
+        return z + d1
+
+    def top(z):  # a height at the roof
+        return z + d1 + d2
     D.footing(b, 0.25, 0.25, 3.5, 2.5, h=0.55, rng=rng)
-    _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, 2.4, thick=0.42, part="stone", block=(0.58, 0.3), wreath=True,
-          doors=[("s", 1.25, 0.95, 2.0)], windows=[("e", 0.9, 0.4, 1.3, 0.5), ("w", 0.9, 0.4, 1.3, 0.5)])
-    _room(b, rng, 0.3, 0.3, 3.4, 2.4, 2.95, 2.2, plaster="plaster", windows=[("s", 0.6), ("s", 1.5), ("s", 2.4),
+    _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, up(2.4), thick=0.42, part="stone", block=(0.58, 0.3), wreath=d1 == 0,
+          doors=[("s", 1.25, 0.95, 2.0 if d1 == 0 else 1.85)], windows=[("e", 0.9, 0.4, 1.3, 0.5), ("w", 0.9, 0.4, 1.3, 0.5)])
+    _room(b, rng, 0.3, 0.3, 3.4, 2.4, up(2.95), 2.2 + d2, plaster="plaster", windows=[("s", 0.6), ("s", 1.5), ("s", 2.4),
           ("e", 0.9), ("w", 0.9), ("n", 1.5)], stage=(0.5, 0.68), ornate=True)
-    b.box(t(0.27), t(0.27), t(2.85), t(3.46), t(2.46), t(0.16), "cloth", stage=0.5, plaster=True)  # red frieze
+    b.box(t(0.27), t(0.27), t(up(2.85)), t(3.46), t(2.46), t(0.16), "cloth", stage=0.5, plaster=True)  # red frieze
     if b.detail:
-        D.meander(b, 0.32, 2.745, 3.36, 2.865, along_x=True, outward=1, unit=0.06, part="ochre", stage=0.52)
-        D.cornice(b, 0.3, 0.3, 3.4, 2.4, 5.0, stage=0.66)
+        D.meander(b, 0.32, 2.745, 3.36, up(2.865), along_x=True, outward=1, unit=0.06, part="ochre", stage=0.52)
+        D.cornice(b, 0.3, 0.3, 3.4, 2.4, top(5.0), stage=0.66)
     b.box(t(0.3), t(2.7), 0, t(3.4), t(1.1), t(0.55), "stone", stage=0.05)  # the porch's floor and steps
     b.solid("porch floor", t(0.3), t(2.7), 0, t(3.7), t(3.8), t(0.55), block="porch")
     b.box(t(1.0), t(3.8), 0, t(2.0), t(0.15), t(0.28), "stone", stage=0.06)
     for x in (0.75, 1.9, 3.05):
-        D.doric_column(b, x, 3.45, 0.55, 2.25, radius=0.15, stage=0.45)
-    b.box(t(0.4), t(3.2), t(2.8), t(3.2), t(0.5), t(0.16), "stone", stage=0.5)  # the architrave
-    b.solid("architrave", t(0.4), t(3.2), t(2.8), t(3.6), t(3.7), t(2.96), block="porch")
+        D.doric_column(b, x, 3.45, 0.55, up(2.25), radius=0.15, stage=0.45)
+    b.box(t(0.4), t(3.2), t(up(2.8)), t(3.2), t(0.5), t(0.16), "stone", stage=0.5)  # the architrave
+    b.solid("architrave", t(0.4), t(3.2), t(up(2.8)), t(3.6), t(3.7), t(up(2.96)), block="porch")
     if b.detail:  # the Doric frieze over it: triglyphs (three grooved bars) and painted metopes between
         n = 7
         for i in range(n):
             fx = 0.4 + i * 3.2 / (n - 1) - 0.08
             for g in range(3):
-                b.box(t(fx + g * 0.055), t(3.66), t(2.96), t(0.04), t(0.04), t(0.2), "stone", stage=0.52)
+                b.box(t(fx + g * 0.055), t(3.66), t(up(2.96)), t(0.04), t(0.04), t(0.2), "stone", stage=0.52)
             if i < n - 1:
-                b.box(t(fx + 0.17), t(3.68), t(2.98), t(3.2 / (n - 1) - 0.18), t(0.02), t(0.16), "blue_paint", stage=0.52,
+                b.box(t(fx + 0.17), t(3.68), t(up(2.98)), t(3.2 / (n - 1) - 0.18), t(0.02), t(0.16), "blue_paint", stage=0.52,
                       tint=0.4)
-        b.box(t(0.36), t(3.18), t(3.16), t(3.28), t(0.56), t(0.05), "stone", stage=0.53)
+        b.box(t(0.36), t(3.18), t(up(3.16)), t(3.28), t(0.56), t(0.05), "stone", stage=0.53)
     else:
-        b.box(t(0.4), t(3.2), t(2.96), t(3.2), t(0.5), t(0.2), "stone", stage=0.52)
-    D.shed_roof(b, 0.3, 2.7, 3.4, 1.0, 3.21, 3.62, rng, falls="s", overhang=0.12, gable="stone", stage=(0.62, 0.7),
+        b.box(t(0.4), t(3.2), t(up(2.96)), t(3.2), t(0.5), t(0.2), "stone", stage=0.52)
+    D.shed_roof(b, 0.3, 2.7, 3.4, 1.0, up(3.21), up(3.62), rng, falls="s", overhang=0.12, gable="stone", stage=(0.62, 0.7),
                 antefix=True, group="porch")
     if story == "gardeners":  # the vine thrown over the porch roof, hanging down its eave
         S.roof_vine(b, 0.3, 3.7, 2.95, 3.8, rng)
-    ridge = D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
+    ridge = D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, top(5.15), 1.0, rng, along_x=True, overhang=0.16, antefix=True)
     D.chimney_pot(b, 2.65, 1.5, ridge(2.65), rng, scale=1.15)
     if b.detail:
-        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0 * D.ROOF_STEEP, 0.16, size=0.42)
+        _acroteria(b, 0.3, 0.3, 3.4, 2.4, top(5.15), 1.0 * D.ROOF_STEEP, 0.16, size=0.42)
     with D.goods(b, "olive_oil"):
         D.pithos(b, 1.32, 3.0, scale=0.5, rng=rng, z=0.55, lid=True)
         D.amphora(b, 2.8, 3.0, scale=0.6, rng=rng, z=0.55)
@@ -428,22 +446,22 @@ def city_house(b, rng, story=None):
     D.potted_plant(b, 3.4, 3.9, scale=0.35, rng=rng, name="plant 2")
     if story == "shepherds":  # dyed cloths hung between the columns under the architrave
         for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
-            S.swag(b, (a + 0.2, 3.73, 2.78), (c - 0.2, 3.73, 2.78), 0.4, S.DYES[i * 2], rng, name="swag %d" % (i + 1))
+            S.swag(b, (a + 0.2, 3.73, up(2.78)), (c - 0.2, 3.73, up(2.78)), 0.4, S.DYES[i * 2], rng, name="swag %d" % (i + 1))
     elif story == "potters":  # pots and plates hung between the columns, a striped awning out from the
         for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):  # architrave over the steps, two kraters
-            S.hanging_pots(b, a + 0.24, c - 0.24, 3.45, 2.8, rng, name="hung pots %d" % (i + 1))
-        S.awning(b, 0.45, 3.55, 3.68, 2.78, 0.29, 0.2, rng, pots=6, name="porch awning")  # on the architrave's face
+            S.hanging_pots(b, a + 0.24, c - 0.24, 3.45, up(2.8), rng, name="hung pots %d" % (i + 1))
+        S.awning(b, 0.45, 3.55, 3.68, up(2.78), 0.29, 0.2, rng, pots=6, name="porch awning")  # on the architrave's face
         for i, x in enumerate((0.40, 3.60)):  # in the gap between the end columns and the porch's edges
             S.krater(b, x, 3.45, 0.55, rng, scale=0.55, name="krater %d" % (i + 1))
     elif story == "gardeners":  # the vine up the outer columns, along the architrave and over the porch roof
         for x in (0.75, 3.05):
-            S.column_vine(b, x, 3.45, 0.6, 2.75, 0.15, rng)
-            S.vine_stem(b, [(x + 0.12, 3.6, 2.75), (x + 0.1, 3.76, 2.95), (x + 0.08, 3.8, 3.2)], rng)
-        S.garland(b, 0.4, 3.6, 3.72, 2.92, rng)
+            S.column_vine(b, x, 3.45, 0.6, up(2.75), 0.15, rng)
+            S.vine_stem(b, [(x + 0.12, 3.6, up(2.75)), (x + 0.1, 3.76, up(2.95)), (x + 0.08, 3.8, up(3.2))], rng)
+        S.garland(b, 0.4, 3.6, 3.72, up(2.92), rng)
     if story:
         b.mirror = S.STORIES[story]["mirror"]
     for i, at in enumerate((0.6, 1.5, 2.4)):
-        D.flower_box(b, 0.3 + at - 0.03, 2.7, 3.78, 0.51, rng, name="flower box %d" % (i + 1))
+        D.flower_box(b, 0.3 + at - 0.03, 2.7, up(3.78), 0.51, rng, name="flower box %d" % (i + 1))
     D.grass(b, rng, 26)
     b.scaffold(height=5.6 * M)
 
@@ -530,7 +548,7 @@ def main():
         for detail, suffix in views:  # the close view and, for the houses, the far view
             A.reset()
             level = int(name.split("_")[2]) if name.startswith("common_housing_") else 0
-            D.ROOF_STEEP = 1.0 if PROFILE == "B" and 1 <= level <= 5 else 1.4  # B: low roofs up to level 5
+            D.ROOF_STEEP = 1.0 if PROFILE in ("B", "C") and 1 <= level <= 5 else 1.4  # B, C: low roofs up to level 5
             b = A.Builder(name + suffix, w, h, detail=detail)
             fn(b, random.Random(name))  # the same bricks every run
             A.export(b.finish(), out_dir / (name + suffix + ".glb"))
