@@ -27,6 +27,7 @@ CLASSES = {
     "metal": dict(bond=0.0, fill=0.3, bounce=0.05, keep=0.2, spin=1.0, topple=0.0, board=False),
     "loose": dict(bond=0.10, fill=0.6, bounce=0.0, keep=0.05, spin=0.1, topple=0.0, board=False),
     "liquid": dict(bond=0.0, fill=1.0, bounce=0.0, keep=0.0, spin=0.0, topple=0.0, board=False),
+    "food": dict(bond=0.0, fill=0.5, bounce=0.05, keep=0.2, spin=0.5, topple=0.0, board=False),
 }
 
 MATERIALS = {
@@ -66,6 +67,15 @@ MATERIALS = {
     # Metal
     "bronze": dict(cls="metal", thickness=0.008, density=8800, coat=False, shape="bronze fitting, vessel, statue skin"),
     "iron": dict(cls="metal", thickness=0.008, density=7870, coat=False, shape="iron strap, hinge, tool, tie"),
+    # Food in a granary's bins (each piece whole: a carrot, a cheese, a fish)
+    "carrot": dict(cls="food", thickness=0.03, density=1000, coat=False, shape="a carrot; carrots heaped in a bin"),
+    "onion": dict(cls="food", thickness=0.06, density=950, coat=False, shape="an onion; onions heaped in a bin"),
+    "cheese": dict(cls="food", thickness=0.08, density=1100, coat=False, shape="a cheese wheel; stacked"),
+    "fish": dict(cls="food", thickness=0.04, density=1050, coat=False, shape="a dried fish; laid in baskets"),
+    "urchin": dict(cls="food", thickness=0.06, density=1100, coat=False, shape="a sea urchin; in shallow baskets"),
+    "pork": dict(cls="food", thickness=0.12, density=1050, coat=False, shape="a ham; hung or laid in a row"),
+    "meat": dict(cls="food", thickness=0.10, density=1050, coat=False, shape="a joint of meat; on straw"),
+    "orange_fruit": dict(cls="food", thickness=0.08, density=900, coat=False, shape="an orange; heaped in a bin"),
     # What fills vessels and sacks
     "grain": dict(cls="loose", thickness=0.0, density=750, coat=False, shape="grain in bulk; spills, does not tumble"),
     "water": dict(cls="liquid", thickness=0.0, density=1000, coat=False, shape="water; drains away when it falls"),

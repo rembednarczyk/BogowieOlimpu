@@ -61,6 +61,15 @@ PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 20
     ("sage_cloth", (0.64, 0.70, 0.52)),  # muted green canvas (the gardeners' tent: blue is kept for public roofs)
     ("roof_patina", (0.26, 0.50, 0.46)),  # copper-patina green tiles: stores, granaries, trade (R-018)
     ("stone_cool", (0.68, 0.71, 0.80)),  # blue-grey stone walls: elite houses and public buildings (R-018)
+    # The foods in a granary's bins, each its own colour to tell them apart from above (2026-11-28).
+    ("carrot", (0.93, 0.47, 0.16)),
+    ("onion", (0.82, 0.60, 0.40)),
+    ("cheese", (0.97, 0.86, 0.50)),
+    ("fish", (0.64, 0.70, 0.76)),
+    ("urchin", (0.36, 0.18, 0.34)),
+    ("pork", (0.88, 0.58, 0.54)),
+    ("meat", (0.74, 0.26, 0.24)),
+    ("orange_fruit", (0.99, 0.62, 0.12)),
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
 
@@ -170,6 +179,10 @@ class Builder:
     # -1 - index (the pivot of animated parts is >= 0), read by building.gdshader.
     GOODS = {"food": 0, "fleece": 1, "olive_oil": 2, "wine": 3}
     good = None
+    # A storage building's slot (granary: 8 bins): (slot, food, load) tags a prop that shows while that slot
+    # holds that food with at least that many loads: UV2.x = -(1000 + slot*100 + food*10 + load), read by
+    # building.gdshader with the instance's `store`; food 9 = whatever the slot holds (coloured by it).
+    store = None
 
     # The order of building (owner, 2026-11-28: realistic): footing, walls course by course, floors, the roof's
     # frame, its bed and tiles row by row from the eaves, the ridge; only then the joinery, the chimney, and
@@ -182,6 +195,9 @@ class Builder:
             stage = 0.975 + 0.02 * min(max((stage - 0.8) / 0.2, 0.0), 1.0)
         if self.good is not None and pivot == (0, 0):
             pivot = (-1.0 - self.GOODS[self.good], 0.0)
+        if self.store is not None:
+            slot, food, load = self.store
+            pivot = (-(1000.0 + slot * 100 + food * 10 + load), 0.0)
         u = (PALETTE_INDEX[part] + 0.5) / PALETTE_SIZE
         for f in faces:
             for loop in f.loops:

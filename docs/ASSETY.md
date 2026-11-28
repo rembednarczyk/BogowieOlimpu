@@ -137,7 +137,7 @@ Części ruchome sterowane `working` (kanał A): obserwatorium atlantydzkie obra
 | Drzewo oliwne, winorośl, drzewo pomarańczowe | 6 faz dojrzewania |
 | Growers' Lodge, Orange Tenders' Lodge, Dairy, Carding Shed, Hunting Lodge, Corral | budynek + animacja pracy; Corral: ubój i bydło w zagrodzie |
 | Fishery, Urchin Quay | 4 orientacje na brzegu; budowa łodzi, rozładunek |
-| Granary | budynek + wypełnienie: 8 rodzajów żywności widocznych w otworach |
+| Granary | zrobione 2026-11-28 (`granary` w `tools/blender/models.py`, żywność `bo_food.py`): hala z dachem z patyny i dziedziniec z 8 przegrodami w 2 rzędach po 4; w przegrodzie jeden rodzaj żywności, 4 pasy po jednym ładunku, widoczne z góry; z daleka bloki w kolorze żywności; ruina i pył (`docs/STYL-BUDOWLI.md` rozdz. 14) |
 | Storehouse | budynek + **19 towarów × 4 poziomy wypełnienia** na polu + rzeźba |
 | Stosy towarów przy budynkach | 4 poziomy dla 10 towarów |
 | Warsztaty i wydobycie | Timber Mill, Masonry Shop (stos kamienia 8 stanów, kamieniarze), Black Marble Workshop, Mint, Foundry, Refinery, Olive Press, Winery, Sculpture Studio, Armory, Artisans' Guild, Chariot Factory, Trireme Wharf (4 orientacje), Horse Ranch: każdy z animacją pracy |

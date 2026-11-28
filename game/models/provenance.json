@@ -823,7 +823,32 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "spichlerz: podest z kamienia, ściany z cegły w tynku, dach z dachówki, portyk"
+  "note": "spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
+ },
+ "granary_lod1.glb": {
+  "building": "granary",
+  "footprint": [
+   4,
+   4
+  ],
+  "lod": 1,
+  "source": "tools/blender/models.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
+ },
+ "granary_ruin.glb": {
+  "building": "granary",
+  "ruin": true,
+  "footprint": [
+   4,
+   4
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry"
  },
  "observatory.glb": {
   "building": "observatory",

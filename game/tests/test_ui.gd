@@ -215,6 +215,37 @@ func _process(_d: float) -> bool:
 		fell = true
 		break
 	check(fell, "a modelled house to fall")
+	# A granary's 8 bins (doc 19: 8 slots x 4 loads; a fixed order, 2026-11-28): each food in as many slots as its
+	# loads need, the last one part full, in the order of data/goods.json; what does not fit is not shown.
+	var unpack := func(v: Vector2) -> Array:
+		var out := []
+		for slot in 8:
+			var code: int = (int(v[slot / 4]) >> (6 * (slot % 4))) & 63
+			out.append([code / 5 - 1, code % 5])
+		return out
+	var bins: Array = unpack.call(game.store_slots({"fish": 8, "wheat": 6, "cheese": 3}))
+	var bins_ok: bool = bins == [[0, 4], [0, 2], [3, 3], [4, 4], [4, 4], [-1, 0], [-1, 0], [-1, 0]]
+	var full: Array = unpack.call(game.store_slots({"wheat": 32, "oranges": 4}))
+	bins_ok = bins_ok and full.all(func(x): return x == [0, 4])
+	bins_ok = bins_ok and unpack.call(game.store_slots({})).all(func(x): return x == [-1, 0])
+	check(bins_ok, "a granary's bins: foods in their order, 4 loads a bin, part full last, overflow hidden: %s" % [bins])
+	# A granary that falls gets its own ruin (R-018 point 10).
+	var granary_seen := false
+	for b in game.sim.get_buildings():
+		var gnode: Node3D = game.building_nodes.get(b["id"])
+		if b["type"] != "granary" or gnode == null or not gnode.has_node("Model"):
+			continue
+		game._handle_events([{"type": "building_placed", "id": 990003, "building_type": "ruins", "x": b["x"], "y": b["y"],
+			"width": 4, "height": 4, "parent": 0}])
+		var gr: Node3D = game.building_nodes.get(990003)
+		check(gr != null and gr.get_meta("ruin", "") == "granary_ruin" and gr.has_node("Dust"),
+			"a fallen granary: its own ruin and dust")
+		game.building_nodes.erase(990003)
+		if gr != null:
+			gr.free()
+		granary_seen = true
+		break
+	check(granary_seen, "a modelled granary in the demo to fall")
 	var goods_ok := true  # the props of a house's goods follow its stock (docs/ASSETY.md)
 	for b in game.sim.get_buildings():
 		var node: Node3D = game.building_nodes.get(b["id"])

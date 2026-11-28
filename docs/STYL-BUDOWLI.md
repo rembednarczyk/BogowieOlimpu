@@ -296,3 +296,19 @@ Zasady wypracowane na domach; obowiązują każdy budynek. Stan liczy rdzeń, op
 8. Pył: chmura kłębów rodzi się przy podstawie podczas upadku, unosi się, rośnie i rzednie (około 6 s), w kolorze materiału (mur piaskowy, po pożarze popiół); `boot.gd` `make_dust`, shader `dust.gdshader`.
 9. Kontrola przy eksporcie: `BO_RUIN_DEBUG=1` drukuje wysokość stosu (`HM1`), największy skok w klatce (`JUMP`, cel do 8 cm), rozrzut w bok (`SPREAD`, mediana do 15 cm) i kawałki w ruchu na końcu; `check_models.py` sprawdza obrys ruiny i plik klatek.
 
+## 14. Budynki magazynowe: towar widoczny z góry (zasada właściciela 2026-11-28)
+
+Zasada: każda grupa towaru w budynku magazynowym jest dla gracza widoczna z góry, a stan zapełnienia da się ocenić jednym spojrzeniem. Obowiązuje spichlerz, magazyn i każdy przyszły budynek, który trzyma towar na polach.
+
+Wzorzec z oryginału (S-008, `buildings/egranary.cpp` w eZeus, analiza bez kopiowania): spichlerz 4×4 pola, 18 pracowników, 8 pól w dwóch rzędach (3 i 5) na dachu budynku; pole trzyma jeden rodzaj żywności do 4 ładunków (ten sam rodzaj może zająć kilka pól, doc 19: 8 × 4 = 32 ładunki); pole z towarem pokazuje jeden obrazek tego towaru, bez stopnia zapełnienia; obok animacja pracy. My idziemy dalej: widać też, ile ładunków leży na polu.
+
+Spichlerz (decyzje właściciela 2026-11-28: układ 2 rzędy po 4, stała kolejność towarów):
+1. Plan 8 × 8 m: z tyłu hala z tynkowanej cegły pod dachem z patyny (magazyny, rozdz. 2), dwoje drzwi na dziedziniec; przed nią brukowany dziedziniec w niskim kamiennym murze, 8 przegród z kamiennymi krawężnikami w dwóch rzędach po 4 po obu stronach przejścia z bramą na każdym końcu. Przegrody otwarte do nieba: kamera widzi je z góry, dach hali ich nie zasłania.
+2. Pola liczone od lewej: rząd przy hali 1-4, rząd przy murze 5-8.
+3. Przegroda ma 4 pasy, od zachodu na wschód; jeden pas to jeden ładunek: ćwierć, pół, trzy czwarte albo cała przegroda w kolorze swojej żywności. Pod sztukami leży warstwa tej żywności, żeby pas czytał się z daleka.
+4. Każda żywność ma swój kolor (paleta: `carrot`, `onion`, `cheese`, `fish`, `urchin`, `pork`, `meat`, `orange_fruit`, pszenica `grain`) i kształt: pszenica wał ziarna, marchew rozsypane korzenie, cebula i pomarańcze kopczyki kulek, jeżowce ciemne kule, ser krążki po dwa, ryby suszone w rzędzie, mięso i szynki na słomie. Materiały w tabeli R-019 (klasa `food`).
+5. Kolejność stała: pszenica, marchew, cebula, ser, ryby, jeżowce, wieprzowina, mięso, pomarańcze (`data/goods.json`). Towar zajmuje tyle pól, ile potrzeba po 4 ładunki, ostatnie częściowo; co się nie mieści w 8 polach, nie jest widoczne (rdzeń i tak nie przyjmie więcej). Gracz uczy się, gdzie co leży; pola zmieniają się tylko, gdy towar zniknie albo zajmie kolejne pole. `boot.gd` `store_slots`, test w `test_ui.gd`.
+6. Z daleka (LOD1) każdy pas to blok w kolorze tego, co leży na polu (shader barwi go według zawartości pola).
+7. Budżet trójkątów budynku większego niż dom: 30 tys. na pole z bliska, 750 z daleka (`check_models.py`); spichlerz 4×4: 148 tys. z bliska, 2,7 tys. z daleka.
+8. Mechanizm dla kolejnych budynków: rekwizyt pola oznaczony `b.store = (pole, towar, ładunek)` w modelu, parametr instancji `store` (8 pól po 6 bitów) w `building.gdshader`. Magazyn (19 towarów, 4 stopnie wypełnienia, rzeźba zajmuje całe pole) dostanie te same zasady.
+

@@ -136,6 +136,23 @@ func _process(_delta: float) -> bool:
 				node.cam.size = 16.0
 				node._place_camera()
 			node.lod_close = true
+		elif build_view == 11:  # granaries with food in their 8 bins (boot.gd store_slots): empty, a little, mixed, full
+			node.ui.visible = false
+			var fills := [{}, {"wheat": 3}, {"wheat": 6, "carrots": 3, "cheese": 4, "fish": 8, "onions": 2},
+				{"wheat": 4, "carrots": 4, "onions": 4, "cheese": 4, "fish": 4, "urchins": 4, "pork": 4, "meat": 4},
+				{"oranges": 5, "meat": 7, "pork": 1, "urchins": 12}, {"wheat": 6, "carrots": 3, "cheese": 4, "fish": 8, "onions": 2}]
+			for i in fills.size():
+				var mi := MeshInstance3D.new()
+				mi.mesh = node._model("granary_lod1" if i == 5 else "granary")
+				mi.material_override = node._building_material()
+				mi.position = Vector3(2 + (i % 3) * 5, 0.2, 40 + (i / 3) * 5)
+				node.add_child(mi)
+				node._set_look(mi, {"age_days": 40})
+				mi.set_instance_shader_parameter("store", node.store_slots(fills[i]))
+			if zoom == 0.0:
+				node.cam_target = Vector3(9, 0, 44.5)
+				node.cam.size = 14.0
+				node._place_camera()
 		elif build_view == 10:  # a house falling (bo_collapse.py): the fall frame by frame, then each level's ruin
 			node.lod_close = true
 			node.ui.visible = false

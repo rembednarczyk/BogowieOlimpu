@@ -574,10 +574,13 @@ func _add_ruin(node: Node3D, e: Dictionary) -> bool:
 	for id in building_nodes:
 		var old: Node3D = building_nodes[id]
 		var p: Dictionary = old.get_meta("placed", {})
-		if p.get("building_type", "") == "common_housing" and p["x"] == e["x"] and p["y"] == e["y"] and old.has_node("Model"):
-			house = old.get_node("Model")
+		if p.get("x", -1) == e["x"] and p.get("y", -1) == e["y"] and old.has_node("Model") and old.has_meta("model"):
+			house = old.get_node("Model")  # the building that fell: a house, or any other with its own ruin
 			model = String(old.get_meta("model"))
-			level = int(model.split("_")[2])
+			if p.get("building_type", "") == "common_housing":
+				level = int(model.split("_")[2])
+			elif _model(model + "_ruin") == null:
+				return false  # no ruin of its own yet: the plain box
 	if house == null and (e["width"] != 2 or e["height"] != 2):
 		return false
 	var name := ""
@@ -586,7 +589,7 @@ func _add_ruin(node: Node3D, e: Dictionary) -> bool:
 	if _model(own) != null and _ruin_material(own) != null:
 		name = own
 	for l in range(level, 0, -1):
-		if name != "":
+		if name != "" or not model.begins_with("common_housing") and model != "":
 			break
 		if _model("common_housing_%d_ruin" % l) != null and _ruin_material("common_housing_%d_ruin" % l) != null:
 			name = "common_housing_%d_ruin" % l
@@ -833,6 +836,27 @@ func _set_look(mi: MeshInstance3D, b: Dictionary) -> void:
 		for g in mini(stock.size(), 4):
 			held |= (1 << g) if stock[g] > 0 else 0
 	mi.set_instance_shader_parameter("goods", float(held))
+	if b.has("stock_loads") and b.get("type", "") == "granary":
+		mi.set_instance_shader_parameter("store", store_slots(b["stock_loads"]))
+
+# A granary's 8 bins (doc 19: 8 slots x 4 loads; owner, 2026-11-28: every food visible from above, a fixed order):
+# the foods in the order of data/goods.json, each in as many slots as its loads need (4 a slot), the last of
+# them part full. Packed for building.gdshader's `store`: per slot 6 bits, (food + 1) x 5 + loads, 4 slots a
+# float. The core keeps loads per food only; which bin is which is the presentation's, the same every day.
+const FOOD_ORDER := ["wheat", "carrots", "onions", "cheese", "fish", "urchins", "pork", "meat", "oranges"]
+const STORE_SLOTS := 8
+
+static func store_slots(loads: Dictionary) -> Vector2:
+	var packed := [0, 0]
+	var slot := 0
+	for f in FOOD_ORDER.size():
+		var n: int = loads.get(FOOD_ORDER[f], 0)
+		while n > 0 and slot < STORE_SLOTS:
+			var here := mini(n, 4)
+			packed[slot / 4] |= ((f + 1) * 5 + here) << (6 * (slot % 4))
+			n -= here
+			slot += 1
+	return Vector2(packed[0], packed[1])
 
 # Daily: every modelled building follows its state; a house that changed its level changes its model.
 func _update_looks() -> void:

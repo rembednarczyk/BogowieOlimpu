@@ -602,16 +602,58 @@ def fountain(b, rng):
     b.scaffold(height=2.6 * M)
 
 
-@model("granary", "granary", "spichlerz: podest z kamienia, ściany z cegły w tynku, dach z dachówki, portyk")
+@model("granary", "granary", "spichlerz: kryta hala z patyną na dachu, przed nią dziedziniec z 8 przegrodami żywności widocznymi z góry")
 def granary(b, rng):
-    b.box(0.15, 0.15, 0, 3.7, 3.7, 0.5 * M, "stone", stage=FOUNDATION)
-    b.box(0.3, 0.3, 0.5 * M, 3.4, 2.7, 3.4 * M, "mudbrick", plaster=True)
-    for i in range(4):  # the porch's columns along the south front
-        b.column(0.55 + i * 0.97, 3.45, 0.5 * M, 0.09, 2.9 * M, "stone", sides=8)
-    b.box(0.3, 3.3, 3.4 * M, 3.4, 0.3, 0.5 * M, "stone", stage=ROOF)  # the lintel
-    b.prism(0.2, 0.2, 3.9 * M, 3.6, 3.5, 1.6 * M, "roof_patina", along_x=True)  # stores: copper-patina tiles (R-018)
-    b.box(1.75, 3.0, 0.5 * M, 0.5, 0.02, 2.0 * M, "dark_wood")
-    b.scaffold(height=4.2 * M)
+    """The granary (4 x 4 tiles, 8 x 8 m; owner, 2026-11-28: every kind of food visible from above, 8 slots, how
+    full at a glance; layout 2 rows of 4, decided 2026-11-28). At the back a hall of plastered mudbrick under a
+    roof of copper-patina tiles (stores, R-018), two doors to the yard; before it a paved yard in a low stone
+    wall, its 8 bins with stone curbs in two rows of four either side of an aisle with a gate at each end. A
+    bin's food lies in 4 strips, one per load (bo_food.py), shown by the instance's `store` (boot.gd)."""
+    import bo_food as F
+    D.footing(b, 0.35, 0.35, 7.3, 2.55, h=0.3, rng=rng, group="hall")
+    _room(b, rng, 0.4, 0.4, 7.2, 2.45, 0.3, 2.9, thick=0.4, plaster="plaster",
+          doors=[("s", 1.6, 1.1, 2.1), ("s", 4.9, 1.1, 2.1)], windows=[("n", 1.2), ("n", 3.6), ("n", 6.0)], group="hall")
+    D.tiled_roof(b, 0.4, 0.4, 7.2, 2.45, 3.2, 1.0 * D.ROOF_STEEP, rng, along_x=True, overhang=0.35, tiles="roof_patina",
+                 group="hall")
+    # The yard: paving, a low stone wall, gates at the aisle's ends.
+    b.solid("yard", t(0.4), t(2.85), 0, t(7.6), t(7.6), t(0.12), block="yard")
+    b.box(t(0.4), t(2.85), 0, t(7.2), t(4.75), t(0.12), "stone", stage=0.05)
+    aisle = (4.75, 5.55)
+    for x0, y0, length, axis in ((0.4, 7.35, 7.2, "x"), (0.4, 2.85, aisle[0] - 2.85, "y"),
+                                 (0.4, aisle[1], 7.35 - aisle[1], "y"), (7.35, 2.85, aisle[0] - 2.85, "y"),
+                                 (7.35, aisle[1], 7.35 - aisle[1], "y")):
+        D.brick_wall(b, D.Wall(x0, y0, length, axis, 0.12, 0.85, 0.25), rng, part="stone", block=(0.5, 0.28),
+                     stage=(0.05, 0.35), both=True, group="yard")
+    pitch, x_in = (7.35 - 0.65) / 4, 0.65
+    rows = ((3.0, aisle[0] - 0.05), (aisle[1] + 0.05, 7.3))
+    for r, (y0, y1) in enumerate(rows):
+        for c in range(4):
+            slot = r * 4 + c
+            bx0, bx1 = x_in + c * pitch + 0.04, x_in + (c + 1) * pitch - 0.04
+            curb, ch = 0.12, 0.38
+            for cx, cy, sx, sy in ((bx0, y0, bx1 - bx0, curb), (bx0, y1 - curb, bx1 - bx0, curb),
+                                   (bx0, y0 + curb, curb, y1 - y0 - 2 * curb), (bx1 - curb, y0 + curb, curb, y1 - y0 - 2 * curb)):
+                b.cbox(t(cx), t(cy), t(0.12), t(sx), t(sy), t(ch), t(0.02), "stone", stage=0.3)
+            b.box(t(bx0 + curb), t(y0 + curb), t(0.12), t(bx1 - bx0 - 2 * curb), t(y1 - y0 - 2 * curb), t(0.04),
+                  "dark_wood", stage=0.32)  # the bin's boarded floor, off the paving
+            ix, iy, iw, idp = bx0 + curb + 0.02, y0 + curb + 0.02, bx1 - bx0 - 2 * curb - 0.04, y1 - y0 - 2 * curb - 0.04
+            z = 0.16
+            for load in range(1, 5):  # one strip per load, west to east
+                sx0 = ix + (load - 1) * iw / 4
+                if b.detail:
+                    for f, food in enumerate(F.FOODS):
+                        b.store = (slot, f, load)
+                        F.strip(b, food, sx0, iy, z, iw / 4, idp, rng)
+                        b.store = None
+                else:  # the far view: a block per strip in the colour of what the slot holds
+                    b.store = (slot, 9, load)
+                    b.box(t(sx0 + 0.01), t(iy), t(z), t(iw / 4 - 0.02), t(idp), t(0.12), "grain", stage=0.99)
+                    b.store = None
+    # In the aisle: sacks waiting to be emptied into a bin.
+    D.sack(b, 6.95, 5.15, scale=0.75, rng=rng, z=0.12)
+    D.sack(b, 6.5, 5.2, scale=0.65, rng=rng, name="sack 2", z=0.12)
+    D.grass(b, rng, 20)
+    b.scaffold(height=4.4 * M)
 
 
 @model("storehouse", "storehouse", "magazyn: dziedziniec w kamiennym murze, wiata kryta dachówką, skrzynie i amfory")
@@ -727,6 +769,9 @@ def _stories():
 _stories()
 
 
+RUINED = ("granary",)  # buildings beyond the houses with a full model, so with a ruin (R-018 point 10)
+
+
 def main():
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     out_dir = pathlib.Path(args[0]) if args else A.REPO / "game" / "models"
@@ -736,7 +781,7 @@ def main():
     for name in names:
         fn, building, note = MODELS[name]
         w, h = A.footprint(building)
-        views = ((True, ""), (False, "_lod1")) if building == "common_housing" else ((True, ""),)
+        views = ((True, ""), (False, "_lod1")) if building in ("common_housing", "granary") else ((True, ""),)
         for detail, suffix in views:  # the close view and, for the houses, the far view
             A.reset()
             level = int(name.split("_")[2]) if name.startswith("common_housing_") else 0
@@ -749,13 +794,14 @@ def main():
                                                   "author": "Bogowie Olimpu (model ze skryptu)",
                                                   "license": "własny (R-017)", "note": note}
         # The house of each level fallen (bo_collapse.py); a shelter by its own look (its tents differ).
-        if re.fullmatch(r"common_housing_\d+", name) or re.fullmatch(r"common_housing_1_[a-z]+", name):
+        if re.fullmatch(r"common_housing_\d+", name) or re.fullmatch(r"common_housing_1_[a-z]+", name) \
+                or name in RUINED:
             A.reset()
             b = A.Builder(name + "_ruin", w, h, detail=True)
             fn(b, random.Random(name))
             b.check_props()
             A.export(C.ruin(b, out_dir, name), out_dir / (name + "_ruin.glb"))
-            provenance[name + "_ruin.glb"] = {"building": "common_housing", "ruin": True, "footprint": [w, h], "lod": 0,
+            provenance[name + "_ruin.glb"] = {"building": building, "ruin": True, "footprint": [w, h], "lod": 0,
                                               "source": "tools/blender/bo_collapse.py",
                                               "author": "Bogowie Olimpu (model ze skryptu)",
                                               "license": "własny (R-017)", "note": "ruina po zawaleniu, " + note}

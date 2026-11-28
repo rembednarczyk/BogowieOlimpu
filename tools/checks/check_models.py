@@ -18,7 +18,8 @@ import struct
 import sys
 
 EPS = 1e-3
-TRIS = {0: 120000, 1: 3000}
+TRIS = {0: 120000, 1: 3000}  # a house's plot (2 x 2 tiles); a bigger building gets TRIS_PER_TILE per tile
+TRIS_PER_TILE = {0: 30000, 1: 750}
 
 
 def glb_json(path):
@@ -82,8 +83,10 @@ def main():
         tris = (g["accessors"][prim["indices"]]["count"] if "indices" in prim else g["accessors"][attrs["POSITION"]]["count"]) // 3
         lod = entry.get("lod", 0)
         sizes.append(f"{name} {tris}")
-        if tris > TRIS[lod]:
-            errors.append(f"{name}: {tris} triangles > {TRIS[lod]} for LOD{lod}")
+        fw, fh = entry.get("footprint", [2, 2])
+        budget = max(TRIS[lod], TRIS_PER_TILE[lod] * fw * fh)
+        if tris > budget:
+            errors.append(f"{name}: {tris} triangles > {budget} for LOD{lod} ({fw}x{fh} tiles)")
         if "building" not in entry:
             continue
         w, h = footprint(root, entry["building"])

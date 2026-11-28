@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Spichlerz: 8 pól widocznych z góry, 2 rzędy po 4, stała kolejność
+- Decyzja właściciela: każda grupa towaru widoczna z góry w spichlerzu, 8 pól na żywność, stan zapełnienia oceniany jednym spojrzeniem (R-018 punkt 11); układ 2 rzędy po 4 (rekomendacja przyjęta), stała kolejność towarów na polach (rekomendacja przyjęta; w oryginale kolejność dostaw).
+- Wykonanie: `docs/STYL-BUDOWLI.md` rozdz. 14; rdzeń bez zmian (ładunki na towar), układ pól liczy oprawa.
+
 ### 2026-11-28: Jedna tabela materiałów dla wszystkich budynków (R-019)
 - Decyzja właściciela: zasady fizyki, wymiarów, gęstości, wagi i kształtu dotyczą wszystkich materiałów gry i są globalną zasadą budowy budynków.
 - Wykonanie: `tools/blender/bo_materials.py` (34 materiały palety, 7 klas), czytana przy budowie modeli i przy zawaleniu; kontrola w `check_models.py`. Deski, cegły i płyty kamienne budowane do grubości materiału.

@@ -14,7 +14,9 @@ instance uniform float damage = 0.0;   // 0-3: cracks, plaster gone, loose parts
 instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
 instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
-instance uniform float collapse = -1.0;  // a ruin: seconds since the house fell (-1: long ago, the rubble at rest)
+instance uniform float collapse = -1.0;
+// A granary's 8 bins (boot.gd store_slots): per slot 6 bits, (food + 1) x 5 + loads (0 empty), 4 slots a float.
+instance uniform vec2 store = vec2(0.0);  // a ruin: seconds since the house fell (-1: long ago, the rubble at rest)
 // A ruin's fall (tools/blender/bo_collapse.py): each chunk's transform per frame, rows of a 3x4 matrix in
 // texels (chunk x 3 + row, frame); the chunk in UV2.x, 0 the footing that stays. Set on the ruin's material only.
 uniform sampler2D ruin_frames : filter_nearest;
@@ -22,7 +24,7 @@ uniform int ruin_len = 0;
 uniform float ruin_fps = 24.0;
 
 const int PALETTE_SIZE = 64;  // the UV slots (tools/blender/bo_asset.py); PALETTE holds the colours in use
-const vec3 PALETTE[34] = vec3[34](
+const vec3 PALETTE[42] = vec3[42](
 	vec3(0.96, 0.91, 0.80),  // plaster
 	vec3(0.82, 0.77, 0.66),  // stone
 	vec3(0.82, 0.40, 0.26),  // roof_tile
@@ -56,7 +58,15 @@ const vec3 PALETTE[34] = vec3[34](
 	vec3(0.58, 0.36, 0.22),  // roof_brown
 	vec3(0.64, 0.70, 0.52),  // sage_cloth
 	vec3(0.26, 0.50, 0.46),  // roof_patina
-	vec3(0.68, 0.71, 0.80)  // stone_cool
+	vec3(0.68, 0.71, 0.80),  // stone_cool
+	vec3(0.93, 0.47, 0.16),  // carrot
+	vec3(0.82, 0.60, 0.40),  // onion
+	vec3(0.97, 0.86, 0.50),  // cheese
+	vec3(0.64, 0.70, 0.76),  // fish
+	vec3(0.36, 0.18, 0.34),  // urchin
+	vec3(0.88, 0.58, 0.54),  // pork
+	vec3(0.74, 0.26, 0.24),  // meat
+	vec3(0.99, 0.62, 0.12)  // orange_fruit
 );
 const int STONE = 1;
 const int WATER = 6;
@@ -64,6 +74,9 @@ const int WATER = 6;
 varying vec4 v_mask;
 varying vec3 v_local;
 varying float v_hidden;
+varying flat int v_food;  // a bin's prop coloured by what the slot holds (the far view), else -1
+// The goods' order (data/goods.json food) -> their palette part.
+const int FOOD_PART[9] = int[9](11, 34, 35, 36, 37, 38, 39, 40, 41);
 
 float hash(vec3 p) {
 	p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
@@ -83,7 +96,17 @@ void vertex() {
 	v_mask = COLOR;
 	bool scaffold = COLOR.r > 0.995;
 	bool shown = scaffold ? build < 1.0 : build >= COLOR.r - 0.0001 && build > 0.0;
-	if (UV2.x < -0.5) {  // a good's prop (UV2.x = -1 - the good): only while the house holds it
+	v_food = -1;
+	if (UV2.x < -999.5) {  // a bin's prop (UV2.x = -(1000 + slot*100 + food*10 + load)): while the slot holds it
+		int code = int(round(-UV2.x)) - 1000;
+		int slot = clamp(code / 100, 0, 7);
+		int food = (code / 10) % 10;
+		int load = code % 10;
+		int v = (int(store[slot / 4]) >> (6 * (slot % 4))) & 63;
+		int held = v / 5 - 1;
+		shown = shown && held >= 0 && v % 5 >= load && (food == 9 || food == held);
+		v_food = food == 9 && held >= 0 ? held : -1;
+	} else if (UV2.x < -0.5) {  // a good's prop (UV2.x = -1 - the good): only while the house holds it
 		int good = int(round(-UV2.x)) - 1;
 		shown = shown && ((int(goods) >> good) & 1) == 1;
 	}
@@ -124,8 +147,12 @@ void fragment() {
 	if (v_hidden > 0.5) {
 		discard;
 	}
-	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 33);
+	int part = clamp(int(UV.x * float(PALETTE_SIZE)), 0, 41);
 	vec3 base = pow(PALETTE[part], vec3(2.2));  // the palette is in sRGB, ALBEDO linear
+	if (v_food >= 0) {
+		part = FOOD_PART[clamp(v_food, 0, 8)];
+		base = pow(PALETTE[part], vec3(2.2));
+	}
 	base *= 0.84 + 0.32 * UV.y;  // no two bricks or tiles alike
 	base *= mix(0.72, 1.0, clamp(v_local.y / 0.18, 0.0, 1.0));  // the shade where the walls meet the ground
 	float n = noise(v_local * 9.0);

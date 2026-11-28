@@ -180,10 +180,11 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
   8. Różnorodność: dom ma historię rodziny (2-3 na typ, `docs/ASSETY.md`), trwałą przez awanse; w mieście obrót i lekka różnica skali kolejnych domów nadają dynamikę.
   9. Stany budynku i kolejność budowy (przewodnik rozdz. 13): budowa w kolejności z placu budowy (cokół, mury warstwami, więźba, dachówki rzędami, stolarka, na końcu wykończenie i dobytek), wiek, trzy stopnie uszkodzenia i trzy fazy pożaru w shaderze budynku; schronienia najniższego poziomu mniejsze od działki i różnych kształtów.
   10. Zawalenie: każdy budynek ma wypieczony upadek i ruinę (ostatnia klatka), według materiałów (R-019): elementy w całości, mur od dołu, opadanie luźne bez rozprysku i bez skoków, pył w kolorze materiału; kontrola liczbami przy eksporcie (`BO_RUIN_DEBUG=1`).
+  11. Towar widoczny z góry (przewodnik rozdz. 14): w budynku magazynowym każda grupa towaru leży na swoim polu, widoczna z góry, a stan zapełnienia pola (ładunki) czyta się jednym spojrzeniem; stała kolejność towarów na polach.
 - Uzasadnienie: spójny klimat miasta przy wielu budowlach robionych przez różne sesje i agentów; punkty 3, 4 i 7 mają kontrolę w kodzie.
 - Przewodnik: `docs/STYL-BUDOWLI.md` (liczby, kroki budowy, znane błędy, historie każdej kategorii budynków).
 - Wpływ na: `tools/blender/bo_asset.py`, `bo_detail.py`, `bo_story.py`, `models.py`, `game/shaders/building.gdshader`, `game/scenes/boot.gd`, `docs/ASSETY.md`, `docs/08-OPRAWA.md`.
-- Historia: 2026-11-28 utworzona; 2026-11-28 punkt 7 z kontrolą podparcia (`check_props`), przewodnik; 2026-11-28 punkty 9 i 10 (stany, kolejność budowy, zawalenie, pył)
+- Historia: 2026-11-28 utworzona; 2026-11-28 punkt 7 z kontrolą podparcia (`check_props`), przewodnik; 2026-11-28 punkty 9 i 10 (stany, kolejność budowy, zawalenie, pył); 2026-11-28 punkt 11 (towar widoczny z góry, spichlerz)
 
 ### R-019 [OPRAWA] Materiały: wymiary, gęstość, ciężar, kształt i fizyka
 - Status: obowiązuje
