@@ -12,6 +12,7 @@ Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciel
 | Paleta | 34 kolory w 64 miejscach (`PALETTE_SIZE` 64 w `bo_asset.py` i shaderze, zgodność pilnuje `check_models.py`), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
 | Światło | miękkie przejście w cień (smoothstep od -0,05 do 0,35), cień chłodny niebieskawy, strona słoneczna ciepła, cienka ciepła poświata krawędzi, plamy koloru jak od pędzla | `light()` w `building.gdshader` |
 | Dachy dwuspadowe | 1,4 raza wyższe od rzutu, połać ugięta o 7,5% swojej długości, kalenica ugięta o 8 cm w środku | `ROOF_STEEP`, `tiled_roof(curve, sag)` |
+| Okap | dachy dwuspadowe co najmniej 34 cm (`EAVE`), przycięty do brzegu działki | `tiled_roof` |
 | Przybudówki | dach jednospadowy od wyższej ściany, bez wchodzenia w ściany innych części | `shed_roof` |
 | Ręczna nieregularność | przechył do 1,2 cm na metr, pęcznienie ścian 2-3,5%, falujący dach do 3,6 cm; jedno gładkie pole dla całego modelu z rekwizytami; widok z daleka tylko przechył | `Builder._wonk` |
 | Odstęp od ściany | rekwizyt co najmniej 3,5 cm od lica muru (tynk wystaje 3 cm) | bryła `wall` w `brick_wall` |
@@ -192,6 +193,6 @@ Wersja C (`BO_PROPORTION=C`, `game/models_c/` poza repo): B i dodatkowo niższe 
 
 Decyzja właściciela 2026-11-28: wersja B; poziom 5 mieszkanie, poziom 6 kamienica (pełne kondygnacje, steep 1,4). Wysokości do komina: 2,73 / 3,67 / 3,98 / 4,17 / 5,95 / 6,78 / 7,29 m (1,6 / 2,1 / 2,3 / 2,4 / 3,4 / 3,9 / 4,2 postaci). Budynki ważne: pałac 1,6 raza, posąg boga 2,5 raza wysokości domu miejskiego.
 
-## 11. Próba śmielszej bryły (2026-11-28, do oceny)
+## 11. Próba śmielszej bryły (2026-11-28: kierunek przyjęty na później, w grze zostają obecne bryły)
 
 Wzorzec: zrzuty S-011 (domy ludu wyższych poziomów jako schodkowe bryły z kilku części o różnej wysokości, drewniane balkony i daszki na różnych poziomach, grube dachy z głębokim okapem) i proporcje z eZeus (dom do poziomu 5 szerszy niż wyższy). Próba: mieszkanie (poziom 5) jako trzy przylegające bryły: zachodnia izba o jednej kondygnacji pod dachem jednospadowym, środkowy dom o trzech kondygnacjach ze stromym dachem dwuspadowym (okap 34 cm) i czerwonym pasem, wschodnie skrzydło o dwóch kondygnacjach pod dachem jednospadowym opartym o dom środkowy; drewniany balkon na ściągach przed piętrem domu środkowego. Wysokość 6,9 m (do komina), 89 640 trójkątów z bliska, 2 156 z daleka. Funkcja `flat_bold` w `models.py`, eksport tylko z `BO_BOLD=1`, poza grą.

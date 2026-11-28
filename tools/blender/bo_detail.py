@@ -253,6 +253,7 @@ def shed_roof(b, x, y, w, d, z_low, z_high, rng, falls="s", overhang=0.2, stage=
 
 
 ROOF_STEEP = 1.4  # the town's style (R-018): gable roofs a good deal steeper than the plans' rise
+EAVE = 0.34  # the gable roofs' eaves (owner, 2026-11-28: deep, with a strong shadow under them)
 
 
 def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(0.65, 0.95), gable="plaster",
@@ -270,6 +271,9 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
     s0, s1 = stage
     shed = len(sides) == 1
     rise *= (1.0 if shed else ROOF_STEEP) if steep is None else steep
+    if not shed:  # deep eaves on every gable roof (owner, 2026-11-28), short of the plot's edge
+        room = min(x, y, b.width / M - (x + w), b.height / M - (y + d)) - 0.02
+        overhang = max(overhang, min(EAVE, room))
     x0, y0, x1, y1 = x - overhang, y - overhang, x + w + overhang, y + d + overhang
     run_len = (x1 - x0) if along_x else (y1 - y0)
     span = (y1 - y0) / 2 if along_x else (x1 - x0) / 2

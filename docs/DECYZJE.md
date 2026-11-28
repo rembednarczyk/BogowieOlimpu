@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Głębokie okapy; śmielsze bryły odłożone
+- Decyzja: (3) każdy dach dwuspadowy ma okap co najmniej 34 cm (`EAVE` w `bo_detail.py`, przycięty do brzegu działki), wdrożone. (2) Rozbijanie niższych poziomów na bryły o różnej wysokości przyjęte jako kierunek, ale na razie zostają obecne bryły domów; próba `flat_bold` (rozdział 11 przewodnika) poza grą.
+- Powód: odpowiedź właściciela z 2026-11-28 („2 i 3 tak, ale póki co zostajemy przy starszych bryłach”).
+
 ### 2026-11-28: Proporcje B, mieszkanie i kamienica zamienione
 - Decyzja: proporcje B w grze (dachy poziomów 1-5 w nachyleniu z rzutu, wyższe od poziomu 6; `BO_PROPORTION` domyślnie B). Poziom 5 to mieszkanie (id `tenement`, model dawnego poziomu 6), poziom 6 kamienica czynszowa (id `apartment`, dawny poziom 5, pełne kondygnacje); nazwy PL i EN zamienione w `data/housing.json`, mechanika bez zmian. Oliwa (potrzebna od poziomu 6) przeszła z mieszkania do kamienicy: pitos i amfora przy wschodniej ścianie. Pałac 1,6 raza, posąg boga 2,5 raza wysokości domu miejskiego (przy ich modelach).
 - Wysokości (do komina): 2,7 / 3,7 / 4,0 / 4,2 / 6,0 / 6,8 / 7,3 m.
