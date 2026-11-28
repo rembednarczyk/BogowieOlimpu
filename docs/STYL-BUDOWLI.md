@@ -171,3 +171,19 @@ Decyzje właściciela 2026-11-28 (wszystkie według rekomendacji): zieleń patyn
 ## 9. Kontur (przyjęty 2026-11-28: cienki)
 
 Kontur w przestrzeni ekranu (`game/shaders/outline.gdshader`, `boot.gd` `set_outline`, w zrzutach `outline=1` lub `2`; w przeglądarce domów przełącznik "Kontur"): ciepła ciemnobrązowa linia (0,22; 0,14; 0,09, krycie 80 %) tam, gdzie głębia między sąsiednimi pikselami skacze o więcej niż 0,18 kafelka (36 cm). Obrysowuje sylwetki, okapy nad ścianami, dachy na tle gruntu i postacie; spoiny cegieł i dachówek zostają bez linii. Grubość: cienki 1 px, wyraźny 2 px do sąsiadów. Koszt: jeden dodatkowy przebieg pełnoekranowy z czterema odczytami głębi (w przeglądarce dodatkowo drugi render sceny). Decyzja właściciela 2026-11-28: cienki (1 px) domyślnie w grze (`OUTLINE_DEFAULT`), wyłączony nad widokami specjalnymi (kolumny i płytki nakładek), test w `test_ui.gd`.
+
+## 10. Porównanie proporcji (2026-11-28, do decyzji)
+
+Wersja A: obecne domy. Wersja B (`BO_PROPORTION=B` w eksporcie, modele w `game/models_b/` poza repo): dachy poziomów 1-5 w nachyleniu z rzutu (bez `ROOF_STEEP`), kamienica z niższymi kondygnacjami (parter 2,0 m zamiast 2,3 m, piętro 1,85 m zamiast 2,1 m, drzwi 1,7 m); poziomy 6-7 bez zmian. Porównanie: `screenshot.gd build_view=9` (z kamery gry) i `build_view=9 side=1` (z boku), postać 1,75 m przy każdym domu, przy wersji B bryły zastępcze pałacu (1,62 x wysokość domu miejskiego) i posągu boga (3,57 x), według proporcji sprite'ów eZeus.
+
+| Poziom | A | B |
+|---|---|---|
+| 1 szałas | 2,73 m (1,6 postaci) | 2,73 m |
+| 2 chata | 4,21 m (2,4) | 3,67 m (2,1) |
+| 3 lepianka | 4,32 m (2,5) | 3,98 m (2,3) |
+| 4 zagroda | 4,47 m (2,6) | 4,17 m (2,4) |
+| 5 kamienica | 6,76 m (3,9) | 5,83 m (3,3) |
+| 6 mieszkanie | 6,20 m (3,5) | 6,20 m (3,5) |
+| 7 dom miejski | 7,29 m (4,2) | 7,29 m (4,2) |
+
+Wysokość mierzona do najwyższego punktu (komin); dane z oryginału: dom ludu najwyższego poziomu ok. 2 postaci nad rzutem, niskie poziomy przysadziste.

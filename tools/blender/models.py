@@ -6,6 +6,7 @@ Usage: blender -b --factory-startup --python tools/blender/models.py -- [out_dir
 Writes <out_dir>/<model>.glb (default game/models) and game/models/provenance.json.
 """
 import json
+import os
 import pathlib
 import sys
 
@@ -20,6 +21,12 @@ from bo_detail import t  # noqa: E402
 from bo_asset import FOUNDATION, WALLS, ROOF, M  # noqa: E402
 
 MODELS = {}
+
+# The proportions under comparison (owner, 2026-11-28, docs/STYL-BUDOWLI.md): "A" the houses as they are, "B"
+# nearer the reference's sprites (eZeus): low and squat up to level 5 (roofs at the plans' rise, the row house's
+# storeys lower), rising only at levels 6-7. BO_PROPORTION=B exports B; A stays the game's until the owner picks.
+PROFILE = os.environ.get("BO_PROPORTION", "A")
+LOW_STOREYS = {"A": (2.3, 2.1, 1.9), "B": (2.0, 1.85, 1.7)}  # the row house: ground floor, upper floor, its doors
 
 
 def model(name, building, note):
@@ -240,14 +247,16 @@ def homestead(b, rng, story=None):
 
 @model("common_housing_5", "common_housing", "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria")
 def row_house(b, rng, story=None):
+    hg, hu, hd = LOW_STOREYS[PROFILE]
+    zu = 0.3 + hg  # the upper floor's foot
     D.footing(b, 0.35, 0.35, 3.3, 3.1, h=0.3, rng=rng)
-    _room(b, rng, 0.4, 0.4, 3.2, 3.0, 0.3, 2.3, thick=0.45, part="stone", block=(0.62, 0.32),
-          doors=[("s", 0.6, 0.9, 1.9)], windows=[("s", 2.2, 0.4, 1.2, 0.45), ("e", 1.2, 0.4, 1.2, 0.45)])
-    _room(b, rng, 0.4, 0.4, 3.2, 3.0, 2.6, 2.1, plaster="plaster", doors=[("s", 1.2, 0.8, 1.9)],
+    _room(b, rng, 0.4, 0.4, 3.2, 3.0, 0.3, hg, thick=0.45, part="stone", block=(0.62, 0.32),
+          doors=[("s", 0.6, 0.9, hd)], windows=[("s", 2.2, 0.4, 1.2, 0.45), ("e", 1.2, 0.4, 1.2, 0.45)])
+    _room(b, rng, 0.4, 0.4, 3.2, 3.0, zu, hu, plaster="plaster", doors=[("s", 1.2, 0.8, hd)],
           windows=[("s", 0.35), ("s", 2.45), ("e", 1.2), ("w", 1.2), ("n", 1.5)], stage=(0.5, 0.68))
     # The balcony in front of the upper floor's door: a floor on beams and carved consoles, closed on its three
     # open sides by a railing of turned balusters between corner posts, all of it on the floor.
-    fx0, fx1, fy0, fy1, fz = 0.45, 3.55, 3.40, 3.92, 2.65  # the floor's top
+    fx0, fx1, fy0, fy1, fz = 0.45, 3.55, 3.40, 3.92, zu + 0.05  # the floor's top
     b.box(t(fx0), t(3.36), t(fz - 0.05), t(fx1 - fx0), t(fy1 - 3.36), t(0.05), "wood", stage=0.56, tint=0.5)
     b.solid("balcony", t(fx0), t(3.36), t(fz - 0.05), t(fx1), t(fy1), t(fz), block="balcony")
     if b.detail:
@@ -257,7 +266,7 @@ def row_house(b, rng, story=None):
             # The console: a stone corbel in the wall and a strut from it up to the beam's underside. Over the
             # door and the window the corbel sits on their lintels.
             over = any(a <= bx + 0.04 <= a + w_ for a, w_ in ((1.0, 0.9), (2.6, 0.4)))
-            base = fz - (0.3 if over else 0.6)
+            base = fz - (0.3 if over else 0.6) if PROFILE == "A" else (0.3 + hd + 0.18 if over else fz - 0.5)
             b.cbox(t(bx - 0.01), t(3.4), t(base - 0.08), t(0.1), t(0.07), t(0.12), t(0.01), "stone", stage=0.55)
             b.tube_path([(t(bx + 0.04), t(3.43), t(base)), (t(bx + 0.04), t(3.40 + (fz - 0.15 - base) * 0.9 + 0.05),
                          t(fz - 0.15))], t(0.03), "dark_wood", sides=8, stage=0.55)
@@ -291,15 +300,15 @@ def row_house(b, rng, story=None):
     if story == "potters":  # painted amphorae for sale on the balcony, an awning over it
         for x in (0.75, 3.2):
             D.amphora(b, x, 3.62, scale=0.55, rng=rng, z=fz, name="balcony amphora %d" % int(x * 10))
-        S.awning(b, 0.5, 3.5, 3.4, 4.6, 0.52, 0.3, rng, pots=5)
+        S.awning(b, 0.5, 3.5, 3.4, zu + hu - 0.1, 0.52, 0.3 if PROFILE == "A" else 0.18, rng, pots=5)  # clear of the rail
     elif b.detail:
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
     if story == "shepherds":  # dyed wool thrown over the balcony's rail to dry
         S.skeins(b, (0.65, 3.95, top + 0.03), (3.35, 3.95, top + 0.03), rng, pole=False, drop=0.5, pad=0.03)
     elif story == "gardeners":  # a vine from the ground over a frame above the balcony
-        S.vine_canopy(b, 0.5, 3.5, 3.4, 4.5, 0.52, rng, root=(3.7, 3.56))
-    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
+        S.vine_canopy(b, 0.5, 3.5, 3.4, zu + hu - 0.2, 0.52, rng, root=(3.7, 3.56))
+    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, zu + hu, 0.95, rng, along_x=True, overhang=0.3)
     D.chimney_pot(b, 0.95, 1.9, ridge(0.95), rng, scale=1.1)
     with D.goods(b, "food"):
         D.sack(b, 2.3, 3.72, scale=0.65, rng=rng)
@@ -308,7 +317,7 @@ def row_house(b, rng, story=None):
         D.wool_bale(b, 0.5, 3.75, scale=0.7, rng=rng)
         D.loom(b, 0.0, 1.0, along_x=False, rng=rng)
     D.hydria(b, 3.32, 3.72, scale=0.8, rng=rng)
-    D.flower_box(b, 3.6, 2.02, 3.41, 0.51, rng, along_x=False, out=1)  # under the upper east window
+    D.flower_box(b, 3.6, 2.02, zu + 0.81, 0.51, rng, along_x=False, out=1)  # under the upper east window
     if story:
         b.mirror = S.STORIES[story]["mirror"]
     D.grass(b, rng, 28)
@@ -520,6 +529,8 @@ def main():
         views = ((True, ""), (False, "_lod1")) if building == "common_housing" else ((True, ""),)
         for detail, suffix in views:  # the close view and, for the houses, the far view
             A.reset()
+            level = int(name.split("_")[2]) if name.startswith("common_housing_") else 0
+            D.ROOF_STEEP = 1.0 if PROFILE == "B" and 1 <= level <= 5 else 1.4  # B: low roofs up to level 5
             b = A.Builder(name + suffix, w, h, detail=detail)
             fn(b, random.Random(name))  # the same bricks every run
             A.export(b.finish(), out_dir / (name + suffix + ".glb"))

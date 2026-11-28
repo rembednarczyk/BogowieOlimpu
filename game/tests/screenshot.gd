@@ -11,6 +11,7 @@ var demo := ""  # demo=atlantis_gods and the like
 var zoom := 0.0
 var at := Vector2(-1, -1)
 var view := ""  # view=water and the like: a special view (docs/gameplay/16)
+var side := false  # side=1: build_view 9 from the side (heights)
 var outline := -1  # outline=0 off, 1 thin (the default), 2 strong (game/shaders/outline.gdshader)
 var node: Node
 
@@ -33,6 +34,8 @@ func _init() -> void:
 		elif arg.begins_with("at="):  # the tile the camera looks at
 			var xy := arg.substr(3).split(",")
 			at = Vector2(float(xy[0]), float(xy[1]))
+		elif arg == "side=1":
+			side = true
 		elif arg.begins_with("outline="):
 			outline = int(arg.substr(8))
 		elif arg.begins_with("dpi="):  # a phone's density: the interface in dp as there (ui_scale.gd)
@@ -122,6 +125,50 @@ func _process(_delta: float) -> bool:
 				node.cam.size = 16.0
 				node._place_camera()
 			node.lod_close = true
+		elif build_view == 9:  # proportions A (game/models) and B (game/models_b, BO_PROPORTION=B), a person by each
+			node.lod_close = true
+			node.ui.visible = false
+			for n in node.building_nodes.values():  # an empty stage: the city's buildings hidden
+				n.visible = false
+			var h7 := 0.0
+			for row in 2:
+				var dir: String = ["res://models/", "res://models_b/"][row]
+				for level in 7:
+					var path := dir + "common_housing_%d.glb" % (level + 1)
+					if not ResourceLoader.exists(path):
+						continue
+					var mesh: Mesh = null
+					var sc: Node = (load(path) as PackedScene).instantiate()
+					for n in sc.find_children("*", "MeshInstance3D", true, false):
+						mesh = (n as MeshInstance3D).mesh
+						break
+					sc.free()
+					# From the side: each level's A and B as a pair; in the game's view: A in one street, B in the next.
+					var at := Vector3(4 + level * 5.2 + row * 2.3, 0.2, 40) if side else Vector3(4 + level * 2.9, 0.2, 36 + row * 7)
+					var mi := MeshInstance3D.new()
+					mi.mesh = mesh
+					mi.material_override = node._building_material()
+					mi.position = at
+					node.add_child(mi)
+					node._set_look(mi, {"age_days": 40})
+					h7 = mesh.get_aabb().end.y
+					_person(at + Vector3(2.15, 0, 1.7))
+				if row == 1:  # the landmarks of the reference's sprites (eZeus): palace 1.6x, a god's statue 3.6x the top house
+					var lx := 41.0 if side else 2.0  # in the game's view behind the streets, not over them
+					var lz := 40.0 if side else 27.0
+					_landmark(Vector3(lx, 0.2, lz), Vector3(4, h7 * 1.62, 4), Color(0.86, 0.84, 0.80))
+					_landmark(Vector3(lx + 5, 0.2, lz + 1), Vector3(1.2, h7 * 3.57, 1.2), Color(0.72, 0.55, 0.30))
+			if zoom == 0.0:
+				if side:
+					node.cam.size = 25.0
+					node.cam.keep_aspect = Camera3D.KEEP_HEIGHT
+					node.cam.look_at_from_position(Vector3(25.5, 11.0, 90), Vector3(25.5, 11.0, 40))
+					node.cam.near = 1.0
+					node.cam.far = 200.0
+				else:
+					node.cam_target = Vector3(13, 0, 37)
+					node.cam.size = 26.0
+					node._place_camera()
 		elif build_view == 1:
 			node.ui._show_tab("husbandry")
 		else:
@@ -136,3 +183,28 @@ func _process(_delta: float) -> bool:
 		print("SHOT ", out_path, " ", img.get_width(), "x", img.get_height(), " ", RenderingServer.get_video_adapter_name())
 		quit()
 	return false
+
+# A person for scale in the comparisons: 1.75 m (0.875 tiles), a capsule in a cloak's red.
+func _person(at: Vector3) -> void:
+	var mi := MeshInstance3D.new()
+	var cap := CapsuleMesh.new()
+	cap.radius = 0.12
+	cap.height = 0.875
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.75, 0.2, 0.15)
+	cap.material = mat
+	mi.mesh = cap
+	mi.position = at + Vector3(0, 0.4375, 0)
+	node.add_child(mi)
+
+# A stand-in for a building still unmodelled: a plain block of its height.
+func _landmark(corner: Vector3, size: Vector3, colour: Color) -> void:
+	var mi := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = size
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = colour
+	box.material = mat
+	mi.mesh = box
+	mi.position = corner + size / 2.0
+	node.add_child(mi)
