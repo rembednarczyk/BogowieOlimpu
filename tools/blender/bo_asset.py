@@ -126,8 +126,35 @@ class Builder:
                     if all(sa[i] + e < p[i] < sa[i + 3] - e for i in range(3)):
                         bad.append(f"the roof of {block} goes into the {sn} of {sb} at {tuple(round(v, 3) for v in p)}")
                         break
+        bad += self._unsupported()
         if bad:
             raise ValueError(self.name + ": " + "; ".join(bad))
+
+    def _unsupported(self, tol=0.0125):
+        """Nothing floats (the owner's rule, 2026-11-28, R-018 point 7; the flat's wings hung 30 cm over the
+        ground and no check saw it). A solid stands on the ground or bears on another solid under it (the
+        other's height range takes its foot, their plans overlap). A prop stands on the ground or touches,
+        within `tol` (tiles, 2.5 cm), a solid or a prop that is itself held: it may sit on it, lean on it or
+        hang from it."""
+        def plan(a, b):
+            return all(a[i] < b[i + 3] - 0.002 and b[i] < a[i + 3] - 0.002 for i in range(2))
+        def touch(a, b):
+            return all(a[i] <= b[i + 3] + tol and b[i] <= a[i + 3] + tol for i in range(3))
+        bad = []
+        for i, (sn, sa, sb) in enumerate(self.solids):
+            if sa[2] <= tol:
+                continue
+            if not any(j != i and plan(sa, o) and o[2] - tol <= sa[2] <= o[5] + tol for j, (_, o, _) in enumerate(self.solids)):
+                bad.append(f"the {sn} of {sb} floats: nothing under it at {round(sa[2] / M, 2)} m")
+        held = [pa[2] <= tol or any(touch(pa, o) for _, o, _ in self.solids) for _, pa in self.props]
+        changed = True
+        while changed:
+            changed = False
+            for i, (_, pa) in enumerate(self.props):
+                if not held[i] and any(held[j] and touch(pa, qa) for j, (_, qa) in enumerate(self.props) if j != i):
+                    held[i] = changed = True
+        bad += [f"{pn} floats: it touches nothing that stands" for (pn, _), h in zip(self.props, held) if not h]
+        return bad
 
     # A good the house keeps (data.h HouseGood): its props show only while the house holds it. Stored in UV1.x as
     # -1 - index (the pivot of animated parts is >= 0), read by building.gdshader.

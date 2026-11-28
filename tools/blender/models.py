@@ -225,7 +225,7 @@ def homestead(b, rng, story=None):
         for i, (px, py) in enumerate(((0.58, 2.32), (0.58, 3.56))):
             b.prop("skein post %d" % (i + 1), t(px - 0.04), t(py - 0.04), 0, t(px + 0.04), t(py + 0.04), t(1.9))
             b.log((t(px), t(py), 0), (t(px), t(py), t(1.9)), t(0.03), sides=8, stage=0.9, tint=0.4)
-        S.skeins(b, (0.58, 2.42, 1.82), (0.58, 3.46, 1.82), rng)
+        S.skeins(b, (0.58, 2.36, 1.82), (0.58, 3.52, 1.82), rng)  # the pole from post to post
     else:
         D.laundry_line(b, (0.58, 2.32), (0.58, 3.56), 1.85, rng)
     if story == "potters":
@@ -249,6 +249,7 @@ def row_house(b, rng, story=None):
     # open sides by a railing of turned balusters between corner posts, all of it on the floor.
     fx0, fx1, fy0, fy1, fz = 0.45, 3.55, 3.40, 3.92, 2.65  # the floor's top
     b.box(t(fx0), t(3.36), t(fz - 0.05), t(fx1 - fx0), t(fy1 - 3.36), t(0.05), "wood", stage=0.56, tint=0.5)
+    b.solid("balcony", t(fx0), t(3.36), t(fz - 0.05), t(fx1), t(fy1), t(fz), block="balcony")
     if b.detail:
         for i in range(5):  # beams out of the wall, each on a console
             bx = fx0 + 0.06 + i * (fx1 - fx0 - 0.2) / 4
@@ -267,6 +268,8 @@ def row_house(b, rng, story=None):
     posts = [(fx0 + 0.04, fy1 - 0.04), (fx1 - 0.04, fy1 - 0.04), (fx0 + 0.04, fy0 + 0.04), (fx1 - 0.04, fy0 + 0.04)]
     for px, py in posts:  # the corner posts and the posts against the wall
         b.cbox(t(px - 0.04), t(py - 0.04), t(fz), t(0.08), t(0.08), t(top - fz + 0.05), t(0.01), "dark_wood", stage=0.6)
+        b.solid("balcony post", t(px - 0.04), t(py - 0.04), t(fz), t(px + 0.04), t(py + 0.04), t(top + 0.05), block="balcony")
+    b.solid("balcony rail", t(fx0), t(fy1 - 0.08), t(top - 0.02), t(fx1), t(fy1), t(top + 0.05), block="balcony")
     rails = [(fx0, fy1 - 0.08, fx1 - fx0, 0.08), (fx0, fy0, 0.08, fy1 - fy0), (fx1 - 0.08, fy0, 0.08, fy1 - fy0)]
     for rx, ry, rw, rd in rails:  # the handrail and the bottom rail on all three sides
         b.cbox(t(rx), t(ry), t(top - 0.02), t(rw), t(rd), t(0.07), t(0.012), "dark_wood", stage=0.61)
@@ -293,7 +296,7 @@ def row_house(b, rng, story=None):
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
     if story == "shepherds":  # dyed wool thrown over the balcony's rail to dry
-        S.skeins(b, (0.65, 3.88, top + 0.05), (3.35, 3.88, top + 0.05), rng, pole=False, out=(0.0, 0.07), drop=0.5)
+        S.skeins(b, (0.65, 3.95, top + 0.03), (3.35, 3.95, top + 0.03), rng, pole=False, drop=0.5, pad=0.03)
     elif story == "gardeners":  # a vine from the ground over a frame above the balcony
         S.vine_canopy(b, 0.5, 3.5, 3.4, 4.5, 0.52, rng, root=(3.7, 3.56))
     ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
@@ -379,10 +382,12 @@ def city_house(b, rng, story=None):
         D.meander(b, 0.32, 2.745, 3.36, 2.865, along_x=True, outward=1, unit=0.06, part="ochre", stage=0.52)
         D.cornice(b, 0.3, 0.3, 3.4, 2.4, 5.0, stage=0.66)
     b.box(t(0.3), t(2.7), 0, t(3.4), t(1.1), t(0.55), "stone", stage=0.05)  # the porch's floor and steps
+    b.solid("porch floor", t(0.3), t(2.7), 0, t(3.7), t(3.8), t(0.55), block="porch")
     b.box(t(1.0), t(3.8), 0, t(2.0), t(0.15), t(0.28), "stone", stage=0.06)
     for x in (0.75, 1.9, 3.05):
         D.doric_column(b, x, 3.45, 0.55, 2.25, radius=0.15, stage=0.45)
     b.box(t(0.4), t(3.2), t(2.8), t(3.2), t(0.5), t(0.16), "stone", stage=0.5)  # the architrave
+    b.solid("architrave", t(0.4), t(3.2), t(2.8), t(3.6), t(3.7), t(2.96), block="porch")
     if b.detail:  # the Doric frieze over it: triglyphs (three grooved bars) and painted metopes between
         n = 7
         for i in range(n):
@@ -410,15 +415,15 @@ def city_house(b, rng, story=None):
         D.basket(b, 0.65, 2.98, "figs", scale=0.55, rng=rng, z=0.55)
     with D.goods(b, "fleece"):
         D.wool_bale(b, 3.25, 2.98, scale=0.55, rng=rng, z=0.55)
-    D.potted_plant(b, 0.35, 3.8, scale=0.6, rng=rng)
-    D.potted_plant(b, 3.65, 3.8, scale=0.6, rng=rng, name="plant 2")
+    D.potted_plant(b, 0.6, 3.9, scale=0.35, rng=rng)  # on the ground before the porch, clear of its floor
+    D.potted_plant(b, 3.4, 3.9, scale=0.35, rng=rng, name="plant 2")
     if story == "shepherds":  # dyed cloths hung between the columns under the architrave
         for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):
             S.swag(b, (a + 0.2, 3.73, 2.78), (c - 0.2, 3.73, 2.78), 0.4, S.DYES[i * 2], rng, name="swag %d" % (i + 1))
     elif story == "potters":  # pots and plates hung between the columns, a striped awning out from the
         for i, (a, c) in enumerate(((0.75, 1.9), (1.9, 3.05))):  # architrave over the steps, two kraters
             S.hanging_pots(b, a + 0.24, c - 0.24, 3.45, 2.8, rng, name="hung pots %d" % (i + 1))
-        S.awning(b, 0.45, 3.55, 3.7, 2.78, 0.27, 0.2, rng, pots=6, name="porch awning")
+        S.awning(b, 0.45, 3.55, 3.68, 2.78, 0.29, 0.2, rng, pots=6, name="porch awning")  # on the architrave's face
         for i, x in enumerate((0.40, 3.60)):  # in the gap between the end columns and the porch's edges
             S.krater(b, x, 3.45, 0.55, rng, scale=0.55, name="krater %d" % (i + 1))
     elif story == "gardeners":  # the vine up the outer columns, along the architrave and over the porch roof

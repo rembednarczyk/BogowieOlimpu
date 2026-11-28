@@ -12,6 +12,8 @@ Przeczytaj w tej kolejności:
 5. `docs/11-OTWARTE-PYTANIA.md`,
 6. otwarte PR-y gałęzi roboczej.
 
+Praca nad modelami budynków, ich oprawą lub historiami: najpierw `docs/STYL-BUDOWLI.md` (styl, kroki budowy, znane błędy, historie; reguła R-018).
+
 Czerwony main jest pierwszą pracą sesji.
 
 ## Czym jest projekt
@@ -30,7 +32,8 @@ Citybuilder w mitologii greckiej na telefon (oraz tablet i PC). **Mechanika 1:1 
 | `docs/09-ZRODLA.md`, `docs/10-REGULY.md` | rejestr źródeł S-NNN, reguły R-NNN |
 | `docs/00-PLAN.md` ... `docs/08-OPRAWA.md` | plan, wizja, oryginalność, analiza, symulacja, UX, technologia, oprawa |
 | `docs/SILNIK.md` | plan rozbudowy silnika na Godocie, moduły A-F, potok Blendera |
-| `docs/ASSETY.md` | inwentarz assetów do wyprodukowania |
+| `docs/ASSETY.md` | inwentarz assetów do wyprodukowania, uwagi właściciela do modeli |
+| `docs/STYL-BUDOWLI.md` | przewodnik stylu budowli (R-018): liczby, kroki budowy, znane błędy, historie |
 | `core/` | rdzeń symulacji C++17 bez Godota: `include/bo/core/*.h`, `src/`, `tests/` (doctest) |
 | `gdext/` | GDExtension: klasa `BoSimulation` (jedyne miejsce łączące rdzeń z Godotem) |
 | `game/` | projekt Godota (renderer Mobile): `scenes/`, `tests/` (test bez okna, zrzuty); `game/data/` generowane z `data/` |

@@ -174,8 +174,9 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
   4. Ręczna nieregularność: każdy model wygięty jednym gładkim polem (`Builder._wonk`: przechył, pęcznienie ścian, falujący dach), razem z rekwizytami.
   5. Przerysowana greckość: akroteria, antefiksy, meandry, kominy z terakoty, wieńce nad drzwiami, malowane naczynia, kolumny z entazą; o rozmiar większe niż w archeologii.
   6. Życie przy domu: zieleń na wolnym gruncie, bluszcz, kwiaty w skrzynkach i donicach, pranie, dobra, których dom potrzebuje, widoczne według zapasu.
-  7. Bez dziur i przenikania: rekwizyty nie wchodzą w bryły, dachy nie wchodzą w ściany innych części, szczyty domknięte pod łukiem, końce dachówek zamknięte zaprawą, nic nie wisi w powietrzu bez podparcia; eksport przerywa się przy kolizji (`check_props`).
+  7. Bez dziur i przenikania: rekwizyty nie wchodzą w bryły, dachy nie wchodzą w ściany innych części, szczyty domknięte pod łukiem, końce dachówek zamknięte zaprawą, nic nie wisi w powietrzu bez podparcia (bryła stoi na ziemi lub na innej bryle, rekwizyt dotyka czegoś, co stoi); eksport przerywa się przy kolizji i przy braku podparcia (`check_props`, dowód w `tools/blender/test_checks.py`).
   8. Różnorodność: dom ma historię rodziny (2-3 na typ, `docs/ASSETY.md`), trwałą przez awanse; w mieście obrót i lekka różnica skali kolejnych domów nadają dynamikę.
 - Uzasadnienie: spójny klimat miasta przy wielu budowlach robionych przez różne sesje i agentów; punkty 3, 4 i 7 mają kontrolę w kodzie.
-- Wpływ na: `tools/blender/bo_asset.py`, `bo_detail.py`, `models.py`, `game/shaders/building.gdshader`, `game/scenes/boot.gd`, `docs/ASSETY.md`, `docs/08-OPRAWA.md`.
-- Historia: 2026-11-28 utworzona
+- Przewodnik: `docs/STYL-BUDOWLI.md` (liczby, kroki budowy, znane błędy, historie każdej kategorii budynków).
+- Wpływ na: `tools/blender/bo_asset.py`, `bo_detail.py`, `bo_story.py`, `models.py`, `game/shaders/building.gdshader`, `game/scenes/boot.gd`, `docs/ASSETY.md`, `docs/08-OPRAWA.md`.
+- Historia: 2026-11-28 utworzona; 2026-11-28 punkt 7 z kontrolą podparcia (`check_props`), przewodnik

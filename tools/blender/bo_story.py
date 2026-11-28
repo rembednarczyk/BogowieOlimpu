@@ -353,12 +353,12 @@ def _pt(p):
     return tuple(t(v) for v in p)
 
 
-def skeins(b, p0, p1, rng, name="skeins", pole=True, drop=0.42, out=(0.0, 0.0)):
+def skeins(b, p0, p1, rng, name="skeins", pole=True, drop=0.42, out=(0.0, 0.0), pad=0.05):
     """Skeins of dyed wool hung over a pole (or over a rail when `pole` is False) from p0 to p1: each a long
     loop of a few strands, red, ochre, blue, yellow, sky; `out` shifts the loops off the line (over a rail)."""
     (x0, y0, z), (x1, y1, _) = p0, p1
     ox, oy = out
-    px_, py_ = (0.05 if abs(x1 - x0) < 1e-6 else 0.0), (0.05 if abs(y1 - y0) < 1e-6 else 0.0)  # across the line only:
+    px_, py_ = (pad if abs(x1 - x0) < 1e-6 else 0.0), (pad if abs(y1 - y0) < 1e-6 else 0.0)  # across the line only:
     b.prop(name, t(min(x0, x1) - px_ + min(ox, 0)), t(min(y0, y1) - py_ + min(oy, 0)), t(z - drop - 0.06),  # its ends
            t(max(x0, x1) + px_ + max(ox, 0)), t(max(y0, y1) + py_ + max(oy, 0)), t(z + 0.04))  # may meet a wall
     if pole:
