@@ -145,14 +145,21 @@ func _process(_d: float) -> bool:
 	var stories := {}
 	var turns := {}
 	var on_plot := true
+	var doors_ok := true
 	for b in game.sim.get_buildings():
 		if b["type"] != "common_housing":
 			continue
 		stories[game.house_story(b["id"])] = true
-		turns[game.house_turn(b["id"])] = true
 		var node: Node3D = game.building_nodes.get(b["id"])
 		if node != null and node.has_node("Model"):
 			var mi: MeshInstance3D = node.get_node("Model")
+			var turn: int = mi.get_meta("turn", -1)
+			turns[turn] = true
+			# The door looks at a road: the turn is one of those facing the nearest road (and the basis agrees).
+			var allowed: Array = game.door_turns(b["x"], b["y"], 2, 2)
+			var door: Vector3 = mi.transform.basis * Vector3(0, 0, 1)
+			var want: Vector3 = [Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 0, -1), Vector3(-1, 0, 0)][turn]
+			doors_ok = doors_ok and turn in allowed and door.normalized().distance_to(want) < 0.01
 			var box: AABB = mi.transform * mi.mesh.get_aabb()
 			on_plot = on_plot and box.position.x >= b["x"] - 0.01 and box.position.z >= b["y"] - 0.01 \
 				and box.end.x <= b["x"] + 2.01 and box.end.z <= b["y"] + 2.01
@@ -161,8 +168,9 @@ func _process(_d: float) -> bool:
 		var name: String = game._model_name("common_housing", level, 7)
 		keeps = keeps and (not name.ends_with("_shepherds") and not name.ends_with("_gardeners") and not name.ends_with("_potters") \
 			or name.ends_with("_" + game.house_story(7)))
-	check(stories.size() == 3 and turns.size() == 4 and on_plot and keeps,
-		"houses: %d stories, %d turns, on their plots %s, a story kept through the levels %s" % [stories.size(), turns.size(), on_plot, keeps])
+	check(stories.size() == 3 and turns.size() >= 2 and on_plot and keeps and doors_ok,
+		"houses: %d stories, %d turns, doors to the road %s, on their plots %s, a story kept through the levels %s" \
+			% [stories.size(), turns.size(), doors_ok, on_plot, keeps])
 	var goods_ok := true  # the props of a house's goods follow its stock (docs/ASSETY.md)
 	for b in game.sim.get_buildings():
 		var node: Node3D = game.building_nodes.get(b["id"])

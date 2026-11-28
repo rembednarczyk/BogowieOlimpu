@@ -565,9 +565,36 @@ static func house_story(id: int) -> String:
 	return HOUSE_STORIES[(_house_bits(id) >> 5) % HOUSE_STORIES.size()]
 
 # Turned a quarter at a time and a little smaller or not, house after house: the street gets its rhythm
-# (R-018, point 8). Inside the footprint always: the turn is about its centre, the scale at most 1.
-static func house_turn(id: int) -> int:
-	return (_house_bits(id) >> 11) % 4
+# (R-018, point 8). Inside the footprint always: the turn is about its centre, the scale at most 1. The door
+# (the model's south side) faces the nearest road: of the turns that do, the id picks one; with no road
+# within ROAD_LOOK tiles, any turn. `turns` the allowed ones, by turn k the door looks S, E, N, W.
+const ROAD_LOOK := 4
+
+static func house_turn(id: int, turns: Array = [0, 1, 2, 3]) -> int:
+	return turns[(_house_bits(id) >> 11) % turns.size()]
+
+# The turns whose door looks at the nearest road from the footprint (x, y, w, h).
+func door_turns(x: int, y: int, w: int, h: int) -> Array:
+	var best := ROAD_LOOK + 1
+	var turns: Array = []
+	for k in 4:
+		var d := ROAD_LOOK + 1
+		for step in ROAD_LOOK:
+			for i in (w if k % 2 == 0 else h):
+				var t := Vector2i(x + i, y + h + step) if k == 0 else (Vector2i(x + w + step, y + i) if k == 1 \
+					else (Vector2i(x + i, y - 1 - step) if k == 2 else Vector2i(x - 1 - step, y + i)))
+				if t.x >= 0 and t.y >= 0 and t.x < sim.get_map_width() and t.y < sim.get_map_height() \
+						and sim.get_tile(t.x, t.y)["road"]:
+					d = step
+					break
+			if d <= ROAD_LOOK:
+				break
+		if d < best:
+			best = d
+			turns = [k]
+		elif d == best and d <= ROAD_LOOK:
+			turns.append(k)
+	return turns if not turns.is_empty() else [0, 1, 2, 3]
 
 static func house_scale(id: int) -> float:
 	return 0.92 + 0.01 * float((_house_bits(id) >> 17) % 9)
@@ -578,7 +605,9 @@ func _place_model(mi: MeshInstance3D, e: Dictionary) -> void:
 	var centre := Vector3(e["x"] + w / 2.0, 0, e["y"] + h / 2.0)
 	var basis := Basis()
 	if e["building_type"] == "common_housing":
-		basis = Basis(Vector3.UP, house_turn(e["id"]) * PI / 2.0).scaled(Vector3.ONE * house_scale(e["id"]))
+		var turn := house_turn(e["id"], door_turns(e["x"], e["y"], int(w), int(h)))
+		mi.set_meta("turn", turn)
+		basis = Basis(Vector3.UP, turn * PI / 2.0).scaled(Vector3.ONE * house_scale(e["id"]))
 	mi.transform = Transform3D(basis, centre - basis * Vector3(w / 2.0, 0, h / 2.0))
 
 # A house takes the model of its level and story, else of its level, else of the highest level below it that has
