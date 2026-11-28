@@ -748,7 +748,8 @@ def main():
                                                   "source": "tools/blender/models.py",
                                                   "author": "Bogowie Olimpu (model ze skryptu)",
                                                   "license": "własny (R-017)", "note": note}
-        if re.fullmatch(r"common_housing_\d+", name):  # the house of each level fallen (bo_collapse.py)
+        # The house of each level fallen (bo_collapse.py); a shelter by its own look (its tents differ).
+        if re.fullmatch(r"common_housing_\d+", name) or re.fullmatch(r"common_housing_1_[a-z]+", name):
             A.reset()
             b = A.Builder(name + "_ruin", w, h, detail=True)
             fn(b, random.Random(name))

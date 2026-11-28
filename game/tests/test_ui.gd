@@ -189,7 +189,9 @@ func _process(_d: float) -> bool:
 		var ruin: Node3D = game.building_nodes.get(990001)
 		var level := int(String(node.get_meta("model")).split("_")[2])
 		var rmi: MeshInstance3D = ruin.get_node_or_null("Ruin") if ruin != null else null
-		var falling_ok: bool = rmi != null and ruin.get_meta("ruin") == "common_housing_%d_ruin" % level \
+		var own := String(node.get_meta("model")) + "_ruin"
+		var want := own if game._model(own) != null else "common_housing_%d_ruin" % level
+		var falling_ok: bool = rmi != null and ruin.get_meta("ruin") == want \
 			and rmi.transform.is_equal_approx(house.transform) and game.falling.has(990001) \
 			and (rmi.material_override as ShaderMaterial).get_shader_parameter("ruin_len") > 1 \
 			and rmi.get_instance_shader_parameter("collapse") == 0.0

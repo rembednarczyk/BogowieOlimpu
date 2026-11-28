@@ -35,6 +35,19 @@
   "license": "własny (R-017)",
   "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: ogrodnicy i pszczelarze"
  },
+ "common_housing_1_gardeners_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: ogrodnicy i pszczelarze"
+ },
  "common_housing_1_lod1.glb": {
   "building": "common_housing",
   "footprint": [
@@ -70,6 +83,19 @@
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
   "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: garncarze"
+ },
+ "common_housing_1_potters_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: garncarze"
  },
  "common_housing_1_ruin.glb": {
   "building": "common_housing",
@@ -107,6 +133,19 @@
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
   "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: pasterze"
+ },
+ "common_housing_1_shepherds_ruin.glb": {
+  "building": "common_housing",
+  "ruin": true,
+  "footprint": [
+   2,
+   2
+  ],
+  "lod": 0,
+  "source": "tools/blender/bo_collapse.py",
+  "author": "Bogowie Olimpu (model ze skryptu)",
+  "license": "własny (R-017)",
+  "note": "ruina po zawaleniu, namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos; historia: pasterze"
  },
  "common_housing_2.glb": {
   "building": "common_housing",

@@ -33,23 +33,26 @@ FPS = 24
 SECONDS = 2.5
 HM = 0.05  # tiles (10 cm): the rubble's height map
 COAT = 0.02  # tiles (4 cm): a sheet thinner than this is a coat over other pieces (plaster, mortar, underlay)
-PACK = 0.5  # of a piece's height above its bed that the heap grows by (the rest goes into the gaps)
+PACK = 0.4  # of a piece's height above its bed that the heap grows by (the rest goes into the gaps)
 SLOPE = 0.06  # tiles (12 cm): a drop under a piece that makes it slide off
 HOLD = 0.06  # tiles (12 cm): a coat this close to a piece goes with it
 
 # How each material of the model (its part, the palette in bo_asset.py) breaks and falls. Its pieces (a brick, a
 # tile, a beam) never break; bond: how far apart the points are that hold pieces together (tiles; 0: each piece
-# alone, a beam falls as a beam), a wall falls in sections of its bricks with their plaster; bounce: the share of
-# the speed it keeps upward on a hit; keep: of the speed along the ground; spin: how fast it tumbles; drag: air
-# resistance (1/s: cloth and thatch drift down, stone does not); topple: a tall section tips over outward from
-# its foot.
+# alone, a beam falls as a beam), a wall falls in sections of its bricks with their plaster; density (kg/m³) and
+# fill (of a chunk's box that is material) give its weight: the air holds back what is light for its size
+# (canvas, thatch) and hardly a stone; in a collision the heavier piece pushes the lighter one; bounce: the
+# share of the speed it keeps on a hit (little: rubble does not jump); keep: of the speed along the ground on a
+# hit; spin: how fast it tumbles; topple: a tall section tips over outward from its foot. [ZAŁOŻENIE] values.
 MATERIALS = {
-    "masonry": dict(bond=0.30, bounce=0.08, keep=0.45, spin=0.6, drag=0.0, topple=1.0),
-    "tile": dict(bond=0.07, bounce=0.30, keep=0.60, spin=1.6, drag=0.0, topple=0.0),
-    "wood": dict(bond=0.0, bounce=0.22, keep=0.70, spin=0.7, drag=0.0, topple=0.4),
-    "soft": dict(bond=0.22, bounce=0.00, keep=0.25, spin=0.5, drag=2.5, topple=0.0),
-    "metal": dict(bond=0.0, bounce=0.35, keep=0.60, spin=1.2, drag=0.0, topple=0.0),
+    "masonry": dict(bond=0.30, density=1800, fill=0.6, bounce=0.03, keep=0.40, spin=0.6, topple=1.0),
+    "tile": dict(bond=0.07, density=1900, fill=0.15, bounce=0.12, keep=0.55, spin=1.2, topple=0.0),
+    "wood": dict(bond=0.0, density=600, fill=0.5, bounce=0.10, keep=0.65, spin=0.7, topple=0.4),
+    "soft": dict(bond=0.22, density=300, fill=0.3, bounce=0.0, keep=0.20, spin=0.4, topple=0.0),
+    "metal": dict(bond=0.0, density=7800, fill=0.3, bounce=0.15, keep=0.55, spin=1.0, topple=0.0),
 }
+AIR = 22.0  # air resistance per (m² of face / kg of weight), 1/s; at most DRAG_MAX
+DRAG_MAX = 4.0  # 1/s: a canvas still comes down from a roof in the time of the fall
 PARTS = {
     "tile": ("roof_tile", "roof_slate", "roof_gold", "roof_brown", "roof_patina"),
     "wood": ("wood", "dark_wood", "bark", "end_grain"),
@@ -136,11 +139,12 @@ def ruin(b, out_dir, name):
     for faces in _islands(bm):
         vs = list({v for f in faces for v in f.verts})
         c = sum((v.co for v in vs), Vector()) / len(vs)
-        if max(v.co.z for v in vs) < max(GROUND, stump(c.x, c.y)):
+        k = kind(faces[0])
+        # What stays: the footing and what lies on the ground; of the walls, their stumps (a tent has none).
+        if max(v.co.z for v in vs) < (max(GROUND, stump(c.x, c.y)) if k == "masonry" else GROUND):
             statics.append(faces)
             continue
         _, he, _ = _obb(vs)
-        k = kind(faces[0])
         bond = MATERIALS[k]["bond"]
         if 2 * min(he) < COAT and 2 * max(he) > 0.25:
             coats.append(faces)
@@ -170,17 +174,19 @@ def ruin(b, out_dir, name):
         for f in faces:
             c = f.calc_center_median()
             co, i, d = tree.find(c) if owner else (None, None, 1e9)
-            if d is not None and d < HOLD:  # plaster on its bricks, a mortar bed under its tiles
+            # Plaster goes with its bricks, a mortar bed with its tiles; a canvas or a thatch is held by nothing
+            # once its frame gives way: it comes down on its own, torn, over the poles.
+            if d is not None and d < HOLD and kind(f) != "soft":
                 key = owner[i][1]
                 if key is None:
                     statics.append([f])
                 else:
                     chunks[key].append(f)
             else:  # nothing under it: it tears into shards
-                if max(v.co.z for v in f.verts) < max(GROUND, stump(c.x, c.y)):
+                k = kind(f)
+                if max(v.co.z for v in f.verts) < (max(GROUND, stump(c.x, c.y)) if k == "masonry" else GROUND):
                     statics.append([f])
                     continue
-                k = kind(f)
                 key = (k, "shard", seed_of(k if MATERIALS[k]["bond"] else "soft", c))
                 chunks.setdefault(key, []).append(f)
                 torn.append((c, key))
@@ -276,26 +282,35 @@ def _fall(bodies, statics, W, H, rng):
     centre = sum((bd["c0"] for bd in bodies), Vector()) / len(bodies)
     lean = Vector((1.0, 0.0, 0.0))  # the way the house already leans (building.gdshader, damage 3)
     for bd in bodies:
+        mat = bd["mat"]
         h = bd["c0"].z / top
+        he_m = [x / A.M for x in bd["he"]]  # metres
+        big = sorted(he_m)
+        # Its weight, and how much the air holds it back: face (its two larger sizes) over weight.
+        bd["mass"] = max(8 * he_m[0] * he_m[1] * he_m[2] * mat["fill"] * mat["density"], 0.05)
+        bd["drag"] = min(AIR * 4 * big[1] * big[2] / bd["mass"], DRAG_MAX)
+        bd["r"] = sum(bd["he"]) / 3 * 1.1  # its size for colliding with others in the air (tiles)
         out = Vector((bd["c0"].x - centre.x, bd["c0"].y - centre.y, 0.0))
         out = out.normalized() if out.length > 1e-6 else Vector((1.0, 0.0, 0.0))
         bd["pos"] = bd["c0"].copy()
         bd["q"] = Quaternion()
-        bd["v"] = (out * rng.uniform(0.05, 0.35) + lean * rng.uniform(0.1, 0.45)) * h * 1.6
+        bd["v"] = (out * rng.uniform(0.05, 0.3) + lean * rng.uniform(0.1, 0.35)) * h * 1.2
         axis = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-0.3, 0.3)))
-        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.8, 4.5) * (0.3 + h) \
-            * bd["mat"]["spin"]
+        bd["w"] = (axis.normalized() if axis.length > 1e-6 else Vector((1, 0, 0))) * rng.uniform(0.6, 3.0) \
+            * (0.3 + h) * mat["spin"]
         # A wall section tips over outward from its foot (and the higher, the further): it turns about the
         # horizontal line along the wall, its top moving out first.
-        tip = Vector((0.0, 0.0, 1.0)).cross(out) * rng.uniform(1.2, 2.6) * (0.4 + h) * bd["mat"]["topple"]
-        bd["w"] = bd["w"] * (1.0 - 0.7 * bd["mat"]["topple"]) + tip
-        bd["v"] += out * bd["mat"]["topple"] * 0.25 * h
-        # The walls give way at their foot and what stands on them comes down after: the lower a piece, the
-        # sooner it goes (a piece still inside the heap when it starts would be lifted onto it).
+        tip = Vector((0.0, 0.0, 1.0)).cross(out) * rng.uniform(1.0, 2.2) * (0.4 + h) * mat["topple"]
+        bd["w"] = bd["w"] * (1.0 - 0.7 * mat["topple"]) + tip
+        bd["v"] += out * mat["topple"] * 0.2 * h
+        # The walls give way at their foot and what stands on them comes down after.
         bd["delay"] = rng.uniform(0.0, 0.08) + h * 0.35
+        if bd["kind"] == "soft":  # a canvas or a thatch sags once its frame has gone, and comes down onto it
+            bd["delay"] += 0.35
         bd["done"] = False
-        bd["hits"] = 0
-        bd["slides"] = 0
+        bd["started"] = False
+        bd["rest"] = 0.0
+        bd["air"] = 0.0
         he = bd["he"]
         bd["corners"] = [bd["axes"] @ Vector((sx * he.x, sy * he.y, sz * he.z)) for sx in (-1, 1) for sy in (-1, 1)
                          for sz in (-1, 1)]
@@ -303,111 +318,184 @@ def _fall(bodies, statics, W, H, rng):
     dt = 1.0 / FPS / steps
     frames = []
     t = 0.0
+    STEP = 0.03  # tiles (6 cm): a piece steps up onto rubble at most this; a higher edge stops it from the side
+    LIFT = 0.004  # tiles (8 mm) a substep: how fast a piece that has sunk into the rubble comes to lie on it
+
+    def footprint(bd):
+        world = [bd["pos"] + bd["q"] @ c for c in bd["corners"]]
+        under = cells(min(p.x for p in world), max(p.x for p in world), min(p.y for p in world),
+                      max(p.y for p in world)) or [(0, 0)]
+        heights = sorted(hm[i][j] for i, j in under)
+        return world, under, heights
+
+    jumps = []  # the largest rise of any piece from one frame to the next (BO_RUIN_DEBUG)
+    last_z = [bd["pos"].z for bd in bodies]
     for _f in range(int(SECONDS * FPS) + 1):
         frames.append([_matrix(bd) for bd in bodies])
+        jumps.append(max((bd["pos"].z - z, bd["kind"], bd["rest"] > 0, round(bd["drag"], 1), _f)
+                         for bd, z in zip(bodies, last_z)))
+        last_z = [bd["pos"].z for bd in bodies]
         for _s in range(steps):
             t += dt
-            for bd in bodies:
-                if bd["done"] or t < bd["delay"]:
-                    continue
+            moving = [bd for bd in bodies if not bd["done"] and t >= bd["delay"]]
+            for bd in moving:
+                mat = bd["mat"]
+                if not bd["started"]:  # buried by what came down first: it stays under it
+                    bd["started"] = True
+                    world, _, heights = footprint(bd)
+                    if bd["pos"].z < heights[int(len(heights) * 0.6)]:  # its middle under the rubble
+                        bd["done"] = True
+                        continue
                 bd["v"].z -= G * dt
-                drag = bd["mat"]["drag"]
-                if drag:  # cloth and thatch: the air holds them, they drift and sway as they come down
-                    bd["v"] -= bd["v"] * min(drag * dt, 1.0)
-                    bd["v"].x += math.sin(t * 7.0 + bd["c0"].x * 9.0) * 0.6 * dt
-                    bd["v"].y += math.cos(t * 6.0 + bd["c0"].y * 9.0) * 0.6 * dt
+                # The air: light for its size (canvas, thatch) it drifts down slowly and sways; a stone hardly feels it.
+                bd["v"] -= bd["v"] * min(bd["drag"] * dt, 1.0)
+                if bd["drag"] > 1.0:
+                    sway = min(bd["drag"] / DRAG_MAX, 1.0) * 0.5 * dt
+                    bd["v"].x += math.sin(t * 7.0 + bd["c0"].x * 9.0) * sway
+                    bd["v"].y += math.cos(t * 6.0 + bd["c0"].y * 9.0) * sway
+                old = bd["pos"].copy()
                 bd["pos"] += bd["v"] * dt
                 if bd["w"].length > 1e-6:
-                    bd["q"] = Quaternion(bd["w"].normalized(), bd["w"].length * dt) @ bd["q"]
+                    turned = Quaternion(bd["w"].normalized(), bd["w"].length * dt) @ bd["q"]
+                    if bd["rest"] > 0.0:  # lying on the rubble it turns about where it touches, not into it
+                        before = min((bd["pos"] + bd["q"] @ c).z for c in bd["corners"])
+                        bd["q"] = turned
+                        bd["pos"].z += min(max(before - min((bd["pos"] + bd["q"] @ c).z for c in bd["corners"]), 0.0),
+                                           2 * LIFT)
+                    else:
+                        bd["q"] = turned
                 world = [bd["pos"] + bd["q"] @ c for c in bd["corners"]]
-                # The plot's edges: the rubble stays on its own tiles.
+                # The plot's edges: the rubble stays on its own tiles (it slides along them, does not bounce).
                 xs, ys = [p.x for p in world], [p.y for p in world]
                 if min(xs) < 0.01:
                     bd["pos"].x += 0.01 - min(xs)
-                    bd["v"].x = abs(bd["v"].x) * 0.2
+                    bd["v"].x = 0.0
                 if max(xs) > W - 0.01:
                     bd["pos"].x -= max(xs) - (W - 0.01)
-                    bd["v"].x = -abs(bd["v"].x) * 0.2
+                    bd["v"].x = 0.0
                 if max(ys) > -0.01:
                     bd["pos"].y -= max(ys) + 0.01
-                    bd["v"].y = -abs(bd["v"].y) * 0.2
+                    bd["v"].y = 0.0
                 if min(ys) < -H + 0.01:
                     bd["pos"].y += (-H + 0.01) - min(ys)
-                    bd["v"].y = abs(bd["v"].y) * 0.2
-                world = [bd["pos"] + bd["q"] @ c for c in bd["corners"]]
-                under = cells(min(p.x for p in world), max(p.x for p in world), min(p.y for p in world),
-                              max(p.y for p in world))
-                heights = [hm[i][j] for i, j in under] or [0.0]
-                # A piece lands on what is under most of it (the rubble's upper quarter is uneven: it sinks a little).
-                support = sorted(heights)[int(len(heights) * 0.6)]
+                    bd["v"].y = 0.0
+                world, under, heights = footprint(bd)
+                support = heights[int(len(heights) * 0.6)]
                 low = min(p.z for p in world)
                 if low >= support:
+                    bd["air"] += dt
+                    if bd["air"] > 0.1:  # in the air again (a bounce, a fall off an edge)
+                        bd["rest"] = 0.0
                     continue
-                bd["pos"].z += support - low
-                lower = min(heights)
-                if support - lower > SLOPE and bd["slides"] < 30:
-                    # On the side of the heap or half on a stump: it tips and slides down to the lower side, as
-                    # loose rubble does until its slope is gentle enough to hold it (its angle of repose).
+                bd["air"] = 0.0
+                moved = Vector((bd["pos"].x - old.x, bd["pos"].y - old.y, 0.0)).length
+                if support - low > STEP and moved > 1e-4:
+                    here = bd["pos"].copy()
+                    bd["pos"].x, bd["pos"].y = old.x, old.y
+                    _, _, h_old = footprint(bd)
+                    bd["pos"].x, bd["pos"].y = here.x, here.y
+                if support - low > STEP and moved > 1e-4 and h_old[int(len(h_old) * 0.6)] < support - STEP:
+                    # It ran into the side of the heap: stopped from the side, not lifted onto it.
+                    bd["pos"].x, bd["pos"].y = old.x, old.y
+                    bd["v"].x *= -0.1
+                    bd["v"].y *= -0.1
+                    world, under, heights = footprint(bd)
+                    support = heights[int(len(heights) * 0.6)]
+                    low = min(p.z for p in world)
+                    if low >= support:
+                        continue
+                # It comes to lie on the rubble: a piece just landed is stopped at its surface; one sunk into it
+                # (the heap grew under it) rises slowly, never jumps.
+                bd["pos"].z += min(support - low, STEP if bd["rest"] == 0.0 else LIFT)
+                if bd["v"].z < 0:
+                    bd["v"].z = -bd["v"].z * mat["bounce"]
+                bd["v"].x *= mat["keep"] ** (dt * 24)
+                bd["v"].y *= mat["keep"] ** (dt * 24)
+                bd["w"] *= 0.25 ** (dt * 24)  # what touches the rubble stops tumbling
+                # On a slope steeper than the rubble holds, it slides down: gravity along the slope, little by little.
+                lower = heights[0]
+                if support - lower > SLOPE:
                     hi = [(i, j) for i, j in under if hm[i][j] >= support]
                     hx = (sum(i for i, _ in hi) / len(hi) + 0.5) * HM
                     hy = -(sum(j for _, j in hi) / len(hi) + 0.5) * HM
                     away = Vector((bd["pos"].x - hx, bd["pos"].y - hy, 0.0))
-                    away = away.normalized() if away.length > 1e-6 else Vector((1.0, 0.0, 0.0))
-                    bd["v"] = away * 0.6
-                    bd["w"] = away.cross(Vector((0, 0, -1))) * 2.5
-                    bd["slides"] += 1
-                    continue
-                if bd["v"].z < 0:
-                    bd["v"].z = -bd["v"].z * bd["mat"]["bounce"]
-                bd["v"].x *= bd["mat"]["keep"]
-                bd["v"].y *= bd["mat"]["keep"]
-                bd["w"] *= 0.45
-                bd["hits"] += 1
-                _towards_a_face(bd, 0.35)
-                if bd["v"].length < 0.3 and bd["hits"] >= 2:
-                    _flat(bd)  # it comes to rest on its broadest side
-                    world = [bd["pos"] + bd["q"] @ c for c in bd["corners"]]
-                    under = cells(min(p.x for p in world), max(p.x for p in world), min(p.y for p in world),
-                                  max(p.y for p in world)) or [(0, 0)]
-                    support = sorted(hm[i][j] for i, j in under)[int(len(under) * 0.6)]
-                    bd["pos"].z += support - min(p.z for p in world)
+                    if away.length > 1e-6:
+                        bd["v"] += away.normalized() * G * 0.25 * dt
+                # Touching at one end, it tips over onto its broadest side (gravity about where it touches),
+                # smoothly, faster the more it leans: a pole falls, a stone settles.
+                k = min(range(3), key=lambda a: bd["he"][a])
+                flat = abs((bd["q"] @ bd["axes"].col[k].to_3d()).z)
+                _settle(bd, 1.0 - (0.85 - 0.25 * (1.0 - flat)) ** (dt * 24))
+                bd["rest"] += dt
+                # It stays when it lies (flat enough and slow), or held long enough by what is under it.
+                if (flat > 0.9 and bd["v"].length < 0.15 and bd["rest"] > 0.15) or bd["rest"] > 1.5:
                     # It lies where it lies: the rubble grows by its real shape, the height of each of its
-                    # vertices in the cell under it (not by the box around it, mostly air for a wall's corner).
+                    # vertices in the cell under it, a share PACK of it (loose rubble settles into its gaps).
                     rot = numpy.array(bd["q"].to_matrix())
-                    world = bd["pts"] @ rot.T + numpy.array(tuple(bd["pos"]))
-                    for x, y, z in world:
+                    pts = bd["pts"] @ rot.T + numpy.array(tuple(bd["pos"]))
+                    for x, y, z in pts:
                         i, j = min(max(int(x / HM), 0), nx - 1), min(max(int(-y / HM), 0), ny - 1)
-                        # Loose rubble settles into its own gaps: a piece's height over what it lies on counts
-                        # for PACK of it.
                         hm[i][j] = max(hm[i][j], support + (float(z) - support) * PACK)
                     bd["done"] = True
                     bd["w"] = Vector()
                     bd["v"] = Vector()
+            # Pieces that set off together (neighbours in the wall) part on their own first.
+            # Only pieces in the air knock each other; what lies on the rubble is the rubble (its height map).
+            _collide([bd for bd in moving if not bd["done"] and t - bd["delay"] > 0.1 and bd["rest"] == 0.0])
     if os.environ.get("BO_RUIN_DEBUG"):
         flat = sorted(v for row in hm for v in row)
         print("HM1", [round(flat[int(len(flat) * q)], 2) for q in (0.5, 0.9, 0.99)], round(flat[-1], 2))
+        print("JUMP", round(max(jumps)[0] / A.M * 100, 1), "cm in a frame", max(jumps)[1:], ";",
+              sum(1 for bd in bodies if not bd["done"]), "still moving",
+              sorted({(bd["kind"], round(bd["drag"])) for bd in bodies if not bd["done"]})[:12])
+        left = [bd for bd in bodies if not bd["done"]]
+        print("LEFT started", sum(bd["started"] for bd in left), "rest>0", sum(bd["rest"] > 0 for bd in left),
+              "z", sorted(round(bd["pos"].z, 2) for bd in left)[::max(1, len(left) // 10)],
+              "v", sorted(round(bd["v"].length, 2) for bd in left)[::max(1, len(left) // 10)])
     return frames
 
 
-def _towards_a_face(bd, share):
-    """Turns the chunk so that the side nearest to the ground lies flat on it (a stone rolls onto a face)."""
-    q = bd["q"]
-    best, sign = None, 1.0
-    for k in range(3):
-        w = q @ bd["axes"].col[k].to_3d()
-        if best is None or abs(w.z) > abs(best.z):
-            best, sign = w, (1.0 if w.z >= 0 else -1.0)
-    turn = best.rotation_difference(Vector((0, 0, sign)))
-    bd["q"] = q.slerp(turn @ q, share)
-
-
-def _flat(bd):
-    """Lays the chunk with its thinnest side up, turned the least from how it landed."""
-    he = bd["he"]
-    k = min(range(3), key=lambda a: he[a])
+def _settle(bd, share):
+    """Turns the chunk a share of the way onto its broadest side (its thinnest axis up), the least turn."""
+    k = min(range(3), key=lambda a: bd["he"][a])
     w = bd["q"] @ bd["axes"].col[k].to_3d()
     turn = w.rotation_difference(Vector((0, 0, 1.0 if w.z >= 0 else -1.0)))
-    bd["q"] = turn @ bd["q"]
+    bd["q"] = bd["q"].slerp(turn @ bd["q"], share)
+
+
+def _collide(bodies):
+    """Pieces in the air meet: where two overlap they are pushed apart, the lighter more, and their speeds along
+    the line between them even out by their weights (they knock, they do not bounce off)."""
+    grid = {}
+    shove = [Vector() for _ in bodies]
+    for n, bd in enumerate(bodies):
+        grid.setdefault(tuple(int(c // 0.3) for c in bd["pos"]), []).append(n)
+    for (gx, gy, gz), members in grid.items():
+        near = [m for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
+                for m in grid.get((gx + dx, gy + dy, gz + dz), ())]
+        for a in members:
+            for b in near:
+                if b <= a:
+                    continue
+                p, q = bodies[a], bodies[b]
+                d = q["pos"] - p["pos"]
+                gap = p["r"] + q["r"] - d.length
+                if gap <= 0 or d.length < 1e-6:
+                    continue
+                n = d.normalized()
+                wa, wb = q["mass"] / (p["mass"] + q["mass"]), p["mass"] / (p["mass"] + q["mass"])
+                push = min(gap, 0.02) * 0.5
+                shove[a] -= n * push * wa
+                shove[b] += n * push * wb
+                rel = (q["v"] - p["v"]).dot(n)
+                if rel < 0:
+                    impulse = rel / (1 / p["mass"] + 1 / q["mass"])
+                    p["v"] += n * impulse / p["mass"]
+                    q["v"] -= n * impulse / q["mass"]
+    for bd, d in zip(bodies, shove):  # a little at a time, however many it touches: no piece is thrown
+        if d.length > 0.003:
+            d = d.normalized() * 0.003
+        bd["pos"] += d
 
 
 def _matrix(bd):

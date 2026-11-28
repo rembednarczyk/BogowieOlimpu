@@ -570,16 +570,24 @@ func _add_building(e: Dictionary) -> void:
 func _add_ruin(node: Node3D, e: Dictionary) -> bool:
 	var house: MeshInstance3D = null
 	var level := 2 + (_house_bits(e["id"]) >> 7) % 3
+	var model := ""
 	for id in building_nodes:
 		var old: Node3D = building_nodes[id]
 		var p: Dictionary = old.get_meta("placed", {})
 		if p.get("building_type", "") == "common_housing" and p["x"] == e["x"] and p["y"] == e["y"] and old.has_node("Model"):
 			house = old.get_node("Model")
-			level = int(String(old.get_meta("model")).split("_")[2])
+			model = String(old.get_meta("model"))
+			level = int(model.split("_")[2])
 	if house == null and (e["width"] != 2 or e["height"] != 2):
 		return false
 	var name := ""
+	# The house's own ruin where its look has one (a shelter's tents differ), else its level's.
+	var own := (model if model != "" else "common_housing_%d_%s" % [level, house_story(e["id"])]) + "_ruin"
+	if _model(own) != null and _ruin_material(own) != null:
+		name = own
 	for l in range(level, 0, -1):
+		if name != "":
+			break
 		if _model("common_housing_%d_ruin" % l) != null and _ruin_material("common_housing_%d_ruin" % l) != null:
 			name = "common_housing_%d_ruin" % l
 			break
