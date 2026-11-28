@@ -252,20 +252,28 @@ def shed_roof(b, x, y, w, d, z_low, z_high, rng, falls="s", overhang=0.2, stage=
                    antefix=antefix, sides=(-1,), group=group, sag=0.0)
 
 
+ROOF_STEEP = 1.4  # the town's style (R-018): gable roofs a good deal steeper than the plans' rise
+
+
 def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(0.65, 0.95), gable="plaster",
-               antefix=False, sides=(-1, 1), group="main", sag=0.08, curve=0.09):
+               antefix=False, sides=(-1, 1), group="main", sag=0.08, curve=None, steep=None):
     """A gable roof of terracotta: pan tiles in rows from the eaves, cover tiles over their joints, a ridge;
     the gables walled in. `sides` (-1, 1) both slopes, one of them for a lean-to (then the high edge, where the
     ridge would be, gets a flashing board); `sag` lets the ridge dip a little in its middle (a roof of some age,
     drawn by hand); `curve` bows each slope down between the eaves and the ridge (owner, 2026-11-28: arched
     roofs): the eaves lie flatter, the slope steepens to the ridge, as a roof bent by its own weight over the
-    years."""
+    years. `steep` scales the rise (ROOF_STEEP for a gable roof, 1 for a lean-to, whose rise is fixed by its
+    walls); `curve` defaults to 7.5% of the slope's length. Returns the ridge's height at a point along it
+    (plot metres), for what stands on the ridge (a chimney pot)."""
     s0, s1 = stage
     shed = len(sides) == 1
+    rise *= (1.0 if shed else ROOF_STEEP) if steep is None else steep
     x0, y0, x1, y1 = x - overhang, y - overhang, x + w + overhang, y + d + overhang
     run_len = (x1 - x0) if along_x else (y1 - y0)
     span = (y1 - y0) / 2 if along_x else (x1 - x0) / 2
     slope = math.hypot(span, rise)
+    if curve is None:
+        curve = 0.075 * slope
 
     def rp(side, along, f):  # a point on a slope; the ridge dips by `sag` in the middle of its run
         p = _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f)
@@ -291,11 +299,14 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
         half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
         b.obox(centre, half_run, half_up, tuple(t(n[k] * thickness / 2) for k in range(3)), part, stage=share)
 
+    def ridge(at):
+        return rp(sides[-1], min(max(at - (x0 if along_x else y0), 0.0), run_len), 1.0)[2]
+
     if not b.detail:
         for side in sides:
             slab(side, "roof_tile", 0.05, 0.1, s0)
         _gables(b, x, y, w, d, z, rise, along_x, gable, s0, sides)
-        return
+        return ridge
     pan_w, exposed, tile_len, thick = 0.46, 0.34, 0.44, 0.022
     rows = max(2, int(math.ceil(slope / exposed)))
     cols = max(2, int(round(run_len / pan_w)))
@@ -338,6 +349,22 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 end = tuple(t(p_high[i] + normal[i] * lift) for i in range(3))
                 b.shell(start, end, t(0.075), t(0.014), tuple(normal), "roof_tile", sides=10, stage=share,
                         tint=rng.uniform(0.2, 0.6))
+            # Mortar beds close the troughs' open ends: at the eaves a little behind the rims, under the ridge
+            # (or the flashing of a lean-to) at the top row, so no hollow and no sky shows through the tiles.
+            beds = ([0.035] if r == 0 else []) + ([0.975] if r == rows - 1 else [])
+            for fb in beds:
+                normal = _roof_normal(span, rise, along_x, side)
+                for c in range(cols):
+                    along = (c + 0.5) * pan_w
+                    p = rp(side, along, fb)
+                    rad = pan_w / 2 + 0.012  # overlapping the next one: the joints under the cover tiles too
+                    centre = tuple(t(p[i] + normal[i] * 0.03) for i in range(3))
+                    half_run = (t(rad), 0, 0) if along_x else (0, t(rad), 0)
+                    dirv = tuple(p[i] - rp(side, along, fb - 0.035)[i] for i in range(3))
+                    ln = math.sqrt(sum(v * v for v in dirv)) or 1.0
+                    half_up = tuple(t(dirv[i] / ln * 0.02) for i in range(3))
+                    b.obox(centre, half_run, half_up, tuple(t(normal[i] * 0.13) for i in range(3)), "roof_tile",
+                           stage=share, tint=0.15)
             if antefix and r == 0:  # an antefix closes each cover tile at the eaves: a palmette of seven leaves
                 for c in range(cols + 1):
                     along = min(max(c * pan_w, 0.06), run_len - 0.06)
@@ -352,15 +379,19 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             lo = rp(side, along, 0.0)
             hi = rp(side, along, 1.0)
             out = -1 if along == 0.0 else 1
-            board_c = tuple(t((lo[i] + hi[i]) / 2 - n[i] * 0.04) for i in range(3))
-            half_up = tuple(t((hi[i] - lo[i]) / 2) for i in range(3))
             half_t = (t(0.025 * out), 0, 0) if along_x else (0, t(0.025 * out), 0)
             half_n = tuple(t(n[i] * 0.09) for i in range(3))
-            if along_x:
-                board_c = (board_c[0] + t(0.025 * out), board_c[1], board_c[2])
-            else:
-                board_c = (board_c[0], board_c[1] + t(0.025 * out), board_c[2])
-            b.obox(board_c, half_t, half_up, half_n, "mortar", stage=s1, tint=0.45)  # a mortared verge
+            segs = 8  # the mortared verge follows the slope's bow in short pieces (a straight one would stand
+            for k in range(segs):  # out of the tiles in the middle)
+                lo = rp(side, along, k / segs)
+                hi = rp(side, along, (k + 1) / segs + 0.01)
+                board_c = tuple(t((lo[i] + hi[i]) / 2 - n[i] * 0.04) for i in range(3))
+                half_up = tuple(t((hi[i] - lo[i]) / 2) for i in range(3))
+                if along_x:
+                    board_c = (board_c[0] + t(0.025 * out), board_c[1], board_c[2])
+                else:
+                    board_c = (board_c[0], board_c[1] + t(0.025 * out), board_c[2])
+                b.obox(board_c, half_t, half_up, half_n, "mortar", stage=s1, tint=0.45)
             edge = 0.05 if along == 0.0 else run_len - 0.05
             rows_v = max(2, rows)
             for r in range(rows_v):
@@ -424,9 +455,16 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             a, c = outline
             poly = [(a[0][0], a[0][1], z)] + a + c[1:] + [(c[-1][0], c[-1][1], z)]
         poly = [q for i, q in enumerate(poly) if i == 0 or (abs(q[0] - poly[i - 1][0]) + abs(q[1] - poly[i - 1][1]) + abs(q[2] - poly[i - 1][2])) > 1e-6]
-        tp = [tuple(t(v) for v in q) for q in poly]
-        b.poly(tp, gable, stage=s0, plaster=True)
-        b.poly(list(reversed(tp)), gable, stage=s0, plaster=True)
+        # A fan of triangles from the middle of the gable's foot: the bowed outline is concave, one n-gon of it
+        # would not show (2026-11-28, a hole in the gables); both windings kept as built (seen from both sides).
+        hub = tuple((poly[0][k] + poly[-1][k]) / 2 for k in range(3))
+        for qa, qb in zip(poly, poly[1:]):
+            tri = [tuple(t(v) for v in q) for q in (hub, qa, qb)]
+            if sum(abs(tri[1][k] - tri[0][k]) + abs(tri[2][k] - tri[0][k]) for k in range(3)) < 1e-6:
+                continue
+            faces = b.poly(tri, gable, stage=s0, plaster=True) + b.poly(list(reversed(tri)), gable, stage=s0, plaster=True)
+            b.two_sided.update(faces)
+    return ridge
 
 
 def _roof_point(x0, y0, x1, y1, z, rise, along_x, side, along, f):
@@ -783,7 +821,7 @@ def flower_box(b, x, y, z, length, rng, along_x=True, out=1, name="flower box"):
     """A wooden box of flowers under a window (metres): x, y the wall's outer face at the box's start, out the
     side the wall faces (+1 or -1 along y for a box along x, along x otherwise). The box stands off the sill on
     two iron brackets; geraniums and trailing leaves over its front."""
-    gap, d, h = 0.07, 0.16, 0.14
+    gap, d, h = 0.035, 0.16, 0.14  # against the plaster (the wall solid reaches 0.03 out)
     def at(a, o, zz):  # a along the wall, o out from its face
         return (x + a, y + out * o, zz) if along_x else (x + out * o, y + a, zz)
     lo, hi = at(0, gap, z), at(length, gap + d, z + 0.42)

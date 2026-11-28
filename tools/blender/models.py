@@ -64,7 +64,7 @@ def hut(b, rng):
     D.footing(b, 0.5, 0.7, 3.0, 2.6, h=0.25, rng=rng)
     _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
           windows=[("e", 0.55, 0.40, 0.95, 0.35)])
-    D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35, rng, hip=0.3, overhang=0.35)
+    D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35 * D.ROOF_STEEP, rng, hip=0.3, overhang=0.35)
     D.woodpile(b, 3.55, 0.85, rng, along_x=False, length=1.0)
     D.pithos(b, 0.3, 3.62, scale=0.9, rng=rng, lid=True)
     with D.goods(b, "food"):
@@ -154,8 +154,8 @@ def cabin(b, rng):
     D.footing(b, 0.35, 0.35, 3.3, 2.6, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 2.5, 0.3, 2.2, plaster="plaster", doors=[("s", 1.2, 0.85, 1.75)],
           windows=[("s", 2.3), ("e", 0.9), ("w", 0.9)])
-    D.tiled_roof(b, 0.4, 0.4, 3.2, 2.5, 2.5, 0.85, rng, along_x=True, overhang=0.3)
-    D.chimney_pot(b, 2.75, 1.65, 3.35, rng, scale=0.9)
+    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 2.5, 2.5, 0.85, rng, along_x=True, overhang=0.3)
+    D.chimney_pot(b, 2.75, 1.65, ridge(2.75), rng, scale=0.9)
     for x, length in ((0.25, 1.1), (2.35, 1.4)):  # the yard's low wall, a gate between
         D.brick_wall(b, D.Wall(x, 3.55, length, "x", 0.0, 0.8, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
     with D.goods(b, "food"):
@@ -176,8 +176,8 @@ def homestead(b, rng):
     D.footing(b, 2.25, 2.15, 1.5, 1.6, h=0.4, rng=rng, group="wing")
     _room(b, rng, 2.3, 2.2, 1.4, 1.5, 0.4, 2.0, plaster="plaster", doors=[("w", 0.3, 0.8, 1.7)],
           windows=[("s", 0.5), ("e", 0.4)], stage=(0.15, 0.55), group="wing")
-    D.tiled_roof(b, 0.3, 0.3, 3.4, 1.9, 2.75, 0.75, rng, along_x=True, overhang=0.16)
-    D.chimney_pot(b, 1.1, 1.25, 3.5, rng)
+    ridge = D.tiled_roof(b, 0.3, 0.3, 3.4, 1.9, 2.75, 0.75, rng, along_x=True, overhang=0.16)
+    D.chimney_pot(b, 1.1, 1.25, ridge(1.1), rng)
     D.shed_roof(b, 2.3, 2.2, 1.4, 1.5, 2.4, 2.7, rng, falls="s", overhang=0.18, group="wing")
     D.brick_wall(b, D.Wall(0.2, 3.65, 2.0, "x", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
     D.brick_wall(b, D.Wall(0.2, 2.35, 1.3, "y", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
@@ -244,8 +244,8 @@ def row_house(b, rng):
     if b.detail:
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
-    D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
-    D.chimney_pot(b, 0.95, 1.9, 5.65, rng, scale=1.1)
+    ridge = D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
+    D.chimney_pot(b, 0.95, 1.9, ridge(0.95), rng, scale=1.1)
     with D.goods(b, "food"):
         D.sack(b, 2.3, 3.72, scale=0.65, rng=rng)
         D.basket(b, 2.75, 3.72, "carrots", scale=0.7, rng=rng)
@@ -274,10 +274,10 @@ def flat(b, rng):
         _room(b, rng, x, 1.85, 1.05, 1.85, 0.3, 1.75, plaster="plaster", doors=[("e" if x < 1 else "w", 0.6, 0.75, 1.6)],
               windows=[("s", 0.3)], stage=(0.15, 0.55), group=wing)
         D.shed_roof(b, x, 1.85, 1.05, 1.85, 2.05, 2.47, rng, falls="s", overhang=0.12, group=wing)
-    D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
-    D.chimney_pot(b, 2.55, 1.1, 5.27, rng)
+    ridge = D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
+    D.chimney_pot(b, 2.55, 1.1, ridge(2.55), rng)
     if b.detail:
-        _acroteria(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, 0.16)
+        _acroteria(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7 * D.ROOF_STEEP, 0.16)
     b.box(t(1.7), t(2.6), 0, t(0.6), t(0.6), t(0.15), "stone", stage=0.05)  # the yard's paving and its well
     b.solid("well", t(1.7), t(2.6), 0, t(2.3), t(3.2), t(1.4))
     b.lathe(t(2.0), t(2.9), 0, [(t(0.28), 0), (t(0.29), t(0.5)), (t(0.31), t(0.55)), (t(0.2), t(0.55))], "stone",
@@ -334,10 +334,10 @@ def city_house(b, rng):
         b.box(t(0.4), t(3.2), t(2.96), t(3.2), t(0.5), t(0.2), "stone", stage=0.52)
     D.shed_roof(b, 0.3, 2.7, 3.4, 1.0, 3.21, 3.62, rng, falls="s", overhang=0.12, gable="stone", stage=(0.62, 0.7),
                 antefix=True, group="porch")
-    D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
-    D.chimney_pot(b, 2.65, 1.5, 6.15, rng, scale=1.15)
+    ridge = D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
+    D.chimney_pot(b, 2.65, 1.5, ridge(2.65), rng, scale=1.15)
     if b.detail:
-        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, 0.16, size=0.42)
+        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0 * D.ROOF_STEEP, 0.16, size=0.42)
     with D.goods(b, "olive_oil"):
         D.pithos(b, 1.32, 3.0, scale=0.5, rng=rng, z=0.55, lid=True)
         D.amphora(b, 2.8, 3.0, scale=0.6, rng=rng, z=0.55)
