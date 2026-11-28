@@ -2,6 +2,7 @@
 
 ## Kierunek artystyczny
 
+- **Styl budowli miasta: reguła R-018** (`10-REGULY.md`): realizm stylizowany z domieszką Ghibli, łukowe strome dachy, ręczna nieregularność, przerysowana greckość, życie przy domu, bez dziur i przenikania, historie domów z obrotem i skalą w mieście.
 - **Styl:** stylizowany realizm. Jasne, nasycone barwy śródziemnomorskiego słońca, czytelne sylwetki budynków z dużej odległości.
 - **Czytelność ponad detal:** każdy typ budynku rozpoznawalny po kształcie i kolorze dachu przy maksymalnym oddaleniu. Każdy poziom domu wizualnie różny.
 - **Referencje wizualne:** architektura grecka okresu archaicznego i klasycznego, rekonstrukcje polichromii, malarstwo wazowe (czarnofigurowe i czerwonofigurowe) jako motyw UI, krajobraz Peloponezu i wysp.

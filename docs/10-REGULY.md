@@ -163,3 +163,19 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 - Uzasadnienie: CC0 nie wymaga podawania autora i pozwala na grę komercyjną; animacje Mixamo są dopuszczone w grach, ale nie jako osobne pliki do rozpowszechniania, dlatego trafiają do repo tylko w postaci wypieczonej.
 - Wpływ na: `docs/ASSETY.md`, `tools/blender/`, `game/models/`, `tools/checks/check_models.py`.
 - Historia: 2026-11-27 utworzona
+
+### R-018 [OPRAWA] Styl budowli miasta
+- Status: obowiązuje
+- Źródło: decyzje właściciela 2026-11-27 i 2026-11-28 (rundy uwag do domów: szczegół, styl Ghibli, łukowe dachy, historie domów; „Zapisujemy ten wypracowany styl jako regułę pod ogólny klimat budowli w mieście”)
+- Treść: Każda budowla miasta jest modelowana w jednym stylu, sprawdzalnym w kodzie i na zrzutach:
+  1. Realizm stylizowany: elementy budowane jak w rzeczywistości (cegła po cegle, dachówka po dachówce, drewno ułożone fizycznie), materiały greckie (cegła suszona, kamień, tynk wapienny, terakota, drewno).
+  2. Ciepłe światło i paleta: paleta `building.gdshader` (28 kolorów, nasycona, popołudniowa), miękkie przejście światła w cień, chłodny niebieskawy cień, plamy koloru jak od pędzla.
+  3. Dachy łukowe i strome: dachy dwuspadowe o 1,4 raza wyższe od rzutu (`ROOF_STEEP`), połać ugięta o 7,5% swojej długości, kalenica ugięta w środku; przybudówki z dachem jednospadowym od wyższej ściany.
+  4. Ręczna nieregularność: każdy model wygięty jednym gładkim polem (`Builder._wonk`: przechył, pęcznienie ścian, falujący dach), razem z rekwizytami.
+  5. Przerysowana greckość: akroteria, antefiksy, meandry, kominy z terakoty, wieńce nad drzwiami, malowane naczynia, kolumny z entazą; o rozmiar większe niż w archeologii.
+  6. Życie przy domu: zieleń na wolnym gruncie, bluszcz, kwiaty w skrzynkach i donicach, pranie, dobra, których dom potrzebuje, widoczne według zapasu.
+  7. Bez dziur i przenikania: rekwizyty nie wchodzą w bryły, dachy nie wchodzą w ściany innych części, szczyty domknięte pod łukiem, końce dachówek zamknięte zaprawą, nic nie wisi w powietrzu bez podparcia; eksport przerywa się przy kolizji (`check_props`).
+  8. Różnorodność: dom ma historię rodziny (2-3 na typ, `docs/ASSETY.md`), trwałą przez awanse; w mieście obrót i lekka różnica skali kolejnych domów nadają dynamikę.
+- Uzasadnienie: spójny klimat miasta przy wielu budowlach robionych przez różne sesje i agentów; punkty 3, 4 i 7 mają kontrolę w kodzie.
+- Wpływ na: `tools/blender/bo_asset.py`, `bo_detail.py`, `models.py`, `game/shaders/building.gdshader`, `game/scenes/boot.gd`, `docs/ASSETY.md`, `docs/08-OPRAWA.md`.
+- Historia: 2026-11-28 utworzona
