@@ -341,7 +341,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             half_run = (t(run_len / 2 - 0.02), 0, 0) if along_x else (0, t(run_len / 2 - 0.02), 0)
             half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
             b.obox(centre, half_run, half_up, tuple(t(n[k] * 0.0125) for k in range(3)), tiles,
-                   stage=s0 + 0.002 + (s1 - s0) * r / rows * 0.98, tint=0.1)  # each row's bed just before its tiles
+                   stage=s0 + 0.002 + (s1 - s0) * r / rows * 0.98, tint=A.FILL_TINT)  # each row's bed just before its tiles
     for side in sides:  # the slopes
         for r in range(rows):
             f0 = r * exposed / slope
@@ -358,7 +358,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 rad = (bb - a) / 2
                 low = tuple(p_low[i] + normal[i] * (lift + rad * 0.55) for i in range(3))
                 high = tuple(p_high[i] + normal[i] * (rad * 0.55) for i in range(3))
-                b.shell(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), t(0.016), tuple(normal), tiles,
+                b.shell(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), t(A.THICKNESS["roof_tile"]), tuple(normal), tiles,
                         sides=10, stage=share, tint=rng.uniform(0.25, 0.75), hollow_up=True)
             for c in range(cols + 1):  # cover tiles over the joints
                 along = min(max(c * pan_w, 0.06), run_len - 0.06)
@@ -368,7 +368,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 lift = thick * 1.2 + 0.075 * 0.55
                 start = tuple(t(p_low[i] + normal[i] * lift) for i in range(3))
                 end = tuple(t(p_high[i] + normal[i] * lift) for i in range(3))
-                b.shell(start, end, t(0.075), t(0.014), tuple(normal), tiles, sides=10, stage=share,
+                b.shell(start, end, t(0.075), t(A.THICKNESS["roof_tile"]), tuple(normal), tiles, sides=10, stage=share,
                         tint=rng.uniform(0.2, 0.6))
             # Mortar beds close the troughs' open ends: at the eaves a little behind the rims, under the ridge
             # (or the flashing of a lean-to) at the top row, so no hollow and no sky shows through the tiles.
@@ -385,7 +385,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                     ln = math.sqrt(sum(v * v for v in dirv)) or 1.0
                     half_up = tuple(t(dirv[i] / ln * 0.02) for i in range(3))
                     b.obox(centre, half_run, half_up, tuple(t(normal[i] * 0.13) for i in range(3)), tiles,
-                           stage=share, tint=0.15)
+                           stage=share, tint=A.FILL_TINT)
             if antefix and r == 0:  # an antefix closes each cover tile at the eaves: a palmette of seven leaves
                 for c in range(cols + 1):
                     along = min(max(c * pan_w, 0.06), run_len - 0.06)
@@ -421,7 +421,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 pb = rp(side, edge, f1)
                 lift = thick * 1.2 + 0.085 * 0.55
                 b.shell(tuple(t(pa[i] + n[i] * lift) for i in range(3)), tuple(t(pb[i] + n[i] * lift) for i in range(3)),
-                        t(0.085), t(0.014), tuple(n), tiles, sides=10, stage=s0 + (s1 - s0) * r / rows_v,
+                        t(0.085), t(A.THICKNESS["roof_tile"]), tuple(n), tiles, sides=10, stage=s0 + (s1 - s0) * r / rows_v,
                         tint=rng.uniform(0.2, 0.5))
     ridge_n = max(1, int(run_len / 0.5))
     if shed:  # the high edge against the wall: a flashing board over the top row

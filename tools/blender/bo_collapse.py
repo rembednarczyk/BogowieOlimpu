@@ -86,7 +86,9 @@ def ruin(b, out_dir, name):
     b._wonk()
     bm = b.bm
     # Nothing of the building site and nothing the family owned: the scaffold and the goods go.
-    dead = [f for f in bm.faces if f.loops[0][b.col][0] > 0.995 or f.loops[0][b.pivot].uv[0] < -0.5]
+    # Nor the hidden filling (the mortar beds under the tiles): it is there to close the view, not a material.
+    dead = [f for f in bm.faces if f.loops[0][b.col][0] > 0.995 or f.loops[0][b.pivot].uv[0] < -0.5
+            or abs(f.loops[0][b.uv].uv[1] - A.FILL_TINT) < 1e-4]
     bmesh.ops.delete(bm, geom=dead, context="FACES")
     kind_of = {i: k for k, names in PARTS.items() for i, (n, _) in enumerate(A.PALETTE) if n in names}
 
@@ -191,11 +193,37 @@ def ruin(b, out_dir, name):
             _, i, d = near.find(c) if torn else (None, None, 1e9)
             key = torn[i][1] if d is not None and d < 0.12 else ("soft", seed_of("soft", c))
             chunks.setdefault(key, []).extend(faces)
+    name_of = {i: n for i, (n, _) in enumerate(A.PALETTE)}
     bodies = []
     for key in sorted(chunks, key=str):
         faces = chunks[key]
         vs = list({v for f in faces for v in f.verts})
         c0, he, axes = _obb(vs)
+        # A piece the model shows as a surface (a plastered gable, a shutter, a sheet of thatch) gets its
+        # material's thickness (bo_asset.THICKNESS), backwards, into the house, where nothing sees it yet.
+        parts = {}
+        for f in faces:
+            n = name_of.get(int(f.loops[0][b.uv].uv[0] * A.PALETTE_SIZE), "plaster")
+            parts[n] = parts.get(n, 0.0) + f.calc_area()
+        want = A.THICKNESS.get(max(parts, key=parts.get), 0.0) * A.M  # metres to tiles
+        if 2 * min(he) < 0.9 * want:  # up to the material's thickness, what it has counted in
+            # Extruded along its thinnest axis, towards the middle of the house, kept on the plot.
+            k = min(range(3), key=lambda a: he[a])
+            axis = axes.col[k].to_3d()
+            if axis.dot(Vector((W / 2, -H / 2, c0.z)) - c0) < 0:
+                axis = -axis
+            have = set(faces)
+            res = bmesh.ops.extrude_face_region(bm, geom=faces, use_keep_orig=True)
+            new_v = [g for g in res["geom"] if isinstance(g, bmesh.types.BMVert)]
+            for v in new_v:
+                v.co += axis * (want - 2 * min(he))
+                v.co.x = min(max(v.co.x, 0.0), W)
+                v.co.y = min(max(v.co.y, -H), 0.0)
+                v.co.z = max(v.co.z, 0.0)
+            faces = faces + list({f for v in new_v for f in v.link_faces if f not in have})
+            chunks[key] = faces
+            vs = list({v for f in faces for v in f.verts})
+            c0, he, axes = _obb(vs)
         bodies.append({"faces": faces, "c0": c0, "he": he, "axes": axes, "mat": MATERIALS[key[0]], "kind": key[0],
                        "pts": numpy.array([tuple(v.co - c0) for v in vs])})
     # Chunk ids into UV1.x (0 = still), the animated mask cleared.
