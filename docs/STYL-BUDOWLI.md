@@ -172,7 +172,7 @@ Decyzje właściciela 2026-11-28 (wszystkie według rekomendacji): zieleń patyn
 
 Kontur w przestrzeni ekranu (`game/shaders/outline.gdshader`, `boot.gd` `set_outline`, w zrzutach `outline=1` lub `2`; w przeglądarce domów przełącznik "Kontur"): ciepła ciemnobrązowa linia (0,22; 0,14; 0,09, krycie 80 %) tam, gdzie głębia między sąsiednimi pikselami skacze o więcej niż 0,18 kafelka (36 cm). Obrysowuje sylwetki, okapy nad ścianami, dachy na tle gruntu i postacie; spoiny cegieł i dachówek zostają bez linii. Grubość: cienki 1 px, wyraźny 2 px do sąsiadów. Koszt: jeden dodatkowy przebieg pełnoekranowy z czterema odczytami głębi (w przeglądarce dodatkowo drugi render sceny). Decyzja właściciela 2026-11-28: cienki (1 px) domyślnie w grze (`OUTLINE_DEFAULT`), wyłączony nad widokami specjalnymi (kolumny i płytki nakładek), test w `test_ui.gd`.
 
-## 10. Porównanie proporcji (2026-11-28, do decyzji)
+## 10. Proporcje (przyjęte 2026-11-28: B, poziomy 5 i 6 zamienione)
 
 Wersja A: obecne domy. Wersja B (`BO_PROPORTION=B` w eksporcie, modele w `game/models_b/` poza repo): dachy poziomów 1-5 w nachyleniu z rzutu (bez `ROOF_STEEP`), kamienica z niższymi kondygnacjami (parter 2,0 m zamiast 2,3 m, piętro 1,85 m zamiast 2,1 m, drzwi 1,7 m); poziomy 6-7 bez zmian. Porównanie: `screenshot.gd build_view=9` (z kamery gry) i `build_view=9 side=1` (z boku), postać 1,75 m przy każdym domu, przy wersji B bryły zastępcze pałacu (1,62 x wysokość domu miejskiego) i posągu boga (3,57 x), według proporcji sprite'ów eZeus.
 
@@ -189,3 +189,5 @@ Wersja A: obecne domy. Wersja B (`BO_PROPORTION=B` w eksporcie, modele w `game/m
 Wysokość mierzona do najwyższego punktu (komin); dane z oryginału: dom ludu najwyższego poziomu ok. 2 postaci nad rzutem, niskie poziomy przysadziste.
 
 Wersja C (`BO_PROPORTION=C`, `game/models_c/` poza repo): B i dodatkowo niższe kondygnacje mieszkania (parter o 0,25 m, piętro o 0,2 m) i domu miejskiego (o 0,3 i 0,25 m), okna piętra mieszkania 15 cm niżej, portyk, architraw, fryz, gzyms i rekwizyty historii przesunięte razem z piętrami. Mieszkanie 5,79 m (3,3 postaci zamiast 3,6), dom miejski 6,74 m (3,9 zamiast 4,2). Porównanie: `build_view=9 compare=b,c`.
+
+Decyzja właściciela 2026-11-28: wersja B; poziom 5 mieszkanie, poziom 6 kamienica (pełne kondygnacje, steep 1,4). Wysokości do komina: 2,73 / 3,67 / 3,98 / 4,17 / 5,95 / 6,78 / 7,29 m (1,6 / 2,1 / 2,3 / 2,4 / 3,4 / 3,9 / 4,2 postaci). Budynki ważne: pałac 1,6 raza, posąg boga 2,5 raza wysokości domu miejskiego.

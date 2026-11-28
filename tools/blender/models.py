@@ -25,7 +25,7 @@ MODELS = {}
 # The proportions under comparison (owner, 2026-11-28, docs/STYL-BUDOWLI.md): "A" the houses as they are, "B"
 # nearer the reference's sprites (eZeus): low and squat up to level 5 (roofs at the plans' rise, the row house's
 # storeys lower), rising only at levels 6-7. BO_PROPORTION=B exports B; A stays the game's until the owner picks.
-PROFILE = os.environ.get("BO_PROPORTION", "A")
+PROFILE = os.environ.get("BO_PROPORTION", "B")  # B chosen by the owner, 2026-11-28
 LOW_STOREYS = {"A": (2.3, 2.1, 1.9), "B": (2.0, 1.85, 1.7), "C": (2.0, 1.85, 1.7)}  # the row house: storeys, doors
 # "C": B and the flat and the city house with lower storeys too (ground floor, upper floor: how much lower).
 HIGH_DROP = {6: (-0.25, -0.2), 7: (-0.3, -0.25)}
@@ -247,9 +247,10 @@ def homestead(b, rng, story=None):
     b.scaffold(height=3.2 * M)
 
 
-@model("common_housing_5", "common_housing", "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria")
+@model("common_housing_6", "common_housing", "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy")
 def row_house(b, rng, story=None):
-    hg, hu, hd = LOW_STOREYS[PROFILE]
+    low = False  # level 6 since 2026-11-28 (swapped with the flat): full storeys in every profile
+    hg, hu, hd = LOW_STOREYS["A"]
     zu = 0.3 + hg  # the upper floor's foot
     D.footing(b, 0.35, 0.35, 3.3, 3.1, h=0.3, rng=rng)
     _room(b, rng, 0.4, 0.4, 3.2, 3.0, 0.3, hg, thick=0.45, part="stone", block=(0.62, 0.32),
@@ -268,7 +269,7 @@ def row_house(b, rng, story=None):
             # The console: a stone corbel in the wall and a strut from it up to the beam's underside. Over the
             # door and the window the corbel sits on their lintels.
             over = any(a <= bx + 0.04 <= a + w_ for a, w_ in ((1.0, 0.9), (2.6, 0.4)))
-            base = fz - (0.3 if over else 0.6) if PROFILE == "A" else (0.3 + hd + 0.18 if over else fz - 0.5)
+            base = fz - (0.3 if over else 0.6) if not low else (0.3 + hd + 0.18 if over else fz - 0.5)
             b.cbox(t(bx - 0.01), t(3.4), t(base - 0.08), t(0.1), t(0.07), t(0.12), t(0.01), "stone", stage=0.55)
             b.tube_path([(t(bx + 0.04), t(3.43), t(base)), (t(bx + 0.04), t(3.40 + (fz - 0.15 - base) * 0.9 + 0.05),
                          t(fz - 0.15))], t(0.03), "dark_wood", sides=8, stage=0.55)
@@ -302,7 +303,7 @@ def row_house(b, rng, story=None):
     if story == "potters":  # painted amphorae for sale on the balcony, an awning over it
         for x in (0.75, 3.2):
             D.amphora(b, x, 3.62, scale=0.55, rng=rng, z=fz, name="balcony amphora %d" % int(x * 10))
-        S.awning(b, 0.5, 3.5, 3.4, zu + hu - 0.1, 0.52, 0.3 if PROFILE == "A" else 0.18, rng, pots=5)  # clear of the rail
+        S.awning(b, 0.5, 3.5, 3.4, zu + hu - 0.1, 0.52, 0.3 if not low else 0.18, rng, pots=5)  # clear of the rail
     elif b.detail:
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
@@ -319,6 +320,9 @@ def row_house(b, rng, story=None):
         D.wool_bale(b, 0.5, 3.75, scale=0.7, rng=rng)
         D.loom(b, 0.0, 1.0, along_x=False, rng=rng)
     D.hydria(b, 3.32, 3.72, scale=0.8, rng=rng)
+    with D.goods(b, "olive_oil"):  # level 6 needs olive oil: the jars along the east wall
+        D.pithos(b, 3.82, 1.0, scale=0.42, rng=rng, lid=True)
+        D.amphora(b, 3.84, 1.55, scale=0.48, rng=rng)
     D.flower_box(b, 3.6, 2.02, zu + 0.81, 0.51, rng, along_x=False, out=1)  # under the upper east window
     if story:
         b.mirror = S.STORIES[story]["mirror"]
@@ -326,7 +330,7 @@ def row_house(b, rng, story=None):
     b.scaffold(height=5.2 * M)
 
 
-@model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa")
+@model("common_housing_5", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna")
 def flat(b, rng, story=None):
     d1, d2 = HIGH_DROP[6] if PROFILE == "C" else (0.0, 0.0)  # C: lower storeys
 
@@ -371,9 +375,7 @@ def flat(b, rng, story=None):
         D.basket(b, 2.38, 2.15, "olives", scale=0.6, rng=rng)
     with D.goods(b, "fleece"):
         D.wool_bale(b, 1.62, 3.45, scale=0.6, rng=rng)
-    with D.goods(b, "olive_oil"):
-        D.pithos(b, 2.35, 3.42, scale=0.55, rng=rng, lid=True)
-        D.amphora(b, 2.0, 3.86, scale=0.55, rng=rng)
+    D.pithos(b, 2.35, 3.42, scale=0.55, rng=rng, lid=True, name="water jar")  # level 5 holds no oil (data/housing.json)
     for i, at in enumerate((0.5, 1.5, 2.5)):  # flowers under the upper windows
         D.flower_box(b, 0.35 + at - 0.03, 1.85, up(3.36) + wz - 1.05, 0.51, rng, name="flower box %d" % (i + 1))
     D.ivy(b, 3.65, 0.7, 1.05, 0.35, up(2.5), rng, along_x=False, out=1)
@@ -524,7 +526,7 @@ def observatory(b, rng):
 
 def _stories():
     """Every level in each family's version: common_housing_<level>_<story> (boot.gd picks it by the id)."""
-    for level, fn in ((1, shelter), (2, hut), (3, cabin), (4, homestead), (5, row_house), (6, flat), (7, city_house)):
+    for level, fn in ((1, shelter), (2, hut), (3, cabin), (4, homestead), (5, flat), (6, row_house), (7, city_house)):
         base = MODELS["common_housing_%d" % level]
         for story, spec in S.STORIES.items():
             MODELS["common_housing_%d_%s" % (level, story)] = (

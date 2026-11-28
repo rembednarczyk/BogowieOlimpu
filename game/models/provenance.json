@@ -393,7 +393,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna"
  },
  "common_housing_5_gardeners.glb": {
   "building": "common_housing",
@@ -405,7 +405,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: ogrodnicy i pszczelarze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: ogrodnicy i pszczelarze"
  },
  "common_housing_5_gardeners_lod1.glb": {
   "building": "common_housing",
@@ -417,7 +417,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: ogrodnicy i pszczelarze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: ogrodnicy i pszczelarze"
  },
  "common_housing_5_lod1.glb": {
   "building": "common_housing",
@@ -429,7 +429,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna"
  },
  "common_housing_5_potters.glb": {
   "building": "common_housing",
@@ -441,7 +441,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: garncarze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: garncarze"
  },
  "common_housing_5_potters_lod1.glb": {
   "building": "common_housing",
@@ -453,7 +453,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: garncarze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: garncarze"
  },
  "common_housing_5_shepherds.glb": {
   "building": "common_housing",
@@ -465,7 +465,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: pasterze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: pasterze"
  },
  "common_housing_5_shepherds_lod1.glb": {
   "building": "common_housing",
@@ -477,7 +477,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria; historia: pasterze"
+  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna; historia: pasterze"
  },
  "common_housing_6.glb": {
   "building": "common_housing",
@@ -489,7 +489,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy"
  },
  "common_housing_6_gardeners.glb": {
   "building": "common_housing",
@@ -501,7 +501,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: ogrodnicy i pszczelarze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: ogrodnicy i pszczelarze"
  },
  "common_housing_6_gardeners_lod1.glb": {
   "building": "common_housing",
@@ -513,7 +513,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: ogrodnicy i pszczelarze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: ogrodnicy i pszczelarze"
  },
  "common_housing_6_lod1.glb": {
   "building": "common_housing",
@@ -525,7 +525,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy"
  },
  "common_housing_6_potters.glb": {
   "building": "common_housing",
@@ -537,7 +537,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: garncarze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: garncarze"
  },
  "common_housing_6_potters_lod1.glb": {
   "building": "common_housing",
@@ -549,7 +549,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: garncarze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: garncarze"
  },
  "common_housing_6_shepherds.glb": {
   "building": "common_housing",
@@ -561,7 +561,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: pasterze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: pasterze"
  },
  "common_housing_6_shepherds_lod1.glb": {
   "building": "common_housing",
@@ -573,7 +573,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa; historia: pasterze"
+  "note": "kamienica czynszowa: kamienny parter, piętro w tynku, balkon z toczonymi tralkami na wspornikach; zboże, wełna, krosno, hydria, pitos i amfora oliwy; historia: pasterze"
  },
  "common_housing_7.glb": {
   "building": "common_housing",

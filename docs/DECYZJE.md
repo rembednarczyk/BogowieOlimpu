@@ -26,6 +26,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Proporcje B, mieszkanie i kamienica zamienione
+- Decyzja: proporcje B w grze (dachy poziomów 1-5 w nachyleniu z rzutu, wyższe od poziomu 6; `BO_PROPORTION` domyślnie B). Poziom 5 to mieszkanie (id `tenement`, model dawnego poziomu 6), poziom 6 kamienica czynszowa (id `apartment`, dawny poziom 5, pełne kondygnacje); nazwy PL i EN zamienione w `data/housing.json`, mechanika bez zmian. Oliwa (potrzebna od poziomu 6) przeszła z mieszkania do kamienicy: pitos i amfora przy wschodniej ścianie. Pałac 1,6 raza, posąg boga 2,5 raza wysokości domu miejskiego (przy ich modelach).
+- Wysokości (do komina): 2,7 / 3,7 / 4,0 / 4,2 / 6,0 / 6,8 / 7,3 m.
+- Powód: odpowiedź właściciela z 2026-11-28 („Bierzemy B ... zamieniamy modelami 5 i 6; mieszkania wygląda jak naturalna rewolucja poprzedniego etapu - zmień wraz z nazwą i doskaluj do B”; punkt 2 z rekomendacją).
+
 ### 2026-11-28: Cienki kontur
 - Decyzja: cienki kontur (1 px, ciepły ciemny brąz, ze skoków głębi powyżej 36 cm) domyślnie w grze; bez konturu w widokach specjalnych.
 - Powód: odpowiedź właściciela z 2026-11-28 („Cienki kontur, z rekomendacją”).
