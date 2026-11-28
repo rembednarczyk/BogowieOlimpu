@@ -167,3 +167,7 @@ Obejrzane jednorazowo (osiedle domów, domy ludu, dzielnica usług, sanktuarium 
 13. Światło z lewej u góry, cień w prawo w dół; cienie chłodne, niebieskawe, przejścia miękkie, faktura malarska (zgodne z naszym `light()`).
 
 Decyzje właściciela 2026-11-28 (wszystkie według rekomendacji): zieleń patyny dla magazynów i handlu (1), niebiesko-szare ściany domów elity i budynków publicznych (2), barwne posadzki placów, alei i sanktuariów (4), gęstość ozdób według zamożności jako reguła R-018 (5); wpisane w rozdziale 2.
+
+## 9. Próba konturu (2026-11-28, do decyzji)
+
+Kontur w przestrzeni ekranu (`game/shaders/outline.gdshader`, `boot.gd` `set_outline`, w zrzutach `outline=1` lub `2`; w przeglądarce domów przełącznik "Kontur"): ciepła ciemnobrązowa linia (0,22; 0,14; 0,09, krycie 80 %) tam, gdzie głębia między sąsiednimi pikselami skacze o więcej niż 0,18 kafelka (36 cm). Obrysowuje sylwetki, okapy nad ścianami, dachy na tle gruntu i postacie; spoiny cegieł i dachówek zostają bez linii. Grubość: cienki 1 px, wyraźny 2 px do sąsiadów. Koszt: jeden dodatkowy przebieg pełnoekranowy z czterema odczytami głębi (w przeglądarce dodatkowo drugi render sceny). Domyślnie wyłączony do decyzji właściciela.

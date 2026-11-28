@@ -848,7 +848,31 @@ func _build_environment() -> void:
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	cam.size = 44
 	add_child(cam)
+	_add_outline()
 	_place_camera()
+
+# The ink outline (game/shaders/outline.gdshader): a trial, off until the owner decides (2026-11-28).
+var outline: MeshInstance3D
+
+func _add_outline() -> void:
+	outline = MeshInstance3D.new()
+	outline.name = "Outline"
+	var quad := QuadMesh.new()
+	quad.size = Vector2(2, 2)
+	outline.mesh = quad
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/outline.gdshader")
+	outline.material_override = mat
+	outline.extra_cull_margin = 16384.0  # the quad is moved onto the screen in the shader: never cull it
+	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	outline.visible = false
+	cam.add_child(outline)
+	outline.position = Vector3(0, 0, -2)
+
+# 0 off, 1 thin, 2 strong.
+func set_outline(level: int) -> void:
+	(outline.material_override as ShaderMaterial).set_shader_parameter("width", float(level))
+	outline.visible = level > 0
 
 # The camera's depth range follows what it sees: an orthographic camera at the default far plane (4 000 m)
 # spreads the sun's shadow map so thin that the shadows blur away (checked 2026-11-27: crisp at 120 m).

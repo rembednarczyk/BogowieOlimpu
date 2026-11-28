@@ -11,6 +11,7 @@ var demo := ""  # demo=atlantis_gods and the like
 var zoom := 0.0
 var at := Vector2(-1, -1)
 var view := ""  # view=water and the like: a special view (docs/gameplay/16)
+var outline := 0  # outline=1 thin, 2 strong: the ink outline trial (game/shaders/outline.gdshader)
 var node: Node
 
 func _init() -> void:
@@ -32,6 +33,8 @@ func _init() -> void:
 		elif arg.begins_with("at="):  # the tile the camera looks at
 			var xy := arg.substr(3).split(",")
 			at = Vector2(float(xy[0]), float(xy[1]))
+		elif arg.begins_with("outline="):
+			outline = int(arg.substr(8))
 		elif arg.begins_with("dpi="):  # a phone's density: the interface in dp as there (ui_scale.gd)
 			UiScale.forced_dpi = int(arg.substr(4))
 	var scene: PackedScene = load("res://scenes/boot.tscn")
@@ -44,6 +47,8 @@ func _init() -> void:
 	root.add_child(node)
 
 func _process(_delta: float) -> bool:
+	if frames_left == 4 and outline > 0:
+		node.set_outline(outline)
 	if frames_left == 4 and (zoom > 0.0 or at.x >= 0):
 		if zoom > 0.0:
 			node.cam.size = zoom
