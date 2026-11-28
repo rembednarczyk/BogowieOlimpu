@@ -9,6 +9,7 @@ Distances in plot metres; a house's plot is 4 x 4 m (2 x 2 tiles).
 import math
 
 import bo_detail as D
+from bo_detail import finishing
 from bo_detail import t
 
 
@@ -79,6 +80,7 @@ def _p(along_x, x, y, a, o, z):
     return (t(x + a), t(y + o), t(z)) if along_x else (t(x + o), t(y + a), t(z))
 
 
+@finishing
 def fleece_rack(b, x, y, along_x, rng, name):
     """Two forked posts and a pole, fleeces hung over it to dry, a tuft or two fallen below."""
     w, d, h = 0.9, 0.26, 1.15
@@ -101,6 +103,7 @@ def fleece_rack(b, x, y, along_x, rng, name):
             b.surface(fn, 6, 4, "linen", stage=0.9, tint=rng.uniform(0.6, 0.95))
 
 
+@finishing
 def wattle_fence(b, x, y, along_x, rng, name, length=1.3):
     """A woven fence of hazel: stakes in the ground, withies woven in and out between them."""
     d, h = 0.1, 0.72
@@ -125,6 +128,7 @@ def wattle_fence(b, x, y, along_x, rng, name, length=1.3):
         b.tube_path(pts, t(0.011), "bark", sides=5, stage=0.86, tint=rng.uniform(0.3, 0.7))
 
 
+@finishing
 def crook(b, x, y, along_x, rng, name):
     """A shepherd's crook stood up with a bell and a goatskin water bag hung on it."""
     b.prop(name, t(x), t(y), 0, t(x + 0.22), t(y + 0.22), t(1.6))
@@ -140,6 +144,7 @@ def crook(b, x, y, along_x, rng, name):
                 "hide", sides=12, stage=0.9, smooth=2)
 
 
+@finishing
 def shearing_bench(b, x, y, along_x, rng, name):
     """A low bench of a split log on two stumps, shears and a fleece rolled on it."""
     w, d, h = 0.8, 0.28, 0.42
@@ -155,6 +160,7 @@ def shearing_bench(b, x, y, along_x, rng, name):
                     rng=rng, z=h, name=name + " fleece")
 
 
+@finishing
 def pot_stack(b, x, y, along_x, rng, name):
     """Pots fresh from the kiln, stacked mouth down in a little pyramid, three, two, one."""
     w, d = 0.48, 0.28
@@ -173,6 +179,7 @@ def pot_stack(b, x, y, along_x, rng, name):
                     "roof_tile", sides=18, stage=0.9, tint=rng.uniform(0.25, 0.8), smooth=2)
 
 
+@finishing
 def potter_wheel(b, x, y, along_x, rng, name):
     """A kick wheel: a stone flywheel at the foot, a shaft, the wheel head with a pot half thrown on it; a
     lump of wet clay on a board beside."""
@@ -189,6 +196,7 @@ def potter_wheel(b, x, y, along_x, rng, name):
                 sides=12, stage=0.9, smooth=2)
 
 
+@finishing
 def kiln(b, x, y, along_x, rng, name):
     """A small updraught kiln: a round firing chamber of mudbrick, plastered with clay, the stoke hole dark
     at the front, a vent at the top, firewood at its side."""
@@ -204,6 +212,7 @@ def kiln(b, x, y, along_x, rng, name):
         b.lathe(t(cx), t(cy), t(0.84), [(t(0.075), 0), (t(0.08), t(0.04))], "stone", sides=12, stage=0.9, top="dark_wood")
 
 
+@finishing
 def drying_shelf(b, x, y, along_x, rng, name):
     """Two planks on posts against the wall, pots drying on them before the firing."""
     w, d, h = 1.0, 0.26, 0.95
@@ -227,6 +236,7 @@ def drying_shelf(b, x, y, along_x, rng, name):
                     sides=14, stage=0.9, tint=rng.uniform(0.3, 0.8), smooth=2)
 
 
+@finishing
 def veg_bed(b, x, y, along_x, rng, name):
     """A raised bed edged with boards: rows of cabbages, leeks and lettuces."""
     w, d = 1.2, 0.42
@@ -250,6 +260,7 @@ def veg_bed(b, x, y, along_x, rng, name):
                          "leaves" if kind != 2 else "grass", stage=0.9, tint=rng.uniform(0.3, 0.9))
 
 
+@finishing
 def beehives(b, x, y, along_x, rng, name):
     """Two clay hives lying on a stone stand, as Greek bee-keepers kept them: long tubes, the bees' door a dark
     round at the front, a stone on each lid."""
@@ -270,6 +281,7 @@ def beehives(b, x, y, along_x, rng, name):
                     "stone", sides=8, stage=0.9)
 
 
+@finishing
 def bean_poles(b, x, y, along_x, rng, name):
     """Three poles tied at the top, beans climbing them."""
     b.prop(name, t(x), t(y), 0, t(x + 0.4), t(y + 0.4), t(1.45))
@@ -288,6 +300,7 @@ def bean_poles(b, x, y, along_x, rng, name):
                      tint=rng.uniform(0.3, 0.9))
 
 
+@finishing
 def herb_pots(b, x, y, along_x, rng, name):
     """Three pots of herbs in a row."""
     sx, sy = (0.75, 0.26) if along_x else (0.26, 0.75)
@@ -353,6 +366,7 @@ def _pt(p):
     return tuple(t(v) for v in p)
 
 
+@finishing
 def skeins(b, p0, p1, rng, name="skeins", pole=True, drop=0.42, out=(0.0, 0.0), pad=0.05):
     """Skeins of dyed wool hung over a pole (or over a rail when `pole` is False) from p0 to p1: each a long
     loop of a few strands, red, ochre, blue, yellow, sky; `out` shifts the loops off the line (over a rail)."""
@@ -381,6 +395,7 @@ def skeins(b, p0, p1, rng, name="skeins", pole=True, drop=0.42, out=(0.0, 0.0), 
             b.tube_path([_pt(q) for q in pts], t(0.012), colour, sides=5, stage=0.9, tint=rng.uniform(0.4, 0.8))
 
 
+@finishing
 def awning(b, x0, x1, y, z, depth, drop, rng, name="awning", poles=False, pots=4, stripes=("cloth", "linen")):
     """A striped awning out from the wall (its face at y, facing +y) at height z, `depth` out and `drop` lower
     at the front, on iron arms (or two poles at the front when `poles`); its hem cut in scallops; pots on ropes
@@ -421,6 +436,7 @@ def awning(b, x0, x1, y, z, depth, drop, rng, name="awning", poles=False, pots=4
                 tint=rng.uniform(0.3, 0.8), smooth=2)
 
 
+@finishing
 def vine_canopy(b, x0, x1, y, z, depth, rng, root, name="vine"):
     """A vine trained over a light frame out from the wall (face at y, facing +y) at height z: two brackets, a
     front rail, a roof of leaves with bunches of grapes; its trunk rising from `root` (x, y) on the ground."""
@@ -451,6 +467,7 @@ def vine_canopy(b, x0, x1, y, z, depth, rng, root, name="vine"):
                 "blue_paint", sides=8, stage=0.92, tint=0.1, smooth=2, shape=lambda a: 1.0 + 0.15 * abs(math.sin(3 * a)))
 
 
+@finishing
 def swag(b, p0, p1, drop, part, rng, name="swag"):
     """A dyed cloth hung between two points, falling in a curve, its folds down the middle."""
     (x0, y0, z0), (x1, y1, z1) = p0, p1
@@ -463,6 +480,7 @@ def swag(b, p0, p1, drop, part, rng, name="swag"):
     b.surface(fn, 12 if b.detail else 3, 3 if b.detail else 1, part, stage=0.92, tint=rng.uniform(0.45, 0.75))
 
 
+@finishing
 def column_vine(b, x, y, z0, z1, radius, rng):
     """A vine wound up a column: a thin stem spiralling round it, leaves standing off the shaft."""
     if not b.detail:
@@ -478,6 +496,7 @@ def column_vine(b, x, y, z0, z1, radius, rng):
             b.strand(_pt(q), _pt(tip), t(0.07), "leaves", stage=0.92, tint=rng.uniform(0.2, 0.9))
 
 
+@finishing
 def garland(b, x0, x1, y, z, rng, grapes=True):
     """Vine leaves along a beam's face, sagging a little between, bunches of grapes under them."""
     if not b.detail:
@@ -496,6 +515,7 @@ def garland(b, x0, x1, y, z, rng, grapes=True):
                     "blue_paint", sides=8, stage=0.92, tint=0.1, smooth=2)
 
 
+@finishing
 def hanging_pots(b, x0, x1, y, z, rng, n=3, name="hung pots"):
     """Pots and painted plates on ropes from a beam's underside: a potter's shop front."""
     b.prop(name, t(x0), t(y - 0.09), t(z - 0.55), t(x1), t(y + 0.09), t(z))
@@ -513,6 +533,7 @@ def hanging_pots(b, x0, x1, y, z, rng, n=3, name="hung pots"):
                         0.35, 0.6, "dark_wood", 0.92, steps=2)
 
 
+@finishing
 def krater(b, x, y, z, rng, scale=1.0, name="krater"):
     """A big painted mixing bowl on a foot, two handles: black glaze, a red band, a stone plinth under it."""
     h, r = 0.42 * scale, 0.16 * scale
@@ -532,6 +553,7 @@ def krater(b, x, y, z, rng, scale=1.0, name="krater"):
         b.tube_path([_pt(q) for q in pts], t(0.016), "roof_tile", sides=8, stage=0.9)
 
 
+@finishing
 def vine_stem(b, pts, rng):
     """A bare stem of the vine from one point to the next (from a column's top up to the roof)."""
     if not b.detail:
@@ -542,6 +564,7 @@ def vine_stem(b, pts, rng):
                  tint=rng.uniform(0.3, 0.8))
 
 
+@finishing
 def roof_vine(b, x0, x1, y0, y1, rng, density=560):
     """A vine lying over a roof between x0-x1 and y0-y1 (y1 the eave): leaves on the tiles where rays from
     above meet them, sprays hanging down over the eave, grapes under it. Drawn after the roof it lies on."""

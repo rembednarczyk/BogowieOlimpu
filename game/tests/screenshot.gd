@@ -13,6 +13,7 @@ var at := Vector2(-1, -1)
 var view := ""  # view=water and the like: a special view (docs/gameplay/16)
 var side := false  # side=1: build_view 9 from the side (heights)
 var compare := ["res://models/", "res://models_b/"]  # compare=b,c: the two sets of build_view 9 (a = game/models)
+var ruin_level := 3  # ruin_level=N: build_view 10 shows that level's fall
 var outline := -1  # outline=0 off, 1 thin (the default), 2 strong (game/shaders/outline.gdshader)
 var node: Node
 
@@ -41,6 +42,8 @@ func _init() -> void:
 				compare.append("res://models/" if k == "a" else "res://models_%s/" % k)
 		elif arg == "side=1":
 			side = true
+		elif arg.begins_with("ruin_level="):
+			ruin_level = int(arg.substr(11))
 		elif arg.begins_with("outline="):
 			outline = int(arg.substr(8))
 		elif arg.begins_with("dpi="):  # a phone's density: the interface in dp as there (ui_scale.gd)
@@ -130,6 +133,29 @@ func _process(_delta: float) -> bool:
 				node.cam.size = 16.0
 				node._place_camera()
 			node.lod_close = true
+		elif build_view == 10:  # a house falling (bo_collapse.py): the fall frame by frame, then each level's ruin
+			node.lod_close = true
+			node.ui.visible = false
+			var name := "common_housing_%d_ruin" % ruin_level
+			var times := [0.0, 0.25, 0.5, 0.75, 1.0, 1.5, -1.0]
+			var rows := []
+			for i in times.size():
+				rows.append([name, times[i], Vector2(2 + i * 2.6, 40)])
+			for level in 7:
+				rows.append(["common_housing_%d_ruin" % (level + 1), -1.0, Vector2(2 + level * 2.6, 44)])
+			for r in rows:
+				var mi := MeshInstance3D.new()
+				mi.mesh = node._model(r[0])
+				mi.material_override = node._ruin_material(r[0])
+				mi.position = Vector3(r[2].x, 0.2, r[2].y)
+				node.add_child(mi)
+				mi.set_instance_shader_parameter("collapse", r[1])
+				mi.set_instance_shader_parameter("damage", 2.0)
+				mi.set_instance_shader_parameter("age", 0.5)
+			if zoom == 0.0:
+				node.cam_target = Vector3(10, 0, 42.5)
+				node.cam.size = 16.0
+				node._place_camera()
 		elif build_view == 9:  # proportions A (game/models) and B (game/models_b, BO_PROPORTION=B), a person by each
 			node.lod_close = true
 			node.ui.visible = false

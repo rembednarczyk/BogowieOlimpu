@@ -11,6 +11,7 @@ import math
 import random
 
 import bo_asset as A
+import functools
 from bo_asset import M
 
 BRICK_L = 0.40   # a mudbrick: 40 x 40 x 10 cm (Greek houses, e.g. Olynthus)
@@ -20,6 +21,19 @@ JOINT = 0.014    # the mortar joint
 
 def t(v):
     return v * M
+
+
+def finishing(fn):
+    """Marks a piece as brought in after the house is built (bo_asset.Builder.finishing): goods, pots, flowers,
+    a family's things. Its first argument is the Builder."""
+    @functools.wraps(fn)
+    def wrap(b, *args, **kw):
+        b.finishing += 1
+        try:
+            return fn(b, *args, **kw)
+        finally:
+            b.finishing -= 1
+    return wrap
 
 
 def _cut(span, holes):
@@ -156,6 +170,7 @@ def brick_wall(b, wall, rng, part="mudbrick", stage=(0.1, 0.6), plaster=None, bl
 
 
 def _openings(b, wall, rng, s0, s1):
+    s1 = max(s1, 0.965)  # doors, shutters and frames go in once the roof is on (the lintels and sills with the wall)
     for o in wall.openings:
         mid = s0 + (s1 - s0) * min(1.0, (o["z"] + o["h"]) / max(wall.height, 0.01))
         wall.put(b, o["at"] - 0.12, -0.02, o["z"] + o["h"], o["w"] + 0.24, wall.thick + 0.04, 0.12, "dark_wood",
@@ -326,7 +341,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             half_run = (t(run_len / 2 - 0.02), 0, 0) if along_x else (0, t(run_len / 2 - 0.02), 0)
             half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
             b.obox(centre, half_run, half_up, tuple(t(n[k] * 0.0125) for k in range(3)), tiles,
-                   stage=s0, tint=0.1)
+                   stage=s0 + 0.002 + (s1 - s0) * r / rows * 0.98, tint=0.1)  # each row's bed just before its tiles
     for side in sides:  # the slopes
         for r in range(rows):
             f0 = r * exposed / slope
@@ -594,6 +609,7 @@ def _painted_band(b, x, y, z, h, r, ctrl, f0, f1, part, stage, steps=6):
     b.lathe(t(x), t(y), t(z), prof, part, sides=40, stage=stage, tint=0.5)
 
 
+@finishing
 def pithos(b, x, y, scale=1.0, stage=0.9, rng=None, name="pithos", z=0.0, lid=False):
     """A storage jar: tall and round-bellied on a narrow foot, a thick rolled lip, two lugs on the shoulder,
     three bands round the belly; the oil dark in its mouth or a lid on it. A smooth body of revolution."""
@@ -620,6 +636,7 @@ def pithos(b, x, y, scale=1.0, stage=0.9, rng=None, name="pithos", z=0.0, lid=Fa
                 stage=stage, smooth=3)
 
 
+@finishing
 def amphora(b, x, y, scale=1.0, stage=0.9, rng=None, name="amphora", z=0.0, stopper=True):
     """A transport amphora: a slim egg of a body, a knob of a toe, a long neck, two handles from neck to
     shoulder; a stopper of cork and pitch; standing in a ring of stones."""
@@ -649,6 +666,7 @@ def amphora(b, x, y, scale=1.0, stage=0.9, rng=None, name="amphora", z=0.0, stop
             stage=stage)
 
 
+@finishing
 def hydria(b, x, y, scale=1.0, stage=0.9, rng=None, name="hydria", z=0.0):
     """A water jar: a round belly, a flat shoulder, two side handles to lift it and one at the back to pour."""
     h, r = 0.55 * scale, 0.20 * scale
@@ -669,6 +687,7 @@ def hydria(b, x, y, scale=1.0, stage=0.9, rng=None, name="hydria", z=0.0):
     b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.016 * scale), "roof_tile", sides=10, stage=stage)
 
 
+@finishing
 def sack(b, x, y, scale=1.0, stage=0.9, rng=None, name="sack", z=0.0, part="linen"):
     """A sack of grain: a slumped body, the neck gathered and tied with rope."""
     h, r = 0.62 * scale, 0.22 * scale
@@ -683,6 +702,7 @@ def sack(b, x, y, scale=1.0, stage=0.9, rng=None, name="sack", z=0.0, part="line
     b.lathe(t(x), t(y), t(z + h * 0.86), [(t(r * 0.30), 0), (t(r * 0.30), t(0.02))], "rope", sides=16, stage=stage)
 
 
+@finishing
 def basket(b, x, y, produce, scale=1.0, stage=0.9, rng=None, name="basket", z=0.0):
     """A woven basket of produce (onions, figs, carrots' tops): ribs round its side, a rolled rim, the fruit
     heaped above it."""
@@ -706,6 +726,7 @@ def basket(b, x, y, produce, scale=1.0, stage=0.9, rng=None, name="basket", z=0.
                 colour, sides=10, stage=stage, tint=rng.uniform(0.3, 0.8) if rng else 0.5, smooth=2)
 
 
+@finishing
 def wool_bale(b, x, y, scale=1.0, stage=0.9, rng=None, name="wool", z=0.0):
     """Fleece rolled into a bale: lumpy, tied twice with rope."""
     h, r = 0.40 * scale, 0.24 * scale
@@ -721,6 +742,7 @@ def wool_bale(b, x, y, scale=1.0, stage=0.9, rng=None, name="wool", z=0.0):
                 sides=36, stage=stage)
 
 
+@finishing
 def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom", toward=False):
     """A warp-weighted loom leaning on a wall: two uprights, the cloth beam, the warp threads, the clay weights
     hanging in a row, a part of the cloth woven."""
@@ -746,6 +768,7 @@ def loom(b, x, y, along_x=True, stage=0.9, rng=None, name="loom", toward=False):
     b.surface(cloth, 8, 3, "cloth", stage=stage, tint=0.5)
 
 
+@finishing
 def blossom(b, p, r, colour, stage=0.95, tint=0.5):
     """A small open flower at p (metres): five round petals in a shallow cup, a yellow heart."""
     x, y, z = p
@@ -754,6 +777,7 @@ def blossom(b, p, r, colour, stage=0.95, tint=0.5):
             shape=lambda a: 0.62 + 0.38 * abs(math.cos(2.5 * a)))
 
 
+@finishing
 def chimney_pot(b, x, y, z, rng, scale=1.0, stage=0.8):
     """A terracotta smoke pot on the ridge (metres; z the ridge top): a squat plastered base sunk into the
     tiles, a round-bellied pot drawn up to a narrow neck, a little hat on three legs to keep the rain out.
@@ -779,6 +803,7 @@ def chimney_pot(b, x, y, z, rng, scale=1.0, stage=0.8):
                                                    (t(0.01), t(0.09))], "roof_tile", sides=20, stage=stage, tint=0.35)
 
 
+@finishing
 def wreath(b, wall, at, up, radius=0.1, rng=None, stage=0.9):
     """A laurel wreath hung over a door (in the wall's frame: `at` along, `up` above its foot), tied with a red
     ribbon whose two ends hang down: what a Greek house put up for a wedding or a victory, here on every
@@ -800,6 +825,7 @@ def wreath(b, wall, at, up, radius=0.1, rng=None, stage=0.9):
         b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.01), "cloth", sides=4, stage=stage)
 
 
+@finishing
 def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0, bloom="random"):
     """A terracotta pot with a herb or a geranium: leaves on short stems round a stalk, flowers among them."""
     hp, rp = 0.32 * scale, 0.16 * scale
@@ -825,6 +851,7 @@ def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0, 
             blossom(b, tip, 0.05 * max(scale, 0.7), bloom, stage=stage, tint=rng.uniform(0.35, 0.75))
 
 
+@finishing
 def flower_box(b, x, y, z, length, rng, along_x=True, out=1, name="flower box"):
     """A wooden box of flowers under a window (metres): x, y the wall's outer face at the box's start, out the
     side the wall faces (+1 or -1 along y for a box along x, along x otherwise). The box stands off the sill on
@@ -862,6 +889,7 @@ def flower_box(b, x, y, z, length, rng, along_x=True, out=1, name="flower box"):
                      "leaves", stage=0.95, tint=rng.uniform(0.2, 0.6))
 
 
+@finishing
 def pergola(b, x0, y0, x1, y1, z, rng, name="pergola"):
     """A vine on a frame before the door (metres): two posts at the front, a beam on them, rafters back to the
     wall (y0 its face, just off the plaster), the vine's trunk twisting up a post, its leaves over the top and
@@ -895,6 +923,7 @@ def pergola(b, x0, y0, x1, y1, z, rng, name="pergola"):
                 shape=lambda a: 1.0 + 0.15 * abs(math.sin(3 * a)))
 
 
+@finishing
 def ivy(b, x, y, length, z0, z1, rng, along_x=True, out=1, name="ivy"):
     """Ivy climbing a wall (metres): stems wandering up from the ground, leaves standing off the face. x, y the
     wall's outer face at the patch's start, out the side the wall faces."""
@@ -926,6 +955,7 @@ def ivy(b, x, y, length, z0, z1, rng, along_x=True, out=1, name="ivy"):
                          "leaves" if rng.random() < 0.75 else "grass", stage=0.95, tint=rng.uniform(0.15, 0.7))
 
 
+@finishing
 def laundry_line(b, p0, p1, height, rng, name="laundry"):
     """Washing on a line between two posts (metres): the rope sags, the cloths hang from it in a breeze."""
     (x0, y0), (x1, y1) = p0, p1
@@ -963,6 +993,7 @@ def laundry_line(b, p0, p1, height, rng, name="laundry"):
         f += span + rng.uniform(0.04, 0.08)
 
 
+@finishing
 def grass(b, rng, n=40, name="grass"):
     """Tufts of grass and wild flowers where the ground is free: round the footing, along the walls, at the
     plot's edge. A tuft goes only where nothing stands within its reach (rays up from the ground hit nothing
@@ -1004,6 +1035,7 @@ def grass(b, rng, n=40, name="grass"):
         placed += 1
 
 
+@finishing
 def woodpile(b, x, y, rng, along_x=True, length=0.9, depth=0.42, height=0.55, stage=0.9, name="woodpile", block=True):
     """Firewood stacked as it would lie: the bottom row on two bearers, round logs and halves (flat side down)
     side by side, every log above resting on the two below it at the points where they touch; a chopping block

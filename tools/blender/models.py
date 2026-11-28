@@ -8,6 +8,7 @@ Writes <out_dir>/<model>.glb (default game/models) and game/models/provenance.js
 import json
 import os
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -17,6 +18,7 @@ import random  # noqa: E402
 import bo_asset as A  # noqa: E402
 import bo_detail as D  # noqa: E402
 import bo_story as S  # noqa: E402
+import bo_collapse as C  # noqa: E402
 from bo_detail import t  # noqa: E402
 from bo_asset import FOUNDATION, WALLS, ROOF, M  # noqa: E402
 
@@ -746,6 +748,16 @@ def main():
                                                   "source": "tools/blender/models.py",
                                                   "author": "Bogowie Olimpu (model ze skryptu)",
                                                   "license": "własny (R-017)", "note": note}
+        if re.fullmatch(r"common_housing_\d+", name):  # the house of each level fallen (bo_collapse.py)
+            A.reset()
+            b = A.Builder(name + "_ruin", w, h, detail=True)
+            fn(b, random.Random(name))
+            b.check_props()
+            A.export(C.ruin(b, out_dir, name), out_dir / (name + "_ruin.glb"))
+            provenance[name + "_ruin.glb"] = {"building": "common_housing", "ruin": True, "footprint": [w, h], "lod": 0,
+                                              "source": "tools/blender/bo_collapse.py",
+                                              "author": "Bogowie Olimpu (model ze skryptu)",
+                                              "license": "własny (R-017)", "note": "ruina po zawaleniu, " + note}
     if out_dir.resolve() == (A.REPO / "game" / "models").resolve():
         provenance_path.write_text(json.dumps(dict(sorted(provenance.items())), ensure_ascii=False, indent=1) + "\n")
 

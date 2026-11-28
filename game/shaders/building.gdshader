@@ -14,6 +14,12 @@ instance uniform float damage = 0.0;   // 0-3: cracks, plaster gone, loose parts
 instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
 instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
+instance uniform float collapse = -1.0;  // a ruin: seconds since the house fell (-1: long ago, the rubble at rest)
+// A ruin's fall (tools/blender/bo_collapse.py): each chunk's transform per frame, rows of a 3x4 matrix in
+// texels (chunk x 3 + row, frame); the chunk in UV2.x, 0 the footing that stays. Set on the ruin's material only.
+uniform sampler2D ruin_frames : filter_nearest;
+uniform int ruin_len = 0;
+uniform float ruin_fps = 24.0;
 
 const int PALETTE_SIZE = 64;  // the UV slots (tools/blender/bo_asset.py); PALETTE holds the colours in use
 const vec3 PALETTE[34] = vec3[34](
@@ -82,6 +88,23 @@ void vertex() {
 		shown = shown && ((int(goods) >> good) & 1) == 1;
 	}
 	v_hidden = shown ? 0.0 : 1.0;
+	vec3 rest = VERTEX;
+	if (ruin_len > 0) {  // the chunk where the fall has it now; between two frames, the mix of both
+		float f = collapse < 0.0 ? float(ruin_len - 1) : clamp(collapse * ruin_fps, 0.0, float(ruin_len - 1));
+		int f0 = int(floor(f));
+		int f1 = min(f0 + 1, ruin_len - 1);
+		int c = int(round(UV2.x)) * 3;
+		mat4 m = mat4(1.0);
+		for (int r = 0; r < 3; r++) {
+			vec4 row = mix(texelFetch(ruin_frames, ivec2(c + r, f0), 0), texelFetch(ruin_frames, ivec2(c + r, f1), 0), f - float(f0));
+			m[0][r] = row.x;
+			m[1][r] = row.y;
+			m[2][r] = row.z;
+			m[3][r] = row.w;
+		}
+		VERTEX = (m * vec4(VERTEX, 1.0)).xyz;
+		NORMAL = normalize(mat3(m) * NORMAL);
+	}
 	if (!shown) {
 		VERTEX = vec3(0.0);  // a part not built yet (or the scaffold once done): no area
 	}
@@ -94,7 +117,7 @@ void vertex() {
 		vec2 d = VERTEX.xz - pivot;
 		VERTEX.xz = pivot + vec2(d.x * cos(a) - d.y * sin(a), d.x * sin(a) + d.y * cos(a));
 	}
-	v_local = VERTEX;
+	v_local = ruin_len > 0 ? rest : VERTEX;  // a fallen brick keeps its cracks and grime
 }
 
 void fragment() {

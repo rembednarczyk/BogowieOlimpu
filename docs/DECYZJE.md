@@ -26,6 +26,11 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Budowa w realistycznej kolejności; zawalenie wypieczone z fizyki
+- Decyzja właściciela: dom rośnie w kolejności z placu budowy, a zawalony dom spada z fizyką; ruina to ostatnia klatka upadku, z animacją.
+- Wykonanie: wykończenie i dobytek po rusztowaniu; upadek symulowany raz w Blenderze (`tools/blender/bo_collapse.py`), w grze odtwarzany shaderem z tekstury klatek (opis w `docs/ASSETY.md`). Fizyka w czasie gry odrzucona: koszt na telefonie i brak powtarzalności.
+- Nie sprawdzono: wydajności upadku na telefonie (7 tekstur do 2 MB, ruina kamienicy 7,5 MB glb).
+
 ### 2026-11-28: Głębokie okapy; śmielsze bryły odłożone
 - Decyzja: (3) każdy dach dwuspadowy ma okap co najmniej 34 cm (`EAVE` w `bo_detail.py`, przycięty do brzegu działki), wdrożone. (2) Rozbijanie niższych poziomów na bryły o różnej wysokości przyjęte jako kierunek, ale na razie zostają obecne bryły domów; próba `flat_bold` (rozdział 11 przewodnika) poza grą.
 - Powód: odpowiedź właściciela z 2026-11-28 („2 i 3 tak, ale póki co zostajemy przy starszych bryłach”).

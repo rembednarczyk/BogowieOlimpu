@@ -167,7 +167,15 @@ class Builder:
     GOODS = {"food": 0, "fleece": 1, "olive_oil": 2, "wine": 3}
     good = None
 
+    # The order of building (owner, 2026-11-28: realistic): footing, walls course by course, floors, the roof's
+    # frame, its bed and tiles row by row from the eaves, the ridge; only then the joinery, the chimney, and
+    # last what the family brings and grows: goods, pots, flowers, the story's things. Those (marked by
+    # bo_detail.finishing) come in the last 2.5 % of the building time, in their own order.
+    finishing = 0
+
     def _tag(self, faces, part, stage, plaster, loose, anim, pivot, tint=0.5):
+        if self.finishing and stage < 0.999:
+            stage = 0.975 + 0.02 * min(max((stage - 0.8) / 0.2, 0.0), 1.0)
         if self.good is not None and pivot == (0, 0):
             pivot = (-1.0 - self.GOODS[self.good], 0.0)
         u = (PALETTE_INDEX[part] + 0.5) / PALETTE_SIZE
@@ -557,6 +565,9 @@ class Builder:
         self.check_props()
         self._mirror()
         self._wonk()
+        return self.finish_mesh()
+
+    def finish_mesh(self):
         bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if f not in self.two_sided])
         mesh = bpy.data.meshes.new(self.name)
         self.bm.to_mesh(mesh)

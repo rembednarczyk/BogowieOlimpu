@@ -64,7 +64,8 @@ Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właści
 9. Widok z daleka (`b.detail` False) z tym samym podparciem i tymi samymi rekwizytami w prostszej formie.
 10. Eksport: `blender -b --factory-startup --python tools/blender/models.py -- game/models <model>`; przerywa się przy każdym naruszeniu z nazwą elementu.
 11. Kontrola: `python3 tools/checks/check_models.py .` i `blender -b --factory-startup --python tools/blender/test_checks.py`.
-12. Przegląd oczami: zrzuty z czterech stron, z góry i od dołu (okap, szczyt), w przeglądarce domów i w grze po `godot --headless --path game --import` (bez importu gra pokazuje stare modele).
+12. Kolejność budowy: rekwizyty i wykończenie przez funkcje z dekoratorem `finishing` (pojawiają się w ostatnich 2,5 % budowy, pod gotowym dachem); nowa funkcja rekwizytu też go dostaje. Dom mieszkalny dostaje ruinę z `bo_collapse.py` sam przy eksporcie poziomu (`common_housing_N`).
+13. Przegląd oczami: zrzuty z czterech stron, z góry i od dołu (okap, szczyt), w przeglądarce domów i w grze po `godot --headless --path game --import` (bez importu gra pokazuje stare modele).
 
 ## 4. Błędy, które już się zdarzyły (i ich kontrola)
 

@@ -69,6 +69,9 @@ const BUILD_VISUAL_DAYS := 4.0  # the visual building phase (O-005); the buildin
 const AGE_FULL_DAYS := 1920.0   # ten years of weathering [ZAŁOŻENIE]
 var model_meshes := {}  # model name -> Mesh, or null when there is none
 var building_material: ShaderMaterial
+var ruin_materials := {}  # ruin model name -> ShaderMaterial carrying its fall (bo_collapse.py), or null
+var falling := {}  # ruin's building id -> seconds since the house fell; the fall plays out (RUIN_FALL s)
+const RUIN_FALL := 3.0
 # Two views of a house (tools/blender/models.py): brick by brick close up, simple shapes from afar (<name>_lod1).
 const LOD_CLOSE_SIZE := 26.0  # the camera's size in tiles under which the close view shows
 var lod_close := false
@@ -273,6 +276,7 @@ func _process(delta: float) -> void:
 	_sync_walkers()
 	_run_race(delta)
 	_grow_young()
+	_run_falls(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Two fingers: pinch zoom (06-MOBILE-UX). The mouse wheel zooms on PC.
@@ -519,6 +523,8 @@ func _add_building(e: Dictionary) -> void:
 	elif e.has("levels"):  # a monument going up layer by layer (P:26-28, L-128)
 		mat.albedo_color = BUILDING_COLORS.get(e["building_type"], Color(0.86, 0.82, 0.70))  # stone
 		_add_layers(node, e, mat)
+	elif e["building_type"] == "ruins" and _add_ruin(node, e):
+		pass
 	elif e["parent"] == 0 and _model(_model_name(e["building_type"], e.get("house_level", 0), e["id"])) != null:
 		var mi := MeshInstance3D.new()  # the building's model, its state set by _update_looks
 		mi.name = "Model"
@@ -555,6 +561,83 @@ func _add_building(e: Dictionary) -> void:
 	node.set_meta("placed", e)
 	add_child(node)
 	building_nodes[e["id"]] = node
+
+# A fallen house (risks.cpp ruin_building: the core places the ruins on the same tiles in the tick the house
+# collapsed or burned down, its building_placed before the house's building_removed): the ruin of that house's
+# level in the house's place and turn, falling (the `collapse` seconds) and charred if it burned. Ruins with no
+# house before them (a loaded save) lie at rest, of a level picked by their id. Others (not a house's plot) keep
+# the plain box.
+func _add_ruin(node: Node3D, e: Dictionary) -> bool:
+	var house: MeshInstance3D = null
+	var level := 2 + (_house_bits(e["id"]) >> 7) % 3
+	for id in building_nodes:
+		var old: Node3D = building_nodes[id]
+		var p: Dictionary = old.get_meta("placed", {})
+		if p.get("building_type", "") == "common_housing" and p["x"] == e["x"] and p["y"] == e["y"] and old.has_node("Model"):
+			house = old.get_node("Model")
+			level = int(String(old.get_meta("model")).split("_")[2])
+	if house == null and (e["width"] != 2 or e["height"] != 2):
+		return false
+	var name := ""
+	for l in range(level, 0, -1):
+		if _model("common_housing_%d_ruin" % l) != null and _ruin_material("common_housing_%d_ruin" % l) != null:
+			name = "common_housing_%d_ruin" % l
+			break
+	if name == "":
+		return false
+	var mi := MeshInstance3D.new()
+	mi.name = "Ruin"
+	mi.mesh = _model(name)
+	mi.material_override = _ruin_material(name)
+	if house != null:
+		mi.transform = house.transform
+		var fire = house.get_instance_shader_parameter("fire")  # null where never set
+		var age = house.get_instance_shader_parameter("age")
+		mi.set_instance_shader_parameter("fire", 3.0 if fire != null and fire > 0.0 else 0.0)
+		mi.set_instance_shader_parameter("age", age if age != null else 0.0)
+		mi.set_instance_shader_parameter("collapse", 0.0)
+		falling[e["id"]] = 0.0
+	else:
+		var basis := Basis(Vector3.UP, house_turn(e["id"]) * PI / 2.0).scaled(Vector3.ONE * house_scale(e["id"]))
+		mi.transform = Transform3D(basis, Vector3(e["x"] + 1.0, 0, e["y"] + 1.0) - basis * Vector3(1.0, 0, 1.0))
+		mi.set_instance_shader_parameter("age", 0.5)
+	mi.set_instance_shader_parameter("damage", 2.0)  # cracked, the plaster off; no lean, it lies where it fell
+	node.add_child(mi)
+	node.set_meta("ruin", name)
+	return true
+
+# A ruin's fall from its .bin (tools/blender/bo_collapse.py: "BORU", frames, chunks, fps, then each frame's
+# chunk transforms as 3 rows of 4 floats): a float texture, a chunk's row per texel, a frame per line.
+func _ruin_material(name: String) -> ShaderMaterial:
+	if not ruin_materials.has(name):
+		var mat: ShaderMaterial = null
+		var f := FileAccess.open(models_dir + name + ".bin", FileAccess.READ)
+		if f != null and f.get_buffer(4).get_string_from_ascii() == "BORU":
+			var frames := f.get_32()
+			var chunks := f.get_32()
+			var fps := f.get_32()
+			var data := f.get_buffer(frames * chunks * 48)
+			if data.size() == frames * chunks * 48:
+				var img := Image.create_from_data(chunks * 3, frames, false, Image.FORMAT_RGBAF, data)
+				mat = ShaderMaterial.new()
+				mat.shader = load("res://shaders/building.gdshader")
+				mat.set_shader_parameter("ruin_frames", ImageTexture.create_from_image(img))
+				mat.set_shader_parameter("ruin_len", frames)
+				mat.set_shader_parameter("ruin_fps", float(fps))
+		ruin_materials[name] = mat
+	return ruin_materials[name]
+
+func _run_falls(delta: float) -> void:
+	for id in falling.keys():
+		var node: Node3D = building_nodes.get(id)
+		if node == null or not node.has_node("Ruin"):
+			falling.erase(id)
+			continue
+		falling[id] += delta
+		var done: bool = falling[id] >= RUIN_FALL
+		(node.get_node("Ruin") as MeshInstance3D).set_instance_shader_parameter("collapse", -1.0 if done else falling[id])
+		if done:
+			falling.erase(id)
 
 # A house tells the story of its family (docs/ASSETY.md "Warianty i historie domów", R-018): picked from the
 # building's id, so it stays through every level and every save; the core knows nothing of it.

@@ -90,6 +90,15 @@ def main():
         lo, hi = acc["min"], acc["max"]
         if lo[0] < -EPS or lo[2] < -EPS or hi[0] > w + EPS or hi[2] > h + EPS or lo[1] < -EPS:
             errors.append(f"{name}: bounds {lo}..{hi} leave the {w}x{h} footprint or go under the ground")
+        if entry.get("ruin"):  # its fall (tools/blender/bo_collapse.py) beside it: "BORU", frames, chunks, fps, rows
+            fall = models / name.replace(".glb", ".bin")
+            data = fall.read_bytes() if fall.exists() else b""
+            if data[:4] != b"BORU":
+                errors.append(f"{name}: no fall {fall.name} (BORU)")
+            else:
+                frames, chunks, _fps = struct.unpack_from("<iii", data, 4)
+                if len(data) != 16 + frames * chunks * 48:
+                    errors.append(f"{fall.name}: {len(data)} bytes, {frames} frames x {chunks} chunks expected")
         if entry.get("footprint") != [w, h]:
             errors.append(f"{name}: provenance footprint {entry.get('footprint')} is not {w}x{h}")
     pb = palette_blender(root)
