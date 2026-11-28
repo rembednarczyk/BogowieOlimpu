@@ -15,7 +15,7 @@ instance uniform float fire = 0.0;     // 0-3: soot and embers, flames, charred
 instance uniform float working = 0.0;  // 0/1: the animated parts move
 instance uniform float goods = 15.0;   // bits: food, fleece, olive oil, wine the house holds; their props show
 
-const int PALETTE_SIZE = 32;
+const int PALETTE_SIZE = 64;  // the UV slots (tools/blender/bo_asset.py); PALETTE holds the colours in use
 const vec3 PALETTE[32] = vec3[32](
 	vec3(0.96, 0.91, 0.80),  // plaster
 	vec3(0.82, 0.77, 0.66),  // stone

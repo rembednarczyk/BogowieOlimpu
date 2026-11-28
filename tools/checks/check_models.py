@@ -4,7 +4,8 @@
   - one mesh with one primitive (one draw call), with POSITION, NORMAL, TEXCOORD_0 (palette), TEXCOORD_1 (pivot)
     and COLOR_0 (the masks of the building's parameters);
   - the mesh lies on the ground inside its footprint from data/building_stats.json (x 0..w, z 0..h, y >= 0);
-  - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader;
+  - the palette of tools/blender/bo_asset.py matches PALETTE in game/shaders/building.gdshader, and so does
+    PALETTE_SIZE (the UV slots);
   - triangles within the budget: the close view (LOD0) at most 120 000, the far view (LOD1) at most 3 000
     (hundreds of houses at once on the phone, docs/07-TECHNOLOGIA.md).
 Exit code 1 on any violation. Usage: python3 tools/checks/check_models.py [repo_root]
@@ -93,6 +94,12 @@ def main():
             errors.append(f"{name}: provenance footprint {entry.get('footprint')} is not {w}x{h}")
     pb = palette_blender(root)
     ps = palette_shader(root)
+    size_b = re.search(r"^PALETTE_SIZE = (\d+)", (root / "tools" / "blender" / "bo_asset.py").read_text(), re.M)
+    size_s = re.search(r"const int PALETTE_SIZE = (\d+);", (root / "game" / "shaders" / "building.gdshader").read_text())
+    if not size_b or not size_s or size_b.group(1) != size_s.group(1):
+        errors.append(f"PALETTE_SIZE differs: blender {size_b and size_b.group(1)} shader {size_s and size_s.group(1)}")
+    elif len(pb) > int(size_b.group(1)):
+        errors.append(f"{len(pb)} colours do not fit PALETTE_SIZE {size_b.group(1)}")
     if [n for n, _ in pb] != [n for _, n in ps]:
         errors.append(f"palette names differ: blender {[n for n, _ in pb]} shader {[n for _, n in ps]}")
     else:

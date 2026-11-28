@@ -9,7 +9,7 @@ Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciel
 | Cecha | Wartość | Gdzie w kodzie |
 |---|---|---|
 | Skala | 1 kafelek = 2 m (`M = 0.5`); dom 2 x 2 kafelki = działka 4 x 4 m | `bo_asset.py` |
-| Paleta | 32 kolory (wszystkie miejsca zajęte; Atlantyda wymaga powiększenia `PALETTE_SIZE` do 64), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
+| Paleta | 32 kolory w 64 miejscach (`PALETTE_SIZE` 64 w `bo_asset.py` i shaderze, zgodność pilnuje `check_models.py`), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
 | Światło | miękkie przejście w cień (smoothstep od -0,05 do 0,35), cień chłodny niebieskawy, strona słoneczna ciepła, cienka ciepła poświata krawędzi, plamy koloru jak od pędzla | `light()` w `building.gdshader` |
 | Dachy dwuspadowe | 1,4 raza wyższe od rzutu, połać ugięta o 7,5% swojej długości, kalenica ugięta o 8 cm w środku | `ROOF_STEEP`, `tiled_roof(curve, sag)` |
 | Przybudówki | dach jednospadowy od wyższej ściany, bez wchodzenia w ściany innych części | `shed_roof` |
@@ -30,13 +30,19 @@ Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciel
 
 Z daleka budynek rozpoznaje się po kolorze dachu (wniosek z analizy referencji, rozdział 7). Kolor podaje `tiles` w `tiled_roof` i `shed_roof` (część palety):
 
-| Kategoria | Dachówka | Część palety |
+| Kategoria | Dach | Część palety |
 |---|---|---|
 | Domy zwykłe i elity | terakota | `roof_tile` (0,82; 0,40; 0,26) |
 | Budynki publiczne, administracja, kultura, nauka | łupkowy błękit | `roof_slate` (0,40; 0,52; 0,68) |
 | Sanktuaria i świątynie | złota dachówka | `roof_gold` (0,90; 0,70; 0,30) |
-| Warsztaty, magazyny, spichlerze, produkcja | brąz | `roof_brown` (0,58; 0,36; 0,22) |
-| Gospodarstwa, handel, wojsko, ozdoby | do decyzji właściciela | |
+| Warsztaty i produkcja | brąz | `roof_brown` (0,58; 0,36; 0,22) |
+| Magazyny, spichlerze, punkt handlowy, przystań | osobny kolor, do decyzji właściciela (pytanie z 2026-11-28) | do dopisania |
+| Gospodarstwa (rolnictwo i hodowla) | strzecha | `thatch` |
+| Handel (stoiska, agora) | terakota i markiza w kolorze towaru | `roof_tile` + kolor towaru |
+| Wojsko (mury, wieże, bramy) | szary kamień | `stone` |
+| Ozdoby | bez dachu | |
+
+Te same grupy i kolory koloruje minimapa miasta, gdy powstanie (decyzja właściciela 2026-11-28): gracz rozpoznaje budynek po kolorze na mapie i w mieście.
 
 ## 3. Budowa nowego budynku krok po kroku
 
@@ -98,7 +104,7 @@ Te same zasady R-018 (budowa element po elemencie, miękkie światło, łukowe d
 - **Błękit morza:** tynki i dachówki w odcieniach turkusu, błękitu i bieli; woda blisko budynków (kanały, baseny, fontanny).
 - **Muszle i koralowce:** zamiast palmet i meandrów ornament z muszli, koralowców, fal i spiral; antefiksy w kształcie muszli, ogrody z muszli.
 - **Kształty:** łagodniejsze, bardziej zaokrąglone niż greckie (kopuły, łuki, okrągłe okna), dachy łukowe tak samo strome.
-- **Paleta:** nowe kolory (orichalk, turkus, koral, perłowa biel) dopisujemy do `PALETTE` przy pierwszym modelu atlantydzkim, w obu miejscach naraz (pilnuje `check_models.py`).
+- **Paleta:** nowe kolory (orichalk, turkus, koral, perłowa biel) dopisujemy do `PALETTE` przy pierwszym modelu atlantydzkim, w obu miejscach naraz (pilnuje `check_models.py`); miejsc jest 64.
 - Nazwy, kształty i detale nasze; z gry referencyjnej tylko kategorie i liczby (R-002, R-017).
 
 ## 7. Analiza referencji: eZeus (2026-11-28)
@@ -120,7 +126,7 @@ eZeus (S-008) nie zawiera obrazów: wczytuje grafikę z zainstalowanej gry. Zawi
 
 **Kolory według funkcji na minimapie eZeus** (`widgets/eminimap.cpp`, kolory mapy, nie farby budynków; pokazują, jak oryginał grupuje funkcje): domy ludu ceglasta czerwień (164, 65, 49); domy elity i świątynie pomarańczowa czerwień (238, 65, 16); magazyny, spichlerze, punkt handlowy i przystań jasny błękit (115, 186, 247); kultura i sport (podium, college, stadion, gimnazjon) morska zieleń (33, 129, 115); rolnictwo i hodowla oliwkowy brąz (123, 113, 49); pałac złoto (230, 162, 0); drogi jasna szarość (225, 225, 225); pozostałe czarne. Teren: sucha ziemia od piaskowej (214, 170, 99) do zielonkawej z zaroślami (95, 170, 99), plaża (238, 202, 164), żyzna (155, 110, 110), las (90, 129, 41), woda (25, 105, 115), miedź (206, 105, 8), marmur i srebro (125, 235, 255), czarny marmur (45, 45, 60), skały (123, 146, 164).
 
-eZeus nie zawiera kolorów samych budynków ani tekstur: farby znamy tylko ze zrzutów (wyżej i niżej).
+eZeus nie zawiera kolorów samych budynków ani tekstur: grafika jest tylko w plikach oryginalnej gry (`Zeus_General/*.sg3`, `*.555`), wczytywanych z instalacji gracza. Do analizy farb potrzebne są zrzuty albo pliki z legalnej kopii właściciela (pliki poza repo, wnioski słowami, R-017).
 
 Wnioski:
 1. **Sylwetka miasta ma dwa piętra:** niskie, szerokie tło (domy, warsztaty, gospodarstwa, większość usług do ok. 2 postaci) i kilka wysokich znaków orientacyjnych (pałac, nauka, muzeum: 3-5 postaci). Wysokość jest nagrodą dla ważnych budowli.

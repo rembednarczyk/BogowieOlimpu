@@ -61,7 +61,7 @@ PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 20
     ("sage_cloth", (0.64, 0.70, 0.52)),  # muted green canvas (the gardeners' tent: blue is kept for public roofs)
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
-PALETTE_SIZE = 32  # UV0.x = (index + 0.5) / PALETTE_SIZE
+PALETTE_SIZE = 64  # UV0.x = (index + 0.5) / PALETTE_SIZE; room for the Atlantean colours (2026-11-28)
 
 FOUNDATION, WALLS, ROOF, SCAFFOLD = 0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0
 STILL, FLOW, ROTATE = 0.0, 0.5, 1.0  # kinds of animated part (alpha)

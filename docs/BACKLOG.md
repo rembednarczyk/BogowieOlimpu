@@ -15,6 +15,8 @@ Bez sekcji "Zrobione": zamknięte pozycje przenosimy do `docs/archiwum/BACKLOG-A
 
 ## Później
 
+- Minimapa miasta: budynki w kolorach grup funkcji z `docs/STYL-BUDOWLI.md` (te same co dachy; decyzja 2026-11-28).
+
 - **Plan odporności** (`docs/PLAN-ODPORNOSCI.md`, wersja 2): etapy E1-E6 odłożone decyzją właściciela 2026-11-27 („na razie lecimy po staremu”). Do tego czasu R-016 działa doraźnie: problem znaleziony sondą dostaje kontrolę w tym samym zadaniu.
 
 - Ścieżka domów atlantydzkich (L-080) i reszta luk dodatku.
