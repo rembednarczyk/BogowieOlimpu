@@ -100,83 +100,194 @@ def hut(b, rng, story=None):
 
 @model("common_housing_1", "common_housing", "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos")
 def shelter(b, rng, story=None):
+    """Level 1: a small shelter of cloth and hides, of a family's own shape (owner, 2026-11-28: smaller, of
+    different sizes and shapes, at most half the plot with its eaves, nothing like an army's tents): the
+    shepherds a round tent of hides on poles, the potters a lean-to open at the front over their work, the
+    gardeners (and the plain house) a small ridge tent. Set off the plot's middle, the yard round it."""
     roof_part, wall_part = S.STORIES[story]["accent"]["tent"] if story else ("linen", "hide")
-    x0, x1, y0, y1, eave, ridge = 0.5, 3.5, 0.7, 3.3, 1.55, 2.55
+    if story == "shepherds":
+        box, door = _round_tent(b, rng, 2.15, 1.85, 1.3, 1.95, roof_part, wall_part)
+    elif story == "potters":
+        box, door = _lean_to(b, rng, 0.55, 0.75, 3.35, 2.35, 2.05, 1.45, roof_part, wall_part)
+    elif story == "gardeners":
+        box, door = _ridge_tent(b, rng, 1.25, 0.85, 3.45, 2.65, 1.3, 2.15, roof_part, wall_part)
+    else:
+        box, door = _ridge_tent(b, rng, 0.9, 0.9, 3.3, 2.9, 1.35, 2.25, roof_part, wall_part)
+    D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5, block=False)
+    D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng, lid=True)
+    if story:  # the ground round the shelter, the door's way kept clear
+        bx0, by0, bx1, by1 = box
+        if by0 > 0.45:
+            S.slot(b, "north", 0.1, 0.02, 3.9, by0 - 0.1)
+        if by1 < 3.55:
+            S.slot(b, "south west", 0.45, by1 + 0.1, door - 0.5, 3.98)
+            S.slot(b, "south east", door + 0.5, by1 + 0.1, 3.95, 3.98)
+        if 4.0 - bx1 > 0.3:
+            S.slot(b, "east", bx1 + 0.08, by0, 3.98, by1, "strip")
+        if bx0 > 0.6:
+            S.slot(b, "west", 0.35, by0, bx0 - 0.08, by1, "strip")
+        _dress(b, story, 1, rng)
+    D.grass(b, rng, 40)
+    b.scaffold(height=2.7 * M)
+
+
+def _fire(b, x, y):
+    if b.detail:
+        b.lathe(t(x), t(y), 0, [(t(0.24), 0), (t(0.26), t(0.04)), (t(0.19), t(0.06))], "stone", sides=20, stage=0.2)
+
+
+def _ridge_tent(b, rng, x0, y0, x1, y1, eave, ridge, roof_part, wall_part):
+    """A small ridge tent: forked posts at the ends, a ridge pole, the cloth over it, hide walls, the door flap
+    rolled up in the south side, guy ropes to pegs. Returns its box with eaves and its door's x."""
     b.solid("tent", t(x0 - 0.17), t(y0 - 0.14), 0, t(x1 + 0.17), t(y1 + 0.14), t(ridge + 0.2))
-    posts = 4 if b.detail else 2
+    mid, dc = (y0 + y1) / 2, (x0 + x1) / 2
+    posts = 3 if b.detail else 1
     for i in range(posts + 1):  # the side posts along both eaves
         px = x0 + (x1 - x0) * i / posts
         for py in (y0, y1):
-            b.log((t(px), t(py), 0), (t(px), t(py), t(eave + 0.05)), t(0.05), sides=12 if b.detail else 5, stage=0.15,
+            b.log((t(px), t(py), 0), (t(px), t(py), t(eave + 0.05)), t(0.045), sides=12 if b.detail else 5, stage=0.15,
                   tint=rng.uniform(0.3, 0.7))
     for px in (x0 - 0.02, x1 + 0.02):  # the forked posts and the ridge pole
-        b.log((t(px), t((y0 + y1) / 2), 0), (t(px), t((y0 + y1) / 2), t(ridge + 0.1)), t(0.07),
-              sides=14 if b.detail else 6, stage=0.2)
+        b.log((t(px), t(mid), 0), (t(px), t(mid), t(ridge + 0.1)), t(0.06), sides=14 if b.detail else 6, stage=0.2)
         if b.detail:
-            for side in (-1, 1):  # the fork's two prongs
-                b.tube_path([(t(px), t((y0 + y1) / 2), t(ridge - 0.02)), (t(px), t((y0 + y1) / 2 + side * 0.09), t(ridge + 0.16))],
-                            t(0.03), "bark", sides=8, stage=0.2)
-    b.log((t(x0 - 0.15), t((y0 + y1) / 2), t(ridge)), (t(x1 + 0.15), t((y0 + y1) / 2), t(ridge)), t(0.06),
-          sides=14 if b.detail else 6, stage=0.3)
-    for py in (y0, y1):  # the eave poles
-        b.log((t(x0 - 0.1), t(py), t(eave)), (t(x1 + 0.1), t(py), t(eave)), t(0.04), sides=12 if b.detail else 5,
+            for side in (-1, 1):
+                b.tube_path([(t(px), t(mid), t(ridge - 0.02)), (t(px), t(mid + side * 0.08), t(ridge + 0.15))],
+                            t(0.028), "bark", sides=8, stage=0.2)
+    b.log((t(x0 - 0.12), t(mid), t(ridge)), (t(x1 + 0.12), t(mid), t(ridge)), t(0.05), sides=14 if b.detail else 6,
+          stage=0.3)
+    for py in (y0, y1):
+        b.log((t(x0 - 0.08), t(py), t(eave)), (t(x1 + 0.08), t(py), t(eave)), t(0.035), sides=12 if b.detail else 5,
               stage=0.35)
-    nu, nv = (48, 14) if b.detail else (6, 2)
-    rng_wave = {-1: rng.uniform(0, 6), 1: rng.uniform(0, 6)}
+    nu, nv = (36, 12) if b.detail else (6, 2)
+    wave = {-1: rng.uniform(0, 6), 1: rng.uniform(0, 6)}
 
     def roof(side):
-        def fn(u, v):  # from the ridge (v 0) to the eave (v 1); sags between the posts, folds along the slope
+        def fn(u, v):
             ey = y0 if side < 0 else y1
-            mid = (y0 + y1) / 2
-            x = x0 - 0.12 + (x1 - x0 + 0.24) * u
-            y = mid + (ey + side * 0.12 - mid) * v
-            sag = 0.10 * math.sin(math.pi * v) * (0.6 + 0.4 * abs(math.sin(u * math.pi * 4)))
-            fold = 0.015 * math.sin(u * 40.0 + rng_wave[side]) * v
-            z = ridge + 0.05 + (eave - 0.04 - ridge - 0.05) * v - sag + fold
+            x = x0 - 0.1 + (x1 - x0 + 0.2) * u
+            y = mid + (ey + side * 0.1 - mid) * v
+            sag = 0.09 * math.sin(math.pi * v) * (0.6 + 0.4 * abs(math.sin(u * math.pi * 3)))
+            z = ridge + 0.04 + (eave - 0.04 - ridge - 0.04) * v - sag + 0.013 * math.sin(u * 36.0 + wave[side]) * v
             return (t(x), t(y), t(z))
         return fn
     for side in (-1, 1):
         b.surface(roof(side), nu, nv, roof_part, stage=0.7, tint=rng.uniform(0.35, 0.65))
 
     def wall(xa, ya, xb, yb, top0, top1):
-        def fn(u, v):  # from the ground (v 0) up; folds hang down, the hem lies a little out on the ground
-            x = xa + (xb - xa) * u
-            y = ya + (yb - ya) * u
+        def fn(u, v):
+            x, y = xa + (xb - xa) * u, ya + (yb - ya) * u
             top = top0 + (top1 - top0) * (1 - abs(2 * u - 1)) if top1 != top0 else top0
-            fold = 0.03 * math.sin(u * 46.0 + xa * 3.0) * (1.0 - v * 0.7)
             nx, ny = (yb - ya), -(xb - xa)
             ln = max(math.hypot(nx, ny), 1e-6)
-            out = fold + 0.05 * (1.0 - v) ** 3
+            out = 0.028 * math.sin(u * 40.0 + xa * 3.0) * (1.0 - v * 0.7) + 0.05 * (1.0 - v) ** 3
             return (t(x + nx / ln * out), t(y + ny / ln * out), t(top * v + 0.01))
         return fn
     b.surface(wall(x0, y0, x1, y0, eave, eave), nu, nv // 2 + 1, wall_part, stage=0.5, tint=rng.uniform(0.3, 0.7))
     b.surface(wall(x0, y0, x0, y1, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.4)
     b.surface(wall(x1, y1, x1, y0, eave, ridge), nu // 2, nv // 2 + 1, "linen", stage=0.55, tint=0.6)
-    for xa, xb in ((x0, 1.55), (2.35, x1)):  # the south side, the door between
+    for xa, xb in ((x0, dc - 0.38), (dc + 0.38, x1)):  # the south side, the door between
         b.surface(wall(xb, y1, xa, y1, eave, eave), max(2, nu // 3), nv // 2 + 1, wall_part, stage=0.5,
                   tint=rng.uniform(0.3, 0.7))
-    if b.detail:  # the door flap rolled up under the eave, tied with rope
-        b.tube_path([(t(1.5), t(y1 + 0.06), t(eave - 0.12)), (t(2.4), t(y1 + 0.06), t(eave - 0.12))], t(0.06), "hide",
-                    sides=14, stage=0.75)
-        for px in (1.65, 2.25):
-            b.tube_path([(t(px), t(y1 + 0.02), t(eave)), (t(px), t(y1 + 0.13), t(eave - 0.1)),
-                         (t(px), t(y1 + 0.02), t(eave - 0.2))], t(0.008), "rope", sides=6, stage=0.75)
-        for cx, cy, gx, gy in ((x0, y0, x0 - 0.3, y0 - 0.45), (x1, y0, x1 + 0.3, y0 - 0.45), (x0, y1, x0 - 0.3, y1 + 0.45),
-                               (x1, y1, x1 + 0.3, y1 + 0.45)):  # guy ropes to pegs
+    if b.detail:
+        b.tube_path([(t(dc - 0.42), t(y1 + 0.06), t(eave - 0.11)), (t(dc + 0.42), t(y1 + 0.06), t(eave - 0.11))], t(0.055),
+                    wall_part, sides=14, stage=0.75)
+        for cx, cy, gx, gy in ((x0, y0, x0 - 0.3, y0 - 0.4), (x1, y0, x1 + 0.3, y0 - 0.4), (x0, y1, x0 - 0.3, y1 + 0.4),
+                               (x1, y1, x1 + 0.3, y1 + 0.4)):  # guy ropes to pegs
             gx, gy = min(max(gx, 0.08), 3.92), min(max(gy, 0.08), 3.92)
             b.tube_path([(t(cx), t(cy), t(eave)), (t(gx), t(gy), t(0.06))], t(0.008), "rope", sides=6, stage=0.8)
             b.log((t(gx), t(gy), 0), (t(gx), t(gy), t(0.12)), t(0.02), sides=8, stage=0.8)
-        b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=20, stage=0.2)
-    D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5, block=False)
-    D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng, lid=True)
-    if story:  # the door (x 1.5-2.4) keeps its way clear
-        S.slot(b, "south west", 0.6, 3.47, 1.45, 3.98)
-        S.slot(b, "south east", 2.45, 3.47, 3.5, 3.98)
-        S.slot(b, "north", 0.7, 0.02, 3.3, 0.52)
-        S.slot(b, "east", 3.71, 0.8, 3.98, 3.2, "strip")
-        _dress(b, story, 1, rng)
-    D.grass(b, rng, 34)
-    b.scaffold(height=2.7 * M)
+    _fire(b, dc, mid)
+    return (x0 - 0.17, y0 - 0.14, x1 + 0.17, y1 + 0.14), dc
+
+
+def _round_tent(b, rng, cx, cy, r, h, roof_part, wall_part):
+    """A round herdsman's hut: bent poles from a ring on the ground arched to a low dome, hides drawn over them
+    in two bands (cloth above, darker hides low), sagging between the poles, a smoke hole at the top with a
+    rope ring, the door a gap on the south with its flap folded back, stones on the hem."""
+    b.solid("tent", t(cx - r - 0.06), t(cy - r - 0.06), 0, t(cx + r + 0.06), t(cy + r + 0.06), t(h + 0.1))
+    n = 10 if b.detail else 6
+    door, gap = math.pi / 2, 0.34  # the door faces south (+y)
+
+    def dome(a, vv, out=0.0):  # vv 0 at the top, 1 at the ground: a low dome, a little bulging
+        q = vv * math.pi / 2
+        rr = 0.14 + (r - 0.14) * math.sin(q) ** 0.85 + out
+        return (cx + rr * math.cos(a), cy + rr * math.sin(a), 0.035 + (h - 0.035) * math.cos(q))
+    for k in range(n):  # the bent poles
+        a = door + gap + (2 * math.pi - 2 * gap) * (k + 0.5) / n
+        pts = [dome(a, 1.0 - m / 8, -0.01) for m in range(9)]
+        b.tube_path([tuple(t(v) for v in q) for q in pts], t(0.025), "bark", sides=6 if b.detail else 4, stage=0.2)
+    for side in (-1, 1):  # the door frame
+        a = door + side * gap
+        pts = [dome(a, 1.0 - m / 8, -0.01) for m in range(7)]
+        b.tube_path([tuple(t(v) for v in q) for q in pts], t(0.03), "dark_wood", sides=6 if b.detail else 4, stage=0.2)
+    nu, nv = (40, 14) if b.detail else (8, 3)
+
+    def cover(v0, v1):
+        def fn(u, v):
+            vv = v0 + (v1 - v0) * v
+            a = door + gap + (2 * math.pi - 2 * gap) * u
+            sag = -0.05 * math.sin(math.pi * vv) * abs(math.sin(n * math.pi * u))
+            return tuple(t(c) for c in dome(a, vv, sag + 0.012))
+        return fn
+    b.surface(cover(0.12, 0.55), nu, nv // 2, roof_part, stage=0.7, tint=rng.uniform(0.4, 0.7))
+    b.surface(cover(0.55, 1.0), nu, nv // 2, wall_part, stage=0.5, tint=rng.uniform(0.3, 0.6))
+    if b.detail:
+        ring = [tuple(t(c) for c in dome(2 * math.pi * k / 16, 0.12, 0.02)) for k in range(17)]
+        b.tube_path(ring, t(0.02), "rope", sides=6, stage=0.72, caps=False)  # the smoke hole's rim
+        for side in (-1, 1):  # the door flap, folded back on each side
+            a = door + side * (gap + 0.02)
+            def flap(u, v, a=a, side=side):
+                return tuple(t(c) for c in dome(a + side * 0.3 * u, 0.5 + 0.5 * v, 0.05))
+            b.surface(flap, 3, 4, wall_part, stage=0.75, tint=0.25)
+        for k in range(14):  # stones holding the hem down
+            a = door + gap + 0.1 + (2 * math.pi - 2 * gap - 0.2) * k / 13
+            b.lathe(t(cx + (r + 0.03) * math.cos(a)), t(cy + (r + 0.03) * math.sin(a)), 0,
+                    [(t(0.05), 0), (t(0.055), t(0.04)), (t(0.02), t(0.06))], "stone", sides=8, stage=0.6,
+                    tint=rng.uniform(0.3, 0.7))
+    _fire(b, cx, cy)
+    return (cx - r - 0.06, cy - r - 0.06, cx + r + 0.06, cy + r + 0.06), cx
+
+
+def _lean_to(b, rng, x0, y0, x1, y1, hb, hf, roof_part, wall_part):
+    """A lean-to, open at the front over the work: posts at the back and the front, the cloth roof falling from
+    the back to the front, a hide wall at the back and the two sides cut to the slope, the front open."""
+    b.solid("tent", t(x0 - 0.06), t(y0 - 0.06), 0, t(x1 + 0.06), t(y1 + 0.2), t(hb + 0.12))
+    posts = 3 if b.detail else 1
+    for i in range(posts + 1):
+        px = x0 + (x1 - x0) * i / posts
+        for py, ph in ((y0, hb), (y1, hf)):
+            b.log((t(px), t(py), 0), (t(px), t(py), t(ph + 0.04)), t(0.045), sides=10 if b.detail else 4, stage=0.15,
+                  tint=rng.uniform(0.3, 0.7))
+    for py, ph in ((y0, hb), (y1, hf)):
+        b.log((t(x0 - 0.1), t(py), t(ph)), (t(x1 + 0.1), t(py), t(ph)), t(0.04), sides=10 if b.detail else 4, stage=0.3)
+    nu, nv = (36, 10) if b.detail else (6, 2)
+    ph_ = rng.uniform(0, 6)
+
+    def roof(u, v):  # from the back (v 0) to past the front
+        x = x0 - 0.1 + (x1 - x0 + 0.2) * u
+        y = y0 - 0.04 + (y1 + 0.16 - y0 + 0.04) * v
+        z = hb + 0.05 + (hf - hb - 0.08) * v - 0.08 * math.sin(math.pi * min(v, 1.0)) * (0.6 + 0.4 * abs(math.sin(u * math.pi * 3)))
+        return (t(x), t(y), t(z + 0.012 * math.sin(u * 30.0 + ph_) * v))
+    b.surface(roof, nu, nv, roof_part, stage=0.7, tint=rng.uniform(0.4, 0.7))
+
+    def back(u, v):
+        x = x0 + (x1 - x0) * u
+        return (t(x), t(y0 - 0.03 - 0.025 * math.sin(u * 34.0) * (1 - v)), t(0.01 + hb * v))
+    b.surface(back, nu, nv // 2 + 1, wall_part, stage=0.5, tint=rng.uniform(0.3, 0.6))
+    for xs in (x0, x1):
+        def side(u, v, xs=xs):
+            y = y0 + (y1 - y0) * u
+            top = hb + (hf - hb) * u
+            return (t(xs + (0.025 if xs == x1 else -0.025) * math.sin(u * 20.0) * (1 - v)), t(y), t(0.01 + top * v))
+        b.surface(side, nu // 3, nv // 2 + 1, wall_part, stage=0.52, tint=rng.uniform(0.3, 0.6))
+    if b.detail:  # a bench and a shelf under the roof: where the work is done
+        b.box(t(x0 + 0.15), t(y0 + 0.1), 0, t(x1 - x0 - 0.3), t(0.3), t(0.42), "wood", stage=0.8, tint=0.4)
+        for k in range(6):
+            b.lathe(t(x0 + 0.3 + k * (x1 - x0 - 0.6) / 5), t(y0 + 0.25), t(0.42),
+                    [(t(0.05), 0), (t(0.07), t(0.06)), (t(0.045), t(0.12)), (t(0.05), t(0.14))], "roof_tile", sides=12,
+                    stage=0.8, tint=rng.uniform(0.3, 0.8), smooth=2)
+    _fire(b, x1 - 0.45, (y0 + y1) / 2 + 0.2)
+    return (x0 - 0.06, y0 - 0.06, x1 + 0.06, y1 + 0.2), (x0 + x1) / 2
 
 
 @model("common_housing_3", "common_housing", "lepianka: bielony dom pod dachówką, murek z bramką; zboże, figi, hydria z wodą, zioła w donicy")
