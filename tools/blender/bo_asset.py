@@ -200,10 +200,30 @@ class Builder:
                 loop[self.pivot].uv = pivot
                 loop[self.col] = (stage, 1.0 if plaster else 0.0, 1.0 if loose else 0.0, anim)
 
+    BOARDS = ("wood", "dark_wood")  # parts built to their THICKNESS as boards (owner, 2026-11-28)
+
+    def _board(self, part, sizes):
+        """A board of wood thinner than its material (THICKNESS) gets its thickness: the one thin size grows
+        to it, about the same middle. A rod (two thin sizes: a peg, a rung, a thread) stays as it is."""
+        if part not in self.BOARDS:
+            return sizes, [0.0, 0.0, 0.0]
+        want = THICKNESS[part] * M
+        thin = [i for i in range(3) if abs(sizes[i]) < want]
+        if len(thin) != 1 or min(abs(sizes[i]) for i in range(3) if i != thin[0]) < 2 * want:
+            return sizes, [0.0, 0.0, 0.0]
+        i = thin[0]
+        grown = list(sizes)
+        grown[i] = want if sizes[i] >= 0 else -want
+        shift = [0.0, 0.0, 0.0]
+        shift[i] = -(grown[i] - sizes[i]) / 2
+        return grown, shift
+
     def box(self, x, y, z, sx, sy, sz, part, stage=WALLS, plaster=False, loose=False, anim=STILL, pivot=(0, 0),
             tint=0.5):
         """An axis-aligned box: (x, y) its north-west corner in tiles from the footprint's corner (y grows
         south), z its bottom; sizes in tiles."""
+        (sx, sy, sz), d = self._board(part, (sx, sy, sz))
+        x, y, z = x + d[0], y + d[1], z + d[2]
         verts = [self.bm.verts.new((x + dx * sx, -(y + dy * sy), z + dz * sz))
                  for dz in (0, 1) for dy in (0, 1) for dx in (0, 1)]
         idx = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
@@ -214,6 +234,8 @@ class Builder:
     def cbox(self, x, y, z, sx, sy, sz, chamfer, part, stage=WALLS, plaster=False, tint=0.5):
         """An axis-aligned box with its edges chamfered by `chamfer` (tiles): a brick or a stone block that
         catches the light on its edges. 26 faces."""
+        (sx, sy, sz), d = self._board(part, (sx, sy, sz))
+        x, y, z = x + d[0], y + d[1], z + d[2]
         c = min(chamfer, sx / 3, sy / 3, sz / 3)
         hx, hy, hz = sx / 2, sy / 2, sz / 2
         cx, cy, cz = x + hx, y + hy, z + hz
@@ -284,6 +306,12 @@ class Builder:
     def obox(self, center, ax, ay, az, part, stage=WALLS, plaster=False, loose=False, tint=0.5):
         """A box of any orientation: `center` (x, y, z) in tiles (y grows south), `ax`, `ay`, `az` its half-axis
         vectors in the same frame (their lengths are the half sizes)."""
+        if part in self.BOARDS:  # a board gets its thickness along its thinnest axis
+            axes = [ax, ay, az]
+            lens = [math.sqrt(sum(c * c for c in a)) for a in axes]
+            grown, _ = self._board(part, [2 * l for l in lens])
+            axes = [tuple(c * (grown[i] / 2) / lens[i] for c in axes[i]) if lens[i] > 1e-9 else axes[i] for i in range(3)]
+            ax, ay, az = axes
         cx, cy, cz = center
         verts = []
         for dz in (-1, 1):
