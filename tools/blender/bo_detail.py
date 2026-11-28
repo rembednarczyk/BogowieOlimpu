@@ -360,7 +360,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 board_c = (board_c[0] + t(0.025 * out), board_c[1], board_c[2])
             else:
                 board_c = (board_c[0], board_c[1] + t(0.025 * out), board_c[2])
-            b.obox(board_c, half_t, half_up, half_n, gable, stage=s1, tint=0.45)
+            b.obox(board_c, half_t, half_up, half_n, "mortar", stage=s1, tint=0.45)  # a mortared verge
             edge = 0.05 if along == 0.0 else run_len - 0.05
             rows_v = max(2, rows)
             for r in range(rows_v):
@@ -713,7 +713,7 @@ def chimney_pot(b, x, y, z, rng, scale=1.0, stage=0.8):
     tiles, a round-bellied pot drawn up to a narrow neck, a little hat on three legs to keep the rain out.
     Greek houses had them; ours are a size too big, on purpose."""
     s_ = scale
-    b.box(t(x - 0.16 * s_), t(y - 0.16 * s_), t(z - 0.22), t(0.32 * s_), t(0.32 * s_), t(0.3), "plaster", stage=stage,
+    b.box(t(x - 0.16 * s_), t(y - 0.16 * s_), t(z - 0.22), t(0.32 * s_), t(0.32 * s_), t(0.3), "mortar", stage=stage,
           tint=0.6)
     if not b.detail:
         b.column(t(x), t(y), t(z + 0.08), t(0.12 * s_), t(0.4 * s_), "roof_tile", sides=6, stage=stage)
