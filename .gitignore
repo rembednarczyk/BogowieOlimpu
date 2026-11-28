@@ -10,4 +10,5 @@ game/i18n/*.translation
 game/i18n/buildings.csv
 game/i18n/buildings.csv.import
 .claude/worktrees/
-game/models_b/  # proportion comparison (BO_PROPORTION=B), not part of the game
+# proportion comparison (BO_PROPORTION=B), not part of the game
+game/models_b/
