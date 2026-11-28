@@ -37,3 +37,9 @@ Pytania blokujące oznaczamy **[B]**. Każde pytanie ma rekomendację. Po decyzj
 19. Źródła liczb do luk P0. Częściowo rozstrzygnięte: S-004 i S-005 zamknęły większość luk. Otwarte: L-001, L-008, L-012b, L-017. Rekomendacja: jeśli właściciel ma oryginalną grę, krótkie pomiary w niej (nagranie + licznik) rozstrzygną te luki i konflikty K-NNN szybciej niż dalsze szukanie źródeł.
 20. ~~Domyślny poziom trudności~~ Rozstrzygnięte: Hero, 5 poziomów 1:1 (R-013).
 21. ~~Potwierdzenie R-012~~ Rozstrzygnięte: przyjęta przez właściciela.
+
+## Oprawa
+
+22. Nazwy poziomów 1 i 2 po zamianie modeli (2026-11-28): poziom 1 pokazuje namiot, a nazywa się "chata"; poziom 2 pokazuje chatę z gliny, a nazywa się "szałas". Rekomendacja: zamienić nazwy w `data/housing.json` (poziom 1 "szałas", poziom 2 "chata"); mechanika bez zmian, nazwy są nasze (R-002).
+23. Historie domów (`docs/ASSETY.md`, "Warianty i historie domów"): trzy historie pasterzy, garncarzy oraz ogrodników i pszczelarzy. Rekomendacja: przyjąć te trzy, a historie domów elity zaplanować osobno.
+24. Przechowywanie modeli: 45 MB teraz, około 130 MB z historiami. Rekomendacja: Git LFS dla `game/models/*.glb` od razu (prosty, działa z obecnym budowaniem APK); generowanie przy budowaniu rozważyć, gdy CI dostanie Blendera.

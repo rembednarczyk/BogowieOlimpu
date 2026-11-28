@@ -15,6 +15,7 @@ Conventions:
 """
 import json
 import math
+import random
 import pathlib
 
 import bmesh
@@ -449,8 +450,40 @@ class Builder:
                 cy = min(max(py, 0.03), self.height - 0.03)
                 self.column(cx, cy, 0, 0.03, top, part="wood", sides=4, stage=SCAFFOLD)
 
+    # Hand-made irregularity (owner, 2026-11-28, "Ghibli"): one smooth field bends the whole model, props and all,
+    # so nothing that was clear of a wall goes into it: the building leans a little, its walls swell out at mid
+    # height like a soft loaf, the roofline waves. Fixed at the ground (the plot and the footing stay), seeded by
+    # the model's name, the same every run. In tiles; at most a few centimetres.
+    wonk = 1.0
+
+    def _wonk(self):
+        if not self.wonk or not self.bm.verts:
+            return
+        # Long flat faces (a plaster coat, a slab) get more vertices first, or they would stay flat while the
+        # bricks under them bend, and the bricks would show through.
+        for _ in range(4 if self.detail else 0):  # the far view keeps its budget: only the lean, no swell
+            long_edges = [e for e in self.bm.edges if e.calc_length() > 0.3 and all(len(f.verts) == 4 for f in e.link_faces)]
+            if not long_edges:
+                break
+            bmesh.ops.subdivide_edges(self.bm, edges=long_edges, cuts=1, use_grid_fill=True)
+        rnd = random.Random("wonk " + self.name.replace("_lod1", ""))
+        top = max(v.co.z for v in self.bm.verts) or 1.0
+        lean = (rnd.uniform(-1, 1) * 0.012 * self.wonk, rnd.uniform(-1, 1) * 0.012 * self.wonk)
+        swell = rnd.uniform(0.02, 0.035) * self.wonk * (1.0 if self.detail else 0.0)
+        wave, ph = rnd.uniform(0.010, 0.018) * self.wonk * (1.0 if self.detail else 0.0), rnd.uniform(0, 6.28)
+        cx, cy = self.width / 2, -self.height / 2
+        for v in self.bm.verts:
+            x, y, z = v.co
+            f = min(max(z / top, 0.0), 1.0)
+            bulge = swell * math.sin(math.pi * min(f * 1.3, 1.0))  # most at about two thirds of the height
+            nx, ny = x + lean[0] * z + (x - cx) * bulge, y - lean[1] * z + (y - cy) * bulge
+            v.co.x = min(max(nx, 0.0), self.width)
+            v.co.y = min(max(ny, -self.height), 0.0)
+            v.co.z = z + wave * f * f * math.sin(x * 2.1 + ph) * math.cos(y * 1.7 - ph)
+
     def finish(self):
         self.check_props()
+        self._wonk()
         bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if f not in self.two_sided])
         mesh = bpy.data.meshes.new(self.name)
         self.bm.to_mesh(mesh)

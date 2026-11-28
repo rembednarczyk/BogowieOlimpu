@@ -32,7 +32,7 @@ def model(name, building, note):
 # the level reads from afar (docs/08-OPRAWA.md). Built brick by brick and tile by tile (bo_detail); b.detail
 # False gives the far view (LOD1). Positions in metres from the plot's north-west corner.
 def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, doors=(), windows=(), stage=(0.08, 0.5),
-          block=None, ornate=False, group="main"):
+          block=None, ornate=False, group="main", wreath=False):
     """Four walls of a room; doors and windows as (side, at[, w]) with side "n", "s", "w" or "e"."""
     walls = {"n": D.Wall(x, y, w, "x", z, h, thick), "s": D.Wall(x, y + d, w, "x", z, h, thick, outward=-1),
              "w": D.Wall(x, y + thick, d - 2 * thick, "y", z, h, thick),
@@ -43,10 +43,11 @@ def _room(b, rng, x, y, w, d, z, h, thick=0.38, part="mudbrick", plaster=None, d
         walls[side].window(at, *rest)
     for wall in walls.values():
         wall.ornate = ornate
+        wall.wreath = wreath
         D.brick_wall(b, wall, rng, part=part, stage=stage, plaster=plaster, block=block, group=group)
 
 
-def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.22):
+def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.34):
     """Palmettes on the gable's apex and its corners (a roof along x)."""
     for gx in (x - overhang, x + w + overhang):
         out = -1 if gx < x else 1
@@ -58,7 +59,7 @@ def _acroteria(b, x, y, w, d, z, rise, overhang, size=0.22):
 # The goods a level needs to grow (data/housing.json: Fd food from level 2, W water from 3, Fl fleece from 4, Oil
 # olive oil from 6) stand by the house from that level on; those it keeps show only while it holds them.
 
-@model("common_housing_1", "common_housing", "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą")
+@model("common_housing_2", "common_housing", "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność")
 def hut(b, rng):
     D.footing(b, 0.5, 0.7, 3.0, 2.6, h=0.25, rng=rng)
     _room(b, rng, 0.6, 0.8, 2.8, 2.4, 0.25, 1.9, thick=0.36, doors=[("s", 0.9, 0.8, 1.6)],
@@ -66,11 +67,15 @@ def hut(b, rng):
     D.thatch_roof(b, 0.6, 0.8, 2.8, 2.4, 2.15, 1.35, rng, hip=0.3, overhang=0.35)
     D.woodpile(b, 3.55, 0.85, rng, along_x=False, length=1.0)
     D.pithos(b, 0.3, 3.62, scale=0.9, rng=rng, lid=True)
+    with D.goods(b, "food"):
+        D.sack(b, 0.95, 3.72, scale=0.8, rng=rng)
+        D.sack(b, 1.36, 3.74, scale=0.72, rng=rng, name="sack 2")
+        D.basket(b, 2.85, 3.72, "onions", rng=rng)
     D.grass(b, rng, 38)
     b.scaffold(height=2.4 * M)
 
 
-@model("common_housing_2", "common_housing", "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność")
+@model("common_housing_1", "common_housing", "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos")
 def shelter(b, rng):
     x0, x1, y0, y1, eave, ridge = 0.5, 3.5, 0.7, 3.3, 1.55, 2.55
     b.solid("tent", t(x0 - 0.17), t(y0 - 0.14), 0, t(x1 + 0.17), t(y1 + 0.14), t(ridge + 0.2))
@@ -140,10 +145,6 @@ def shelter(b, rng):
         b.lathe(t(2.0), t(2.0), 0, [(t(0.28), 0), (t(0.3), t(0.04)), (t(0.22), t(0.06))], "stone", sides=20, stage=0.2)
     D.woodpile(b, 0.02, 1.2, rng, along_x=False, length=0.85, depth=0.3, height=0.5, block=False)
     D.pithos(b, 0.3, 3.7, scale=0.8, rng=rng, lid=True)
-    with D.goods(b, "food"):
-        D.sack(b, 1.0, 3.72, scale=0.8, rng=rng)
-        D.sack(b, 1.42, 3.74, scale=0.72, rng=rng, name="sack 2")
-        D.basket(b, 2.85, 3.72, "onions", rng=rng)
     D.grass(b, rng, 34)
     b.scaffold(height=2.7 * M)
 
@@ -154,6 +155,7 @@ def cabin(b, rng):
     _room(b, rng, 0.4, 0.4, 3.2, 2.5, 0.3, 2.2, plaster="plaster", doors=[("s", 1.2, 0.85, 1.75)],
           windows=[("s", 2.3), ("e", 0.9), ("w", 0.9)])
     D.tiled_roof(b, 0.4, 0.4, 3.2, 2.5, 2.5, 0.85, rng, along_x=True, overhang=0.3)
+    D.chimney_pot(b, 2.75, 1.65, 3.35, rng, scale=0.9)
     for x, length in ((0.25, 1.1), (2.35, 1.4)):  # the yard's low wall, a gate between
         D.brick_wall(b, D.Wall(x, 3.55, length, "x", 0.0, 0.8, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
     with D.goods(b, "food"):
@@ -169,12 +171,13 @@ def cabin(b, rng):
 @model("common_housing_4", "common_housing", "zagroda chłopska: dom na planie L z dziedzińcem; zboże, cebula, bele wełny, hydria")
 def homestead(b, rng):
     D.footing(b, 0.25, 0.25, 3.5, 2.0, h=0.45, rng=rng)
-    _room(b, rng, 0.3, 0.3, 3.4, 1.9, 0.45, 2.3, plaster="plaster", doors=[("s", 0.6, 0.85, 1.8)],
+    _room(b, rng, 0.3, 0.3, 3.4, 1.9, 0.45, 2.3, plaster="plaster", doors=[("s", 0.6, 0.85, 1.8)], wreath=True,
           windows=[("s", 1.8), ("w", 0.6), ("n", 1.6)])
     D.footing(b, 2.25, 2.15, 1.5, 1.6, h=0.4, rng=rng, group="wing")
     _room(b, rng, 2.3, 2.2, 1.4, 1.5, 0.4, 2.0, plaster="plaster", doors=[("w", 0.3, 0.8, 1.7)],
           windows=[("s", 0.5), ("e", 0.4)], stage=(0.15, 0.55), group="wing")
     D.tiled_roof(b, 0.3, 0.3, 3.4, 1.9, 2.75, 0.75, rng, along_x=True, overhang=0.16)
+    D.chimney_pot(b, 1.1, 1.25, 3.5, rng)
     D.shed_roof(b, 2.3, 2.2, 1.4, 1.5, 2.4, 2.7, rng, falls="s", overhang=0.18, group="wing")
     D.brick_wall(b, D.Wall(0.2, 3.65, 2.0, "x", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
     D.brick_wall(b, D.Wall(0.2, 2.35, 1.3, "y", 0.0, 1.0, 0.28), rng, plaster="plaster", stage=(0.05, 0.4), both=True)
@@ -237,6 +240,7 @@ def row_house(b, rng):
         for x, s_ in ((0.75, 0.5), (3.2, 0.45)):  # potted herbs on the balcony, clear of the door
             D.potted_plant(b, x, 3.62, scale=s_, rng=rng, z=fz, name="balcony plant %d" % int(x * 10))
     D.tiled_roof(b, 0.4, 0.4, 3.2, 3.0, 4.7, 0.95, rng, along_x=True, overhang=0.3)
+    D.chimney_pot(b, 0.95, 1.9, 5.65, rng, scale=1.1)
     with D.goods(b, "food"):
         D.sack(b, 2.3, 3.72, scale=0.65, rng=rng)
         D.basket(b, 2.75, 3.72, "carrots", scale=0.7, rng=rng)
@@ -252,7 +256,7 @@ def row_house(b, rng):
 @model("common_housing_6", "common_housing", "mieszkanie: piętrowy blok i skrzydła wokół dziedzińca ze studnią; gzyms, meander, antefiksy i akroteria; zboże, oliwki, wełna, oliwa")
 def flat(b, rng):
     D.footing(b, 0.3, 0.3, 3.4, 1.6, h=0.35, rng=rng)
-    _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, 2.2, plaster="plaster", doors=[("s", 1.3, 0.9, 1.85)],
+    _room(b, rng, 0.35, 0.35, 3.3, 1.5, 0.35, 2.2, plaster="plaster", doors=[("s", 1.3, 0.9, 1.85)], wreath=True,
           windows=[("s", 0.45), ("s", 2.5), ("n", 0.9), ("n", 2.3)])
     _room(b, rng, 0.35, 0.35, 3.3, 1.5, 2.55, 2.0, plaster="plaster", windows=[("s", 0.5), ("s", 1.5), ("s", 2.5),
           ("w", 0.5), ("e", 0.5)], stage=(0.5, 0.66), ornate=True)
@@ -266,6 +270,7 @@ def flat(b, rng):
               windows=[("s", 0.3)], stage=(0.15, 0.55), group=wing)
         D.shed_roof(b, x, 1.85, 1.05, 1.85, 2.05, 2.47, rng, falls="s", overhang=0.12, group=wing)
     D.tiled_roof(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, rng, along_x=True, overhang=0.16, antefix=True)
+    D.chimney_pot(b, 2.55, 1.1, 5.27, rng)
     if b.detail:
         _acroteria(b, 0.35, 0.35, 3.3, 1.5, 4.57, 0.7, 0.16)
     b.box(t(1.7), t(2.6), 0, t(0.6), t(0.6), t(0.15), "stone", stage=0.05)  # the yard's paving and its well
@@ -297,7 +302,7 @@ def flat(b, rng):
 @model("common_housing_7", "common_housing", "dom miejski: portyk na kolumnach doryckich z fryzem tryglifów, gzyms, meander, antefiksy i akroteria, obramienia okien; dobra na portyku")
 def city_house(b, rng):
     D.footing(b, 0.25, 0.25, 3.5, 2.5, h=0.55, rng=rng)
-    _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, 2.4, thick=0.42, part="stone", block=(0.58, 0.3),
+    _room(b, rng, 0.3, 0.3, 3.4, 2.4, 0.55, 2.4, thick=0.42, part="stone", block=(0.58, 0.3), wreath=True,
           doors=[("s", 1.25, 0.95, 2.0)], windows=[("e", 0.9, 0.4, 1.3, 0.5), ("w", 0.9, 0.4, 1.3, 0.5)])
     _room(b, rng, 0.3, 0.3, 3.4, 2.4, 2.95, 2.2, plaster="plaster", windows=[("s", 0.6), ("s", 1.5), ("s", 2.4),
           ("e", 0.9), ("w", 0.9), ("n", 1.5)], stage=(0.5, 0.68), ornate=True)
@@ -325,8 +330,9 @@ def city_house(b, rng):
     D.shed_roof(b, 0.3, 2.7, 3.4, 1.0, 3.21, 3.62, rng, falls="s", overhang=0.12, gable="stone", stage=(0.62, 0.7),
                 antefix=True, group="porch")
     D.tiled_roof(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, rng, along_x=True, overhang=0.16, antefix=True)
+    D.chimney_pot(b, 2.65, 1.5, 6.15, rng, scale=1.15)
     if b.detail:
-        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, 0.16, size=0.26)
+        _acroteria(b, 0.3, 0.3, 3.4, 2.4, 5.15, 1.0, 0.16, size=0.42)
     with D.goods(b, "olive_oil"):
         D.pithos(b, 1.32, 3.0, scale=0.5, rng=rng, z=0.55, lid=True)
         D.amphora(b, 2.8, 3.0, scale=0.6, rng=rng, z=0.55)

@@ -35,6 +35,28 @@ Uwagi właściciela 2026-11-28, wdrożone:
 - Balkon kamienicy: drzwi z piętra na balkon, balustrada zamknięta z trzech stron (słupki narożne i przyścienne, poręcz, dolny rygiel, tralki), każda tralka sprawdzana w obrysie płyty.
 - Trochę stylu Ghibli: paleta cieplejsza i nasycona (28 pozycji, nowe: trawa, trzy kolory kwiatów, pranie); okiennice turkusowe albo ochrowe; w `building.gdshader` funkcja `light()` z miękkim przejściem światła w cień (smoothstep od -0.05 do 0.35), cień chłodny, niebieskawy, strona słoneczna ciepła, cienka ciepła poświata na krawędziach, lekkie plamy koloru jak od pędzla. Zieleń z `bo_detail.py`: kępy trawy i polnych kwiatów tylko na wolnym gruncie (promienie w górę i kolizje z bryłami), bluszcz na ścianach (lepianka, mieszkanie), skrzynki z kwiatami pod oknami (kamienica, mieszkanie, dom miejski), kwitnące donice, pranie na sznurze w zagrodzie. Kalenice lekko się uginają (`sag` 0.05 m).
 
+Uwagi właściciela 2026-11-28 (druga runda), wdrożone:
+- Zamiana modeli: poziom 1 to namiot (szkielet z płótnem i skórami, bez dóbr, bo poziom 1 ich nie potrzebuje), poziom 2 to chata z gliny ze strzechą, przy niej worki zboża i kosz cebuli (żywność od poziomu 2, `data/housing.json` Fd). Nazwy poziomów w danych bez zmian (do decyzji, `docs/11-OTWARTE-PYTANIA.md`).
+- Nieregularność ręcznej roboty we wszystkich budowlach (`Builder._wonk` w `bo_asset.py`): jedno gładkie pole wygina cały model razem z rekwizytami, więc nic nie wchodzi w ścianę: budynek lekko się przechyla (do 1,2 cm na metr wysokości), ściany pęcznieją w dwóch trzecich wysokości (2-3,5%), linia dachu faluje (do 3,6 cm). Ziemia i działka zostają na miejscu, ziarno z nazwy modelu. Długie płaskie ściany dostają przed wygięciem więcej wierzchołków, żeby tynk wyginał się razem z cegłami. Widok z daleka (LOD1) ma tylko przechył, bez zagęszczania, i mieści się w budżecie 3000 trójkątów.
+- Przerysowana greckość: terakotowe kominy z pękatą donicą i daszkiem na trzech nóżkach na kalenicach poziomów 3-7, laurowe wieńce z czerwoną wstążką nad drzwiami zagrody, mieszkania i domu miejskiego, czarnofigurowe pasy z czerwonymi liniami na amforach i hydriach, akroteria o połowę większe.
+
+## Warianty i historie domów (plan 2026-11-28, do akceptacji)
+
+Cel właściciela: każdy dom opowiada swoją historię, miasto jest bardziej zróżnicowane; każdy budynek ma 2-3 warianty.
+
+1. **Historia trwa przez poziomy.** Historia to rodzina, która rośnie razem z domem: namiot pasterzy staje się chatą z zagrodą dla owiec, potem kamienicą z krosnem, w końcu domem miejskim z warsztatem tkackim. Dom dostaje historię przy postawieniu i zachowuje ją przy awansie.
+2. **Wybór bez rdzenia.** Historia jest czystą oprawą: `boot.gd` liczy ją z id budynku (mieszanie z solą, modulo liczba historii), więc ten sam dom ma tę samą historię po wczytaniu zapisu, a sąsiedzi rzadko są tacy sami. Rdzeń, zapis i złoty hash bez zmian. Model: `common_housing_<poziom>_<historia>.glb`, gdy go brak, `common_housing_<poziom>.glb`.
+3. **Trzy historie domów zwykłych (propozycja):**
+   - pasterze: suszące się runo, płot z wikliny, dzwonek, ława do strzyżenia, potem krosno i bele wełny;
+   - garncarze: piramidy garnków, mały kopulasty piec, półka z suszącymi się naczyniami, malowane amfory i kratery, w domu miejskim lada z naczyniami;
+   - ogrodnicy i pszczelarze: grządki, gliniane ule leżące poziomo, pergola z winoroślą nad wejściem, gołębnik na dachu w wyższych poziomach.
+4. **Co się zmienia w wariancie:** zestaw rekwizytów historii, akcenty kolorów (drzwi, okiennice, tkaniny), układ (drzwi z lewej lub z prawej, lustrzane skrzydła), jedna cecha bryły (pergola, schody zewnętrzne na dach, loggia zamiast balkonu, gołębnik) i własny detal grecki historii (herma przy bramie, ołtarzyk domowy, malowany fronton).
+5. **Generator, częściowo.** Bryła zostaje pisana ręcznie w `models.py`, z przełącznikami wariantu (`story`), bo to ona daje jakość. Rekwizyty rozstawia generator w nowym `tools/blender/bo_story.py`: funkcja poziomu deklaruje wolne miejsca (`b.slot(nazwa, prostokąt, rodzaj)`: podwórze, ściana, parapet, kalenica), a `dress(b, story, level, rng)` wypełnia je zestawem historii według priorytetu i pomija to, co by kolidowało (ta sama kontrola co dla trawy i `check_props`). Opis historii (zestawy, kolory, cechy na poziom) w `tools/blender/stories.py` jako dane. Nieregularność ma ziarno z poziomu i historii.
+6. **Pozostałe budowle:** ten sam mechanizm, 2-3 warianty każdej, gdy dostaną pełny model (np. fontanna z wylewką w kształcie lwa, delfina albo amfory).
+7. **Przeglądarka:** przyciski historii obok poziomów.
+8. **Kolejność:** (a) sloty i `dress` bez zmiany wyglądu obecnych modeli; (b) trzy historie poziomów 1-3; (c) poziomy 4-7; (d) wybór w `boot.gd` i test w `test_ui.gd`: różne id dają różne historie, awans zachowuje historię; (e) pozostałe budowle.
+9. **Koszt:** 21 modeli domów i 21 widoków z daleka. Teraz 18 plików waży 45 MB, z historiami około 130 MB. Przed krokiem (b) trzeba zdecydować o przechowywaniu (Git LFS albo generowanie przy budowaniu).
+
 ## Parametry budynku: wiek, stan, praca (plan 2026-11-27)
 
 Jeden model budynku i jeden shader (`game/shaders/building.gdshader`) dają wszystkie stany z O-005 i wiek. Oprawa tylko czyta stan rdzenia; parametry liczy `boot.gd` co dzień gry i podaje jako `instance uniform` (przy przejściu na MultiMesh, moduł E3: te same cztery liczby w `INSTANCE_CUSTOM`).

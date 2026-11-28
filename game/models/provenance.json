@@ -9,7 +9,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą"
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos"
  },
  "common_housing_1_lod1.glb": {
   "building": "common_housing",
@@ -21,7 +21,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "chata: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą"
+  "note": "namiot: drewniany szkielet obciągnięty płótnem i skórami, palenisko, drewno i pitos"
  },
  "common_housing_2.glb": {
   "building": "common_housing",
@@ -33,7 +33,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
  },
  "common_housing_2_lod1.glb": {
   "building": "common_housing",
@@ -45,7 +45,7 @@
   "source": "tools/blender/models.py",
   "author": "Bogowie Olimpu (model ze skryptu)",
   "license": "własny (R-017)",
-  "note": "szałas: drewniany szkielet obciągnięty płótnem i skórami; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
+  "note": "chata z gliny: cegła suszona na kamiennym cokole, strzecha ze źdźbłami na okapie, drewno ułożone przy ścianie, pieniek z siekierą; worki ze zbożem i kosz cebuli, gdy dom ma żywność"
  },
  "common_housing_3.glb": {
   "building": "common_housing",

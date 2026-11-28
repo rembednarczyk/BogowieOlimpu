@@ -175,6 +175,8 @@ def _openings(b, wall, rng, s0, s1):
                              stage=s1)
                 wall.put(b, o["at"] + o["w"] * 0.78, wall.thick * 0.35 - 0.05, o["h"] * 0.5, 0.05, 0.02, 0.05, "iron",
                          stage=s1)
+                if getattr(wall, "wreath", False):
+                    wreath(b, wall, o["at"] + o["w"] / 2, o["h"] + 0.24, radius=0.085, rng=rng, stage=s1)
         else:
             wall.put(b, o["at"] - 0.06, -0.05, o["z"] - 0.06, o["w"] + 0.12, wall.thick + 0.08, 0.06, "stone",
                      stage=mid)  # the sill
@@ -496,6 +498,19 @@ class goods:
         self.b.good = None
 
 
+def _painted_band(b, x, y, z, h, r, ctrl, f0, f1, part, stage, steps=6):
+    """A painted zone on a jar (the black glaze of a frieze, a red band): a thin skin over the body's profile
+    between the heights f0 and f1 (shares of h), standing 6 mm off it."""
+    def radius(f):
+        for (a0, c0), (a1, c1) in zip(ctrl, ctrl[1:]):
+            if c0 <= f <= c1 and c1 > c0:
+                return r * (a0 + (a1 - a0) * (f - c0) / (c1 - c0))
+        return r * ctrl[-1][0]
+    prof = [(t(radius(f0 + (f1 - f0) * i / steps) + 0.006), t(h * (f0 + (f1 - f0) * i / steps))) for i in range(steps + 1)]
+    prof = [(prof[0][0] * 0.97, prof[0][1])] + prof + [(prof[-1][0] * 0.97, prof[-1][1])]
+    b.lathe(t(x), t(y), t(z), prof, part, sides=40, stage=stage, tint=0.5)
+
+
 def pithos(b, x, y, scale=1.0, stage=0.9, rng=None, name="pithos", z=0.0, lid=False):
     """A storage jar: tall and round-bellied on a narrow foot, a thick rolled lip, two lugs on the shoulder,
     three bands round the belly; the oil dark in its mouth or a lid on it. A smooth body of revolution."""
@@ -534,6 +549,9 @@ def amphora(b, x, y, scale=1.0, stage=0.9, rng=None, name="amphora", z=0.0, stop
             (0.32, 1.0)]
     b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=40, stage=stage,
             tint=rng.uniform(0.4, 0.8) if rng else 0.6, top="oil", smooth=4)
+    _painted_band(b, x, y, z, h, r, ctrl, 0.40, 0.62, "dark_wood", stage)  # the black-glazed frieze
+    for f in (0.36, 0.66):
+        _painted_band(b, x, y, z, h, r, ctrl, f, f + 0.025, "cloth", stage, steps=1)
     for side in (-1, 1):
         pts = []
         for i in range(9):
@@ -558,6 +576,8 @@ def hydria(b, x, y, scale=1.0, stage=0.9, rng=None, name="hydria", z=0.0):
             (0.40, 0.76), (0.32, 0.84), (0.34, 0.94), (0.46, 0.99), (0.40, 1.0)]
     b.lathe(t(x), t(y), t(z), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=40, stage=stage,
             tint=rng.uniform(0.3, 0.6) if rng else 0.45, top="water", smooth=4)
+    _painted_band(b, x, y, z, h, r, ctrl, 0.42, 0.60, "dark_wood", stage)
+    _painted_band(b, x, y, z, h, r, ctrl, 0.66, 0.70, "ochre", stage, steps=1)
     for side in (-1, 1):  # the lifting handles, level, on the belly
         pts = [(x + side * r * 0.95, y - r * 0.35, z + h * 0.50), (x + side * r * 1.22, y - r * 0.2, z + h * 0.53),
                (x + side * r * 1.22, y + r * 0.2, z + h * 0.53), (x + side * r * 0.95, y + r * 0.35, z + h * 0.50)]
@@ -647,6 +667,52 @@ def blossom(b, p, r, colour, stage=0.95, tint=0.5):
     b.lathe(t(x), t(y), t(z), [(t(r * 0.15), 0), (t(r), t(r * 0.35)), (t(r * 0.25), t(r * 0.4))], colour, sides=10,
             stage=stage, tint=tint, top="flower_yellow" if colour != "flower_yellow" else "ochre",
             shape=lambda a: 0.62 + 0.38 * abs(math.cos(2.5 * a)))
+
+
+def chimney_pot(b, x, y, z, rng, scale=1.0, stage=0.8):
+    """A terracotta smoke pot on the ridge (metres; z the ridge top): a squat plastered base sunk into the
+    tiles, a round-bellied pot drawn up to a narrow neck, a little hat on three legs to keep the rain out.
+    Greek houses had them; ours are a size too big, on purpose."""
+    s_ = scale
+    b.box(t(x - 0.16 * s_), t(y - 0.16 * s_), t(z - 0.22), t(0.32 * s_), t(0.32 * s_), t(0.3), "plaster", stage=stage,
+          tint=0.6)
+    if not b.detail:
+        b.column(t(x), t(y), t(z + 0.08), t(0.12 * s_), t(0.4 * s_), "roof_tile", sides=6, stage=stage)
+        return
+    b.box(t(x - 0.18 * s_), t(y - 0.18 * s_), t(z + 0.06), t(0.36 * s_), t(0.36 * s_), t(0.035), "stone", stage=stage)
+    ctrl = [(0.55, 0.0), (0.85, 0.15), (1.0, 0.38), (0.92, 0.6), (0.6, 0.78), (0.45, 0.88), (0.5, 0.96), (0.42, 1.0)]
+    h, r = 0.48 * s_, 0.14 * s_
+    b.lathe(t(x), t(y), t(z + 0.095), [(t(r * a), t(h * c)) for a, c in ctrl], "roof_tile", sides=28, stage=stage,
+            tint=rng.uniform(0.3, 0.6), top="dark_wood", smooth=3,
+            shape=lambda a: 1.0 + 0.04 * math.sin(3 * a + 1.0))  # thrown by hand, not quite round
+    for i in range(3):
+        a = 2 * math.pi * i / 3
+        b.log((t(x + 0.05 * s_ * math.cos(a)), t(y + 0.05 * s_ * math.sin(a)), t(z + 0.095 + h)),
+              (t(x + 0.07 * s_ * math.cos(a)), t(y + 0.07 * s_ * math.sin(a)), t(z + 0.095 + h + 0.07)), t(0.008), sides=5,
+              stage=stage)
+    b.lathe(t(x), t(y), t(z + 0.095 + h + 0.065), [(t(0.02), 0), (t(0.13 * s_), t(0.02)), (t(0.08 * s_), t(0.06)),
+                                                   (t(0.01), t(0.09))], "roof_tile", sides=20, stage=stage, tint=0.35)
+
+
+def wreath(b, wall, at, up, radius=0.1, rng=None, stage=0.9):
+    """A laurel wreath hung over a door (in the wall's frame: `at` along, `up` above its foot), tied with a red
+    ribbon whose two ends hang down: what a Greek house put up for a wedding or a victory, here on every
+    house that can afford it."""
+    leaves = 26
+    for i in range(leaves):
+        a = 2 * math.pi * i / leaves
+        ca, sa = math.cos(a), math.sin(a)
+        root = wall.frame(at + radius * ca, -0.045, up + radius * sa)
+        tip = wall.frame(at + (radius + 0.035) * math.cos(a + 0.35), -0.06, up + (radius + 0.035) * math.sin(a + 0.35))
+        b.strand(tuple(t(v) for v in root), tuple(t(v) for v in tip), t(0.035), "leaves", stage=stage,
+                 tint=(rng.uniform(0.2, 0.8) if rng else 0.5))
+    ring = [tuple(t(v) for v in wall.frame(at + radius * math.cos(2 * math.pi * k / 16), -0.04,
+                                           up + radius * math.sin(2 * math.pi * k / 16))) for k in range(17)]
+    b.tube_path(ring, t(0.012), "bark", sides=6, stage=stage, caps=False)
+    for side in (-1, 1):  # the ribbon's ends
+        pts = [wall.frame(at, -0.05, up - radius), wall.frame(at + side * 0.05, -0.05, up - radius - 0.12),
+               wall.frame(at + side * 0.03, -0.05, up - radius - 0.24)]
+        b.tube_path([tuple(t(v) for v in p) for p in pts], t(0.01), "cloth", sides=4, stage=stage)
 
 
 def potted_plant(b, x, y, scale=1.0, stage=0.95, rng=None, name="plant", z=0.0, bloom="random"):
