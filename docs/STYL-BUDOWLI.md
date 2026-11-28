@@ -136,3 +136,28 @@ Wnioski:
 5. **Towary widać na budynku:** magazyny mają nakładki zapełnienia (`stor_bays`), stoiska i sprzedawcy osobne nakładki towaru (u nas maska dóbr i plan wypełnienia magazynu).
 
 Ze zrzutu właściciela (analiza słowami): kolor dachu według funkcji (przyjęte wyżej); ważne budowle na kamiennym podwyższeniu z wybrukowanym placem i wzorem pośrodku; latarnie lub pochodnie ze złotymi kulami i kolorowe proporce wokół placów; cyprysy i okrągłe drzewka przy budynkach, kwiaty w kamiennych skrzynkach przy ścieżkach; posągi na cokołach przy wejściach; mocny kontrast światła i wyraźny zarys brył (kontur do próby, pytanie 4); piaskowo-ochrowy grunt i jasne kamienne drogi.
+
+## 8. Analiza referencji: zrzuty z Zeus Heaven (S-011, 2026-11-28)
+
+Obejrzane jednorazowo (osiedle domów, domy ludu, dzielnica usług, sanktuarium Zeusa, świątynia, małe miasto) i usunięte; poniżej tylko opis słowami. Kształtów nie przenosimy, uczymy się kolorystyki, gęstości i rytmu.
+
+**Kolory i materiały**
+1. Dach mówi o funkcji (potwierdza rozdział 2): domy ludu i elity ceglasto-pomarańczowa dachówka; pałac i główne budynki złoto-żółta; drobne budynki usług w zieleni miedzianej patyny (turkusowo-zielone dachy) i w łupkowym błękicie; szopy gospodarcze i zabudowania rolne w zgaszonej oliwkowej zieleni; świątynia w sanktuarium czerwona dachówka nad białym marmurem.
+2. Zimne ściany przy ciepłej ziemi: wiele ścian, zwłaszcza domów elity i budynków publicznych, w niebiesko-szarym, lekko liliowym kamieniu; strony w cieniu wyraźnie błękitne. Domy ludu w piaskowym tynku, z ciemnym brązem drewnianych balkonów.
+3. Grunt piaskowo-ochrowy z trawą w kępach; drogi i place z kremowo-białego kamienia.
+4. Kolorowe posadzki: place, aleje i platformy sanktuariów mają w jasnym bruku wstawki z płyt w kolorze fioletu, różu, turkusu i zieleni, w powtarzalnym wzorze (romby, rozety, meander).
+
+**Gęstość i rytm**
+5. Bogactwo widać po gęstości ozdób: dzielnice elity i centrum są zapchane ozdobami (kolumnady wzdłuż ulic, posągi, fontanny, sadzawki, ogrody), a dzielnice ludu i gospodarstwa są proste.
+6. Kolumnady jako ozdoba ulic: rzędy wolno stojących kolumn wzdłuż alei i obwodu placów.
+7. Ogrody: żywopłoty strzyżone w spirale i esy, klomby kwiatów wzdłuż dróg, rzędy cyprysów, sadzawki z błękitną wodą o miękkich, falistych brzegach.
+8. Domy ludu wyższych poziomów stoją gęsto w szeregach; schodkowe, wysokie bryły z drewnianymi balkonami i daszkami na różnych wysokościach. Domy elity z ogrodzonymi ogrodami (biała balustrada) i rzędem cyprysów.
+9. Sanktuarium: stopniowa platforma z białego marmuru z barwnymi płytami, świątynia z kolumnadą na szczycie, rzędy posągów z brązu na cokołach wzdłuż schodów i ogromny posąg boga przy wejściu.
+10. Pomniki: masywny cokół z płaskorzeźbą zwieńczony złotą kulą, dobrze widoczny nad dachami.
+11. Rynek: otwarte stragany z kolorowymi daszkami i masy towarów na widoku (beczki, amfory, kosze w rzędach).
+12. Wokół pałacu las kolorowych proporców i latarni ze złotymi kulami.
+
+**Światło**
+13. Światło z lewej u góry, cień w prawo w dół; cienie chłodne, niebieskawe, przejścia miękkie, faktura malarska (zgodne z naszym `light()`).
+
+Punkty do decyzji właściciela (pytania z 2026-11-28): niebiesko-szare ściany budynków elity i publicznych (2), barwne posadzki placów (4), gęstość ozdób według zamożności jako reguła (5), zieleń patyny jako kolor magazynów i handlu (1).

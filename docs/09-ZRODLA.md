@@ -105,3 +105,8 @@ Potrzebne do zamknięcia pozostałych luk P0 (`docs/gameplay/99-luki.md`: L-001,
 - opis plików modelu gry albo reimplementacje gier z tej rodziny (algorytm spacerujących, migracja),
 - instrukcja edytora przygód dodatku,
 - nagrania rozgrywki do pomiarów.
+
+### S-011: Zeus Heaven, galeria zrzutów (analiza stylu)
+- Typ: zrzuty ekranu z gry referencyjnej w galerii fanowskiej, https://zeus.heavengames.com/gallery/screenshots/ (świątynia, agora, stadion, sanktuarium Zeusa, osiedle domów, domy ludu, dzielnica usług, małe miasto).
+- Warunki strony: obrazy do oglądania prywatnego; dystrybucja zastrzeżona (HeavenGames LLC, prawa do gry Impressions/Sierra).
+- Użycie: obejrzane jednorazowo 2026-11-28 w folderze roboczym poza repo i usunięte; wnioski tylko słowami w `docs/STYL-BUDOWLI.md` rozdział 8 (R-017). Strona nie ma paczek grafiki ani zdjęć pojedynczych budynków (przewodniki budynków są tekstowe).
