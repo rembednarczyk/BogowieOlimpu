@@ -233,30 +233,31 @@ def footing(b, x, y, w, d, h=0.35, stage=0.0, rng=None, group="main"):
 
 
 def shed_roof(b, x, y, w, d, z_low, z_high, rng, falls="s", overhang=0.2, stage=(0.65, 0.95), gable="plaster",
-              antefix=False, group="main", gap=0.045):
+              antefix=False, group="main", gap=0.045, tiles="roof_tile"):
     """A lean-to roof of one slope against a higher wall: its high edge stops at the wall's face (`gap` off it,
     flashed with a board), it falls towards `falls` ("n", "s", "e", "w"). Over the rectangle x..x+w, y..y+d
     (the high edge on the side opposite `falls`)."""
     rise = z_high - z_low
     if falls == "s":
         tiled_roof(b, x, y + gap - d, w, 2 * d - gap, z_low, rise, rng, along_x=True, overhang=overhang, stage=stage,
-                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0)
+                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0, tiles=tiles)
     elif falls == "n":
         tiled_roof(b, x, y, w, 2 * d - gap, z_low, rise, rng, along_x=True, overhang=overhang, stage=stage, gable=gable,
-                   antefix=antefix, sides=(-1,), group=group, sag=0.0)
+                   antefix=antefix, sides=(-1,), group=group, sag=0.0, tiles=tiles)
     elif falls == "e":
         tiled_roof(b, x + gap - w, y, 2 * w - gap, d, z_low, rise, rng, along_x=False, overhang=overhang, stage=stage,
-                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0)
+                   gable=gable, antefix=antefix, sides=(1,), group=group, sag=0.0, tiles=tiles)
     else:
         tiled_roof(b, x, y, 2 * w - gap, d, z_low, rise, rng, along_x=False, overhang=overhang, stage=stage, gable=gable,
-                   antefix=antefix, sides=(-1,), group=group, sag=0.0)
+                   antefix=antefix, sides=(-1,), group=group, sag=0.0, tiles=tiles)
 
 
 ROOF_STEEP = 1.4  # the town's style (R-018): gable roofs a good deal steeper than the plans' rise
 
 
 def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(0.65, 0.95), gable="plaster",
-               antefix=False, sides=(-1, 1), group="main", sag=0.08, curve=None, steep=None):
+               antefix=False, sides=(-1, 1), group="main", sag=0.08, curve=None, steep=None,
+               tiles="roof_tile"):
     """A gable roof of terracotta: pan tiles in rows from the eaves, cover tiles over their joints, a ridge;
     the gables walled in. `sides` (-1, 1) both slopes, one of them for a lean-to (then the high edge, where the
     ridge would be, gets a flashing board); `sag` lets the ridge dip a little in its middle (a roof of some age,
@@ -264,7 +265,8 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
     roofs): the eaves lie flatter, the slope steepens to the ridge, as a roof bent by its own weight over the
     years. `steep` scales the rise (ROOF_STEEP for a gable roof, 1 for a lean-to, whose rise is fixed by its
     walls); `curve` defaults to 7.5% of the slope's length. Returns the ridge's height at a point along it
-    (plot metres), for what stands on the ridge (a chimney pot)."""
+    (plot metres), for what stands on the ridge (a chimney pot). `tiles`: the tiles' colour, by what the building
+    is (R-018, STYL-BUDOWLI.md: terracotta houses, slate-blue public buildings, gold temples, brown workshops)."""
     s0, s1 = stage
     shed = len(sides) == 1
     rise *= (1.0 if shed else ROOF_STEEP) if steep is None else steep
@@ -304,7 +306,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
 
     if not b.detail:
         for side in sides:
-            slab(side, "roof_tile", 0.05, 0.1, s0)
+            slab(side, tiles, 0.05, 0.1, s0)
         _gables(b, x, y, w, d, z, rise, along_x, gable, s0, sides)
         return ridge
     pan_w, exposed, tile_len, thick = 0.46, 0.34, 0.44, 0.022
@@ -319,7 +321,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             centre = tuple(t((lo_a[k] + hi_a[k]) / 2 - n[k] * 0.14) for k in range(3))
             half_run = (t(run_len / 2 - 0.02), 0, 0) if along_x else (0, t(run_len / 2 - 0.02), 0)
             half_up = tuple(t((hi_a[k] - lo_a[k]) / 2) for k in range(3))
-            b.obox(centre, half_run, half_up, tuple(t(n[k] * 0.0125) for k in range(3)), "roof_tile",
+            b.obox(centre, half_run, half_up, tuple(t(n[k] * 0.0125) for k in range(3)), tiles,
                    stage=s0, tint=0.1)
     for side in sides:  # the slopes
         for r in range(rows):
@@ -337,7 +339,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 rad = (bb - a) / 2
                 low = tuple(p_low[i] + normal[i] * (lift + rad * 0.55) for i in range(3))
                 high = tuple(p_high[i] + normal[i] * (rad * 0.55) for i in range(3))
-                b.shell(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), t(0.016), tuple(normal), "roof_tile",
+                b.shell(tuple(t(v) for v in low), tuple(t(v) for v in high), t(rad), t(0.016), tuple(normal), tiles,
                         sides=10, stage=share, tint=rng.uniform(0.25, 0.75), hollow_up=True)
             for c in range(cols + 1):  # cover tiles over the joints
                 along = min(max(c * pan_w, 0.06), run_len - 0.06)
@@ -347,7 +349,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 lift = thick * 1.2 + 0.075 * 0.55
                 start = tuple(t(p_low[i] + normal[i] * lift) for i in range(3))
                 end = tuple(t(p_high[i] + normal[i] * lift) for i in range(3))
-                b.shell(start, end, t(0.075), t(0.014), tuple(normal), "roof_tile", sides=10, stage=share,
+                b.shell(start, end, t(0.075), t(0.014), tuple(normal), tiles, sides=10, stage=share,
                         tint=rng.uniform(0.2, 0.6))
             # Mortar beds close the troughs' open ends: at the eaves a little behind the rims, under the ridge
             # (or the flashing of a lean-to) at the top row, so no hollow and no sky shows through the tiles.
@@ -363,7 +365,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                     dirv = tuple(p[i] - rp(side, along, fb - 0.035)[i] for i in range(3))
                     ln = math.sqrt(sum(v * v for v in dirv)) or 1.0
                     half_up = tuple(t(dirv[i] / ln * 0.02) for i in range(3))
-                    b.obox(centre, half_run, half_up, tuple(t(normal[i] * 0.13) for i in range(3)), "roof_tile",
+                    b.obox(centre, half_run, half_up, tuple(t(normal[i] * 0.13) for i in range(3)), tiles,
                            stage=share, tint=0.15)
             if antefix and r == 0:  # an antefix closes each cover tile at the eaves: a palmette of seven leaves
                 for c in range(cols + 1):
@@ -400,7 +402,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
                 pb = rp(side, edge, f1)
                 lift = thick * 1.2 + 0.085 * 0.55
                 b.shell(tuple(t(pa[i] + n[i] * lift) for i in range(3)), tuple(t(pb[i] + n[i] * lift) for i in range(3)),
-                        t(0.085), t(0.014), tuple(n), "roof_tile", sides=10, stage=s0 + (s1 - s0) * r / rows_v,
+                        t(0.085), t(0.014), tuple(n), tiles, sides=10, stage=s0 + (s1 - s0) * r / rows_v,
                         tint=rng.uniform(0.2, 0.5))
     ridge_n = max(1, int(run_len / 0.5))
     if shed:  # the high edge against the wall: a flashing board over the top row
@@ -412,7 +414,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
             centre = tuple(t((p0[k] + p1[k]) / 2 + n[k] * 0.06) for k in range(3))
             half_run = tuple(t((p1[k] - p0[k]) / 2) for k in range(3))
             half_thick = (0, t(0.03), 0) if along_x else (t(0.03), 0, 0)
-            b.obox(centre, half_run, (0, 0, t(0.07)), half_thick, "roof_tile", stage=s1, tint=0.15)
+            b.obox(centre, half_run, (0, 0, t(0.07)), half_thick, tiles, stage=s1, tint=0.15)
         ridge_n = 0
     for i in range(ridge_n):  # the ridge
         a0 = run_len * i / ridge_n
@@ -420,7 +422,7 @@ def tiled_roof(b, x, y, w, d, z, rise, rng, along_x=True, overhang=0.35, stage=(
         p0 = rp(1, a0, 1.0)
         p1 = rp(1, min(a1, run_len), 1.0)
         b.shell(tuple(t(v) for v in (p0[0], p0[1], p0[2] - 0.02)), tuple(t(v) for v in (p1[0], p1[1], p1[2] - 0.02)),
-                t(0.12), t(0.016), (0, 0, 1), "roof_tile", sides=12, stage=s1, tint=rng.uniform(0.3, 0.5))
+                t(0.12), t(0.016), (0, 0, 1), tiles, sides=12, stage=s1, tint=rng.uniform(0.3, 0.5))
     for side in sides:  # the rafters' ends under the eaves
         for c in range(cols + 1):
             along = c * pan_w

@@ -98,7 +98,7 @@ Kolor bazowy (stylizowany realizm, etap 1a) idzie w drugim zestawie kolorów mat
 
 ## Animacje postaci (etap 2, Mixamo od właściciela)
 
-Spis czynności wyprowadzamy z kodu eZeus i instrukcji (nazwy animacji i liczby klatek, S-008, rozdz. "2. Postacie" niżej), bez oglądania plików graficznych oryginału (R-017). Właściciel dostarcza klipy z Mixamo, my je wypiekamy do tekstur (VAT, jak w prototypie E4) na wspólnym szkielecie. Wstępny podział: chód i śmierć dla każdego spacerującego; praca w miejscu (budowa, kopanie, zbiór, noszenie wody, gaszenie); występy (aktor w teatrze, filozof na podium, zawodnik na stadionie i gimnazjonie, muzyk); wojsko (marsz, atak wręcz, rzut, strzał, śmierć); bogowie, herosi i potwory po kilka klipów walki i pojawienia. Lista nazw z odpowiednikami Mixamo powstanie na początku etapu 2.
+Spis czynności wyprowadzamy z kodu eZeus i instrukcji (nazwy animacji i liczby klatek, S-008, rozdz. "2. Postacie" niżej) (R-017: grafikę oryginału wolno analizować, nie kopiować). Właściciel dostarcza klipy z Mixamo, my je wypiekamy do tekstur (VAT, jak w prototypie E4) na wspólnym szkielecie. Wstępny podział: chód i śmierć dla każdego spacerującego; praca w miejscu (budowa, kopanie, zbiór, noszenie wody, gaszenie); występy (aktor w teatrze, filozof na podium, zawodnik na stadionie i gimnazjonie, muzyk); wojsko (marsz, atak wręcz, rzut, strzał, śmierć); bogowie, herosi i potwory po kilka klipów walki i pojawienia. Lista nazw z odpowiednikami Mixamo powstanie na początku etapu 2.
 
 ## Budynki interaktywne
 

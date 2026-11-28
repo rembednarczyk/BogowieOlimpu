@@ -26,6 +26,10 @@ Pamięć projektu między sesjami. Nowe wpisy na górze sekcji. Nieaktualne ozna
 - Powód: odpowiedź właściciela "tak" na pytanie o pole położenia (L-135); położenia są cechą naszych map (R-002).
 - Wdrożone: `core/src/scenario.cpp`, `core/src/world.cpp` (`change_opinion` z powodem), `core/src/serialize_atlas.cpp`, `gdext` `get_cities`, `game/scenes/ui/world_map.gd`, `army_world_ui.gd`; położenia w generatorach siedmiu dem. Testy `core/tests/test_world_map.cpp`, `game/tests/test_ui.gd`.
 
+### 2026-11-28: Referencja z eZeus, poluzowana R-017, kolor dachu według funkcji
+- Decyzja: (1) referencją stylu są dane eZeus (rozmiary i liczby klatek sprite'ów, składanie budynków); wnioski w `docs/STYL-BUDOWLI.md` rozdział 7. (2) R-017 poluzowana: grafikę oryginału wolno oglądać i analizować, wnioski słowami i liczbami, bez kopiowania kształtów i bez plików oryginału w repo. (3) Kolor dachu mówi, czym jest budynek: domy terakota, budynki publiczne łupkowy błękit, świątynie złoto, warsztaty i magazyny brąz (`roof_slate`, `roof_gold`, `roof_brown` w palecie, `tiles` w `tiled_roof`); gospodarstwa, handel, wojsko i ozdoby do decyzji.
+- Powód: odpowiedzi właściciela z 2026-11-28 („1. Z ezeus 2. Poluzować regułę, może oglądać 3. Tak”). Punkty 4 (kontur, próba na jednym domu) i 5 (proporcje, dwie propozycje) oceniamy osobno.
+
 ### 2026-11-28: Historie wszystkich kategorii budynków, wygląd Atlantydy
 - Decyzja: (1) tabela historii z `docs/STYL-BUDOWLI.md` (rozdział 5) obowiązuje jako punkt wyjścia; każdą kategorię doprecyzowujemy przy jej pierwszym pełnym modelu i wpisujemy tam. (2) Kultura atlantydzka ma własny wygląd: orichalk, błękit morza, muszle i koralowce, przy tych samych zasadach R-018 (rozdział 6 przewodnika).
 - Powód: polecenie właściciela z 2026-11-28 („Tak zrób tak”), pytania 25-26 w `11-OTWARTE-PYTANIA.md`.

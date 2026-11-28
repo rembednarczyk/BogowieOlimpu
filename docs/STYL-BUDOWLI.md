@@ -2,14 +2,14 @@
 
 Jedno miejsce dla każdego, kto buduje nowy model budynku (sesja albo agent). Reguła: R-018 (`10-REGULY.md`). Historia uwag właściciela i stan wdrożeń: `ASSETY.md`. Wzorzec w kodzie: domy w `tools/blender/models.py`, detal w `bo_detail.py`, historie w `bo_story.py`, kontrole w `bo_asset.py` (`check_props`).
 
-Materiały gry referencyjnej (zrzuty, instrukcja) służą tylko do analizy proporcji i nastroju, poza repo (R-002, R-017). Kształty, detale i nazwy są nasze.
+Grafikę gry referencyjnej wolno oglądać i analizować (zrzuty od właściciela, dane sprite'ów z eZeus), wnioski zapisujemy tu słowami i liczbami; pliki graficzne oryginału nie trafiają do repo, kształtów nie odrysowujemy (R-002, R-017). Kształty, detale i nazwy są nasze.
 
 ## 1. Klimat w liczbach
 
 | Cecha | Wartość | Gdzie w kodzie |
 |---|---|---|
 | Skala | 1 kafelek = 2 m (`M = 0.5`); dom 2 x 2 kafelki = działka 4 x 4 m | `bo_asset.py` |
-| Paleta | 28 kolorów, ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
+| Paleta | 31 kolorów (miejsca do 32; Atlantyda wymaga powiększenia `PALETTE_SIZE` do 64), ciepłe i nasycone (popołudnie lata): tynk, kamień, terakota, drewno, trawa, 3 kolory kwiatów, pranie, turkus okiennic | `PALETTE` w `bo_asset.py` = `building.gdshader` (pilnuje `check_models.py`) |
 | Światło | miękkie przejście w cień (smoothstep od -0,05 do 0,35), cień chłodny niebieskawy, strona słoneczna ciepła, cienka ciepła poświata krawędzi, plamy koloru jak od pędzla | `light()` w `building.gdshader` |
 | Dachy dwuspadowe | 1,4 raza wyższe od rzutu, połać ugięta o 7,5% swojej długości, kalenica ugięta o 8 cm w środku | `ROOF_STEEP`, `tiled_roof(curve, sag)` |
 | Przybudówki | dach jednospadowy od wyższej ściany, bez wchodzenia w ściany innych części | `shed_roof` |
@@ -25,6 +25,18 @@ Materiały gry referencyjnej (zrzuty, instrukcja) służą tylko do analizy prop
 3. Przerysowana greckość: akroteria i antefiksy o rozmiar większe, meandry, fryzy, terakotowe kominy z daszkiem, wieńce laurowe nad drzwiami, czarnofigurowe pasy na naczyniach, kolumny z entazą.
 4. Życie przy budynku: dobra, których budynek potrzebuje, widoczne według zapasu (maska `goods`); narzędzia i wytwory tego, kto w nim pracuje.
 5. Historia: 2-3 warianty każdego budynku, każdy z jednym dużym elementem od frontu, czytelnym z kamery gry (markiza, pergola, farbowana wełna); wariant trwa przez awanse i zapisy.
+
+### Kolor dachu według funkcji (przyjęte 2026-11-28)
+
+Z daleka budynek rozpoznaje się po kolorze dachu (wniosek z analizy referencji, rozdział 7). Kolor podaje `tiles` w `tiled_roof` i `shed_roof` (część palety):
+
+| Kategoria | Dachówka | Część palety |
+|---|---|---|
+| Domy zwykłe i elity | terakota | `roof_tile` (0,82; 0,40; 0,26) |
+| Budynki publiczne, administracja, kultura, nauka | łupkowy błękit | `roof_slate` (0,40; 0,52; 0,68) |
+| Sanktuaria i świątynie | złota dachówka | `roof_gold` (0,90; 0,70; 0,30) |
+| Warsztaty, magazyny, spichlerze, produkcja | brąz | `roof_brown` (0,58; 0,36; 0,22) |
+| Gospodarstwa, handel, wojsko, ozdoby | do decyzji właściciela | |
 
 ## 3. Budowa nowego budynku krok po kroku
 
@@ -88,3 +100,25 @@ Te same zasady R-018 (budowa element po elemencie, miękkie światło, łukowe d
 - **Kształty:** łagodniejsze, bardziej zaokrąglone niż greckie (kopuły, łuki, okrągłe okna), dachy łukowe tak samo strome.
 - **Paleta:** nowe kolory (orichalk, turkus, koral, perłowa biel) dopisujemy do `PALETTE` przy pierwszym modelu atlantydzkim, w obu miejscach naraz (pilnuje `check_models.py`).
 - Nazwy, kształty i detale nasze; z gry referencyjnej tylko kategorie i liczby (R-002, R-017).
+
+## 7. Analiza referencji: eZeus (2026-11-28)
+
+eZeus (S-008) nie zawiera obrazów: wczytuje grafikę z zainstalowanej gry. Zawiera za to rozmiary każdej klatki sprite'ów (`spriteData/*30.h`, skala natywna: kafelek 58 x 30 px) i to, jak budynek je składa (`textures/ebuildingtextures*.cpp`, `buildings/*.cpp`). Z tego wnioski liczbowe; postać ma ok. 30-35 px wysokości (tragarz 28, kapłan 34, uzdrowiciel 37, mediana klatek), 1 m w pionie to ok. 17,8 px.
+
+**Wysokość ponad rzutem (najwyższa klatka budynku, px; w nawiasie w wysokościach postaci):**
+
+| Grupa | Budynki |
+|---|---|
+| Niskie tło miasta | mennica 13 (0,4), szpital 17 (0,5), warsztat rękodzielników 23 (0,7), kamieniarz 25 (0,8), mleczarnia 25 (0,8), gimnazjon 27 (0,8), urząd podatkowy 28 (0,8), odlewnia i tłocznia oliwy po 28-29 (0,9), winiarnia 34 (1,0), fontanna 34 (1,0) |
+| Średnie | agora 41 (1,2), tartak 42 (1,3), posterunek 48 (1,4), obserwatorium 49 (1,5), college 54 (1,6), teatr 55 (1,6), spichlerz 60 (1,8), zbrojownia 64 (1,9) |
+| Domy | dom ludu najwyższy poziom 68 (2,0), dom elity 89 (2,7) |
+| Znaki orientacyjne | szkoła dramatyczna 90 (2,7), biblioteka 92 (2,8), uniwersytet 107 (3,2), pałac 110 (3,3), warsztat wynalazców 117 (3,5), muzeum 171 (5,2) |
+
+Wnioski:
+1. **Sylwetka miasta ma dwa piętra:** niskie, szerokie tło (domy, warsztaty, gospodarstwa, większość usług do ok. 2 postaci) i kilka wysokich znaków orientacyjnych (pałac, nauka, muzeum: 3-5 postaci). Wysokość jest nagrodą dla ważnych budowli.
+2. **Dom ludu na najwyższym poziomie to ok. 2 postaci nad rzutem** (szerokość rzutu 116 px, wysokość 68 px: bryła szersza niż wyższa). Nasz dom miejski z kominem ma ok. 4 postaci, czyli względnie mniej więcej dwa razy więcej (do oceny przy proporcjach, pytanie 5 właściciela).
+3. **Dwa warianty na każdy poziom domu,** wybierane z ziarna budynku (`esmallhouse.cpp`: `seed() % liczba`). U nas trzy historie z id: zgodne co do zasady, bogatsze w treści.
+4. **Budynki żyją:** większość ma nakładki pracy z wieloma klatkami (rzeźbiarnia 36, laboratorium 41, zagroda 48, warsztat wynalazców 38), więc ruch przy pracy jest regułą, nie wyjątkiem (u nas kanał `working`, do zrobienia przy warsztatach).
+5. **Towary widać na budynku:** magazyny mają nakładki zapełnienia (`stor_bays`), stoiska i sprzedawcy osobne nakładki towaru (u nas maska dóbr i plan wypełnienia magazynu).
+
+Ze zrzutu właściciela (analiza słowami): kolor dachu według funkcji (przyjęte wyżej); ważne budowle na kamiennym podwyższeniu z wybrukowanym placem i wzorem pośrodku; latarnie lub pochodnie ze złotymi kulami i kolorowe proporce wokół placów; cyprysy i okrągłe drzewka przy budynkach, kwiaty w kamiennych skrzynkach przy ścieżkach; posągi na cokołach przy wejściach; mocny kontrast światła i wyraźny zarys brył (kontur do próby, pytanie 4); piaskowo-ochrowy grunt i jasne kamienne drogi.

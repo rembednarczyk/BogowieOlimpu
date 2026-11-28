@@ -55,6 +55,9 @@ PALETTE = [  # warm and saturated, the light of a summer afternoon (stage 1a, 20
     ("flower_yellow", (0.98, 0.82, 0.30)),
     ("flower_white", (0.97, 0.95, 0.90)),
     ("sky_cloth", (0.56, 0.72, 0.88)),  # washing on the line
+    ("roof_slate", (0.40, 0.52, 0.68)),  # slate-blue tiles: public buildings, administration, culture, science
+    ("roof_gold", (0.90, 0.70, 0.30)),  # golden glazed tiles: sanctuaries and temples
+    ("roof_brown", (0.58, 0.36, 0.22)),  # brown tiles: workshops, stores, production
 ]
 PALETTE_INDEX = {name: i for i, (name, _) in enumerate(PALETTE)}
 PALETTE_SIZE = 32  # UV0.x = (index + 0.5) / PALETTE_SIZE

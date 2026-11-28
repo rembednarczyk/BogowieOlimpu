@@ -159,17 +159,18 @@ Reguły destylujemy ze źródeł (`09-ZRODLA.md`) i z decyzji autora. Reguła "o
 ### R-017 [ASSETY] Licencje assetów: własne, CC0, animacje Mixamo
 - Status: obowiązuje
 - Źródło: decyzja właściciela 2026-11-27 (odpowiedzi 1a, 2 „tak CC0”, 3; animacje z Mixamo od właściciela)
-- Treść: Do repozytorium wchodzą tylko: assety własne (modele budowane skryptami `tools/blender/`), tekstury i inne zasoby na licencji CC0 (np. ambientCG, Poly Haven) oraz animacje postaci z Mixamo dostarczone przez właściciela, wypiekane do naszych modeli. Każdy plik ma wpis w rejestrze pochodzenia `game/models/provenance.json` (plik, źródło, autor, licencja, zmiany). Żadnych assetów, kształtów ani przeróbek grafiki z gry referencyjnej (R-002): z oryginału i z eZeus bierzemy tylko listy kategorii, liczby i nazwy czynności.
+- Treść: Do repozytorium wchodzą tylko: assety własne (modele budowane skryptami `tools/blender/`), tekstury i inne zasoby na licencji CC0 (np. ambientCG, Poly Haven) oraz animacje postaci z Mixamo dostarczone przez właściciela, wypiekane do naszych modeli. Każdy plik ma wpis w rejestrze pochodzenia `game/models/provenance.json` (plik, źródło, autor, licencja, zmiany). Żadnych assetów, kształtów ani przeróbek grafiki z gry referencyjnej (R-002). Grafikę oryginału wolno oglądać i analizować (zrzuty od właściciela, dane sprite'ów z eZeus: rozmiary, liczby klatek i wariantów) pod kątem proporcji, kolorystyki, kompozycji i rytmu miasta; wnioski zapisujemy słowami i liczbami w `docs/STYL-BUDOWLI.md`, bez odrysowywania kształtów i bez plików graficznych oryginału w repo.
 - Uzasadnienie: CC0 nie wymaga podawania autora i pozwala na grę komercyjną; animacje Mixamo są dopuszczone w grach, ale nie jako osobne pliki do rozpowszechniania, dlatego trafiają do repo tylko w postaci wypieczonej.
-- Wpływ na: `docs/ASSETY.md`, `tools/blender/`, `game/models/`, `tools/checks/check_models.py`.
-- Historia: 2026-11-27 utworzona
+- Wpływ na: `docs/ASSETY.md`, `docs/STYL-BUDOWLI.md`, `tools/blender/`, `game/models/`, `tools/checks/check_models.py`.
+- Historia: 2026-11-27 utworzona; 2026-11-28 poluzowana decyzją właściciela („Poluzować regułę, może oglądać”): analiza grafiki oryginału dozwolona, kopiowanie nadal nie
 
 ### R-018 [OPRAWA] Styl budowli miasta
 - Status: obowiązuje
 - Źródło: decyzje właściciela 2026-11-27 i 2026-11-28 (rundy uwag do domów: szczegół, styl Ghibli, łukowe dachy, historie domów; „Zapisujemy ten wypracowany styl jako regułę pod ogólny klimat budowli w mieście”)
 - Treść: Każda budowla miasta jest modelowana w jednym stylu, sprawdzalnym w kodzie i na zrzutach:
   1. Realizm stylizowany: elementy budowane jak w rzeczywistości (cegła po cegle, dachówka po dachówce, drewno ułożone fizycznie), materiały greckie (cegła suszona, kamień, tynk wapienny, terakota, drewno).
-  2. Ciepłe światło i paleta: paleta `building.gdshader` (28 kolorów, nasycona, popołudniowa), miękkie przejście światła w cień, chłodny niebieskawy cień, plamy koloru jak od pędzla.
+  1a. Kolor dachu według funkcji budynku (`docs/STYL-BUDOWLI.md`): domy terakota, budynki publiczne łupkowy błękit, świątynie złoto, warsztaty i magazyny brąz.
+  2. Ciepłe światło i paleta: paleta `building.gdshader` (31 kolorów, nasycona, popołudniowa), miękkie przejście światła w cień, chłodny niebieskawy cień, plamy koloru jak od pędzla.
   3. Dachy łukowe i strome: dachy dwuspadowe o 1,4 raza wyższe od rzutu (`ROOF_STEEP`), połać ugięta o 7,5% swojej długości, kalenica ugięta w środku; przybudówki z dachem jednospadowym od wyższej ściany.
   4. Ręczna nieregularność: każdy model wygięty jednym gładkim polem (`Builder._wonk`: przechył, pęcznienie ścian, falujący dach), razem z rekwizytami.
   5. Przerysowana greckość: akroteria, antefiksy, meandry, kominy z terakoty, wieńce nad drzwiami, malowane naczynia, kolumny z entazą; o rozmiar większe niż w archeologii.
